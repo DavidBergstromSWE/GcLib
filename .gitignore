@@ -1,0 +1,24 @@
+###############
+#    folder   #
+###############
+/**/DROP/
+/**/TEMP/
+/**/packages/
+/**/bin/
+/**/obj/
+
+################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+.vs/
+*.json
+*.sqlite
+*.cache
+bin/
+obj/
+packages/
+*.suo
+log.txt
+*.pubxml
+*.user

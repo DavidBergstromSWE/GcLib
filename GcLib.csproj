@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include=".gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Cyotek.CircularBuffer" Version="1.2.2-beta1" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.9.0.5494" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-rc.1.24431.7" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0-rc.1.24451.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="pco.sdk">
+      <HintPath>APIs\PCO\lib\pco.sdk.dll</HintPath>
+    </Reference>
+    <Reference Include="PvDotNet">
+      <HintPath>APIs\Pleora\lib\PvDotNet.dll</HintPath>
+    </Reference>
+    <Reference Include="SpinnakerNET_v140">
+      <HintPath>APIs\Spinnaker\lib\SpinnakerNET_v140.dll</HintPath>
+    </Reference>
+    <Reference Include="xiApi.NETX64">
+      <HintPath>APIs\Ximea\lib\xiApi.NETX64.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+</Project>
