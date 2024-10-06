@@ -1,0 +1,1 @@
+Class library providing a common interface to control settings and streaming of GenICam/GenTL-standardized cameras, using underlying APIs from supported third-party camera manufacturers and library providers.
