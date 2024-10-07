@@ -58,6 +58,7 @@ public sealed class GcDeviceInfo(string vendorName, string modelName, string ser
     public bool IsOpen { get; set; } = isOpen;
 
     #endregion
+
     #region Constructors
 
     public override bool Equals(object obj)
