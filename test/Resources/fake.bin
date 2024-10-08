@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<FusionViewer Version="1.0.8287" xmlns="SystemConfiguration">
+  <DeviceInfo Device="Device1">
+    <VendorName>FOI</VendorName>
+    <ModelName>VirtualCam</ModelName>
+    <UniqueID>VirtualCam1</UniqueID>
+  </DeviceInfo>
+  <PropertyList Device="Device1">
+    <AcquisitionMode>Continuous</AcquisitionMode>
+    <AcquisitionFrameCount>13</AcquisitionFrameCount>
+    <AcquisitionFrameRate>20,6</AcquisitionFrameRate>
+    <DeviceVendorName>FOI</DeviceVendorName>
+    <DeviceModelName>VirtualCam</DeviceModelName>
+    <DeviceSerialNumber>1.0</DeviceSerialNumber>
+    <DeviceUserID>CameraSim</DeviceUserID>
+    <DeviceTLType>Custom</DeviceTLType>
+    <DeviceTemperatureSelector>Mainboard</DeviceTemperatureSelector>
+    <DeviceTemperature>23,3</DeviceTemperature>
+    <TimeStamp>637983520224273280</TimeStamp>
+    <SensorWidth>640</SensorWidth>
+    <SensorHeight>480</SensorHeight>
+    <BinningHorizontal>2</BinningHorizontal>
+    <WidthMax>320</WidthMax>
+    <BinningVertical>2</BinningVertical>
+    <HeightMax>240</HeightMax>
+    <Width>240</Width>
+    <Height>120</Height>
+    <OffsetX>80</OffsetX>
+    <OffsetY>60</OffsetY>
+    <BinningHorizontalMode>Sum</BinningHorizontalMode>
+    <BinningVerticalMode>Sum</BinningVerticalMode>
+    <PixelFormat>Mono12</PixelFormat>
+    <PixelSize>Bpp12</PixelSize>
+    <TestPattern>FrameCounter</TestPattern>
+    <ImageDirectory />
+    <TestString>HelloSexy</TestString>
+    <TestInteger>20</TestInteger>
+    <TestEnumeration>Sunday</TestEnumeration>
+    <TestBoolean>True</TestBoolean>
+    <TestFloat>5,5</TestFloat>
+    <AcquisitionFailure>False</AcquisitionFailure>
+    <AcquisitionFailureEvent>ConnectionLost</AcquisitionFailureEvent>
+    <AcquisitionTimeToFailure>1000</AcquisitionTimeToFailure>
+  </PropertyList>
+  <Processing ImageChannel="Channel1">
+    <FlipHorizontal>False</FlipHorizontal>
+    <FlipVertical>False</FlipVertical>
+    <SelectedContrastEnhancementMethod Name="NoEnhancement" />
+    <SelectedDenoisingMethod Name="NoDenoising" />
+    <SelectedSharpeningMethod Name="NoSharpening" />
+    <Brightness>0</Brightness>
+  </Processing>
+  <Processing ImageChannel="Channel2">
+    <FlipHorizontal>False</FlipHorizontal>
+    <FlipVertical>False</FlipVertical>
+    <SelectedContrastEnhancementMethod Name="NoEnhancement" />
+    <SelectedDenoisingMethod Name="NoDenoising" />
+    <SelectedSharpeningMethod Name="NoSharpening" />
+    <Brightness>0</Brightness>
+  </Processing>
+  <Processing ImageChannel="FusedChannel">
+    <FlipHorizontal>False</FlipHorizontal>
+    <FlipVertical>False</FlipVertical>
+    <SelectedContrastEnhancementMethod Name="NoEnhancement" />
+    <SelectedDenoisingMethod Name="NoDenoising" />
+    <SelectedSharpeningMethod Name="NoSharpening" />
+    <Brightness>0</Brightness>
+    <SelectedInterpolationMethod>Linear</SelectedInterpolationMethod>
+    <CalibrationData />
+    <SelectedBorderType>Constant</SelectedBorderType>
+    <SelectedImageScalingDirection>DownScale</SelectedImageScalingDirection>
+    <SelectedFusionMethod Name="Montage">
+      <ImageOrientation>Horizontal</ImageOrientation>
+    </SelectedFusionMethod>
+  </Processing>
+</FusionViewer>
