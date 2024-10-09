@@ -13,7 +13,4 @@ A simple [console app](samples/GcLib.Samples.ConsoleApp) has been added to demon
 
 For development purposes the library implements [VirtualCam](src/APIs/VirtualCam) - a virtual camera simulator emulating a GeniCam device and enabling interaction with its GenApi parameters and streaming of image buffers.
 
-Contributors are welcome to improve existing  as well as add new APIs to the library, please fork the repository and add a pull request. 
-
-> [!TIP]
-> Make sure the new device class implements the abstract base class [GcDevice](src/GcDevice.cs) and the following two interfaces: [IDeviceEnumerator](src/IDeviceEnumerator) (for device enumeration) and [IDeviceClassDescriptor](src/IDeviceClassDescriptor) (for providing device class information).
+Contributors are welcome, please see this short [guide](CONTRIBUTING.md) for further info. 
