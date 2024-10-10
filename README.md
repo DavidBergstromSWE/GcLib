@@ -1,5 +1,5 @@
 Library providing a common interface to control settings and streaming of [GenICam/GenTL](https://www.emva.org/standards-technology/genicam/)-standardized cameras in .NET, using underlying APIs from supported third-party providers.
-GcLib essentially works like a wrapper around the external APIs, hiding their specific implementations and enabling the same code to be used regardless of the camera.
+GcLib essentially works like a wrapper around the external APIs, hiding their specific implementations and enabling the same code to be used regardless of the camera or vendor.
 
 Currently supported APIs are: 
 [eBUS SDK](https://www.pleora.com/machine-vision-connectivity/ebus-sdk/),
