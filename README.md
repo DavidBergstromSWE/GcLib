@@ -1,10 +1,10 @@
-Library providing a common interface to control settings and streaming of [GenICam/GenTL](https://www.emva.org/standards-technology/genicam/)-standardized cameras in .NET, using underlying APIs from supported third-party camera manufacturers and library providers.
+Library providing a common interface to control settings and streaming of [GenICam/GenTL](https://www.emva.org/standards-technology/genicam/)-standardized cameras in .NET, using underlying APIs from supported third-party providers.
 
 Currently supported APIs are: 
 [eBUS SDK](https://www.pleora.com/machine-vision-connectivity/ebus-sdk/),
 [xiAPI.NET](https://www.ximea.com/support/wiki/apis/xiAPINET),
 [Spinnaker SDK](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) and
-[PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (only partially implemented). 
+[PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (partially implemented). 
 
 > [!NOTE]
 > Please note that some APIs may require a license to use it on a particular system.
