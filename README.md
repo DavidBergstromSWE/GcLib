@@ -10,8 +10,10 @@ Currently supported APIs are:
 > [!NOTE]
 > Please note that some APIs may require a license.
 
-A simple [console app](samples/GcLib.Samples.ConsoleApp) has been added to demonstrate how to setup and use the library. 
-
-A [WinForms app](samples/GcLib.Samples.WinFormsDemoApp) has been added as a demo (a WPF demo app is also coming).
-
 Contributors are welcome to the project, please see this [short guide](CONTRIBUTING.md) for further info.
+
+A simple [console app](samples/GcLib.Samples.ConsoleApp) has been added to demonstrate the straightforwardness of setting up and using the library.
+
+A [WinForms app](samples/GcLib.Samples.WinFormsDemoApp) has also recently been added (see screenshot below), which allows connection to detected devices, setting device parameters as well as providing some elementary recording/playback functionality.
+
+![alt text](samples/GcLib.Samples.WinFormsDemoApp/Resources/WinFormsDemoApp_screenshot.png)
