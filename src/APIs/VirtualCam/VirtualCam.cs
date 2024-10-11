@@ -70,7 +70,7 @@ public sealed partial class VirtualCam : GcDevice, IDeviceEnumerator, IDeviceCla
     /// <returns>Device information.</returns>
     private static GcDeviceInfo GetDeviceInfo(string uniqueID)
     {
-        return new GcDeviceInfo(vendorName: "FOI",
+        return new GcDeviceInfo(vendorName: "MySimLabs",
                                 modelName: nameof(VirtualCam),
                                 serialNumber: "1.0",
                                 uniqueID: uniqueID,
