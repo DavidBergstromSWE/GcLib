@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcLib.UnitTests", "test\GcL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcLib.Samples.ConsoleApp", "samples\GcLib.Samples.ConsoleApp\GcLib.Samples.ConsoleApp.csproj", "{A9A1C15B-BDE0-43D9-A342-9394B62F0DE9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcLib.Samples.WinFormsDemoApp", "samples\GcLib.Samples.WinFormsDemoApp\GcLib.Samples.WinFormsDemoApp.csproj", "{25A27A66-264C-49F5-AAA1-1195A2F5674A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A9A1C15B-BDE0-43D9-A342-9394B62F0DE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9A1C15B-BDE0-43D9-A342-9394B62F0DE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9A1C15B-BDE0-43D9-A342-9394B62F0DE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25A27A66-264C-49F5-AAA1-1195A2F5674A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25A27A66-264C-49F5-AAA1-1195A2F5674A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25A27A66-264C-49F5-AAA1-1195A2F5674A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25A27A66-264C-49F5-AAA1-1195A2F5674A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
