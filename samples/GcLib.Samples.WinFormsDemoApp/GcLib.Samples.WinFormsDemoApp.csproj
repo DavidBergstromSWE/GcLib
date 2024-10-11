@@ -1,0 +1,95 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Authors>David Bergström</Authors>
+    <Company>MySimLabs</Company>
+    <AssemblyName>WinFormsDemoApp</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <ApplicationIcon>Gc_256x256.ico</ApplicationIcon>
+    <Description>Simple WinForms demo application for the GcLib library.</Description>
+    <NeutralLanguage>en</NeutralLanguage>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Emgu.CV.UI" Version="4.9.0.5494">
+      <TreatAsUsed>true</TreatAsUsed>
+    </PackageReference>
+    <PackageReference Include="Serilog" Version="4.0.1" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GcLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="BorderedGroupBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="ColorSlider.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="CustomDataGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="GcDisplayControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="GcParameterGridView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="GcPlayBackControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="WinFormsDemoApp.DisplayPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="OpenCameraDialogue.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="OpenCameraDialogue.Designer.cs">
+      <DependentUpon>OpenCameraDialogue.cs</DependentUpon>
+    </Compile>
+    <Compile Update="WinFormsDemoApp.PropertyPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="WinFormsDemoApp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="WinFormsDemoApp.Designer.cs">
+      <DependentUpon>WinFormsDemoApp.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="ColorSlider.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Update="OpenCameraDialogue.resx">
+      <DependentUpon>OpenCameraDialogue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="WinFormsDemoApp.resx">
+      <DependentUpon>WinFormsDemoApp.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
