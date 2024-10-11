@@ -10,8 +10,8 @@ Currently supported APIs are:
 > [!NOTE]
 > Please note that some APIs may require a license.
 
-A simple [console app](samples/GcLib.Samples.ConsoleApp) has been added to demonstrate how to use the library. More sample demos are coming (WinForms and WPF).
+A simple [console app](samples/GcLib.Samples.ConsoleApp) has been added to demonstrate how to setup and use the library. 
 
-For development purposes the library also implements [VirtualCam](src/APIs/VirtualCam) - a virtual camera simulator emulating a GeniCam device and enabling interaction with its GenApi parameters and streaming of image buffers.
+A [WinForms app](samples/GcLib.Samples.WinFormsDemoApp) has been added as a demo (a WPF demo app is also coming).
 
 Contributors are welcome to the project, please see this [short guide](CONTRIBUTING.md) for further info.
