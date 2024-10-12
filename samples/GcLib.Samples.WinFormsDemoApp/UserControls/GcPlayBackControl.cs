@@ -60,9 +60,7 @@ public partial class GcPlayBackControl : UserControl
 
         // Setup PlaybackPanel and slider.
         if (_imageReader.FrameCount == 0)
-        {
             throw new InvalidOperationException("Image sequence is empty!");
-        }
 
         if (_imageReader.FrameCount > 1)
         {
@@ -206,13 +204,8 @@ public partial class GcPlayBackControl : UserControl
         var dateTime = new DateTime((long)timeStamp - (long)_imageReader.GetTimeStamp(0));
 
         if (PlaybackTextBox.InvokeRequired)
-        {
             PlaybackTextBox.Invoke((MethodInvoker)delegate { PlaybackTextBox.Text = $"Frame {_imageReader.FrameIndex} ({dateTime:HH:mm:ss.fff})"; });
-        }
-        else
-        {
-            PlaybackTextBox.Text = $"Frame {_imageReader.FrameIndex} ({dateTime:HH:mm:ss.fff})";
-        }
+        else PlaybackTextBox.Text = $"Frame {_imageReader.FrameIndex} ({dateTime:HH:mm:ss.fff})";
     }
 
     /// <summary>
@@ -221,9 +214,7 @@ public partial class GcPlayBackControl : UserControl
     private void EnableButtons()
     {
         if (InvokeRequired)
-        {
             Invoke(new Action(EnableButtons));
-        }
         else
         {
             StepBackButton.Enabled = true;
@@ -239,9 +230,7 @@ public partial class GcPlayBackControl : UserControl
     private void DisableButtons()
     {
         if (InvokeRequired)
-        {
             Invoke(new Action(DisableButtons));
-        }
         else
         {
             StepBackButton.Enabled = false;
@@ -296,7 +285,6 @@ public partial class GcPlayBackControl : UserControl
     /// </summary>
     private void PlaybackStartButton_Click(object sender, EventArgs e)
     {
-        // Move slider to new position.
         ColorSlider.Value = ColorSlider.Minimum;
     }
 
@@ -305,7 +293,6 @@ public partial class GcPlayBackControl : UserControl
     /// </summary>
     private void PlaybackEndButton_Click(object sender, EventArgs e)
     {
-        // Move slider to new position.
         ColorSlider.Value = ColorSlider.Maximum;
     }
 
@@ -314,7 +301,6 @@ public partial class GcPlayBackControl : UserControl
     /// </summary>
     private void PlaybackStepBackButton_Click(object sender, EventArgs e)
     {
-        // Move slider to new position.
         if (ColorSlider.Value > ColorSlider.Minimum)
             ColorSlider.Value -= 1;
     }
@@ -324,7 +310,6 @@ public partial class GcPlayBackControl : UserControl
     /// </summary>
     private void PlaybackStepForwardButton_Click(object sender, EventArgs e)
     {
-        // Move slider to new position.
         if (ColorSlider.Value < ColorSlider.Maximum)
             ColorSlider.Value += 1;
     }
@@ -334,19 +319,15 @@ public partial class GcPlayBackControl : UserControl
     /// </summary>
     private void PlaybackPlayPauseButton_Click(object sender, EventArgs e)
     {
-        if (!_isPlaying)
+        if (_isPlaying)
         {
-            Play();
-
-            // Show Pause button.
-            PlayPauseButton.BackgroundImage = Resources.Pause;
+            Stop();
+            PlayPauseButton.BackgroundImage = Resources.Play;
         }
         else
         {
-            Stop();
-
-            // Reset Play button.
-            PlayPauseButton.BackgroundImage = Resources.Play;
+            Play();
+            PlayPauseButton.BackgroundImage = Resources.Pause;
         }
     }
 

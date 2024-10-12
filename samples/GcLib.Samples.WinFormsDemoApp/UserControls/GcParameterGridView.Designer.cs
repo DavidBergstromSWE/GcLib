@@ -31,118 +31,115 @@ partial class GcParameterGridView : UserControl
     /// </summary>
     private void InitializeComponent()
     {
-        System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-        this.CategoryFilterComboBox = new System.Windows.Forms.ComboBox();
-        this.RefreshGridViewButton = new System.Windows.Forms.Button();
-        this.VisibilityFilterComboBox = new System.Windows.Forms.ComboBox();
-        this.ParameterDataGridView = new CustomDataGridView();
-        this.Parameter = new System.Windows.Forms.DataGridViewTextBoxColumn();
-        this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
-        this.PropertyGrid = new System.Windows.Forms.PropertyGrid();
-        ((System.ComponentModel.ISupportInitialize)(this.ParameterDataGridView)).BeginInit();
-        this.SuspendLayout();
+        DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+        CategoryFilterComboBox = new ComboBox();
+        RefreshGridViewButton = new Button();
+        VisibilityFilterComboBox = new ComboBox();
+        ParameterDataGridView = new CustomDataGridView();
+        Parameter = new DataGridViewTextBoxColumn();
+        Value = new DataGridViewTextBoxColumn();
+        PropertyGrid = new PropertyGrid();
+        ((System.ComponentModel.ISupportInitialize)ParameterDataGridView).BeginInit();
+        SuspendLayout();
         // 
         // CategoryFilterComboBox
         // 
-        this.CategoryFilterComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        this.CategoryFilterComboBox.FormattingEnabled = true;
-        this.CategoryFilterComboBox.Location = new System.Drawing.Point(5, 2);
-        this.CategoryFilterComboBox.Name = "CategoryFilterComboBox";
-        this.CategoryFilterComboBox.Size = new System.Drawing.Size(150, 23);
-        this.CategoryFilterComboBox.TabIndex = 27;
+        CategoryFilterComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        CategoryFilterComboBox.FormattingEnabled = true;
+        CategoryFilterComboBox.Location = new System.Drawing.Point(5, 2);
+        CategoryFilterComboBox.Name = "CategoryFilterComboBox";
+        CategoryFilterComboBox.Size = new System.Drawing.Size(150, 23);
+        CategoryFilterComboBox.TabIndex = 27;
         // 
-        // RefreshCameraParameterGridViewButton
+        // RefreshGridViewButton
         // 
-        this.RefreshGridViewButton.Location = new System.Drawing.Point(180, 2);
-        this.RefreshGridViewButton.Name = "RefreshCameraParameterGridViewButton";
-        this.RefreshGridViewButton.Size = new System.Drawing.Size(60, 23);
-        this.RefreshGridViewButton.TabIndex = 29;
-        this.RefreshGridViewButton.Text = "Refresh";
-        this.RefreshGridViewButton.UseVisualStyleBackColor = true;
-        this.RefreshGridViewButton.Click += new System.EventHandler(this.RefreshGridViewButton_Click);
+        RefreshGridViewButton.Location = new System.Drawing.Point(180, 2);
+        RefreshGridViewButton.Name = "RefreshGridViewButton";
+        RefreshGridViewButton.Size = new System.Drawing.Size(60, 23);
+        RefreshGridViewButton.TabIndex = 29;
+        RefreshGridViewButton.Text = "Refresh";
+        RefreshGridViewButton.UseVisualStyleBackColor = true;
+        RefreshGridViewButton.Click += RefreshGridViewButton_Click;
         // 
         // VisibilityFilterComboBox
         // 
-        this.VisibilityFilterComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        this.VisibilityFilterComboBox.FormattingEnabled = true;
-        this.VisibilityFilterComboBox.Location = new System.Drawing.Point(265, 2);
-        this.VisibilityFilterComboBox.Name = "VisibilityFilterComboBox";
-        this.VisibilityFilterComboBox.Size = new System.Drawing.Size(90, 23);
-        this.VisibilityFilterComboBox.TabIndex = 30;         
+        VisibilityFilterComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        VisibilityFilterComboBox.FormattingEnabled = true;
+        VisibilityFilterComboBox.Location = new System.Drawing.Point(265, 2);
+        VisibilityFilterComboBox.Name = "VisibilityFilterComboBox";
+        VisibilityFilterComboBox.Size = new System.Drawing.Size(90, 23);
+        VisibilityFilterComboBox.TabIndex = 30;
         // 
-        // CameraParameterGrid
+        // ParameterDataGridView
         // 
-        this.ParameterDataGridView.AllowUserToAddRows = false;
-        this.ParameterDataGridView.AllowUserToDeleteRows = false;
-        this.ParameterDataGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-        dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+        ParameterDataGridView.AllowUserToAddRows = false;
+        ParameterDataGridView.AllowUserToDeleteRows = false;
+        ParameterDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
         dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-        dataGridViewCellStyle1.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+        dataGridViewCellStyle1.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
         dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
         dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
         dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-        dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-        this.ParameterDataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-        this.ParameterDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        this.ParameterDataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-        this.Parameter,
-        this.Value});
-        this.ParameterDataGridView.Location = new System.Drawing.Point(5, 28);
-        this.ParameterDataGridView.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        this.ParameterDataGridView.MultiSelect = false;
-        this.ParameterDataGridView.Name = "CameraParameterGrid";
-        this.ParameterDataGridView.RowHeadersVisible = false;
-        this.ParameterDataGridView.Size = new System.Drawing.Size(350, 600);
-        this.ParameterDataGridView.TabIndex = 31;
-        this.ParameterDataGridView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.ParameterDataGridView_CellClick);
-        this.ParameterDataGridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.ParameterDataGridView_CellEndEdit);
-        this.ParameterDataGridView.CurrentCellDirtyStateChanged += new System.EventHandler(this.ParameterDataGridView_CurrentCellDirtyStateChanged);
-        this.ParameterDataGridView.MouseEnter += new System.EventHandler(this.ParameterDataGridView_MouseEnter);
-        this.ParameterDataGridView.MouseLeave += new System.EventHandler(this.ParameterDataGridView_MouseLeave);
+        dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+        ParameterDataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+        ParameterDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        ParameterDataGridView.Columns.AddRange(new DataGridViewColumn[] { Parameter, Value });
+        ParameterDataGridView.Location = new System.Drawing.Point(5, 28);
+        ParameterDataGridView.Margin = new Padding(4, 3, 4, 3);
+        ParameterDataGridView.MultiSelect = false;
+        ParameterDataGridView.Name = "ParameterDataGridView";
+        ParameterDataGridView.RowHeadersVisible = false;
+        ParameterDataGridView.Size = new System.Drawing.Size(350, 456);
+        ParameterDataGridView.TabIndex = 31;
+        ParameterDataGridView.CellClick += ParameterDataGridView_CellClick;
+        ParameterDataGridView.CellEndEdit += ParameterDataGridView_CellEndEdit;
+        ParameterDataGridView.CurrentCellDirtyStateChanged += ParameterDataGridView_CurrentCellDirtyStateChanged;
+        ParameterDataGridView.MouseEnter += ParameterDataGridView_MouseEnter;
+        ParameterDataGridView.MouseLeave += ParameterDataGridView_MouseLeave;
         // 
         // Parameter
         // 
-        this.Parameter.HeaderText = "Parameter";
-        this.Parameter.Name = "Parameter";
-        this.Parameter.ReadOnly = true;
-        this.Parameter.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+        Parameter.HeaderText = "Parameter";
+        Parameter.Name = "Parameter";
+        Parameter.ReadOnly = true;
+        Parameter.Resizable = DataGridViewTriState.True;
         // 
         // Value
         // 
-        this.Value.HeaderText = "Value";
-        this.Value.Name = "Value";
-        this.Value.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-        this.Value.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+        Value.HeaderText = "Value";
+        Value.Name = "Value";
+        Value.Resizable = DataGridViewTriState.True;
+        Value.SortMode = DataGridViewColumnSortMode.NotSortable;
         // 
         // PropertyGrid
         // 
-        this.PropertyGrid.CommandsVisibleIfAvailable = false;
-        this.PropertyGrid.DisabledItemForeColor = System.Drawing.SystemColors.ControlText;
-        this.PropertyGrid.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-        this.PropertyGrid.HelpVisible = false;
-        this.PropertyGrid.Location = new System.Drawing.Point(5, 634);
-        this.PropertyGrid.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        this.PropertyGrid.Name = "PropertyGrid";
-        this.PropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
-        this.PropertyGrid.Size = new System.Drawing.Size(350, 115);
-        this.PropertyGrid.TabIndex = 32;
-        this.PropertyGrid.ToolbarVisible = false;
-        this.PropertyGrid.Visible = false;
+        PropertyGrid.CommandsVisibleIfAvailable = false;
+        PropertyGrid.DisabledItemForeColor = System.Drawing.SystemColors.ControlText;
+        PropertyGrid.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.5F);
+        PropertyGrid.HelpVisible = false;
+        PropertyGrid.Location = new System.Drawing.Point(6, 490);
+        PropertyGrid.Margin = new Padding(4, 3, 4, 3);
+        PropertyGrid.Name = "PropertyGrid";
+        PropertyGrid.PropertySort = PropertySort.NoSort;
+        PropertyGrid.Size = new System.Drawing.Size(350, 115);
+        PropertyGrid.TabIndex = 32;
+        PropertyGrid.ToolbarVisible = false;
+        PropertyGrid.Visible = false;
         // 
-        // ParameterGridView
+        // GcParameterGridView
         // 
-        this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-        this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.Controls.Add(this.PropertyGrid);
-        this.Controls.Add(this.ParameterDataGridView);
-        this.Controls.Add(this.VisibilityFilterComboBox);
-        this.Controls.Add(this.RefreshGridViewButton);
-        this.Controls.Add(this.CategoryFilterComboBox);
-        this.Name = "ParameterGridView";
-        this.Size = new System.Drawing.Size(360, 755);
-        ((System.ComponentModel.ISupportInitialize)(this.ParameterDataGridView)).EndInit();
-        this.ResumeLayout(false);
-
+        AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+        AutoScaleMode = AutoScaleMode.Font;
+        Controls.Add(PropertyGrid);
+        Controls.Add(ParameterDataGridView);
+        Controls.Add(VisibilityFilterComboBox);
+        Controls.Add(RefreshGridViewButton);
+        Controls.Add(CategoryFilterComboBox);
+        Name = "GcParameterGridView";
+        Size = new System.Drawing.Size(360, 611);
+        ((System.ComponentModel.ISupportInitialize)ParameterDataGridView).EndInit();
+        ResumeLayout(false);
     }
 
     #endregion

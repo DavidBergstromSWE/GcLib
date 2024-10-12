@@ -9,9 +9,7 @@ using GcLib;
 namespace WinFormsDemoApp.UserControls;
 
 /// <summary>
-/// ParameterGridView is a composite user control for displaying and interacting with camera device parameters and features with category and visibility filtering capabilities. 
-/// The control is based on a DataGridView control for parameter interaction and a PropertyGrid control for displaying parameter properties (min, max, etc.). 
-/// Two combobox controls allows for parameter filtering based on category and visibility settings. A button control is also available to refresh the complete list of parameters in the DataGridView.
+/// Composite user control for displaying and interacting with camera device parameters and features with category and visibility filtering capabilities. 
 /// </summary>
 public partial class GcParameterGridView : UserControl
 {
@@ -119,9 +117,7 @@ public partial class GcParameterGridView : UserControl
             string oldValue = row.Cells["Value"].Value.ToString();
             string newValue = parameterList.FirstOrDefault(p => p.Name == parameterName).ToString();
             if (oldValue != newValue)
-            {
                 row.Cells["Value"].Value = newValue;
-            }
         }
     }
 
@@ -258,7 +254,6 @@ public partial class GcParameterGridView : UserControl
         int currentCellRowIndex = ParameterDataGridView.CurrentCell.RowIndex; int currentCellColumnIndex = ParameterDataGridView.CurrentCell.ColumnIndex; // cell selection
 
         // Retrieve updated version of parameter list from camera.
-        //_camera.Parameters.Update();
         _parameterList = _camera.Parameters.ToList(GcVisibility.Guru);
 
         // Update DataGridGrid with new parameter list.
@@ -280,11 +275,8 @@ public partial class GcParameterGridView : UserControl
 
         // Retrieve parameter value from camera.
         string parameterValue = _camera.Parameters.GetParameterValue(parameterName);
-        if (parameterValue != null)
-        {
-            if (parameterValue != GetCellValue(parameterName))
-                SetCellValue(parameterName, parameterValue);
-        }
+        if (parameterValue != null && parameterValue != GetCellValue(parameterName))
+            SetCellValue(parameterName, parameterValue);
 
         RefreshGridView();
     }
@@ -359,10 +351,7 @@ public partial class GcParameterGridView : UserControl
         }
         else // specific category
         {
-            var categoryList = new List<string>
-            {
-                CategoryFilterComboBox.GetItemText(CategoryFilterComboBox.SelectedItem)
-            };
+            var categoryList = new List<string> { CategoryFilterComboBox.GetItemText(CategoryFilterComboBox.SelectedItem) };
             _categoryList = categoryList;
         }
 
@@ -443,15 +432,9 @@ public partial class GcParameterGridView : UserControl
         try
         {
             if (dataGridViewCell is DataGridViewTextBoxCell || dataGridViewCell is DataGridViewComboBoxCell || dataGridViewCell is DataGridViewCheckBoxCell)
-            {
-                // Set parameter in camera.
                 _camera.Parameters.SetParameterValue(parameterName, dataGridViewCell.Value.ToString());
-            }
             else if (dataGridViewCell is DataGridViewButtonCell)
-            {
-                // Execute command in camera.
                 _camera.Parameters.ExecuteParameterCommand(parameterName);
-            }
 
             // Update cell with new parameter value (move outside try/catch?).
             UpdateParameter(parameterName);
@@ -511,9 +494,7 @@ public partial class GcParameterGridView : UserControl
                 }
 
                 if (ParameterDataGridView.CurrentCell is DataGridViewButtonCell)
-                {
                     ParameterDataGridView_CellEndEdit(sender, e); // re-directs to CellEndEdit event handler
-                }
             }
 
             // Display parameter info in PropertyGrid.
