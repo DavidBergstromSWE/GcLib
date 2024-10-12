@@ -66,10 +66,6 @@ public partial class WinFormsDemoApp
                 ClearDeviceInfo();
                 DeviceInfoPanel.Enabled = false;
 
-                // Property panel.
-                ClearPropertyPanel();
-                PropertyPanel.Enabled = false;
-
                 // Acquisition panel.
                 AcquisitionPanel.Enabled = false;
                 PlayButton.Enabled = false;
@@ -112,9 +108,6 @@ public partial class WinFormsDemoApp
 
                 // DeviceInfoPanel.
                 DeviceInfoPanel.Enabled = true;
-
-                // Property panel.
-                PropertyPanel.Enabled = true;
 
                 // Acquisition panel.
                 RecordButton.Enabled = true;
@@ -160,9 +153,6 @@ public partial class WinFormsDemoApp
                 // DeviceInfo panel.
                 DeviceInfoPanel.Enabled = false;
 
-                // Property panel.
-                PropertyPanel.Enabled = false;
-
                 // Acquisition panel.
                 AcquisitionPanel.Enabled = false;
                 PlayButton.Enabled = false;
@@ -205,9 +195,6 @@ public partial class WinFormsDemoApp
                 // DeviceInfo panel.
                 DeviceInfoPanel.Enabled = true;
 
-                // Property panel.
-                PropertyPanel.Enabled = false;
-
                 // Acquisition panel.
                 RecordButton.Enabled = false;
                 PlayButton.Enabled = false;
@@ -249,9 +236,6 @@ public partial class WinFormsDemoApp
 
                 // DeviceInfo panel.
                 DeviceInfoPanel.Enabled = false;
-
-                // Property panel.
-                PropertyPanel.Enabled = false;
 
                 // Acquisition panel.
                 AcquisitionPanel.Enabled = false;

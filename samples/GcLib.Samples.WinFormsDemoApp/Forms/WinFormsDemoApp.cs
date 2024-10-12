@@ -11,7 +11,7 @@ using Serilog.Extensions.Logging;
 namespace WinFormsDemoApp;
 
 /// <summary>
-/// Test application based on Windows Forms for testing and developing GcLib class library.
+/// Demo app for <see cref="GcLib"/> class library, allowing connection to devices detected on the system, changing device parameter settings and providing some elementary recording and playback functionality. 
 /// </summary>
 public partial class WinFormsDemoApp : Form
 {
@@ -45,9 +45,9 @@ public partial class WinFormsDemoApp : Form
     private GcDataStream _dataStream = null;
 
     /// <summary>
-    /// Thread used for transporting data between datastream and display control.
+    /// Thread used for transferring data from datastream to display control.
     /// </summary>
-    private readonly GcProcessingThread _displayThread = null;
+    private readonly GcProcessingThread _displayThread = new(bufferCapacity: 4);
 
     /// <summary>
     /// Reads images from file during playback.
@@ -60,12 +60,12 @@ public partial class WinFormsDemoApp : Form
     private GcBufferWriter _imageWriter = null;
 
     /// <summary>
-    /// Default visibility setting in UI.
+    /// Default user visibility setting in UI.
     /// </summary>
     private GcVisibility _defaultVisibility = GcVisibility.Beginner;
 
     /// <summary>
-    /// Constructor, initializing UI components and setting appropriate starting mode/state.
+    /// Initializes library and sets the appropriate start state for UI.
     /// </summary>
     public WinFormsDemoApp()
     {
@@ -82,11 +82,15 @@ public partial class WinFormsDemoApp : Form
         // Initialize EmguCV.
         _ = CvInvoke.Init();
 
-        // Initialize GcLib with logging.
-        var logger = new SerilogLoggerFactory(Log.Logger).CreateLogger<GcSystem>();
-        GcLibrary.Init(logger: logger);
+        // Initialize GcLib with the logger.
+        GcLibrary.Init(logger: new SerilogLoggerFactory(Log.Logger).CreateLogger<GcSystem>());
 
+        // Instantiate system level.
         _system = new GcSystem();
+
+        // Set DisplayControl settings.
+        DisplayControl.SizeMode = PictureBoxSizeMode.Normal;
+        DisplayControl.FunctionalMode = Emgu.CV.UI.ImageBox.FunctionalModeOption.Minimum;
 
         // Control validation setting.
         AutoValidate = AutoValidate.EnableAllowFocusChange;
@@ -94,18 +98,11 @@ public partial class WinFormsDemoApp : Form
         // Center UI on display screen.
         StartPosition = FormStartPosition.CenterScreen;
 
-        // Set DisplayControl settings.
-        DisplayControl.SizeMode = PictureBoxSizeMode.Normal;
-        DisplayControl.FunctionalMode = Emgu.CV.UI.ImageBox.FunctionalModeOption.Everything; // Should be specified in GUIMode or made into UI option?
-
-        // Instantiate display thread.
-        _displayThread = new GcProcessingThread(bufferCapacity: 4);
-
         // Begin with empty form.
         SetUIState(UIState.InitialState);
 
 #if DEBUG
-        SaveImagesTextBox.Text = @"C:\testdata\testfile.bin";
+        SaveImagesTextBox.Text = @"c:\testdata\testfile.bin";
         _defaultVisibility = GcVisibility.Guru;
 #else
         SaveImagesTextBox.Text = @"";
@@ -114,17 +111,14 @@ public partial class WinFormsDemoApp : Form
     }
 
     /// <summary>
-    /// Open a dialogue window for user to select which camera to connect to.
+    /// Opens a dialog window allowing user to select which device to connect to.
     /// </summary>
     private void ConnectButton_Click(object sender, EventArgs e)
     {
-        GcDeviceInfo selectedDevice;
-
-        SetUIState(UIState.BusyState);
-
-        // Show dialogue window.
+        // Show dialog window.
         var form = new OpenCameraDialogue(_system) { StartPosition = FormStartPosition.CenterParent };
 
+        // Return if no device is selected or dialog is cancelled,
         if ((form.ShowDialog() != DialogResult.OK) || (form.SelectedDevice == null))
         {
             if (_camera == null)
@@ -133,44 +127,41 @@ public partial class WinFormsDemoApp : Form
             return;
         }
 
-        selectedDevice = form.SelectedDevice;
-
-        // Close previously opened camera & datastream.
+        // Close previously opened device & datastream.
         CloseDataStream();
-        CloseCamera();
+        CloseDevice();
 
-        // Disable controls and show WaitCursor while opening camera.
+        // Disable controls while opening device.
         SetUIState(UIState.BusyState);
 
         try
         {
-            // Connect to selected camera.
-            _camera = _system.OpenDevice(selectedDevice.UniqueID);
+            // Connect to selected device.
+            _camera = _system.OpenDevice(form.SelectedDevice.UniqueID);
 
-            // Register to camera events.
+            // Register to device events.
             _camera.ConnectionLost += OnConnectionLost;
             _camera.AcquisitionStopped += OnAcquisitionStopped;
 
-            // Open a new datastream on camera.
+            // Open a new datastream on the device.
             _dataStream = _camera.OpenDataStream();
 
             // Display device info.
-            DisplayDeviceInfo(selectedDevice);
+            DisplayDeviceInfo(form.SelectedDevice);
 
-            // Setup ParameterGridView (user control allowing display/setting of camera parameters).
+            // Setup parameter grid view.
             ParameterGridView.Init(_camera, _defaultVisibility);
             ParameterGridView.ParameterValueChanged += ParameterGridView_ValueChanged;
 
-            // Setup panels with camera parameters.
-            InitializePropertyPanel();
+            // Setup panels with device parameters.
             InitializeAcquisitionPanel();
 
-            // Initialize StatusControl with properties.
+            // Initialize status control.
             StatusControl.DataStream = _dataStream;
             StatusControl.DisplayThread = _displayThread;
             StatusControl.ImageWriter = _imageWriter;
 
-            // Clear ImageBox.
+            // Show empty display control.
             DisplayControl.Image = null;
         }
         catch (Exception ex)
@@ -209,7 +200,7 @@ public partial class WinFormsDemoApp : Form
             StopRecording();
 
             CloseDataStream();
-            CloseCamera(); // can be slow...
+            CloseDevice();
         });
 
 
@@ -240,7 +231,6 @@ public partial class WinFormsDemoApp : Form
                     ParameterGridView.ParameterValueChanged += ParameterGridView_ValueChanged;
 
                     // Setup panels with camera parameters.
-                    InitializePropertyPanel();
                     InitializeAcquisitionPanel();
 
                     // Clear display control.
@@ -273,7 +263,7 @@ public partial class WinFormsDemoApp : Form
     {
         StopRecording();
         CloseDataStream();
-        CloseCamera();
+        CloseDevice();
 
         SetUIState(UIState.InitialState);
     }
@@ -281,7 +271,7 @@ public partial class WinFormsDemoApp : Form
     /// <summary>
     /// Shuts down camera.
     /// </summary>
-    private void CloseCamera()
+    private void CloseDevice()
     {
         if (_camera != null)
         {
@@ -318,8 +308,6 @@ public partial class WinFormsDemoApp : Form
     /// </summary>
     private void ParameterGridView_ValueChanged(object sender, EventArgs e)
     {
-        //ParameterGridView.RefreshGridView();
-        UpdateControls(PropertyPanel);
         UpdateControls(AcquisitionPanel);
     }
 
@@ -392,7 +380,7 @@ public partial class WinFormsDemoApp : Form
 
         // Release resources.
         CloseDataStream();
-        CloseCamera();
+        CloseDevice();
 
         // Dipose system.
         _system?.Dispose();
