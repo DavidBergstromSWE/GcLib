@@ -51,7 +51,6 @@ public partial class WinFormsDemoApp : Form
 
                 // Update GUI controls.
                 ParameterGridView.RefreshGridView();
-                UpdateControls(PropertyPanel);
                 UpdateControls(AcquisitionPanel);
             }
         }

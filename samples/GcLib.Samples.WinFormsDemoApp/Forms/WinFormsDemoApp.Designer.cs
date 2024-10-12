@@ -51,20 +51,6 @@ partial class WinFormsDemoApp
         SaveImagesButton = new System.Windows.Forms.Button();
         AcquisitionModeComboBox = new System.Windows.Forms.ComboBox();
         AcquisitionModeTitle = new System.Windows.Forms.Label();
-        PropertyPanel = new BorderedGroupBox();
-        AcquisitionFrameRateUnit = new System.Windows.Forms.Label();
-        HeightUnit = new System.Windows.Forms.Label();
-        WidthUnit = new System.Windows.Forms.Label();
-        PixelFormatComboBox = new System.Windows.Forms.ComboBox();
-        PixelFormatTitle = new System.Windows.Forms.Label();
-        TestPatternComboBox = new System.Windows.Forms.ComboBox();
-        TestPatternTitle = new System.Windows.Forms.Label();
-        WidthTextBox = new System.Windows.Forms.TextBox();
-        HeightTextBox = new System.Windows.Forms.TextBox();
-        HeightTitle = new System.Windows.Forms.Label();
-        WidthTitle = new System.Windows.Forms.Label();
-        AcquisitionFrameRateTextBox = new System.Windows.Forms.TextBox();
-        FrameRateTitle = new System.Windows.Forms.Label();
         RecordButton = new System.Windows.Forms.Button();
         StopButton = new System.Windows.Forms.Button();
         PlayButton = new System.Windows.Forms.Button();
@@ -99,7 +85,6 @@ partial class WinFormsDemoApp
         ParameterGridView = new GcParameterGridView();
         DeviceInfoPanel.SuspendLayout();
         AcquisitionPanel.SuspendLayout();
-        PropertyPanel.SuspendLayout();
         DisplayPanel.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)DisplayControl).BeginInit();
         MainMenu.SuspendLayout();
@@ -118,7 +103,7 @@ partial class WinFormsDemoApp
         DeviceInfoPanel.Controls.Add(ModelTitle);
         DeviceInfoPanel.Controls.Add(VendorTitle);
         DeviceInfoPanel.Font = new System.Drawing.Font("Arial", 8.5F);
-        DeviceInfoPanel.Location = new System.Drawing.Point(13, 74);
+        DeviceInfoPanel.Location = new System.Drawing.Point(12, 96);
         DeviceInfoPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         DeviceInfoPanel.Name = "DeviceInfoPanel";
         DeviceInfoPanel.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -251,7 +236,7 @@ partial class WinFormsDemoApp
         AcquisitionPanel.Controls.Add(AcquisitionModeComboBox);
         AcquisitionPanel.Controls.Add(AcquisitionModeTitle);
         AcquisitionPanel.Font = new System.Drawing.Font("Arial", 8.5F);
-        AcquisitionPanel.Location = new System.Drawing.Point(13, 452);
+        AcquisitionPanel.Location = new System.Drawing.Point(12, 283);
         AcquisitionPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         AcquisitionPanel.Name = "AcquisitionPanel";
         AcquisitionPanel.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -325,182 +310,11 @@ partial class WinFormsDemoApp
         AcquisitionModeTitle.TabIndex = 10;
         AcquisitionModeTitle.Text = "Acquisition mode";
         // 
-        // PropertyPanel
-        // 
-        PropertyPanel.Controls.Add(AcquisitionFrameRateUnit);
-        PropertyPanel.Controls.Add(HeightUnit);
-        PropertyPanel.Controls.Add(WidthUnit);
-        PropertyPanel.Controls.Add(PixelFormatComboBox);
-        PropertyPanel.Controls.Add(PixelFormatTitle);
-        PropertyPanel.Controls.Add(TestPatternComboBox);
-        PropertyPanel.Controls.Add(TestPatternTitle);
-        PropertyPanel.Controls.Add(WidthTextBox);
-        PropertyPanel.Controls.Add(HeightTextBox);
-        PropertyPanel.Controls.Add(HeightTitle);
-        PropertyPanel.Controls.Add(WidthTitle);
-        PropertyPanel.Controls.Add(AcquisitionFrameRateTextBox);
-        PropertyPanel.Controls.Add(FrameRateTitle);
-        PropertyPanel.Font = new System.Drawing.Font("Arial", 8.5F);
-        PropertyPanel.Location = new System.Drawing.Point(13, 252);
-        PropertyPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        PropertyPanel.Name = "PropertyPanel";
-        PropertyPanel.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        PropertyPanel.Size = new System.Drawing.Size(328, 194);
-        PropertyPanel.TabIndex = 3;
-        PropertyPanel.TabStop = false;
-        PropertyPanel.Text = "Property Panel";
-        // 
-        // AcquisitionFrameRateUnit
-        // 
-        AcquisitionFrameRateUnit.AutoSize = true;
-        AcquisitionFrameRateUnit.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.25F);
-        AcquisitionFrameRateUnit.Location = new System.Drawing.Point(238, 85);
-        AcquisitionFrameRateUnit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        AcquisitionFrameRateUnit.Name = "AcquisitionFrameRateUnit";
-        AcquisitionFrameRateUnit.Size = new System.Drawing.Size(24, 13);
-        AcquisitionFrameRateUnit.TabIndex = 22;
-        AcquisitionFrameRateUnit.Text = "unit";
-        AcquisitionFrameRateUnit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-        // 
-        // HeightUnit
-        // 
-        HeightUnit.AutoSize = true;
-        HeightUnit.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.25F);
-        HeightUnit.Location = new System.Drawing.Point(239, 58);
-        HeightUnit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        HeightUnit.Name = "HeightUnit";
-        HeightUnit.Size = new System.Drawing.Size(24, 13);
-        HeightUnit.TabIndex = 19;
-        HeightUnit.Text = "unit";
-        HeightUnit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-        // 
-        // WidthUnit
-        // 
-        WidthUnit.AutoSize = true;
-        WidthUnit.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.25F);
-        WidthUnit.Location = new System.Drawing.Point(239, 29);
-        WidthUnit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        WidthUnit.Name = "WidthUnit";
-        WidthUnit.Size = new System.Drawing.Size(24, 13);
-        WidthUnit.TabIndex = 18;
-        WidthUnit.Text = "unit";
-        WidthUnit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-        // 
-        // PixelFormatComboBox
-        // 
-        PixelFormatComboBox.Enabled = false;
-        PixelFormatComboBox.FormattingEnabled = true;
-        PixelFormatComboBox.Location = new System.Drawing.Point(124, 126);
-        PixelFormatComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        PixelFormatComboBox.Name = "PixelFormatComboBox";
-        PixelFormatComboBox.Size = new System.Drawing.Size(102, 22);
-        PixelFormatComboBox.TabIndex = 9;
-        PixelFormatComboBox.SelectionChangeCommitted += ComboBox_SelectionChangeCommitted;
-        // 
-        // PixelFormatTitle
-        // 
-        PixelFormatTitle.AutoSize = true;
-        PixelFormatTitle.Font = new System.Drawing.Font("Arial", 7.75F);
-        PixelFormatTitle.Location = new System.Drawing.Point(27, 129);
-        PixelFormatTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        PixelFormatTitle.Name = "PixelFormatTitle";
-        PixelFormatTitle.Size = new System.Drawing.Size(65, 14);
-        PixelFormatTitle.TabIndex = 8;
-        PixelFormatTitle.Text = "Pixel Format";
-        // 
-        // TestPatternComboBox
-        // 
-        TestPatternComboBox.Enabled = false;
-        TestPatternComboBox.FormattingEnabled = true;
-        TestPatternComboBox.Location = new System.Drawing.Point(124, 157);
-        TestPatternComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        TestPatternComboBox.Name = "TestPatternComboBox";
-        TestPatternComboBox.Size = new System.Drawing.Size(156, 22);
-        TestPatternComboBox.TabIndex = 7;
-        TestPatternComboBox.SelectionChangeCommitted += ComboBox_SelectionChangeCommitted;
-        // 
-        // TestPatternTitle
-        // 
-        TestPatternTitle.AutoSize = true;
-        TestPatternTitle.Font = new System.Drawing.Font("Arial", 7.75F);
-        TestPatternTitle.Location = new System.Drawing.Point(27, 160);
-        TestPatternTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        TestPatternTitle.Name = "TestPatternTitle";
-        TestPatternTitle.Size = new System.Drawing.Size(64, 14);
-        TestPatternTitle.TabIndex = 6;
-        TestPatternTitle.Text = "Test pattern";
-        // 
-        // WidthTextBox
-        // 
-        WidthTextBox.Enabled = false;
-        WidthTextBox.Location = new System.Drawing.Point(125, 25);
-        WidthTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        WidthTextBox.Name = "WidthTextBox";
-        WidthTextBox.Size = new System.Drawing.Size(102, 21);
-        WidthTextBox.TabIndex = 5;
-        WidthTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-        WidthTextBox.KeyPress += TextBox_KeyPress;
-        // 
-        // HeightTextBox
-        // 
-        HeightTextBox.Enabled = false;
-        HeightTextBox.Location = new System.Drawing.Point(125, 54);
-        HeightTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        HeightTextBox.Name = "HeightTextBox";
-        HeightTextBox.Size = new System.Drawing.Size(102, 21);
-        HeightTextBox.TabIndex = 4;
-        HeightTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-        HeightTextBox.KeyPress += TextBox_KeyPress;
-        // 
-        // HeightTitle
-        // 
-        HeightTitle.AutoSize = true;
-        HeightTitle.Font = new System.Drawing.Font("Arial", 7.75F);
-        HeightTitle.Location = new System.Drawing.Point(41, 58);
-        HeightTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        HeightTitle.Name = "HeightTitle";
-        HeightTitle.Size = new System.Drawing.Size(37, 14);
-        HeightTitle.TabIndex = 3;
-        HeightTitle.Text = "Height";
-        // 
-        // WidthTitle
-        // 
-        WidthTitle.AutoSize = true;
-        WidthTitle.Font = new System.Drawing.Font("Arial", 7.75F);
-        WidthTitle.Location = new System.Drawing.Point(43, 29);
-        WidthTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        WidthTitle.Name = "WidthTitle";
-        WidthTitle.Size = new System.Drawing.Size(34, 14);
-        WidthTitle.TabIndex = 2;
-        WidthTitle.Text = "Width";
-        // 
-        // AcquisitionFrameRateTextBox
-        // 
-        AcquisitionFrameRateTextBox.Enabled = false;
-        AcquisitionFrameRateTextBox.Location = new System.Drawing.Point(124, 81);
-        AcquisitionFrameRateTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        AcquisitionFrameRateTextBox.Name = "AcquisitionFrameRateTextBox";
-        AcquisitionFrameRateTextBox.Size = new System.Drawing.Size(102, 21);
-        AcquisitionFrameRateTextBox.TabIndex = 1;
-        AcquisitionFrameRateTextBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-        AcquisitionFrameRateTextBox.KeyPress += TextBox_KeyPress;
-        // 
-        // FrameRateTitle
-        // 
-        FrameRateTitle.AutoSize = true;
-        FrameRateTitle.Font = new System.Drawing.Font("Arial", 7.75F);
-        FrameRateTitle.Location = new System.Drawing.Point(31, 85);
-        FrameRateTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        FrameRateTitle.Name = "FrameRateTitle";
-        FrameRateTitle.Size = new System.Drawing.Size(59, 14);
-        FrameRateTitle.TabIndex = 0;
-        FrameRateTitle.Text = "Frame rate";
-        // 
         // RecordButton
         // 
         RecordButton.Enabled = false;
         RecordButton.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
-        RecordButton.Location = new System.Drawing.Point(46, 589);
+        RecordButton.Location = new System.Drawing.Point(45, 420);
         RecordButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         RecordButton.Name = "RecordButton";
         RecordButton.Size = new System.Drawing.Size(71, 30);
@@ -513,7 +327,7 @@ partial class WinFormsDemoApp
         // 
         StopButton.Enabled = false;
         StopButton.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
-        StopButton.Location = new System.Drawing.Point(228, 589);
+        StopButton.Location = new System.Drawing.Point(227, 420);
         StopButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         StopButton.Name = "StopButton";
         StopButton.Size = new System.Drawing.Size(71, 30);
@@ -526,7 +340,7 @@ partial class WinFormsDemoApp
         // 
         PlayButton.Enabled = false;
         PlayButton.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
-        PlayButton.Location = new System.Drawing.Point(137, 589);
+        PlayButton.Location = new System.Drawing.Point(136, 420);
         PlayButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         PlayButton.Name = "PlayButton";
         PlayButton.Size = new System.Drawing.Size(71, 30);
@@ -543,7 +357,7 @@ partial class WinFormsDemoApp
         ConnectButton.Name = "ConnectButton";
         ConnectButton.Size = new System.Drawing.Size(140, 28);
         ConnectButton.TabIndex = 18;
-        ConnectButton.Text = "Select / Connect";
+        ConnectButton.Text = "Connect Device";
         ConnectButton.UseVisualStyleBackColor = true;
         ConnectButton.Click += ConnectButton_Click;
         // 
@@ -744,7 +558,7 @@ partial class WinFormsDemoApp
         DisconnectButton.Name = "DisconnectButton";
         DisconnectButton.Size = new System.Drawing.Size(140, 28);
         DisconnectButton.TabIndex = 30;
-        DisconnectButton.Text = "Disconnect";
+        DisconnectButton.Text = "Disconnect Device";
         DisconnectButton.UseVisualStyleBackColor = true;
         DisconnectButton.Click += DisconnectButton_Click;
         // 
@@ -769,7 +583,6 @@ partial class WinFormsDemoApp
         Controls.Add(StopButton);
         Controls.Add(PlayButton);
         Controls.Add(AcquisitionPanel);
-        Controls.Add(PropertyPanel);
         Controls.Add(DisplayPanel);
         Controls.Add(MainMenu);
         Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
@@ -782,8 +595,6 @@ partial class WinFormsDemoApp
         DeviceInfoPanel.PerformLayout();
         AcquisitionPanel.ResumeLayout(false);
         AcquisitionPanel.PerformLayout();
-        PropertyPanel.ResumeLayout(false);
-        PropertyPanel.PerformLayout();
         DisplayPanel.ResumeLayout(false);
         ((System.ComponentModel.ISupportInitialize)DisplayControl).EndInit();
         MainMenu.ResumeLayout(false);
@@ -794,27 +605,14 @@ partial class WinFormsDemoApp
 
     #endregion
     private BorderedGroupBox DeviceInfoPanel;
-    private BorderedGroupBox PropertyPanel;
     private BorderedGroupBox AcquisitionPanel;
-    private System.Windows.Forms.Label HeightTitle;
-    private System.Windows.Forms.Label WidthTitle;
-    private System.Windows.Forms.TextBox AcquisitionFrameRateTextBox;
-    private System.Windows.Forms.Label FrameRateTitle;
-    private System.Windows.Forms.TextBox WidthTextBox;
-    private System.Windows.Forms.TextBox HeightTextBox;
-    private System.Windows.Forms.ComboBox TestPatternComboBox;
-    private System.Windows.Forms.Label TestPatternTitle;
     private System.Windows.Forms.Button PlayButton;
     private System.Windows.Forms.Button StopButton;
     private System.Windows.Forms.Button RecordButton;
-    private System.Windows.Forms.Label PixelFormatTitle;
-    private System.Windows.Forms.ComboBox PixelFormatComboBox;
     private System.Windows.Forms.ComboBox AcquisitionModeComboBox;
     private System.Windows.Forms.Label AcquisitionModeTitle;
     private System.Windows.Forms.TextBox AcquisitionFrameCountTextBox;
     private System.Windows.Forms.Label MultiFrameTitle;
-    private System.Windows.Forms.Label HeightUnit;
-    private System.Windows.Forms.Label WidthUnit;
     private System.Windows.Forms.Button ConnectButton;
     private System.Windows.Forms.Label ModelTitle;
     private System.Windows.Forms.Label VendorTitle;
@@ -830,7 +628,6 @@ partial class WinFormsDemoApp
     private System.Windows.Forms.Button SaveImagesButton;
     private System.Windows.Forms.TextBox SaveImagesTextBox;
     private System.Windows.Forms.Panel DisplayPanel;
-    private System.Windows.Forms.Label AcquisitionFrameRateUnit;
     private System.Windows.Forms.MenuStrip MainMenu;
     private System.Windows.Forms.ToolStripMenuItem LoadConfigurationMenuItem;
     private System.Windows.Forms.ToolStripMenuItem SaveConfigurationMenuItem;
