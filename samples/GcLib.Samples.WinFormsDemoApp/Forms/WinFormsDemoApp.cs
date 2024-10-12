@@ -89,7 +89,7 @@ public partial class WinFormsDemoApp : Form
         _system = new GcSystem();
 
         // Set DisplayControl settings.
-        DisplayControl.SizeMode = PictureBoxSizeMode.Normal;
+        DisplayControl.SizeMode = PictureBoxSizeMode.CenterImage;
         DisplayControl.FunctionalMode = Emgu.CV.UI.ImageBox.FunctionalModeOption.Minimum;
 
         // Control validation setting.

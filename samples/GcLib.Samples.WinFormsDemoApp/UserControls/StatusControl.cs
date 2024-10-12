@@ -6,7 +6,7 @@ using GcLib.Utilities.Threading;
 namespace WinFormsDemoApp;
 
 /// <summary>
-/// Simple control for showing image data streaming, displaying and recording status in UI.
+/// Simple control for showing image streaming, displaying and recording status.
 /// </summary>
 public partial class StatusControl : UserControl
 {
@@ -55,9 +55,7 @@ public partial class StatusControl : UserControl
     private void DisplayStats()
     {
         if (InvokeRequired)
-        {
             Invoke(new Action(DisplayStats));
-        }
         else
         {
             if (DataStream != null)
@@ -68,15 +66,17 @@ public partial class StatusControl : UserControl
                 FrameRateAverage.Text = DataStream.FrameRateAverage.ToString("0.0");
                 OutputBufferQueueSize.Text = DataStream.AwaitDeliveryCount.ToString();
             }
+
             if (DisplayThread != null)
                 DisplayQueueSize.Text = DisplayThread.QueuedCount.ToString();
+
             if (ImageWriter != null)
                 RecordingQueueSize.Text = ImageWriter.BuffersQueued.ToString();
         }
     }
 
     /// <summary>
-    /// Callback delegating a buffer display task.
+    /// Callback delegating buffer display.
     /// </summary>
     private void OnBufferDisplay(object sender, GcBuffer buffer) => DisplayStats();
 }
