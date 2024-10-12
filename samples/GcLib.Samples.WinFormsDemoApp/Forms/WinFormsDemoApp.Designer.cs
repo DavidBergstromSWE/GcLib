@@ -110,7 +110,7 @@ partial class WinFormsDemoApp
         DeviceInfoPanel.Size = new System.Drawing.Size(301, 168);
         DeviceInfoPanel.TabIndex = 19;
         DeviceInfoPanel.TabStop = false;
-        DeviceInfoPanel.Text = "Camera";
+        DeviceInfoPanel.Text = "Device info";
         // 
         // ClassLabel
         // 
@@ -236,14 +236,14 @@ partial class WinFormsDemoApp
         AcquisitionPanel.Controls.Add(AcquisitionModeComboBox);
         AcquisitionPanel.Controls.Add(AcquisitionModeTitle);
         AcquisitionPanel.Font = new System.Drawing.Font("Arial", 8.5F);
-        AcquisitionPanel.Location = new System.Drawing.Point(13, 457);
+        AcquisitionPanel.Location = new System.Drawing.Point(13, 379);
         AcquisitionPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         AcquisitionPanel.Name = "AcquisitionPanel";
         AcquisitionPanel.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
         AcquisitionPanel.Size = new System.Drawing.Size(328, 113);
         AcquisitionPanel.TabIndex = 4;
         AcquisitionPanel.TabStop = false;
-        AcquisitionPanel.Text = "Acquisition";
+        AcquisitionPanel.Text = "Acquisition settings";
         // 
         // SaveImagesTextBox
         // 
@@ -314,7 +314,7 @@ partial class WinFormsDemoApp
         // 
         RecordButton.Enabled = false;
         RecordButton.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
-        RecordButton.Location = new System.Drawing.Point(63, 588);
+        RecordButton.Location = new System.Drawing.Point(63, 510);
         RecordButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         RecordButton.Name = "RecordButton";
         RecordButton.Size = new System.Drawing.Size(71, 30);
@@ -327,7 +327,7 @@ partial class WinFormsDemoApp
         // 
         StopButton.Enabled = false;
         StopButton.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
-        StopButton.Location = new System.Drawing.Point(221, 588);
+        StopButton.Location = new System.Drawing.Point(221, 510);
         StopButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         StopButton.Name = "StopButton";
         StopButton.Size = new System.Drawing.Size(71, 30);
@@ -340,7 +340,7 @@ partial class WinFormsDemoApp
         // 
         PlayButton.Enabled = false;
         PlayButton.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
-        PlayButton.Location = new System.Drawing.Point(142, 588);
+        PlayButton.Location = new System.Drawing.Point(142, 510);
         PlayButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         PlayButton.Name = "PlayButton";
         PlayButton.Size = new System.Drawing.Size(71, 30);
@@ -366,10 +366,10 @@ partial class WinFormsDemoApp
         DisplayPanel.Controls.Add(StatusControl);
         DisplayPanel.Controls.Add(PlayBackControl);
         DisplayPanel.Controls.Add(DisplayControl);
-        DisplayPanel.Location = new System.Drawing.Point(341, 27);
+        DisplayPanel.Location = new System.Drawing.Point(356, 38);
         DisplayPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         DisplayPanel.Name = "DisplayPanel";
-        DisplayPanel.Size = new System.Drawing.Size(785, 626);
+        DisplayPanel.Size = new System.Drawing.Size(766, 615);
         DisplayPanel.TabIndex = 23;
         // 
         // StatusControl
@@ -377,7 +377,7 @@ partial class WinFormsDemoApp
         StatusControl.DataStream = null;
         StatusControl.DisplayThread = null;
         StatusControl.ImageWriter = null;
-        StatusControl.Location = new System.Drawing.Point(77, 530);
+        StatusControl.Location = new System.Drawing.Point(66, 530);
         StatusControl.Name = "StatusControl";
         StatusControl.Size = new System.Drawing.Size(630, 72);
         StatusControl.TabIndex = 7;
@@ -385,14 +385,14 @@ partial class WinFormsDemoApp
         // PlayBackControl
         // 
         PlayBackControl.BackColor = System.Drawing.Color.Transparent;
-        PlayBackControl.Location = new System.Drawing.Point(18, 530);
+        PlayBackControl.Location = new System.Drawing.Point(3, 521);
         PlayBackControl.Name = "PlayBackControl";
         PlayBackControl.Size = new System.Drawing.Size(759, 61);
         PlayBackControl.TabIndex = 6;
         // 
         // DisplayControl
         // 
-        DisplayControl.Location = new System.Drawing.Point(18, 12);
+        DisplayControl.Location = new System.Drawing.Point(3, 3);
         DisplayControl.Name = "DisplayControl";
         DisplayControl.ShowFPS = false;
         DisplayControl.ShowFrameID = false;
