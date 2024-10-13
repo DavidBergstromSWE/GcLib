@@ -90,7 +90,7 @@ partial class GcParameterGridView : UserControl
         ParameterDataGridView.MultiSelect = false;
         ParameterDataGridView.Name = "ParameterDataGridView";
         ParameterDataGridView.RowHeadersVisible = false;
-        ParameterDataGridView.Size = new System.Drawing.Size(350, 456);
+        ParameterDataGridView.Size = new System.Drawing.Size(350, 433);
         ParameterDataGridView.TabIndex = 31;
         ParameterDataGridView.CellClick += ParameterDataGridView_CellClick;
         ParameterDataGridView.CellEndEdit += ParameterDataGridView_CellEndEdit;
@@ -118,7 +118,7 @@ partial class GcParameterGridView : UserControl
         PropertyGrid.DisabledItemForeColor = System.Drawing.SystemColors.ControlText;
         PropertyGrid.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.5F);
         PropertyGrid.HelpVisible = false;
-        PropertyGrid.Location = new System.Drawing.Point(6, 490);
+        PropertyGrid.Location = new System.Drawing.Point(5, 467);
         PropertyGrid.Margin = new Padding(4, 3, 4, 3);
         PropertyGrid.Name = "PropertyGrid";
         PropertyGrid.PropertySort = PropertySort.NoSort;
@@ -137,7 +137,7 @@ partial class GcParameterGridView : UserControl
         Controls.Add(RefreshGridViewButton);
         Controls.Add(CategoryFilterComboBox);
         Name = "GcParameterGridView";
-        Size = new System.Drawing.Size(360, 611);
+        Size = new System.Drawing.Size(360, 585);
         ((System.ComponentModel.ISupportInitialize)ParameterDataGridView).EndInit();
         ResumeLayout(false);
     }

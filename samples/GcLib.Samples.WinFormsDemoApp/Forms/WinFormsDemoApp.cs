@@ -192,7 +192,7 @@ public partial class WinFormsDemoApp : Form
         });
 
         // Reset UI state.
-        Invoke(() =>  {  SetUIState(UIState.InitialState); });
+        Invoke(() => { SetUIState(UIState.InitialState); });
     }
 
     /// <summary>
@@ -328,5 +328,13 @@ public partial class WinFormsDemoApp : Form
         GcLibrary.Close();
 
         Log.Information("Application stopped");
+    }
+
+    /// <summary>
+    /// Event-handling method to exit playback mode.
+    /// </summary>
+    private void ExitPlaybackButton_Click(object sender, EventArgs e)
+    {
+        CloseImagesStripMenuItem_Click(sender, e);
     }
 }

@@ -34,12 +34,12 @@ partial class WinFormsDemoApp
         components = new System.ComponentModel.Container();
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WinFormsDemoApp));
         DeviceInfoPanel = new BorderedGroupBox();
+        VendorNameLabel = new System.Windows.Forms.Label();
         ClassLabel = new System.Windows.Forms.Label();
         ClassTitle = new System.Windows.Forms.Label();
         UniqueIDLabel = new System.Windows.Forms.Label();
         SerialLabel = new System.Windows.Forms.Label();
         ModelLabel = new System.Windows.Forms.Label();
-        VendorNameLabel = new System.Windows.Forms.Label();
         UniqueIDTitle = new System.Windows.Forms.Label();
         SerialTitle = new System.Windows.Forms.Label();
         ModelTitle = new System.Windows.Forms.Label();
@@ -58,9 +58,9 @@ partial class WinFormsDemoApp
         SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
         DisplayPanel = new System.Windows.Forms.Panel();
         ExitPlaybackButton = new System.Windows.Forms.Button();
-        StatusControl = new StatusControl();
         PlayBackControl = new GcPlayBackControl();
         DisplayControl = new GcDisplayControl();
+        StatusControl = new StatusControl();
         MainMenu = new System.Windows.Forms.MenuStrip();
         FileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
         LoadConfigurationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -93,34 +93,46 @@ partial class WinFormsDemoApp
         // 
         // DeviceInfoPanel
         // 
+        DeviceInfoPanel.Controls.Add(VendorNameLabel);
         DeviceInfoPanel.Controls.Add(ClassLabel);
         DeviceInfoPanel.Controls.Add(ClassTitle);
         DeviceInfoPanel.Controls.Add(UniqueIDLabel);
         DeviceInfoPanel.Controls.Add(SerialLabel);
         DeviceInfoPanel.Controls.Add(ModelLabel);
-        DeviceInfoPanel.Controls.Add(VendorNameLabel);
         DeviceInfoPanel.Controls.Add(UniqueIDTitle);
         DeviceInfoPanel.Controls.Add(SerialTitle);
         DeviceInfoPanel.Controls.Add(ModelTitle);
         DeviceInfoPanel.Controls.Add(VendorTitle);
         DeviceInfoPanel.Font = new System.Drawing.Font("Arial", 8.5F, System.Drawing.FontStyle.Bold);
-        DeviceInfoPanel.Location = new System.Drawing.Point(27, 97);
+        DeviceInfoPanel.Location = new System.Drawing.Point(12, 120);
         DeviceInfoPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         DeviceInfoPanel.Name = "DeviceInfoPanel";
         DeviceInfoPanel.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        DeviceInfoPanel.Size = new System.Drawing.Size(301, 168);
+        DeviceInfoPanel.Size = new System.Drawing.Size(328, 168);
         DeviceInfoPanel.TabIndex = 19;
         DeviceInfoPanel.TabStop = false;
         DeviceInfoPanel.Text = "Device info";
+        // 
+        // VendorNameLabel
+        // 
+        VendorNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
+        VendorNameLabel.Location = new System.Drawing.Point(100, 29);
+        VendorNameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+        VendorNameLabel.MaximumSize = new System.Drawing.Size(200, 13);
+        VendorNameLabel.Name = "VendorNameLabel";
+        VendorNameLabel.Size = new System.Drawing.Size(200, 13);
+        VendorNameLabel.TabIndex = 30;
+        VendorNameLabel.Text = "VendorName";
+        VendorNameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
         // 
         // ClassLabel
         // 
         ClassLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
         ClassLabel.Location = new System.Drawing.Point(100, 134);
         ClassLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        ClassLabel.MaximumSize = new System.Drawing.Size(175, 13);
+        ClassLabel.MaximumSize = new System.Drawing.Size(200, 13);
         ClassLabel.Name = "ClassLabel";
-        ClassLabel.Size = new System.Drawing.Size(175, 13);
+        ClassLabel.Size = new System.Drawing.Size(200, 13);
         ClassLabel.TabIndex = 35;
         ClassLabel.Text = "ClassName";
         ClassLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -141,9 +153,9 @@ partial class WinFormsDemoApp
         UniqueIDLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
         UniqueIDLabel.Location = new System.Drawing.Point(100, 108);
         UniqueIDLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        UniqueIDLabel.MaximumSize = new System.Drawing.Size(175, 13);
+        UniqueIDLabel.MaximumSize = new System.Drawing.Size(200, 13);
         UniqueIDLabel.Name = "UniqueIDLabel";
-        UniqueIDLabel.Size = new System.Drawing.Size(175, 13);
+        UniqueIDLabel.Size = new System.Drawing.Size(200, 13);
         UniqueIDLabel.TabIndex = 33;
         UniqueIDLabel.Text = "UniqueID";
         UniqueIDLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -153,9 +165,9 @@ partial class WinFormsDemoApp
         SerialLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
         SerialLabel.Location = new System.Drawing.Point(100, 82);
         SerialLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        SerialLabel.MaximumSize = new System.Drawing.Size(175, 13);
+        SerialLabel.MaximumSize = new System.Drawing.Size(200, 13);
         SerialLabel.Name = "SerialLabel";
-        SerialLabel.Size = new System.Drawing.Size(175, 13);
+        SerialLabel.Size = new System.Drawing.Size(200, 13);
         SerialLabel.TabIndex = 32;
         SerialLabel.Text = "SerialNumber";
         SerialLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -165,24 +177,12 @@ partial class WinFormsDemoApp
         ModelLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
         ModelLabel.Location = new System.Drawing.Point(100, 55);
         ModelLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        ModelLabel.MaximumSize = new System.Drawing.Size(175, 13);
+        ModelLabel.MaximumSize = new System.Drawing.Size(200, 13);
         ModelLabel.Name = "ModelLabel";
-        ModelLabel.Size = new System.Drawing.Size(175, 13);
+        ModelLabel.Size = new System.Drawing.Size(200, 13);
         ModelLabel.TabIndex = 31;
         ModelLabel.Text = "ModelName";
         ModelLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-        // 
-        // VendorNameLabel
-        // 
-        VendorNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
-        VendorNameLabel.Location = new System.Drawing.Point(100, 29);
-        VendorNameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-        VendorNameLabel.MaximumSize = new System.Drawing.Size(175, 13);
-        VendorNameLabel.Name = "VendorNameLabel";
-        VendorNameLabel.Size = new System.Drawing.Size(175, 13);
-        VendorNameLabel.TabIndex = 30;
-        VendorNameLabel.Text = "VendorName";
-        VendorNameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
         // 
         // UniqueIDTitle
         // 
@@ -237,7 +237,7 @@ partial class WinFormsDemoApp
         AcquisitionPanel.Controls.Add(AcquisitionModeComboBox);
         AcquisitionPanel.Controls.Add(AcquisitionModeTitle);
         AcquisitionPanel.Font = new System.Drawing.Font("Arial", 8.5F, System.Drawing.FontStyle.Bold);
-        AcquisitionPanel.Location = new System.Drawing.Point(13, 379);
+        AcquisitionPanel.Location = new System.Drawing.Point(12, 330);
         AcquisitionPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         AcquisitionPanel.Name = "AcquisitionPanel";
         AcquisitionPanel.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -315,7 +315,7 @@ partial class WinFormsDemoApp
         // 
         RecordButton.Enabled = false;
         RecordButton.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
-        RecordButton.Location = new System.Drawing.Point(63, 510);
+        RecordButton.Location = new System.Drawing.Point(63, 455);
         RecordButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         RecordButton.Name = "RecordButton";
         RecordButton.Size = new System.Drawing.Size(71, 30);
@@ -328,7 +328,7 @@ partial class WinFormsDemoApp
         // 
         StopButton.Enabled = false;
         StopButton.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
-        StopButton.Location = new System.Drawing.Point(221, 510);
+        StopButton.Location = new System.Drawing.Point(221, 455);
         StopButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         StopButton.Name = "StopButton";
         StopButton.Size = new System.Drawing.Size(71, 30);
@@ -341,7 +341,7 @@ partial class WinFormsDemoApp
         // 
         PlayButton.Enabled = false;
         PlayButton.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold);
-        PlayButton.Location = new System.Drawing.Point(142, 510);
+        PlayButton.Location = new System.Drawing.Point(142, 455);
         PlayButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         PlayButton.Name = "PlayButton";
         PlayButton.Size = new System.Drawing.Size(71, 30);
@@ -353,7 +353,7 @@ partial class WinFormsDemoApp
         // ConnectButton
         // 
         ConnectButton.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold);
-        ConnectButton.Location = new System.Drawing.Point(76, 50);
+        ConnectButton.Location = new System.Drawing.Point(74, 73);
         ConnectButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         ConnectButton.Name = "ConnectButton";
         ConnectButton.Size = new System.Drawing.Size(100, 28);
@@ -365,26 +365,48 @@ partial class WinFormsDemoApp
         // DisplayPanel
         // 
         DisplayPanel.Controls.Add(ExitPlaybackButton);
-        DisplayPanel.Controls.Add(StatusControl);
         DisplayPanel.Controls.Add(PlayBackControl);
         DisplayPanel.Controls.Add(DisplayControl);
+        DisplayPanel.Controls.Add(StatusControl);
         DisplayPanel.Location = new System.Drawing.Point(356, 38);
         DisplayPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         DisplayPanel.Name = "DisplayPanel";
-        DisplayPanel.Size = new System.Drawing.Size(766, 615);
+        DisplayPanel.Size = new System.Drawing.Size(646, 604);
         DisplayPanel.TabIndex = 23;
         // 
         // ExitPlaybackButton
         // 
         ExitPlaybackButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-        ExitPlaybackButton.Location = new System.Drawing.Point(329, 588);
+        ExitPlaybackButton.Location = new System.Drawing.Point(274, 562);
         ExitPlaybackButton.Name = "ExitPlaybackButton";
         ExitPlaybackButton.Size = new System.Drawing.Size(99, 23);
         ExitPlaybackButton.TabIndex = 8;
-        ExitPlaybackButton.Text = "Exit playback";
+        ExitPlaybackButton.Text = "EXIT Playback";
         ExitPlaybackButton.UseVisualStyleBackColor = true;
         ExitPlaybackButton.Visible = false;
         ExitPlaybackButton.Click += ExitPlaybackButton_Click;
+        // 
+        // PlayBackControl
+        // 
+        PlayBackControl.BackColor = System.Drawing.Color.Transparent;
+        PlayBackControl.Location = new System.Drawing.Point(3, 488);
+        PlayBackControl.Name = "PlayBackControl";
+        PlayBackControl.Size = new System.Drawing.Size(640, 65);
+        PlayBackControl.TabIndex = 6;
+        // 
+        // DisplayControl
+        // 
+        DisplayControl.Location = new System.Drawing.Point(3, 2);
+        DisplayControl.Name = "DisplayControl";
+        DisplayControl.ShowFPS = false;
+        DisplayControl.ShowFrameID = false;
+        DisplayControl.ShowTimeStamp = false;
+        DisplayControl.Size = new System.Drawing.Size(640, 480);
+        DisplayControl.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+        DisplayControl.TabIndex = 2;
+        DisplayControl.TabStop = false;
+        DisplayControl.TextOverlayColor = System.Drawing.Color.Black;
+        DisplayControl.TextOverlayFont = Emgu.CV.CvEnum.FontFace.HersheyPlain;
         // 
         // StatusControl
         // 
@@ -392,39 +414,17 @@ partial class WinFormsDemoApp
         StatusControl.DisplayThread = null;
         StatusControl.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
         StatusControl.ImageWriter = null;
-        StatusControl.Location = new System.Drawing.Point(66, 530);
+        StatusControl.Location = new System.Drawing.Point(8, 495);
         StatusControl.Name = "StatusControl";
         StatusControl.Size = new System.Drawing.Size(630, 72);
         StatusControl.TabIndex = 7;
-        // 
-        // PlayBackControl
-        // 
-        PlayBackControl.BackColor = System.Drawing.Color.Transparent;
-        PlayBackControl.Location = new System.Drawing.Point(3, 521);
-        PlayBackControl.Name = "PlayBackControl";
-        PlayBackControl.Size = new System.Drawing.Size(759, 61);
-        PlayBackControl.TabIndex = 6;
-        // 
-        // DisplayControl
-        // 
-        DisplayControl.Location = new System.Drawing.Point(3, 3);
-        DisplayControl.Name = "DisplayControl";
-        DisplayControl.ShowFPS = false;
-        DisplayControl.ShowFrameID = false;
-        DisplayControl.ShowTimeStamp = false;
-        DisplayControl.Size = new System.Drawing.Size(759, 512);
-        DisplayControl.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-        DisplayControl.TabIndex = 2;
-        DisplayControl.TabStop = false;
-        DisplayControl.TextOverlayColor = System.Drawing.Color.Black;
-        DisplayControl.TextOverlayFont = Emgu.CV.CvEnum.FontFace.HersheyPlain;
         // 
         // MainMenu
         // 
         MainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { FileMenuItem, ViewMenuItem, DisplayMenuItem, HelpMenuItem });
         MainMenu.Location = new System.Drawing.Point(0, 0);
         MainMenu.Name = "MainMenu";
-        MainMenu.Size = new System.Drawing.Size(1505, 24);
+        MainMenu.Size = new System.Drawing.Size(1384, 24);
         MainMenu.TabIndex = 29;
         MainMenu.Text = "Main Menu";
         // 
@@ -570,7 +570,7 @@ partial class WinFormsDemoApp
         // DisconnectButton
         // 
         DisconnectButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-        DisconnectButton.Location = new System.Drawing.Point(183, 50);
+        DisconnectButton.Location = new System.Drawing.Point(182, 73);
         DisconnectButton.Name = "DisconnectButton";
         DisconnectButton.Size = new System.Drawing.Size(100, 28);
         DisconnectButton.TabIndex = 30;
@@ -580,9 +580,9 @@ partial class WinFormsDemoApp
         // 
         // ParameterGridView
         // 
-        ParameterGridView.Location = new System.Drawing.Point(1133, 39);
+        ParameterGridView.Location = new System.Drawing.Point(1017, 38);
         ParameterGridView.Name = "ParameterGridView";
-        ParameterGridView.Size = new System.Drawing.Size(360, 614);
+        ParameterGridView.Size = new System.Drawing.Size(360, 600);
         ParameterGridView.TabIndex = 31;
         // 
         // WinFormsDemoApp
@@ -590,7 +590,7 @@ partial class WinFormsDemoApp
         AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-        ClientSize = new System.Drawing.Size(1505, 654);
+        ClientSize = new System.Drawing.Size(1384, 644);
         Controls.Add(ParameterGridView);
         Controls.Add(DisconnectButton);
         Controls.Add(DeviceInfoPanel);
