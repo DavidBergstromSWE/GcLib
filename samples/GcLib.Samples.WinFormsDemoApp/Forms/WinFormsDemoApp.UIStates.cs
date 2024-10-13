@@ -47,7 +47,7 @@ public partial class WinFormsDemoApp
             case UIState.InitialState:
 
                 // Cursor setting.
-                Cursor.Current = Cursors.Default;
+                Cursor = Cursors.Default;
 
                 // Connection buttons.
                 ConnectButton.Enabled = true;
@@ -92,7 +92,7 @@ public partial class WinFormsDemoApp
             case UIState.ReadyState:
 
                 // Cursor setting.
-                Cursor.Current = Cursors.Default;
+                Cursor = Cursors.Default;
 
                 // Connection buttons.
                 ConnectButton.Enabled = true;
@@ -137,7 +137,7 @@ public partial class WinFormsDemoApp
             case UIState.BusyState:
 
                 // Cursor setting.
-                Cursor.Current = Cursors.WaitCursor;
+                Cursor = Cursors.WaitCursor;
 
                 // Connection buttons.
                 ConnectButton.Enabled = false;
@@ -180,7 +180,7 @@ public partial class WinFormsDemoApp
             case UIState.AcquisitionState:
 
                 // Cursor setting.
-                Cursor.Current = Cursors.Default;
+                Cursor = Cursors.Default;
 
                 // Connection buttons.
                 ConnectButton.Enabled = false;
@@ -223,7 +223,7 @@ public partial class WinFormsDemoApp
             case UIState.PlaybackState:
 
                 // Cursor setting.
-                Cursor.Current = Cursors.Default;
+                Cursor = Cursors.Default;
 
                 // Connection buttons.
                 ConnectButton.Enabled = false;

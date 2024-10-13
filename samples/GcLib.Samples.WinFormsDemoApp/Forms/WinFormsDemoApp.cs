@@ -180,80 +180,19 @@ public partial class WinFormsDemoApp : Form
     /// </summary>
     private async void OnConnectionLost(object sender, EventArgs e)
     {
-        // Retain device info (if needed for reconnection).
-        GcDeviceInfo deviceInfo = _camera.DeviceInfo;
-
-        // Ask user whether to reconnect or not.
-        DialogResult dialogResult = DialogResult.Yes;
-        Invoke(new Action(() => { dialogResult = MessageBox.Show(this, $"Lost connection to camera {deviceInfo.ModelName}, check cable connection! Try to connect again?", "Connection error!", MessageBoxButtons.YesNo, MessageBoxIcon.Error); }));
+        // Set UI in busy state.
+        Invoke(() => { SetUIState(UIState.BusyState); });
 
         // Shutdown device-allocated resources. Wait until task is completed.
         await Task.Run(() =>
         {
-            Invoke(new Action(() =>
-              {
-                  ParameterGridView.Clear();
-                  SetUIState(UIState.BusyState);
-                  Cursor = Cursors.WaitCursor;
-              }));
-
             StopRecording();
-
             CloseDataStream();
             CloseDevice();
         });
 
-
-        // Reconnect to camera (if possible).
-        if (dialogResult == DialogResult.Yes)
-        {
-            try
-            {
-                // Update list of available devices.
-                _system.UpdateDeviceList();
-
-                // Connect to previously connected camera.
-                _camera = _system.OpenDevice(deviceInfo.UniqueID);
-                _camera.ConnectionLost += OnConnectionLost;
-                _camera.AcquisitionStopped += OnAcquisitionStopped;
-
-                // Open new datastream on device.
-                _dataStream = _camera.OpenDataStream();
-
-                // Invoke changes to UI.
-                Invoke(new Action(() =>
-                {
-                    // Display device info.
-                    DisplayDeviceInfo(deviceInfo);
-
-                    // Setup ParameterGridView control.
-                    ParameterGridView.Init(_camera, _defaultVisibility);
-                    ParameterGridView.ParameterValueChanged += ParameterGridView_ValueChanged;
-
-                    // Setup panels with camera parameters.
-                    InitializeAcquisitionPanel();
-
-                    // Clear display control.
-                    DisplayControl.Image = null;
-                }));
-            }
-            catch (Exception ex)
-            {
-                // Reconnection not possible.
-                _ = MessageBox.Show(ex.Message, "Connection error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        // Change UI state.
-        Invoke(new Action(() =>
-          {
-              if (_camera != null)
-                  SetUIState(UIState.ReadyState);
-              else SetUIState(UIState.InitialState);
-          }));
-
-        // Return default cursor.
-        Invoke(new Action(() => { Cursor = Cursors.Default; }));
+        // Reset UI state.
+        Invoke(() =>  {  SetUIState(UIState.InitialState); });
     }
 
     /// <summary>

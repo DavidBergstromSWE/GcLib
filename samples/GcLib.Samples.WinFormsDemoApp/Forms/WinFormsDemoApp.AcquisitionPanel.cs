@@ -123,9 +123,7 @@ public partial class WinFormsDemoApp
         _dataStream.Stop();
 
         // Stop display thread.
-        // ToDo: why does not aWait = true work here for XiCam (but does for OnStreamingStopping)?
         _displayThread.Stop();
-        //await Task.Run(() => _displayThread.Stop(aWait: true));
         _displayThread.BufferProcess -= OnBufferDisplay;
 
         Log.Information("Acquisition manually stopped");
@@ -146,7 +144,6 @@ public partial class WinFormsDemoApp
         _dataStream.Stop();
 
         // Stop display thread.
-        // ToDo: test aWait = true? (without WaitComplete)
         _displayThread.Stop();
         _displayThread.BufferProcess -= OnBufferDisplay;
 
@@ -170,9 +167,6 @@ public partial class WinFormsDemoApp
         {
             SetUIState(UIState.ReadyState);
         };
-
-        // Wait for display thread to complete.
-        //_displayThread.WaitComplete();
     }
 
     /// <summary>
@@ -236,11 +230,8 @@ public partial class WinFormsDemoApp
             {
                 // Check if file is available to write to.
                 if (FileIsLocked(filePath, FileAccess.Write))
-                {
                     throw new IOException($"Unable to write to file '{filePath}'! " + "File is already opened in another application!");
-                }
-                else
-                // Give user a warning if file already exists.
+                else // Give user a warning if file already exists.
                 {
                     DialogResult dialogResult = MessageBox.Show(this, "File already exists! Do you want to overwrite existing file?", "FileIO Alert!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     return dialogResult == DialogResult.No
@@ -303,9 +294,7 @@ public partial class WinFormsDemoApp
         DialogResult dialogResult = SaveFileDialog.ShowDialog();
 
         if (dialogResult == DialogResult.OK)
-        {
             SaveImagesTextBox.Text = SaveFileDialog.FileName;
-        }
     }
 
     /// <summary>
