@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using GcLib;
@@ -67,5 +68,10 @@ public partial class WinFormsDemoApp : Form
         {
             DisplayControl.DisplayImage(mat, frameID, timeStamp);
         };
+    }
+
+    private void ExitPlaybackButton_Click(object sender, EventArgs e)
+    {
+        CloseImagesStripMenuItem_Click(sender, e);
     }
 }

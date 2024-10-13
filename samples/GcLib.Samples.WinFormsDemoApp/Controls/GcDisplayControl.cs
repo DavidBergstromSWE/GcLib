@@ -13,7 +13,7 @@ namespace WinFormsDemoApp.Controls;
 /// <summary>
 /// Display control to view image content, based on Emgu CV ImageBox.
 /// </summary>     
-public class GcDisplayControl : ImageBox
+public partial class GcDisplayControl : ImageBox
 {
     /// <summary>
     /// Instantiates a display control to be used for viewing image content in UI.
