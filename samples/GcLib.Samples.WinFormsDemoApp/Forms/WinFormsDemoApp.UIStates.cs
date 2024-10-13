@@ -81,6 +81,7 @@ public partial class WinFormsDemoApp
 
                 // Playback control.
                 PlayBackControl.Visible = false;
+                ExitPlaybackButton.Visible = false;
 
                 // Status control.
                 StatusControl.Visible = ShowStatusControlMenuItem.Checked;
@@ -125,6 +126,7 @@ public partial class WinFormsDemoApp
 
                 // PlayBack control.
                 PlayBackControl.Visible = false;
+                ExitPlaybackButton.Visible = false;
 
                 // Status control.
                 StatusControl.Enabled = true;
@@ -167,6 +169,7 @@ public partial class WinFormsDemoApp
 
                 // PlayBack control.
                 PlayBackControl.Visible = false;
+                ExitPlaybackButton.Visible = false;
 
                 // Status control.
                 StatusControl.Visible = ShowStatusControlMenuItem.Checked;
@@ -209,6 +212,7 @@ public partial class WinFormsDemoApp
 
                 // PlayBack control.
                 PlayBackControl.Visible = false;
+                ExitPlaybackButton.Visible = false;
 
                 // Status control.
                 StatusControl.Enabled = false;
@@ -251,6 +255,7 @@ public partial class WinFormsDemoApp
 
                 // PlayBack control.
                 PlayBackControl.Visible = true;
+                ExitPlaybackButton.Visible = true;
 
                 // Status control.
                 StatusControl.Visible = false;
