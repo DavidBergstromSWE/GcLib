@@ -39,7 +39,7 @@
 
         <!-- Histogram view control -->
         <controls:HistogramViewer x:Name="histogramViewer"
-                                  Height="150"
+                                  Height="175"
                                   Margin="10 -6 0 0"
                                   Theme="{Binding Source={StaticResource ViewModelLocator}, Path=MainWindowViewModel.SelectedTheme}"
                                   IsEnabled="{Binding ShowLiveHistogram}" d:IsEnabled="true"
