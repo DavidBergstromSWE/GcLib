@@ -51,6 +51,8 @@ internal sealed class MockDeviceViewModel
     public static DeviceModel[] Devices => [new(DeviceIndex.Device1, "Channel1", "VirtualCam", "FOI", "VirtualCam1") { IsConnected = true }, new(DeviceIndex.Device2, "Channel2") { IsConnected = false }];
     public static DeviceModel SelectedDevice { get; set; } = Devices[0];
     public static bool IsEnabled => true;
+    public static ICommand ConnectCameraFromDialogCommand { get; }
+    public static ICommand OpenParameterDialogWindowCommand { get; }
 }
 
 /// <summary>

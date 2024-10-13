@@ -17,7 +17,7 @@
                 d:DataContext="{d:DesignInstance viewmodels:MainWindowViewModel}"
                 Name="mainView"
                 FontSize="18" FontFamily="Segoe UI"
-                d:Title="FUSIONVIEWER" TitleCharacterCasing="Normal"
+                d:Title="IMAGEVIEWER" TitleCharacterCasing="Normal"
                 MinWidth="1400" MinHeight="800" d:Width="1400"
                 ResizeMode="CanResizeWithGrip"
                 WindowState="Maximized" WindowStartupLocation="CenterScreen"
@@ -181,7 +181,7 @@
         <!--Device control (connection, selection and parameter viewing)-->
         <Expander Grid.Row="2" Grid.Column="1"
                   BorderThickness="0"
-                  Margin="-15 10 5 0"
+                  Margin="-15 60 5 0"
                   ExpandDirection="Right" IsExpanded="True"
                   mah:HeaderedControlHelper.HeaderBackground="Transparent" mah:HeaderedControlHelper.HeaderForeground="{DynamicResource MahApps.Brushes.ThemeForeground}">
             <Expander.Style>
@@ -213,24 +213,24 @@
         
         <!--Image display-->
         <views:ImageDisplayView x:Name="imageDisplayView" 
-                                Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="2"
-                                Margin="0 10 0 0"/>
+                                Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
+                                Margin="0 20 0 0"/>
 
         <!--Image processing-->
         <views:ImageProcessingView x:Name="imageProcessingView"
-                                   Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2"
-                                   Margin="0 10 0 0" 
-                                   HorizontalAlignment="Center" 
+                                   Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="1"
+                                   Margin="0 15 0 0" 
+                                   HorizontalAlignment="Center" VerticalAlignment="Top"
                                    d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}"/>
 
         <!--Image histogram-->
         <views:HistogramView x:Name="histogramView"
-                             Grid.Row="1" Grid.Column="4"
-                             Margin="0 -20 0 0"/>
+                             Grid.Row="2" Grid.Column="4"
+                             Margin="20 60 0 0"/>
 
         <!--Acquisition (live, stop and record)-->
         <views:AcquisitionView x:Name="acquisitionView" 
-                               Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3"
+                               Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2"
                                Margin="0 30" 
                                HorizontalAlignment="Center"
                                Visibility="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
