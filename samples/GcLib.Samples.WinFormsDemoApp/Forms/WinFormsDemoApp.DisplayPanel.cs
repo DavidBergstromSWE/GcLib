@@ -28,12 +28,4 @@ public partial class WinFormsDemoApp : Form
             DisplayControl.DisplayImage(buffer);
         };
     }
-
-    /// <summary>
-    /// Event-handling method to exit playback mode.
-    /// </summary>
-    private void ExitPlaybackButton_Click(object sender, EventArgs e)
-    {
-        CloseImagesStripMenuItem_Click(sender, e);
-    }
 }
