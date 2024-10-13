@@ -11,7 +11,7 @@ using System.Linq;
 namespace WinFormsDemoApp.Controls;
 
 /// <summary>
-/// Display control to view image content, based on Emgu CV ImageBox.
+/// Display control to view image content, based on <see cref="ImageBox"/> control.
 /// </summary>     
 public partial class GcDisplayControl : ImageBox
 {
@@ -20,7 +20,7 @@ public partial class GcDisplayControl : ImageBox
     /// </summary>
     public GcDisplayControl() : base()
     {
-        _timeStamps = new CircularBuffer<ulong>(30, true);
+        _timeStamps = new CircularBuffer<ulong>(30, true); // will use last 30 frames for calculating FPS.
     }
 
     #region Fields
@@ -94,7 +94,7 @@ public partial class GcDisplayControl : ImageBox
     /// <summary>
     /// Display image in control.
     /// </summary>
-    /// <param name="buffer">ImageDataContainer object.</param>
+    /// <param name="buffer">Image buffer.</param>
     public void DisplayImage(GcBuffer buffer)
     {
         // Convert to Mat.
@@ -103,34 +103,21 @@ public partial class GcDisplayControl : ImageBox
         // Resize for ImageBox.
         CvInvoke.ResizeForFrame(mat, mat, Size, Inter.Nearest);
 
-        // Convert higher bit to 8-bit.
+        // Convert to 8-bit.
         if (buffer.NumChannels == 1 && buffer.BitDepth > 8)
-        {
-            // Apply linear min-max contrast stretch.
             CvInvoke.Normalize(mat, mat, 0, 255, NormType.MinMax, DepthType.Cv8U);
 
-            // alternative:
-            //RangeF rangeF = mat.GetValueRange();
-            //mat.ConvertTo(mat, DepthType.Cv8U, 255.0/(rangeF.Max - rangeF.Min), -255.0*rangeF.Min/(rangeF.Max - rangeF.Min));
-        }
-
-        // Convert 4-channel image (with alpha channel) to 3-channel RGB
+        // Convert 4-channel image to 3-channel RGB.
         if (buffer.NumChannels == 4)
-        {
             mat = mat.ToImage<Rgb, byte>().Mat;
-        }
-
-        // Other possible contrast enhancements.
-        //CvInvoke.EqualizeHist(src: mat, dst: mat); // apply histogram equalization (global)
-        //CvInvoke.CLAHE(src: mat, clipLimit: 1, tileGridSize: new Size(8,8), dst: mat); // apply contrast-limited adaptive histogram equalization (CLAHE)
 
         // Add timestamp to circular buffer.
         _timeStamps.Put(buffer.TimeStamp);
 
-        // Add text overlays requested.
+        // Add text overlays as requested.
         mat = OverlayChunkData(mat, buffer.FrameID, buffer.TimeStamp);
 
-        // Display final mat image.
+        // Display image.
         Image = mat;
     }
 
