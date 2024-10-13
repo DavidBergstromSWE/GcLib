@@ -48,21 +48,21 @@ public partial class GcPlayBackControl : UserControl
     #region Methods
 
     /// <summary>
-    /// Setup control to playback images using ImageReader object.
+    /// Setup control to playback images using specified buffer source.
     /// </summary>
-    /// <param name="imageReader">Reader of file.</param>
+    /// <param name="imageReader">Image buffer source.</param>
     public void Open(GcBufferReader imageReader)
     {
         _imageReader = imageReader;
 
         if (_imageReader == null)
-            throw new ArgumentException("No ImageReader object found!");
+            throw new ArgumentException("No image source found!");
 
         // Setup PlaybackPanel and slider.
         if (_imageReader.FrameCount == 0)
             throw new InvalidOperationException("Image sequence is empty!");
 
-        if (_imageReader.FrameCount > 1)
+        if (_imageReader.FrameCount > 1) // multi-image sequence
         {
             // Set slider properties.
             ColorSlider.Minimum = 0;
@@ -88,7 +88,7 @@ public partial class GcPlayBackControl : UserControl
             else
                 _playbackTimer.Interval = 100; // run at 10 Hz if timestamps are all wrong
         }
-        else
+        else // single image sequence
         {
             // Disable all buttons and slider if sequence only contains one image.
             DisableButtons();
@@ -128,7 +128,7 @@ public partial class GcPlayBackControl : UserControl
     }
 
     /// <summary>
-    /// Starts a continuous playback of images.
+    /// Start continuous playback of images.
     /// </summary>
     private void Play()
     {
@@ -148,37 +148,7 @@ public partial class GcPlayBackControl : UserControl
     }
 
     /// <summary>
-    /// Event-handling method to Elapsed events in timer object, reading and displaying next image.
-    /// </summary>
-    private void OnTimerElapsed(object sender, ElapsedEventArgs e)
-    {
-        // Check end-of-file.
-        if (_imageReader.FrameIndex <= _imageReader.FrameCount - 1)
-        {
-            // Read next image.
-            _imageReader.ReadImage(out GcBuffer buffer);
-
-            // Raise event for image to be displayed.
-            OnBufferDisplay(buffer);
-
-            // Update textbox.
-            DisplayPlaybackData(buffer.TimeStamp);
-
-            // Move slider to new position.
-            ColorSlider.Value += 1;
-        }
-        else
-        {
-            // Stop at end-of-file.
-            Stop();
-
-            // Reset Play button.
-            PlayPauseButton.BackgroundImage = Resources.Play;
-        }
-    }
-
-    /// <summary>
-    /// Stops a continuous playback of images.
+    /// Stop continuous playback of images.
     /// </summary>
     private void Stop()
     {
@@ -243,6 +213,36 @@ public partial class GcPlayBackControl : UserControl
     #endregion
 
     #region Events
+
+    /// <summary>
+    /// Event-handling method to elapsed events in <see cref="_playbackTimer"/>, reading and displaying next image in the sequence.
+    /// </summary>
+    private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        // Check end-of-file.
+        if (_imageReader.FrameIndex <= _imageReader.FrameCount - 1)
+        {
+            // Read next image.
+            _imageReader.ReadImage(out GcBuffer buffer);
+
+            // Raise event for image to be displayed.
+            OnBufferDisplay(buffer);
+
+            // Update textbox.
+            DisplayPlaybackData(buffer.TimeStamp);
+
+            // Move slider to new position.
+            ColorSlider.Value += 1;
+        }
+        else
+        {
+            // Stop at end-of-file.
+            Stop();
+
+            // Reset Play button.
+            PlayPauseButton.BackgroundImage = Resources.Play;
+        }
+    }
 
     /// <summary>
     /// Event announcing that an image buffer needs to be displayed, where the image buffer is supplied with the event.
