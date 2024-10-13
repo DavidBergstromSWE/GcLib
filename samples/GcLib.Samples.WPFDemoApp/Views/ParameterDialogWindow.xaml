@@ -1,0 +1,80 @@
+﻿<mah:MetroWindow x:Class="FusionViewer.Views.ParameterDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewmodels="clr-namespace:FusionViewer.ViewModels"
+        xmlns:controls="clr-namespace:FusionViewer.UserControls"            
+        mc:Ignorable="d"
+        dialog:DialogParticipation.Register="{Binding}"
+        Name="parameterDialogWindow"
+        Title="{Binding Title}" TitleCharacterCasing="Normal" d:Title="ParameterDialogWindow"
+        WindowStartupLocation="Manual" Left="50" Top="50" 
+        MinWidth="450" MaxWidth="550"
+        MaxHeight="800"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        BorderBrush="{DynamicResource MahApps.Brushes.Accent}" BorderThickness="1"
+        FontSize="14" FontFamily="Segoe UI Light"
+        d:DataContext="{d:DesignInstance viewmodels:ParameterDialogWindowViewModel}">
+
+    <!--App symbol-->
+    <mah:MetroWindow.LeftWindowCommands>
+        <mah:WindowCommands>
+            <Border BorderBrush="Black" BorderThickness="1" Margin="2">
+                <Image Source="/Resources/Images/Fusion_296x296.png" Width="25" Height="25"/>
+            </Border>
+        </mah:WindowCommands>
+    </mah:MetroWindow.LeftWindowCommands>
+
+    <!--Refresh button-->
+    <mah:MetroWindow.RightWindowCommands>
+        <mah:WindowCommands>
+            <Button Style="{DynamicResource MahApps.Styles.Button.Circle}" 
+                    Padding="1" BorderThickness="0"
+                    ToolTip="Refresh parameter list"
+                    Command="{Binding ElementName=parameterEditor, Path=UpdateParameterCollectionCommand}">
+                <Image Source="{iconPacks:MaterialImage Kind=CogRefreshOutline, Brush=White}" Width="20" Height="20"/>
+            </Button>
+        </mah:WindowCommands>
+    </mah:MetroWindow.RightWindowCommands>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="20" />
+        </Grid.RowDefinitions>
+
+        <controls:ParameterEditor x:Name="parameterEditor"
+                                  Grid.Row="1" Grid.Column="1"
+                                  HorizontalAlignment="Center" FontSize="12"
+                                  ParameterUpdateDelay="{Binding UpdateTimeDelay}"
+                                  ParameterCollection="{Binding ParameterCollection}"
+                                  ParameterVisibility="{Binding SelectedVisibility}"
+                                  ToolbarVisibility="{Binding ToolbarVisibility}"/>
+
+        <!--OK button (close window)-->
+        <Button Grid.Row="2" Grid.Column="1"
+                Margin="0 25 0 0" Style="{StaticResource ConfirmationButton}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                    <i:ChangePropertyAction TargetObject="{Binding}" PropertyName="DialogResult" Value="{x:Static dialog:MessageDialogResult.Affirmative}"/>
+                    <i:ChangePropertyAction TargetObject="{Binding ElementName=parameterDialogWindow}" PropertyName="DialogResult" Value="True"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </Button>
+
+    </Grid>
+      
+</mah:MetroWindow>

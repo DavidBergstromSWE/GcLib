@@ -1,0 +1,367 @@
+﻿<mah:MetroWindow x:Class="FusionViewer.Views.FullScreenImageWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:viewmodels="clr-namespace:FusionViewer.ViewModels"
+        xmlns:local="clr-namespace:FusionViewer"
+        xmlns:dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+        dialog:DialogParticipation.Register="{Binding}" 
+        mc:Ignorable="d"
+        Name="window" Title="Full screen mode"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        WindowState="Maximized"
+        Background="Black"
+        KeyDown="OnKeyDown"
+        ShowTitleBar="{Binding ShowTitleBar}"
+        IgnoreTaskbarOnMaximize="True"
+        FontSize="24"
+        d:DataContext="{d:DesignInstance viewmodels:FullScreenImageWindowViewModel}"
+        d:Height="450" d:Width="800">
+
+    <mah:MetroWindow.DataContext>
+        <viewmodels:FullScreenImageWindowViewModel/>
+    </mah:MetroWindow.DataContext>
+    
+    <mah:MetroWindow.Resources>
+        <iconPacks:PackIconPicolIcons Kind="FullscreenCancel" x:Key="fullScreenCancelIcon"/>
+        <iconPacks:Material Kind="ImageEdit" x:Key="imageEditIcon" />
+        <iconPacks:PackIconMicrons Kind="Cancel" x:Key="exitMenuIcon" Width="12" />
+        
+        <!--Style for a checkbox with show/hide icons for the checked states-->
+        <Style TargetType="CheckBox" x:Key="showHideCheckboxStyle">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Image x:Name="checkboxImage" Source="{iconPacks:MicronsImage Kind=Show}" Width="16"/>
+                            <ContentPresenter/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="checkboxImage" Property="Source" Value="{iconPacks:MicronsImage Kind=Hide}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter TargetName="checkboxImage" Property="Source" Value="{iconPacks:MicronsImage Kind=Show}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </mah:MetroWindow.Resources>
+
+    <!-- Keybindings -->
+    <mah:MetroWindow.InputBindings>
+        <!-- Channel selections -->
+        <KeyBinding Key="F1" Command="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.Channel1}"/>
+        <KeyBinding Key="F2" Command="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.Channel2}"/>
+        <KeyBinding Key="F3" Command="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.FusedChannel}"/>
+        <KeyBinding Key="F4" Command="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.All}"/>
+        <!-- Acquisition control -->
+        <KeyBinding Key="F6" Command="{Binding Source={StaticResource ViewModelLocator}, Path=AcquisitionViewModel.PlayCommand}"/>
+        <KeyBinding Key="F7" Command="{Binding Source={StaticResource ViewModelLocator}, Path=AcquisitionViewModel.StopCommand}"/>
+        <KeyBinding Key="F8" Command="{Binding Source={StaticResource ViewModelLocator}, Path=AcquisitionViewModel.RecordCommand}"/>
+        <!-- Playback control -->
+        <KeyBinding Key="Space" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.PlayPauseCommand}"/>
+        <KeyBinding Key="Right" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.StepForwardCommand}"/>
+        <KeyBinding Key="Left" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.StepBackCommand}"/>
+        <KeyBinding Key="Right" Modifiers="Ctrl" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.GoToEndCommand}"/>
+        <KeyBinding Key="Left" Modifiers="Ctrl" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.GoToStartCommand}"/>
+        <KeyBinding Key="Right" Modifiers="Shift" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.StepLargeForwardCommand}"/>
+        <KeyBinding Key="Left" Modifiers="Shift" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.StepLargeBackCommand}"/>
+    </mah:MetroWindow.InputBindings>
+
+    <!-- Context menu (right click) -->
+    <mah:MetroWindow.ContextMenu>
+        <ContextMenu x:Name="contextMenu" FontSize="12">
+            <MenuItem Icon="{StaticResource imageEditIcon}"
+                      Header="Open Image Processing Settings..." 
+                      Click="OnOpenProcessingSettingsMenuItem_Click"/>
+            <MenuItem Header="Frame Info (toggle)" 
+                      StaysOpenOnClick="True" 
+                      Click="OnCheckableMenuItem_Click">
+                <MenuItem.Icon>
+                    <CheckBox Style="{StaticResource showHideCheckboxStyle}"
+                              ToolTip="Show/Hide Frame Info"
+                              IsChecked="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ShowFullScreenFrameInfo}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Channel Label (toggle)" 
+                      StaysOpenOnClick="True" 
+                      Click="OnCheckableMenuItem_Click">
+                <MenuItem.Icon>
+                    <CheckBox Style="{StaticResource showHideCheckboxStyle}"
+                              ToolTip="Show/Hide Channel Label"
+                              IsChecked="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ShowFullScreenChannelInfo}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Title Bar (toggle)" 
+                      StaysOpenOnClick="True"
+                      Click="OnCheckableMenuItem_Click">
+                <MenuItem.Icon>
+                    <CheckBox Style="{StaticResource showHideCheckboxStyle}"
+                              ToolTip="Show/Hide Title Bar"
+                              IsChecked="{Binding ShowTitleBar}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Exit Full Screen Mode"
+                      Icon="{StaticResource fullScreenCancelIcon}"
+                      InputGestureText="(F11 to Exit)"
+                      Click="OnExitMenuItem_Click"/>
+            <Separator/>
+            <MenuItem Icon="{StaticResource exitMenuIcon}" 
+                      Header="Close Menu" 
+                      Click="OnContextMenuExit"/>
+        </ContextMenu>
+    </mah:MetroWindow.ContextMenu>
+
+    <!-- Full screen mode -->
+    <Grid DataContext="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel}">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Grid.Resources>
+
+            <!--Style for a multi-channeled image viewer-->
+            <Style x:Key="channelViewer" TargetType="Image">
+                <Style.Setters>
+                    <Setter Property="Grid.Column" Value="0"/>
+                    <Setter Property="Grid.ColumnSpan" Value="3"/>
+                    <Setter Property="IsEnabled" Value="False"/>
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Setter Property="Stretch" Value="Uniform"/>
+                    <Setter Property="StretchDirection" Value="Both"/>
+                </Style.Setters>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                        <Setter Property="Grid.ColumnSpan" Value="1"/>
+                        <Setter Property="IsEnabled" Value="True"/>
+                        <Setter Property="Visibility" Value="Visible"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <!--Style for a channel label -->
+            <Style x:Key="channelLabel" TargetType="Label">
+                <Style.Setters>
+                    <Setter Property="Grid.Column" Value="0"/>
+                    <Setter Property="Grid.ColumnSpan" Value="3"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="VerticalAlignment" Value="Top"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    <Setter Property="FontSize" Value="32"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Background" Value="Black"/>
+                    <Setter Property="Margin" Value="5"/>
+                    <Setter Property="Padding" Value="10 2"/>
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Style.Setters>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                        <Setter Property="Grid.ColumnSpan" Value="1"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="True">
+                        <Setter Property="Content" Value="Recording"/>
+                        <Setter Property="Background" Value="IndianRed"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="False">
+                        <Setter Property="Content" Value="{Binding Name, RelativeSource={RelativeSource Self}}"/>
+                    </DataTrigger>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding ShowFullScreenChannelInfo}" Value="True"/>
+                            <Condition Binding="{Binding SelectedDisplayChannel}" Value="All"/>
+                        </MultiDataTrigger.Conditions>
+                        <MultiDataTrigger.Setters>
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </MultiDataTrigger.Setters>
+                    </MultiDataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Resources>
+
+        <!-- Channel 1 -->
+        <Image x:Name="channel1Viewer" 
+               RenderOptions.BitmapScalingMode="{Binding SelectedBitmapScalingMode, Mode=OneWay}">
+            <Image.Source>
+                <MultiBinding Converter="{StaticResource GcBufferToBitmapSourceConverter}">
+                    <Binding Path="Channel1.ProcessedImage"/>
+                    <Binding Path="IsEnabled" ElementName="channel1Viewer"/>
+                </MultiBinding>
+            </Image.Source>
+            <Image.Style>
+                <Style TargetType="Image" BasedOn="{StaticResource channelViewer}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="Channel1">
+                            <Setter Property="IsEnabled" Value="True"/>
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                            <Setter Property="Grid.Column" Value="0"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
+        <Label Name="Channel1" 
+               Content="{Binding Source={StaticResource ViewModelLocator}, Path=DeviceViewModel.Devices[0].ChannelName}">
+            <Label.Style>
+                <Style TargetType="Label" BasedOn="{StaticResource channelLabel}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                            <Setter Property="Grid.Column" Value="0"/>
+                        </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding ShowFullScreenChannelInfo}" Value="True"/>
+                                <Condition Binding="{Binding SelectedDisplayChannel}" Value="Channel1"/>
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
+
+        <!-- Channel 2 -->
+        <Image x:Name="channel2Viewer"
+               RenderOptions.BitmapScalingMode="{Binding SelectedBitmapScalingMode, Mode=OneWay}">
+            <Image.Source>
+                <MultiBinding Converter="{StaticResource GcBufferToBitmapSourceConverter}">
+                    <Binding Path="Channel2.ProcessedImage"/>
+                    <Binding Path="IsEnabled" ElementName="channel2Viewer"/>
+                </MultiBinding>
+            </Image.Source>
+            <Image.Style>
+                <Style TargetType="Image" BasedOn="{StaticResource channelViewer}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="Channel2">
+                            <Setter Property="IsEnabled" Value="True"/>
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                            <Setter Property="Grid.Column" Value="1"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
+        <Label Name="Channel2" 
+               Content="{Binding Source={StaticResource ViewModelLocator}, Path=DeviceViewModel.Devices[1].ChannelName}">
+            <Label.Style>
+                <Style TargetType="Label" BasedOn="{StaticResource channelLabel}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                            <Setter Property="Grid.Column" Value="1"/>
+                        </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding ShowFullScreenChannelInfo}" Value="True"/>
+                                <Condition Binding="{Binding SelectedDisplayChannel}" Value="Channel2"/>
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
+
+        <!-- Fused channel -->
+        <Image x:Name="fusedChannelViewer"
+               d:Visibility="Visible"         
+               d:Source="/Resources/Images/dazzling.png"
+               RenderOptions.BitmapScalingMode="{Binding SelectedBitmapScalingMode, Mode=OneWay}">
+            <Image.Source>
+                <MultiBinding Converter="{StaticResource GcBufferToBitmapSourceConverter}">
+                    <Binding Path="FusedChannel.ProcessedImage"/>
+                    <Binding Path="IsEnabled" ElementName="fusedChannelViewer"/>
+                </MultiBinding>
+            </Image.Source>
+            <Image.Style>
+                <Style TargetType="Image" BasedOn="{StaticResource channelViewer}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="FusedChannel">
+                            <Setter Property="IsEnabled" Value="True"/>
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                            <Setter Property="Grid.Column" Value="2"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+        </Image>
+        <Label Name="Fusion" d:Visibility="Visible" d:Content="Fusion">
+            <Label.Style>
+                <Style TargetType="Label" BasedOn="{StaticResource channelLabel}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                            <Setter Property="Grid.Column" Value="2"/>
+                        </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding ShowFullScreenChannelInfo}" Value="True"/>
+                                <Condition Binding="{Binding SelectedDisplayChannel}" Value="FusedChannel"/>
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
+
+        <!-- Frame info -->
+        <Border Grid.Column="1" 
+                Margin="0 15"
+                mah:VisibilityHelper.IsVisible="{Binding ShowFullScreenFrameInfo}"
+                HorizontalAlignment="Center" VerticalAlignment="Bottom">
+            <TextBlock Padding="5 2"                      
+                       FontFamily="Arial" d:FontSize="18"
+                       d:Text="13:41.13.329 (FPS: 29.9)"
+                       Foreground="White" Background="Black">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="True">
+                                <Setter Property="Text" Value="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.FrameInfo}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="False">
+                                <Setter Property="Text">
+                                    <Setter.Value>
+                                        <MultiBinding StringFormat="{}{0} (FPS: {1:0.0})">
+                                            <Binding Source="{StaticResource ViewModelLocator}" Path="ImageDisplayViewModel.SelectedChannel.RawImage.TimeStamp" Converter="{StaticResource TimestampConverter}"/>
+                                            <Binding Source="{StaticResource ViewModelLocator}" Path="ImageDisplayViewModel.CurrentFPS" />
+                                        </MultiBinding>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Border>
+
+    </Grid>
+    
+</mah:MetroWindow>

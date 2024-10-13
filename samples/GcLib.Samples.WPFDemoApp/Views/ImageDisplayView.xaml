@@ -1,0 +1,229 @@
+﻿<UserControl x:Class="FusionViewer.Views.ImageDisplayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:FusionViewer.UserControls"
+             xmlns:local="clr-namespace:FusionViewer"
+             xmlns:conv="clr-namespace:FusionViewer.Converters"
+             mc:Ignorable="d"
+             DataContext="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel}"
+             d:DesignHeight="650" d:DesignWidth="800">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Grid.Resources>
+            <conv:IsEqualConverter x:Key="IsEqualConverter"/>
+        </Grid.Resources>
+        
+        <!-- Display menu -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Margin="10 0 0 0"
+                    Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top"
+                    IsEnabled="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded, Converter={StaticResource InverseBooleanConverter}}">
+            <StackPanel.Resources>
+                <Style TargetType="RadioButton" BasedOn="{StaticResource MahApps.Styles.RadioButton.Win10}">
+                    <Setter Property="FontSize" Value="13"/>
+                    <Setter Property="Padding" Value="5"/>
+                    <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+                    <Setter Property="Margin" Value="5 0 0 -5"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="FontWeight" Value="Bold"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Resources>
+
+            <TextBlock Text="Display" FontSize="16" FontWeight="Bold" Margin="0 0 0 10"/>
+            <RadioButton GroupName="SelectedDisplayChannel"
+                         IsChecked="{Binding SelectedDisplayChannel, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:DisplayChannel.Channel1}, Mode=OneWay, FallbackValue=False}"
+                         Command="{Binding ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.Channel1}"
+                         Content="{Binding Source={StaticResource ViewModelLocator}, Path=DeviceViewModel.Devices[0].ChannelName}" 
+                         Margin="5 -7 0 -5"
+                         ToolTip="Display channel 1 (F1)"/>
+            <RadioButton GroupName="SelectedDisplayChannel"
+                         IsChecked="{Binding SelectedDisplayChannel, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:DisplayChannel.Channel2}, Mode=OneWay, FallbackValue=False}"
+                         Command="{Binding ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.Channel2}"
+                         Content="{Binding Source={StaticResource ViewModelLocator}, Path=DeviceViewModel.Devices[1].ChannelName}"
+                         ToolTip="Display channel 2 (F2)"/>
+            <RadioButton GroupName="SelectedDisplayChannel"
+                         IsChecked="{Binding SelectedDisplayChannel, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:DisplayChannel.FusedChannel}, Mode=OneWay, FallbackValue=True}"
+                         Command="{Binding ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.FusedChannel}"
+                         Content="Fusion"
+                         ToolTip="Display fused channel (F3)"/>
+            <RadioButton GroupName="SelectedDisplayChannel"
+                         IsChecked="{Binding SelectedDisplayChannel, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:DisplayChannel.All}, Mode=OneWay, FallbackValue=False}"
+                         Command="{Binding ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.All}"
+                         Content="All (side-by-side)" 
+                         Checked="AllChannels_Checked"
+                         Unchecked="AllChannels_Unchecked"
+                         ToolTip="Display all channels (F4)"/>
+        </StackPanel>
+
+        <!--Display control-->
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 15 0 0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource MahApps.Styles.TextBlock}">
+                    <Style.Setters>
+                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="FontFamily" Value="Century Gothic"/>
+                        <Setter Property="FontWeight" Value="Normal"/>
+                        <Setter Property="Margin" Value="0 6 0 0"/>
+                    </Style.Setters>
+                </Style>
+                <Style x:Key="channelViewer" TargetType="controls:ImageViewer">
+                    <Style.Setters>
+                        <Setter Property="Grid.Column" Value="0"/>
+                        <Setter Property="Grid.ColumnSpan" Value="3"/>
+                        <Setter Property="IsEnabled" Value="False"/>
+                        <Setter Property="BitmapScaling" Value="{Binding SelectedBitmapScalingMode, Mode=OneWay}"/>
+                        <Setter Property="ImageBorderBrush" Value="{DynamicResource MahApps.Brushes.TextBox.Border.Focus}"/>
+                        <Setter Property="ToolbarVisibility" Value="Visible"/>
+                        <Setter Property="ShowPixelInspector" Value="{Binding ShowPixelInspector}"/>
+                        <Setter Property="MouseWheelZoomingEnabled" Value="True"/>
+                        <Setter Property="SelectionBoxZoomingEnabled" Value="True"/>
+                        <Setter Property="ShowImageMetaData" Value="True"/>
+                        <Setter Property="ShowImageFormat" Value="True"/>
+                    </Style.Setters>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="True">
+                            <Setter Property="ImageBackground" Value="IndianRed"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="False">
+                            <Setter Property="ImageBackground" Value="Transparent"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                            <Setter Property="IsEnabled" Value="True"/>
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Setter Property="ToolbarVisibility" Value="Hidden"/>
+                            <Setter Property="ShowPixelInspector" Value="False"/>
+                            <Setter Property="MouseWheelZoomingEnabled" Value="False"/>
+                            <Setter Property="ShowImageMetaData" Value="False"/>
+                            <Setter Property="ShowImageFormat" Value="False"/>
+                            <Setter Property="Grid.ColumnSpan" Value="1"/>
+                            <Setter Property="SelectionBoxZoomingEnabled" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Resources>
+            
+            <!-- Channel 1 -->
+            <TextBlock Grid.Column="0" 
+                       VerticalAlignment="Top" HorizontalAlignment="Center" 
+                       Text="{Binding Source={StaticResource ViewModelLocator}, Path=DeviceViewModel.Devices[0].ChannelName}"
+                       Visibility="{Binding ElementName=fusedChannelViewer, Path=Visibility}"
+                       d:Visibility="Hidden"/>
+            <controls:ImageViewer x:Name="channel1Viewer"
+                                  d:Grid.Column="0" d:Grid.ColumnSpan="3"
+                                  d:Visibility="Visible" 
+                                  ImageSource="{Binding Channel1SourceImage, Mode=OneWay}"
+                                  DisplayedImage="{Binding Channel1ProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}"
+                                  ViewChanged="SynchronizeViews">
+                <controls:ImageViewer.Style>
+                    <Style TargetType="controls:ImageViewer" BasedOn="{StaticResource channelViewer}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="Channel1">
+                                <Setter Property="IsEnabled" Value="True"/>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="Channel2">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="FusedChannel">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                                <Setter Property="Grid.Column" Value="0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </controls:ImageViewer.Style>
+            </controls:ImageViewer>
+            
+            <!-- Channel 2 -->
+            <TextBlock Grid.Column="1"
+                       VerticalAlignment="Top" HorizontalAlignment="Center"
+                       Text="{Binding Source={StaticResource ViewModelLocator}, Path=DeviceViewModel.Devices[1].ChannelName}"
+                       Visibility="{Binding ElementName=fusedChannelViewer, Path=Visibility}"
+                       d:Visibility="Hidden"/>
+            <controls:ImageViewer x:Name="channel2Viewer"                                
+                                  ImageSource="{Binding Channel2SourceImage, Mode=OneWay}"
+                                  DisplayedImage="{Binding Channel2ProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}"
+                                  ViewChanged="SynchronizeViews">
+                <controls:ImageViewer.Style>
+                    <Style TargetType="controls:ImageViewer" BasedOn="{StaticResource channelViewer}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="Channel1">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="Channel2">
+                                <Setter Property="IsEnabled" Value="True"/>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="FusedChannel">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                                <Setter Property="Grid.Column" Value="1"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </controls:ImageViewer.Style>
+            </controls:ImageViewer>
+            
+            <!-- FusedChannel -->
+            <TextBlock Grid.Column="3"
+                       VerticalAlignment="Top" HorizontalAlignment="Center"
+                       Text="Fusion"
+                       Visibility="{Binding ElementName=fusedChannelViewer, Path=Visibility}"
+                       d:Visibility="Hidden"/>
+            <controls:ImageViewer x:Name="fusedChannelViewer"
+                                  ImageSource="{Binding FusedChannelSourceImage, Mode=OneWay}"
+                                  DisplayedImage="{Binding FusedChannelProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}"
+                                  ViewChanged="SynchronizeViews">
+                <controls:ImageViewer.Style>
+                    <Style TargetType="controls:ImageViewer" BasedOn="{StaticResource channelViewer}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="Channel1">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="Channel2">
+                                <Setter Property="IsEnabled" Value="False"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="FusedChannel">
+                                <Setter Property="IsEnabled" Value="True"/>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SelectedDisplayChannel}" Value="All">
+                                <Setter Property="Grid.Column" Value="2"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </controls:ImageViewer.Style>
+            </controls:ImageViewer>
+        </Grid>
+    </Grid>
+
+</UserControl>

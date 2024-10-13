@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="SystemConfiguration" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="FusionViewer">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="1" maxOccurs="2" name="DeviceInfo">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="VendorName" type="xs:string"/>
+							<xs:element name="ModelName" type="xs:string"/>
+							<xs:element name="UniqueID" type="xs:string"/>
+						</xs:sequence>
+						<xs:attribute name="Device" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="Device1" />
+									<xs:enumeration value="Device2" />
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+				<xs:element minOccurs="1" maxOccurs="2" name="PropertyList">
+					<xs:complexType>
+						<xs:sequence minOccurs="0">
+							<xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+						</xs:sequence>
+						<xs:attribute name="Device" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="Device1" />
+									<xs:enumeration value="Device2" />
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+				<xs:element minOccurs="3" maxOccurs="3" name="Processing">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+						</xs:sequence>
+						<xs:attribute name="ImageChannel" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="Channel1" />
+									<xs:enumeration value="Channel2" />
+									<xs:enumeration value="FusedChannel" />
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="Version" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

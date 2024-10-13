@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="FusionViewer.Views.PlayBackView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+             xmlns:controls="clr-namespace:FusionViewer.UserControls"
+             dialog:DialogParticipation.Register="{Binding}"
+             mc:Ignorable="d"           
+             DataContext="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel}"
+             Visibility="{Binding IsLoaded, Converter={StaticResource BooleanToHiddenVisibilityConverter}}"
+             d:Visibility="Visible">
+
+    <StackPanel Orientation="Horizontal">
+
+        <!-- Exit button -->
+        <Button Style="{StaticResource MahApps.Styles.Button.MetroSquare}"
+                Padding="13 5" 
+                Command="{Binding CloseSequenceCommand}"
+                ToolTip="Return to acquisition mode" ToolTipService.InitialShowDelay="500">
+            <Button.Content>
+                <StackPanel Orientation="Horizontal">
+                    <ContentControl Content="{iconPacks:Material Kind=ExitToApp, Height=20, Width=20}"
+                                    VerticalAlignment="Center"/>
+                    <TextBlock Text="Exit"
+                               FontSize="16" FontWeight="Bold"
+                               Foreground="{DynamicResource MahApps.Brushes.AccentBase}"
+                               Margin="8 0 0 0"/>
+                </StackPanel>
+            </Button.Content>
+        </Button>
+
+        <!-- Playback control -->
+        <controls:PlayBackControl IsEnabled="{Binding IsEnabled}"
+                                  IsPlaying="{Binding IsPlaying, Mode=TwoWay}"
+                                  CurrentIndex="{Binding CurrentFrame, FallbackValue=20, Mode=TwoWay}"
+                                  StartIndex="{Binding FirstFrame, FallbackValue=0, Mode=OneWay}"
+                                  EndIndex="{Binding LastFrame, FallbackValue=100, Mode=OneWay}"
+                                  LabelText="{Binding FrameInfo, FallbackValue=Frame 20/100 (00:00:06.598), Mode=OneWay}"
+                                  LargeIndexChange="{Binding LargeFrameChange, FallbackValue=10, Mode=OneWay}"
+                                  SmallIndexChange="{Binding SmallFrameChange, FallbackValue=1, Mode=OneWay}"
+                                  IsSliderVisible="True"
+                                  Margin="20 0 0 0"/>
+
+    </StackPanel>
+    
+</UserControl>
