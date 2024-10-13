@@ -1,0 +1,171 @@
+﻿<mah:MetroWindow x:Class="FusionViewer.Views.LogWindow"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                mc:Ignorable="d"
+                Name="logWindow"
+                Title="Log viewer (current session)" TitleCharacterCasing="Normal"
+                FontSize="11" FontWeight="Medium"
+                MinWidth="600" Width="800" MaxWidth="1000"
+                MinHeight="500" Height="600" MaxHeight="800" 
+                ShowMinButton="False" ShowMaxRestoreButton="False"
+                SizeToContent="Width"
+                WindowStartupLocation="CenterOwner"
+                DataContext="{Binding Path=LogWindowViewModel, Source={StaticResource ViewModelLocator}}"
+                d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=LogWindowViewModel}">
+
+    <mah:MetroWindow.LeftWindowCommands>
+        <mah:WindowCommands>
+            <Border BorderBrush="Black" BorderThickness="1" Margin="2">
+                <Image Source="/Resources/Images/Fusion_296x296.png" Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Border>
+        </mah:WindowCommands>
+    </mah:MetroWindow.LeftWindowCommands>
+
+    <!-- Keybindings for window -->
+    <mah:MetroWindow.InputBindings>
+        <!-- Theme -->
+        <KeyBinding Key="T" Modifiers="Alt" Command="{Binding Source={StaticResource ViewModelLocator}, Path=MainWindowViewModel.ToggleThemeCommand}"/>
+    </mah:MetroWindow.InputBindings>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="20" />
+        </Grid.RowDefinitions>
+
+        <Grid.Resources>
+            <!-- View of log events, with filter -->
+            <CollectionViewSource x:Key="cvsLogEvents" Source="{Binding LogEvents}"/>
+        </Grid.Resources>
+
+        <!--Toolbar -->
+        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Margin="0 0 0 10">
+            <!-- Level filter -->
+            <Border BorderThickness="0" Margin="0 5 5 0">
+                <iconPacks:FeatherIcons Width="15" Height="15" Kind="Filter" />
+            </Border>
+            <ComboBox Margin="5 0 0 0"
+                      MinWidth="100" MaxWidth="200"
+                      ToolTip="Filter to minimum log level"
+                      FontFamily="Arial" FontStyle="Italic" FontSize="11"
+                      ItemsSource="{Binding LogLevels, Mode=OneTime}"                
+                      SelectedItem="{Binding MinimumLogLevel}" d:SelectedIndex="0"/>
+        </StackPanel>
+
+        <!-- Logging information window -->
+        <DataGrid x:Name="datagrid" 
+                  FontSize="12"
+                  Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                  HorizontalAlignment="Left"                
+                  BorderThickness="2" 
+                  HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                  ItemsSource="{Binding Source={StaticResource cvsLogEvents}}" d:ItemsSource="{Binding LogEvents}"
+                  IsReadOnly="True"
+                  SelectionUnit="Cell"
+                  EnableColumnVirtualization="False" EnableRowVirtualization="True"
+                  AutoGenerateColumns="False" 
+                  CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False" 
+                  CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False">
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Level}" Value="Verbose">
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Gray4}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="Debug">
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Gray2}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="Information">
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="Warning">
+                            <Setter Property="Foreground" Value="DarkOrange"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Level}" Value="Error">
+                            <Setter Property="Foreground" Value="OrangeRed"/>
+                        </DataTrigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{x:Null}" />
+                            <Setter Property="BorderBrush" Value="{x:Null}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.CellStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat=HH:mm:sss.fff}" Width="80">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="80">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Left"/>
+                            <Setter Property="TextWrapping" Value="Wrap"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!--OK button (close window)-->
+        <Button Grid.Row="3" Grid.Column="2"
+                Margin="0 25 0 0" 
+                Style="{StaticResource ConfirmationButton}"
+                HorizontalAlignment="Right">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                    <i:CallMethodAction TargetObject="{Binding ElementName=logWindow}" MethodName="Close"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </Button>
+
+    </Grid>
+</mah:MetroWindow>

@@ -1,0 +1,210 @@
+﻿<UserControl x:Class="FusionViewer.UserControls.ImageViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:conv="clr-namespace:FusionViewer.Converters"
+             mc:Ignorable="d"
+             x:Name="imageViewerControl"
+             SizeChanged="ImageViewer_SizeChanged">
+
+    <Grid DataContext="{Binding ElementName=imageViewerControl}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.Resources>
+            <!-- Converters -->
+            <conv:TimestampConverter x:Key="TimestampConverter"/>
+            <conv:PixelValueConverter x:Key="PixelValueConverter"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <conv:StretchToScrollBarVisibilityConverter x:Key="StretchToScrollBarVisibilityConverter"/>
+        </Grid.Resources>
+
+        <!--Toolbar-->
+        <ToolBarTray Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                     Orientation="Horizontal" HorizontalAlignment="Stretch" 
+                     IsLocked="True"
+                     Visibility="{Binding ToolbarVisibility}">
+
+            <ToolBar>
+                <ToolBar.Resources>
+                    <Style x:Key="ToolBarButton" BasedOn="{StaticResource MahApps.Styles.Button.ToolBar}" TargetType="Button">
+                        <Style.Setters>
+                            <Setter Property="Padding" Value="2"/>
+                            <Setter Property="Background" Value="White"/>
+                            <Setter Property="Foreground" Value="Black"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.AccentBase}"/>
+                            <Setter Property="BorderThickness" Value="2"/>
+                            <Setter Property="Margin" Value="5 1 0 1"/>
+                            <Setter Property="ToolTipService.InitialShowDelay" Value="500"/>
+                        </Style.Setters>
+                    </Style>
+                </ToolBar.Resources>
+
+                <!--Button for uniform stretching of image content-->
+                <Button Style="{StaticResource ToolBarButton}"
+                        Content="{iconPacks:VaadinIcons Kind=ExpandFull}"                           
+                        ToolTip="Fit image in window"
+                        Command="{Binding StretchImageCommand}" CommandParameter="{x:Static Stretch.Uniform}"/>
+                <!--Button for no stretching of image content (eg. show actual size)-->
+                <Button Style="{StaticResource ToolBarButton}"
+                        Content="{iconPacks:FeatherIcons Kind=Maximize}"
+                        ToolTip="View image in actual size"
+                        Command="{Binding StretchImageCommand}" CommandParameter="{x:Static Stretch.None}"/>
+                <Separator Margin="10 0 4 0" />
+                <!--Button for zooming in-->
+                <Button Style="{StaticResource ToolBarButton}"
+                        Content="{iconPacks:MaterialDesign Kind=ZoomIn}"
+                        ToolTip="Zoom in" 
+                        Click="OnZoomInButton"/>
+                <!--Button for zooming out-->
+                <Button Style="{StaticResource ToolBarButton}"
+                        Content="{iconPacks:MaterialDesign Kind=ZoomOut}"
+                        ToolTip="Zoom out"
+                        Click="OnZoomOutButton"/>
+                <!--Shows currently used image scale-->
+                <TextBlock Text="{Binding Scale, Mode=OneWay, StringFormat={}{0:P0}, FallbackValue=100%, TargetNullValue=''}" 
+                           Visibility="{Binding ElementName=image, Path=Source, Converter={StaticResource NullToVisibilityConverter}}"
+                           FontSize="12" 
+                           VerticalAlignment="Center" 
+                           Margin="5 0 0 0"/>
+            </ToolBar>
+
+        </ToolBarTray>
+
+        <!--Bordered view of image inside a scrollviewer-->
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                BorderThickness="3" BorderBrush="{Binding ImageBorderBrush}"
+                Background="{Binding ImageBackground}">
+
+            <Grid>
+                <ScrollViewer x:Name="scrollViewer"
+                              Background="Transparent"
+                              HorizontalScrollBarVisibility="{Binding Stretch, Converter={StaticResource StretchToScrollBarVisibilityConverter}, ElementName=image}"
+                              VerticalScrollBarVisibility="{Binding Stretch, Converter={StaticResource StretchToScrollBarVisibilityConverter}, ElementName=image}"
+                              ScrollBar.Scroll="ScrollViewer_Scroll"
+                              PreviewMouseWheel="ScrollViewer_MouseWheel">
+                    <Image x:Name="image"
+                           RenderOptions.BitmapScalingMode="{Binding BitmapScaling}"
+                           StretchDirection="Both"
+                           Source="{Binding DisplayedImage}"
+                           d:Source="\Resources\Images\dazzling.png"
+                           MouseEnter="Image_MouseEnter"
+                           MouseLeave="Image_MouseLeave"                                       
+                           MouseLeftButtonDown="Image_MouseLeftButtonDown"
+                           MouseRightButtonDown="Image_MouseRightButtonDown"
+                           MouseDown="Image_MouseDown"
+                           MouseMove="Image_MouseMove"
+                           MouseUp="Image_MouseUp">
+                        <Image.LayoutTransform>
+                            <ScaleTransform x:Name="ScaleTransform"/>
+                        </Image.LayoutTransform>
+                        <Image.ContextMenu>
+                            <ContextMenu FontSize="12">
+                                <MenuItem Icon="{iconPacks:Unicons Kind=SaveLine}" Header="Save Image To Disk" Command="{Binding SaveDisplayedImageCommand}"/>
+                                <MenuItem Icon="{iconPacks:Unicons Kind=CopyLine}" Header="Copy Image To Clipboard" Command="{Binding CopyDisplayedImageCommand}"/>
+                            </ContextMenu>
+                        </Image.ContextMenu>
+                    </Image>
+                </ScrollViewer>
+                <!--Selection box for zooming-->
+                <Canvas>
+                    <Rectangle x:Name="selectionBox" 
+                               Visibility="{Binding SelectionBoxVisibility}"
+                               Fill="OrangeRed" Opacity="0.4"
+                               Stroke="DarkRed" StrokeThickness="2" StrokeDashArray="3 2"
+                               Canvas.Left="{Binding SelectionBoxLeft}"
+                               Canvas.Top="{Binding SelectionBoxTop}"
+                               Width="{Binding SelectionBoxWidth}"
+                               Height="{Binding SelectionBoxHeight}"/>
+                </Canvas>
+            </Grid>
+
+        </Border>
+
+        <!--Pixel info-->
+        <StackPanel Grid.Row="2" Grid.Column="0"
+                    Orientation="Horizontal" HorizontalAlignment="Left"
+                    d:Visibility="Visible"
+                    Visibility="{Binding ShowPixelInspector, Converter={StaticResource BooleanToHiddenVisibilityConverter}}">
+            <TextBlock FontSize="12"
+                       d:Visibility="Visible">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=image, Path=IsMouseOver}" Value="False">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ElementName=image, Path=IsMouseCaptured}" Value="True">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                            </DataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsMouseOver, ElementName=image}" Value="True"/>
+                                    <Condition Binding="{Binding IsMouseCaptured, ElementName=image}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+                <Run Text="(X: "/>
+                <Run Text="{Binding PixelCoordinateX, Mode=OneWay, FallbackValue=0, TargetNullValue=0}"/>
+                <Run Text=", Y: "/>
+                <Run Text="{Binding PixelCoordinateY, Mode=OneWay, FallbackValue=0, TargetNullValue=0}"/>
+                <Run Text=") "/>
+                <Run Text="{Binding PixelValue, Mode=OneWay, FallbackValue=0, TargetNullValue=0, Converter={StaticResource PixelValueConverter}}"/>
+            </TextBlock>
+        </StackPanel>
+
+        <!--Image metadata-->
+        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                    Orientation="Horizontal" HorizontalAlignment="Center"
+                    Visibility="{Binding ShowImageMetaData, Converter={StaticResource BooleanToHiddenVisibilityConverter}}">
+            <StackPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="FontSize" Value="12"/>
+                    <Setter Property="Visibility" Value="{Binding ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
+                </Style>
+                <sys:String x:Key="notAvailable">n/a</sys:String>
+            </StackPanel.Resources>
+            <TextBlock Text="FrameID: " FontWeight="Bold" />
+            <TextBlock Text="{Binding ImageSource.FrameID, FallbackValue=1, TargetNullValue={StaticResource notAvailable}}" />
+            <TextBlock Text="Timestamp: " FontWeight="Bold" Margin="20 0 0 0" />
+            <TextBlock Text="{Binding ImageSource.TimeStamp, FallbackValue='11:59:59.123', TargetNullValue={StaticResource notAvailable}, Converter={StaticResource TimestampConverter}}" />
+            <TextBlock Text="FPS: " FontWeight="Bold" Margin="20 0 0 0" />
+            <TextBlock Text="{Binding FPS, StringFormat={}{0:0.0}, Mode=OneWay, FallbackValue=30.0, TargetNullValue={StaticResource notAvailable}}" />
+        </StackPanel>
+
+        <!--Image format-->
+        <StackPanel Grid.Row="2" Grid.Column="2" 
+                    Orientation="Horizontal" HorizontalAlignment="Right"
+                    Visibility="{Binding ShowImageFormat, Converter={StaticResource BooleanToHiddenVisibilityConverter}}">
+            <StackPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="{Binding ImageSource, Converter={StaticResource NullToVisibilityConverter}}"/>
+                </Style>
+            <sys:String x:Key="notAvailable">n/a</sys:String>
+            </StackPanel.Resources>
+            <TextBlock FontSize="11" VerticalAlignment="Center" Margin="0 0 5 0">
+                    <Run Text="{Binding ImageSource.Width, Mode=OneWay, FallbackValue=640}"/>
+                    <Run Text="x"/>
+                    <Run Text="{Binding ImageSource.Height, Mode=OneWay, FallbackValue=480}"/>
+                    <Run Text="-"/>
+                    <Run Text="{Binding ImageSource.PixelFormat, Mode=OneWay, FallbackValue=Mono8}"/>
+            </TextBlock>
+        </StackPanel>
+
+    </Grid>
+
+</UserControl>

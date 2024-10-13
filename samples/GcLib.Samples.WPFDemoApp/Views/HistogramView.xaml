@@ -1,0 +1,60 @@
+﻿<UserControl x:Class="FusionViewer.Views.HistogramView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:controls="clr-namespace:FusionViewer.UserControls"
+             xmlns:viewmodels="clr-namespace:FusionViewer.ViewModels"
+             mc:Ignorable="d"
+             FontSize="12"
+             d:DataContext="{d:DesignInstance Type=viewmodels:MockHistogramViewModel, IsDesignTimeCreatable=True}"
+             DataContext="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel}"
+             IsEnabled="{Binding IsEnabled}">
+
+    <StackPanel Orientation="Vertical">
+
+        <!-- Processed/Raw data toggleswitch and histogram viewer enabling checkbox -->
+        <StackPanel Orientation="Horizontal">
+            <mah:ToggleSwitch IsOn="{Binding ShowProcessed}" d:IsOn="True"
+                              d:Visibility="Visible"
+                              OffContent="Raw" OnContent="Processed" 
+                              ContentPadding="-4" Margin="5 0 0 0"
+                              FontSize="12"
+                              ToolTip="Toggles between showing raw and processed image data" ToolTipService.InitialShowDelay="500">
+                <mah:ToggleSwitch.Visibility>
+                    <MultiBinding Converter="{StaticResource BooleanAndToVisibilityConverter}" ConverterParameter="{x:Static Visibility.Hidden}">
+                        <Binding ElementName="histogramViewer" Path="IsEnabled"/>
+                        <Binding ElementName="histogramViewer" Path="ContainsData"/>
+                    </MultiBinding>
+                </mah:ToggleSwitch.Visibility>
+            </mah:ToggleSwitch>
+            <CheckBox x:Name="showLiveHistogramCheckBox"
+                      Style="{StaticResource MahApps.Styles.CheckBox}"
+                      IsChecked="{Binding ShowLiveHistogram}" d:IsChecked="True"
+                      Content="Show Histogram"
+                      Margin="-25 0 0 0"
+                      ToolTip="Show image histogram" ToolTipService.InitialShowDelay="500"/>
+        </StackPanel>
+
+        <!-- Histogram view control -->
+        <controls:HistogramViewer x:Name="histogramViewer"
+                                  Height="150"
+                                  Margin="10 -6 0 0"
+                                  Theme="{Binding Source={StaticResource ViewModelLocator}, Path=MainWindowViewModel.SelectedTheme}"
+                                  IsEnabled="{Binding ShowLiveHistogram}" d:IsEnabled="true"
+                                  Histogram="{Binding Histogram}"
+                                  ShowGrid="{Binding ShowGrid}"
+                                  SelectedPlotType="{Binding SelectedPlotType}"
+                                  SelectedHistSize="{Binding SelectedHistogramSize}"
+                                  d:Visibility="Visible">
+            <controls:HistogramViewer.Visibility>
+                <MultiBinding Converter="{StaticResource BooleanAndToVisibilityConverter}" ConverterParameter="{x:Static Visibility.Hidden}">
+                    <Binding ElementName="histogramViewer" Path="IsEnabled"/>
+                    <Binding ElementName="histogramViewer" Path="ContainsData"/>
+                </MultiBinding>
+            </controls:HistogramViewer.Visibility>
+        </controls:HistogramViewer>
+    </StackPanel>
+
+</UserControl>

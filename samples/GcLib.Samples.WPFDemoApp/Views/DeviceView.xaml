@@ -1,0 +1,130 @@
+﻿<UserControl x:Class="FusionViewer.Views.DeviceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+             xmlns:models="clr-namespace:FusionViewer.Models"
+             xmlns:viewmodels="clr-namespace:FusionViewer.ViewModels"
+             dialog:DialogParticipation.Register="{Binding}"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d"
+             DataContext="{Binding Path=DeviceViewModel, Source={StaticResource ViewModelLocator}}"
+             d:DesignHeight="200" d:DesignWidth="250">
+    
+        <mah:MetroTabControl x:Name="tabControl"
+                             d:DataContext="{d:DesignInstance viewmodels:MockDeviceViewModel, IsDesignTimeCreatable=True}"
+                             mah:TabControlHelper.Underlined="TabPanel"
+                             ItemsSource="{Binding Devices, Mode=OneTime}"
+                             SelectedItem="{Binding SelectedDevice}">
+            <mah:MetroTabControl.Resources>
+                <!-- Device connection togglebutton -->
+                <Style x:Key="DeviceConnectionButton" BasedOn="{StaticResource MahApps.Styles.Button.Circle}" TargetType="ToggleButton">
+                    <Setter Property="Height" Value="20"/>
+                    <Setter Property="Width" Value="20"/>
+                    <Setter Property="Margin" Value="5"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                            <Setter Property="Background" Value="GreenYellow"/>
+                            <Setter Property="ToolTip" Value="Disconnect device"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsConnected}" Value="False">
+                            <Setter Property="Background" Value="OrangeRed"/>
+                            <Setter Property="ToolTip" Value="Connect device"/>
+                        </DataTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.35"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+                <!--Device settings button -->
+                <Style x:Key="DeviceSettingsButton" BasedOn="{StaticResource MahApps.Styles.Button.MetroSquare}" TargetType="Button">
+                    <Setter Property="ToolTip" Value="Open device settings"/>
+                    <Setter Property="Padding" Value="10 5"/>
+                    <Setter Property="Margin" Value="25"/>
+                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                    <Setter Property="FontSize" Value="12"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Button.Square.Background.MouseOver}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.35"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+                <Style TargetType="Label">
+                    <Setter Property="FontSize" Value="13"/>
+                </Style>
+            </mah:MetroTabControl.Resources>
+
+            <!--  Tab header template -->
+            <mah:MetroTabControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:DeviceModel}">
+                    <StackPanel Orientation="Horizontal" d:Width="110" MaxHeight="30">
+                        <ToggleButton Style="{StaticResource DeviceConnectionButton}"
+                                      IsEnabled="{Binding ElementName=tabControl, Path=IsEnabled}"
+                                      IsChecked="{Binding IsConnected, Mode=OneWay}"
+                                      Command="{Binding DataContext.ConnectCameraFromDialogCommand, ElementName=tabControl}" CommandParameter="{Binding}"/>
+                        <TextBox Width="75" Margin="5" ContextMenu="{x:Null}"
+                                 ToolTip="Click to select, double-click to rename" ToolTipService.InitialShowDelay="1000" ToolTipService.BetweenShowDelay="2000"
+                                 Focusable="False" IsReadOnly="True" 
+                                 KeyDown="ChannelNameTextBox_KeyDown"
+                                 PreviewMouseDoubleClick="ChannelNameTextBox_MouseDoubleClick" 
+                                 LostFocus="ChannelNameTextBox_LostFocus"
+                                 FontSize="14" BorderBrush="Transparent" BorderThickness="0" Cursor="Arrow"
+                                 Foreground="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Foreground}"
+                                 Text="{Binding ChannelName}" MaxLength="9">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=TabItem}}" Value="True">
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=TabItem}}" Value="False">
+                                            <Setter Property="FontWeight" Value="Regular"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                    </StackPanel>
+                </DataTemplate>
+            </mah:MetroTabControl.ItemTemplate>
+            <!--  Tab content template -->
+            <mah:MetroTabControl.ContentTemplate>
+                <DataTemplate DataType="{x:Type models:DeviceModel}">
+                    <StackPanel Orientation="Vertical" Margin="0 15 0 0" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Model:" Width="75" FontWeight="Bold" />
+                            <Label Content="{Binding ModelName, Mode=OneWay}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Vendor:" Width="75" FontWeight="Bold" />
+                            <Label Content="{Binding VendorName, Mode=OneWay}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="UniqueID:" Width="75" FontWeight="Bold" />
+                            <Label Content="{Binding UniqueID, Mode=OneWay}" />
+                        </StackPanel>
+                        <Button Style="{StaticResource DeviceSettingsButton}"                            
+                                Command="{Binding DataContext.OpenParameterDialogWindowCommand, ElementName=tabControl}"
+                                CommandParameter="{Binding}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="SETTINGS"/>
+                                <iconPacks:PackIconControl Kind="{x:Static iconPacks:PackIconPicolIconsKind.VideoInformation}" Margin="8 1 0 0"/>
+                            </StackPanel>
+                        </Button>
+                        <mah:ProgressRing IsActive="{Binding IsConnecting, Mode=OneWay}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </mah:MetroTabControl.ContentTemplate>
+        </mah:MetroTabControl>
+
+</UserControl>

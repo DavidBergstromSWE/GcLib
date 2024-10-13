@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="FusionViewer.Views.AcquisitionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+             dialog:DialogParticipation.Register="{Binding}"
+             DataContext="{Binding Source={StaticResource ViewModelLocator}, Path=AcquisitionViewModel}"
+             mc:Ignorable="d"
+             IsEnabled="{Binding IsEnabled}">
+
+    <UserControl.Resources>
+        <!-- Styling for Play, Stop and Record buttons -->
+        <Style BasedOn="{StaticResource MahApps.Styles.Button}" TargetType="Button">
+            <Style.Setters>
+                <Setter Property="Padding" Value="15"/>
+                <Setter Property="BorderThickness" Value="2.5"/>
+            </Style.Setters>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.AccentBase}"/>
+                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Gray8}"/>
+                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Gray10}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Acquisition panel: Play, Stop and Record buttons -->
+    <StackPanel Orientation="Horizontal">
+        <Button Command="{Binding PlayCommand}"
+                Content="{iconPacks:RemixIcon Kind=LiveFill, Height=40, Width=40}"
+                ToolTip="Start live view (F6)"
+                Foreground="ForestGreen"/>
+        <Button Margin="8 0 0 0" 
+                Command="{Binding StopCommand}" d:IsEnabled="False" 
+                Content="{iconPacks:Modern Kind=SignStop, Height=40, Width=40}"                                                         
+                ToolTip="Stop live view or recording (F7)"
+                Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+        <Button Margin="8 0 0 0"
+                Command="{Binding RecordCommand}"
+                Content="{iconPacks:Typicons Kind=MediaRecord, Height=40, Width=40}"
+                ToolTip="Start recording (F8)"                
+                Foreground="OrangeRed"/>
+    </StackPanel>
+
+</UserControl>

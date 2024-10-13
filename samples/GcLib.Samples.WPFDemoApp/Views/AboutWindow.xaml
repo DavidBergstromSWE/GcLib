@@ -1,0 +1,133 @@
+﻿<mah:MetroWindow x:Class="FusionViewer.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewmodels="clr-namespace:FusionViewer.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance viewmodels:AboutWindowViewModel}"
+        Name="aboutWindow"
+        Title="{Binding Title, FallbackValue='About FUSIONVIEWER v1.0.0'}" TitleCharacterCasing="Normal"
+        Height="265" Width="600" ResizeMode="NoResize">
+
+    <mah:MetroWindow.DataContext>
+        <viewmodels:AboutWindowViewModel />
+    </mah:MetroWindow.DataContext>
+
+    <!-- Keybindings for window -->
+    <mah:MetroWindow.InputBindings>
+        <!-- Theme -->
+        <KeyBinding Key="T" Modifiers="Alt" Command="{Binding Source={StaticResource ViewModelLocator}, Path=MainWindowViewModel.ToggleThemeCommand}"/>
+    </mah:MetroWindow.InputBindings>
+
+    <mah:MetroWindow.LeftWindowCommands>
+        <mah:WindowCommands>
+            <Border BorderBrush="Black" BorderThickness="1" Margin="2">
+                <Image Source="/Resources/Images/Fusion_296x296.png" Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Border>
+        </mah:WindowCommands>
+    </mah:MetroWindow.LeftWindowCommands>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="20" />
+        </Grid.RowDefinitions>
+
+        <!--Logo-->
+        <StackPanel Grid.Row="1" Grid.Column="1" 
+                    Orientation="Vertical" VerticalAlignment="Center">
+            <Border BorderThickness="1" BorderBrush="Black"
+                    Width="90" Height="90">
+                <Image Source="/Resources/Images/Fusion_296x296.png" 
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       Stretch="UniformToFill"/>
+            </Border>
+        </StackPanel>
+
+        <!--Application description-->
+        <StackPanel Grid.Row="1" Grid.Column="2" 
+                    Orientation="Vertical"
+                    Margin="15 0 0 0">
+            <TextBlock TextWrapping="Wrap" TextAlignment="Justify">
+                <Run Text="FUSIONVIEWER" FontWeight="Bold" />
+                <Run Text="is a WPF demo application for real-time image fusion of two camera channels. The application uses the GenICam/GenTL-based" />
+                <Hyperlink NavigateUri="https://dev.azure.com/MySimLabs/GcLib/" RequestNavigate="Hyperlink_RequestNavigate">
+                    GcLib
+                </Hyperlink>
+                <Run Text="library for controlling settings and streaming of cameras."/>
+                <Run Text="The OpenCV .NET wrapper"/>
+                <Hyperlink NavigateUri="https://www.emgu.com/wiki/index.php/Main_Page" RequestNavigate="Hyperlink_RequestNavigate">
+                    EmguCV
+                </Hyperlink>
+                <Run Text="is used for general image processing," />
+                <Run Text="while plotting of image histograms is done using the"/>
+                <Hyperlink NavigateUri="https://scottplot.net/" RequestNavigate="Hyperlink_RequestNavigate">
+                    ScottPlot
+                </Hyperlink>
+                <Run Text="library." />
+                <Run Text="The application is designed and styled using the"/>
+                <Hyperlink NavigateUri="https://mahapps.com/" RequestNavigate="Hyperlink_RequestNavigate">
+                    MahApps.Metro
+                </Hyperlink>
+                <Run Text="UI framework, built using the"/>
+                <Hyperlink NavigateUri="https://docs.microsoft.com/en-us/windows/communitytoolkit/mvvm/introduction" RequestNavigate="Hyperlink_RequestNavigate">
+                    .NET Community MVVM toolkit.
+                </Hyperlink>
+                
+            </TextBlock>
+        </StackPanel>
+
+        <!--Author info-->
+        <StackPanel Grid.Row="2" Grid.Column="2" 
+                    Orientation="Vertical" HorizontalAlignment="Left"
+                    Margin="15 15 0 0">
+            <StackPanel.Resources>
+                <Style x:Key="Label" TargetType="TextBlock">
+                    <Setter Property="FontSize" Value="10"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Width" Value="60"/>
+                </Style>
+                <Style x:Key="Value" TargetType="TextBlock">
+                    <Setter Property="FontSize" Value="10"/>
+                    <Setter Property="Margin" Value="20 0 0 0"/>
+                </Style>
+            </StackPanel.Resources>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Author:" Style="{DynamicResource Label}"/>
+                <TextBlock Text="David Bergström" Style="{DynamicResource Value}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 3 0 0">
+                <TextBlock Text="Company:" Style="{DynamicResource Label}"/>
+                <TextBlock Text="Totalförsvarets Forskningsinstitut (FOI)" Style="{DynamicResource Value}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 3 0 0" >
+                <TextBlock Text="Date:" Style="{DynamicResource Label}" />
+                <TextBlock Text="{Binding VersionString}" d:Text="2021-05-11 (Build: 1234, Rev. 1)" Style="{DynamicResource Value}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!--OK button-->
+        <Button Grid.Row="3" Grid.Column="2"
+                Style="{StaticResource ConfirmationButton}"
+                HorizontalAlignment="Right">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                    <i:CallMethodAction TargetObject="{Binding ElementName=aboutWindow}" MethodName="Close"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </Button>
+
+    </Grid>
+</mah:MetroWindow>
