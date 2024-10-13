@@ -1,3 +1,5 @@
+If you find a bug, please open a new [issue](https://github.com/DavidBergstromSWE/GcLib/issues) and provide a detailed report.
+
 Contributors are welcome to add new APIs to the library as well as improving existing ones, please fork the repository and add a pull request! 
 
 > [!TIP]
