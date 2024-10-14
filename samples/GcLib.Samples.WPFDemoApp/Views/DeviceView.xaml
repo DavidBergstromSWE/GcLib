@@ -17,20 +17,18 @@
 
     <UserControl.Resources>
         <!--Device connection/disconnection buttons -->
-        <Style x:Key="DeviceConnectionButton" BasedOn="{StaticResource MahApps.Styles.Button.MetroSquare}" TargetType="Button">
+        <Style x:Key="DeviceConnectionButton" BasedOn="{StaticResource MahApps.Styles.Button}" TargetType="Button">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="True">
-                    <Setter Property="Background" Value="GreenYellow"/>
                     <Setter Property="ToolTip" Value="Disconnect device"/>
                     <Setter Property="Content" Value="Disconnect"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="False">
-                    <Setter Property="Background" Value="OrangeRed"/>
-                    <Setter Property="ToolTip" Value="Connect device"/>
-                    <Setter Property="Content" Value="Connect"/>
+                    <Setter Property="ToolTip" Value="Connect to new device"/>
+                    <Setter Property="Content" Value="Select/Connect"/>
                 </DataTrigger>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.ThemeForeground}"/>
+                    <Setter Property="Background" Value="{DynamicResource MahApps.Brushes.Button.Square.Background.MouseOver}"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Opacity" Value="0.35"/>
@@ -62,22 +60,21 @@
 
     <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
 
-        <Button Style="{StaticResource DeviceConnectionButton}" 
+        <Button Style="{StaticResource DeviceConnectionButton}"
                 Margin="0 0 0 20" HorizontalAlignment="Center" Width="125"
-                Command="{Binding ConnectCameraFromDialogCommand}" CommandParameter="{Binding SelectedDevice}">
-        </Button>
+                Command="{Binding ConnectCameraFromDialogCommand}" CommandParameter="{Binding SelectedDevice}"/>
 
         <StackPanel Orientation="Horizontal">
             <Label Content="Model:" Width="75" FontWeight="Bold" />
-            <Label Content="{Binding SelectedDevice.ModelName, Mode=OneWay}"/>
+            <Label Content="{Binding SelectedDevice.ModelName, Mode=OneWay}" MaxWidth="150"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
             <Label Content="Vendor:" Width="75" FontWeight="Bold" />
-            <Label Content="{Binding SelectedDevice.VendorName, Mode=OneWay}"/>
+            <Label Content="{Binding SelectedDevice.VendorName, Mode=OneWay}" MaxWidth="150"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
             <Label Content="UniqueID:" Width="75" FontWeight="Bold" />
-            <Label Content="{Binding SelectedDevice.UniqueID, Mode=OneWay}" />
+            <Label Content="{Binding SelectedDevice.UniqueID, Mode=OneWay}" MaxWidth="150"/>
         </StackPanel>
         <Button Style="{StaticResource DeviceSettingsButton}"                            
             Command="{Binding OpenParameterDialogWindowCommand}"

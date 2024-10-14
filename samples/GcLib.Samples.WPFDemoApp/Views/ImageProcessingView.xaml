@@ -13,39 +13,10 @@
              DataContext="{Binding Source={StaticResource ViewModelLocator}, Path=ImageProcessingViewModel}"
              d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}">
     <Grid>
-        <Grid.Resources>
-            <Style x:Key="methodBase" TargetType="TextBlock" BasedOn="{StaticResource MahApps.Styles.TextBlock}">
-                <Setter Property="Width" Value="65"/>
-                <Setter Property="FontSize" Value="12"/>
-                <Setter Property="HorizontalAlignment" Value="Left"/>
-                <Setter Property="VerticalAlignment" Value="Center"/>
-            </Style>
-            <Style x:Key="methodSelector" TargetType="ComboBox" BasedOn="{StaticResource MahApps.Styles.ComboBox}">
-                <Setter Property="MinWidth" Value="125"/>
-                <Setter Property="MaxWidth" Value="125"/>
-                <Setter Property="FontSize" Value="11"/>
-                <Setter Property="Margin" Value="10 0 0 0"/>
-                <Setter Property="VerticalAlignment" Value="Center"/>
-                <EventSetter Event="PreviewKeyDown" Handler="ComboBox_PreviewKeyDown"/>
-            </Style>
-            <Style x:Key="methodButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button}">
-                <Setter Property="Margin" Value="5 0 0 0"/>
-                <Setter Property="Width" Value="24"/>
-                <Setter Property="Height" Value="24"/>
-                <Setter Property="Padding" Value="2"/>
-            </Style>
-            <Style x:Key="methodToggler" TargetType="ToggleButton" BasedOn="{StaticResource MahApps.Styles.ToggleButton}">
-                <Setter Property="Margin" Value="5 0 0 0"/>
-                <Setter Property="Width" Value="24"/>
-                <Setter Property="Height" Value="24"/>
-                <Setter Property="Padding" Value="2"/>
-            </Style>
-            <conv:ParameterCollectionContainerNameConverter x:Key="ParameterCollectionContainerNameConverter"/>
-        </Grid.Resources>
 
         <!--Brightness-->
-        <StackPanel Orientation="Horizontal" Margin="5 2 0 0">
-            <TextBlock Text="Brightness" Style="{StaticResource methodBase}"/>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Brightness" Width="60" FontSize="12" VerticalAlignment="Center"/>
             <Slider Name="brightnessSlider" Style="{StaticResource MahApps.Styles.Slider}" VerticalAlignment="Center" Margin="10 0 0 0" 
                         FontSize="11" MinWidth="85"
                         Value="{Binding SelectedImageChannel.Brightness, Mode=TwoWay, FallbackValue=0}" 
@@ -55,7 +26,7 @@
                         AutoToolTipPlacement="BottomRight" AutoToolTipPrecision="0"
                         ToolTip="Drag to adjust (right-click to reset)"
                         PreviewMouseRightButtonUp="Slider_PreviewMouseRightButtonUp"/>
-            <mah:NumericUpDown Margin="5 0 0 0" Width="70" Padding="0" VerticalAlignment="Center"
+            <mah:NumericUpDown Margin="10 0 0 0" Width="70" Padding="0" VerticalAlignment="Center"
                                     Value="{Binding ElementName=brightnessSlider, Path=Value, Mode=TwoWay}" d:Value="{Binding SelectedImageChannel.Brightness}"
                                     Minimum="{Binding ElementName=brightnessSlider, Path=Minimum}"
                                     Maximum="{Binding ElementName=brightnessSlider, Path=Maximum}"
