@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -33,7 +32,7 @@ internal sealed class FusionConfigurationService : IConfigurationService
     /// <summary>
     /// Devices where device settings are stored.
     /// </summary>
-    private readonly DeviceModel[] _deviceModels;
+    private readonly DeviceModel _device;
 
     /// <summary>
     /// Image channels where processing settings are stored.
@@ -51,9 +50,9 @@ internal sealed class FusionConfigurationService : IConfigurationService
     /// <param name="deviceModels">Devices where device settings are stored.</param>
     /// <param name="imageModels">Image channels where image processing settings are stored.</param>
     /// <param name="deviceProvider">Provides access to physical devices.</param>
-    public FusionConfigurationService(DeviceModel[] deviceModels, ImageModel[] imageModels, IDeviceProvider deviceProvider)
+    public FusionConfigurationService(DeviceModel device, ImageModel[] imageModels, IDeviceProvider deviceProvider)
     {
-        _deviceModels = deviceModels;
+        _device = device;
         _imageModels = imageModels;
         _deviceProvider = deviceProvider;
 
@@ -86,50 +85,44 @@ internal sealed class FusionConfigurationService : IConfigurationService
 
             // Read device information.
             List<DeviceInfo> deviceInfos = [];
-            foreach (var deviceModel in _deviceModels)
+            if (reader.Name == nameof(DeviceInfo) && reader.GetAttribute("Device") == _device.DeviceIndex.ToString())
             {
-                if (reader.Name == nameof(DeviceInfo) && reader.GetAttribute("Device") == deviceModel.DeviceIndex.ToString())
-                {
-                    reader.ReadStartElement(nameof(DeviceInfo));
-                    deviceInfos.Add(new DeviceInfo(VendorName: reader.ReadElementContentAsString(), ModelName: reader.ReadElementContentAsString(), UniqueID: reader.ReadElementContentAsString()));
-                    reader.ReadEndElement();
-                }
+                reader.ReadStartElement(nameof(DeviceInfo));
+                deviceInfos.Add(new DeviceInfo(VendorName: reader.ReadElementContentAsString(), ModelName: reader.ReadElementContentAsString(), UniqueID: reader.ReadElementContentAsString()));
+                reader.ReadEndElement();
             }
 
             ValidateDeviceAvailability(deviceInfos);
 
             // Disconnect devices if necessary.
-            foreach (var deviceModel in _deviceModels)
-            {
-                if (deviceModel.IsConnected)
-                    await deviceModel.DisconnectDeviceAsync();
+            if (_device.IsConnected)
+                await _device.DisconnectDeviceAsync();
 
                 token.ThrowIfCancellationRequested();
-            }
 
             // Connect devices.
             for (var i = 0; i < deviceInfos.Count; i++)
             {
-                await _deviceModels[i].ConnectDeviceAsync(deviceInfos[i], _deviceProvider);
+                await _device.ConnectDeviceAsync(deviceInfos[i], _deviceProvider);
                 token.ThrowIfCancellationRequested();
             }
 
             // Restore device properties.
-            foreach (var deviceModel in _deviceModels.Where(d => d.IsConnected))
+            if (_device.IsConnected)
             {
-                if (reader.Name == "PropertyList" && reader.GetAttribute("Device") == deviceModel.DeviceIndex.ToString())
+                if (reader.Name == "PropertyList" && reader.GetAttribute("Device") == _device.DeviceIndex.ToString())
                 {
                     // Read device properties.
                     reader.ReadStartElement("PropertyList");
-                    deviceModel.ReadXml(reader);
+                    _device.ReadXml(reader);
 
                     // Update device parameters.
-                    await Task.Run(deviceModel.Device.Parameters.Update, CancellationToken.None);
+                    await Task.Run(_device.Device.Parameters.Update, CancellationToken.None);
 
                     // Advance to next node.
                     reader.ReadEndElement();
 
-                    Log.Debug("Device settings restored to {DeviceName}", deviceModel.ModelName);
+                    Log.Debug("Device settings restored to {DeviceName}", _device.ModelName);
                 }
             }
 
@@ -178,33 +171,27 @@ internal sealed class FusionConfigurationService : IConfigurationService
         _xmlWriter.WriteStartElement("FusionViewer", "SystemConfiguration");
         _xmlWriter.WriteAttributeString("Version", MainWindowViewModel.MajorMinorVersion);
 
-        if (_deviceModels.All(d => d.IsConnected == false))
+        if (_device.IsConnected == false)
             throw new InvalidOperationException("Configuration must contain at least one device!");
 
         // Store device top-level information.
-        foreach (DeviceModel device in _deviceModels)
+        if (_device.IsConnected)
         {
-            if (device.IsConnected)
-            {
-                _xmlWriter.WriteStartElement(nameof(DeviceInfo));
-                _xmlWriter.WriteAttributeString("Device", device.DeviceIndex.ToString());
-                _xmlWriter.WriteElementString(nameof(DeviceModel.VendorName), device.VendorName);
-                _xmlWriter.WriteElementString(nameof(DeviceModel.ModelName), device.ModelName);
-                _xmlWriter.WriteElementString(nameof(DeviceModel.UniqueID), device.UniqueID);
-                _xmlWriter.WriteEndElement();
-            }
+            _xmlWriter.WriteStartElement(nameof(DeviceInfo));
+            _xmlWriter.WriteAttributeString("Device", _device.DeviceIndex.ToString());
+            _xmlWriter.WriteElementString(nameof(DeviceModel.VendorName), _device.VendorName);
+            _xmlWriter.WriteElementString(nameof(DeviceModel.ModelName), _device.ModelName);
+            _xmlWriter.WriteElementString(nameof(DeviceModel.UniqueID), _device.UniqueID);
+            _xmlWriter.WriteEndElement();
         }
 
         // Store device settings.
-        foreach (DeviceModel device in _deviceModels)
+        if (_device.IsConnected)
         {
-            if (device.IsConnected)
-            {
-                _xmlWriter.WriteStartElement("PropertyList");
-                _xmlWriter.WriteAttributeString("Device", device.DeviceIndex.ToString());
-                device.WriteXml(_xmlWriter);
-                _xmlWriter.WriteEndElement();
-            }
+            _xmlWriter.WriteStartElement("PropertyList");
+            _xmlWriter.WriteAttributeString("Device", _device.DeviceIndex.ToString());
+            _device.WriteXml(_xmlWriter);
+            _xmlWriter.WriteEndElement();
         }
 
         // Store image channel processing settings.

@@ -32,18 +32,10 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
 
         // AcquisitionViewModel settings.
         acquisitionViewModel.AutoGenerateFileNames = _settings.AutoGenerateFileNames;
-        acquisitionViewModel.AcquisitionChannel1.SaveRawData = _settings.Channel1SaveRawData;
-        acquisitionViewModel.AcquisitionChannel1.SaveProcessedData = _settings.Channel1SaveProcessedData;
+        acquisitionViewModel.AcquisitionChannel.SaveRawData = _settings.Channel1SaveRawData;
+        acquisitionViewModel.AcquisitionChannel.SaveProcessedData = _settings.Channel1SaveProcessedData;
         if (Directory.Exists(Path.GetDirectoryName(_settings.Channel1SaveFilePath)))
-            acquisitionViewModel.AcquisitionChannel1.FilePath = _settings.Channel1SaveFilePath;
-        acquisitionViewModel.AcquisitionChannel2.SaveRawData = _settings.Channel2SaveRawData;
-        acquisitionViewModel.AcquisitionChannel2.SaveProcessedData = _settings.Channel2SaveProcessedData;
-        if (Directory.Exists(Path.GetDirectoryName(_settings.Channel2SaveFilePath)))
-            acquisitionViewModel.AcquisitionChannel2.FilePath = _settings.Channel2SaveFilePath;
-        acquisitionViewModel.FusedAcquisitionChannel.SaveRawData = _settings.FusedChannelSaveRawData;
-        acquisitionViewModel.FusedAcquisitionChannel.SaveProcessedData = _settings.FusedChannelSaveProcessedData;
-        if (Directory.Exists(Path.GetDirectoryName(_settings.FusedChannelSaveFilePath)))
-            acquisitionViewModel.FusedAcquisitionChannel.FilePath = _settings.FusedChannelSaveFilePath;
+            acquisitionViewModel.AcquisitionChannel.FilePath = _settings.Channel1SaveFilePath;
         acquisitionViewModel.LogTimeStamps = _settings.LogTimeStamps;
         acquisitionViewModel.AppendTimeStamps = _settings.AppendTimeStamps;
 
@@ -63,15 +55,9 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
 
         // AcquisitionView settings.
         _settings.AutoGenerateFileNames = acquisitionViewModel.AutoGenerateFileNames;
-        _settings.Channel1SaveRawData = acquisitionViewModel.AcquisitionChannel1.SaveRawData;
-        _settings.Channel1SaveProcessedData = acquisitionViewModel.AcquisitionChannel1.SaveProcessedData;
-        _settings.Channel1SaveFilePath = acquisitionViewModel.AcquisitionChannel1.FilePath;
-        _settings.Channel2SaveRawData = acquisitionViewModel.AcquisitionChannel2.SaveRawData;
-        _settings.Channel2SaveProcessedData = acquisitionViewModel.AcquisitionChannel2.SaveProcessedData;
-        _settings.Channel2SaveFilePath = acquisitionViewModel.AcquisitionChannel2.FilePath;
-        _settings.FusedChannelSaveRawData = acquisitionViewModel.FusedAcquisitionChannel.SaveRawData;
-        _settings.FusedChannelSaveProcessedData = acquisitionViewModel.FusedAcquisitionChannel.SaveProcessedData;
-        _settings.FusedChannelSaveFilePath = acquisitionViewModel.FusedAcquisitionChannel.FilePath;
+        _settings.Channel1SaveRawData = acquisitionViewModel.AcquisitionChannel.SaveRawData;
+        _settings.Channel1SaveProcessedData = acquisitionViewModel.AcquisitionChannel.SaveProcessedData;
+        _settings.Channel1SaveFilePath = acquisitionViewModel.AcquisitionChannel.FilePath;
         _settings.LogTimeStamps = acquisitionViewModel.LogTimeStamps;
         _settings.AppendTimeStamps = acquisitionViewModel.AppendTimeStamps;
 

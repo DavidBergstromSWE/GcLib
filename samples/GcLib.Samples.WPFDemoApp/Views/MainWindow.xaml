@@ -30,7 +30,7 @@
             <Binding Path="MajorMinorVersion"/>
         </MultiBinding>
     </mah:MetroWindow.Title>
-    
+
     <i:Interaction.Triggers>
         <!--- Eventhandlers to Closing events (exiting application) -->
         <i:EventTrigger EventName="Closing">
@@ -61,11 +61,6 @@
         <!-- Recordings -->
         <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.OpenSequenceCommand}" CommandParameter="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.SelectedChannel}"/>
         <KeyBinding Key="X" Modifiers="Ctrl" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.CloseSequenceCommand}"/>
-        <!-- Channel selections -->
-        <KeyBinding Key="F1" Command="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.Channel1}"/>
-        <KeyBinding Key="F2" Command="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.Channel2}"/>
-        <KeyBinding Key="F3" Command="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.FusedChannel}"/>
-        <KeyBinding Key="F4" Command="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.ChangeSelectedDisplayChannelCommand}" CommandParameter="{x:Static local:DisplayChannel.All}"/>
         <!-- Acquisition -->
         <KeyBinding Key="F6" Command="{Binding Source={StaticResource ViewModelLocator}, Path=AcquisitionViewModel.PlayCommand}"/>
         <KeyBinding Key="F7" Command="{Binding Source={StaticResource ViewModelLocator}, Path=AcquisitionViewModel.StopCommand}"/>
@@ -138,22 +133,6 @@
                         </i:Interaction.Triggers>
                     </MenuItem>
                 </MenuItem>
-                <MenuItem x:Name="EditMenu" Header="_Edit" >
-                    <MenuItem Header="Options..." Icon="{iconPacks:Entypo Kind=Cog}" Command="{Binding OpenOptionsWindowCommand}" />
-                    <Separator/>
-                    <MenuItem Header="Load calibration..."
-                              Icon="{iconPacks:PixelartIcons Kind=Chess}"
-                              ToolTip="Load calibration data from file" ToolTipService.InitialShowDelay="1000"
-                              Command="{Binding ElementName=imageProcessingView, Path=DataContext.LoadCalibrationDataCommand}"/>
-                    <MenuItem Header="Edit calibration..."
-                              Icon="{iconPacks:Microns Kind=Matrix}"
-                              ToolTip="Edit current calibration" ToolTipService.InitialShowDelay="1000"
-                              Command="{Binding ElementName=imageProcessingView, Path=DataContext.EditCalibrationDataCommand}"/>
-                    <MenuItem Header="Clear calibration"
-                              Icon="{iconPacks:FeatherIcons Kind=X, Height=10}"
-                              ToolTip="Clear current calibration" ToolTipService.InitialShowDelay="1000"
-                              Command="{Binding ElementName=imageProcessingView, Path=DataContext.ClearCalibrationDataCommand}"/>
-                </MenuItem>
                 <MenuItem x:Name="Window" Header="_Window">
                     <MenuItem Header="Show Full Screen" 
                               InputGestureText="F11" 
@@ -210,7 +189,7 @@
             </Expander.Style>
             <views:DeviceView x:Name="deviceView" d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=DeviceViewModel}"/>
         </Expander>
-        
+
         <!--Image display-->
         <views:ImageDisplayView x:Name="imageDisplayView" 
                                 Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
@@ -219,7 +198,7 @@
         <!--Image processing-->
         <views:ImageProcessingView x:Name="imageProcessingView"
                                    Grid.Row="2" Grid.Column="3"
-                                   Margin="0 15 0 0" 
+                                   Margin="0 20 0 0" 
                                    HorizontalAlignment="Center" VerticalAlignment="Top"
                                    d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}"/>
 
@@ -227,6 +206,9 @@
         <views:HistogramView x:Name="histogramView"
                              Grid.Row="2" Grid.Column="4"
                              Margin="20 60 0 0"/>
+        <views:PlayBackView x:Name="playbackView"
+                            Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2"
+                            HorizontalAlignment="Center"/>
 
         <!--Acquisition (live, stop and record)-->
         <views:AcquisitionView x:Name="acquisitionView" 
@@ -236,10 +218,7 @@
                                Visibility="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 
         <!--Playback-->
-        <views:PlayBackView x:Name="playbackView"
-                            Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3"
-                            HorizontalAlignment="Center"/>
-        
+
         <!--Status bar-->
         <DockPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="6">
             <StatusBar>

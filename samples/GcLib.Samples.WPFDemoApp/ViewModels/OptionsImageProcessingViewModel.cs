@@ -11,13 +11,11 @@ internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptio
     #region Fields
 
     // Initial settings.
-    private readonly BorderType _selectedBorderType;
     private readonly Inter _selectedInterpolationMethod;
     private readonly bool _flipChannel1Horizontal;
     private readonly bool _flipChannel1Vertical;
     private readonly bool _flipChannel2Horizontal;
     private readonly bool _flipChannel2Vertical;
-    private readonly ScalingDirection _imageScalingMode;
 
     #endregion
 
@@ -43,13 +41,10 @@ internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptio
         ImageProcessingViewModel = imageProcessingViewModel;
 
         // Store initial settings.
-        _selectedBorderType = ImageProcessingViewModel.FusedImageChannel.SelectedBorderType;
-        _selectedInterpolationMethod = ImageProcessingViewModel.FusedImageChannel.SelectedInterpolationMethod;
         _flipChannel1Horizontal = ImageProcessingViewModel.ImageChannel1.FlipHorizontal;
         _flipChannel1Vertical = ImageProcessingViewModel.ImageChannel1.FlipVertical;
         _flipChannel2Horizontal = ImageProcessingViewModel.ImageChannel2.FlipHorizontal;
         _flipChannel2Vertical = ImageProcessingViewModel.ImageChannel2.FlipVertical;
-        _imageScalingMode = ImageProcessingViewModel.FusedImageChannel.SelectedImageScalingDirection;
     }
 
     #endregion
@@ -60,13 +55,10 @@ internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptio
     public void CancelChanges()
     {
         // Restore initial settings.
-        ImageProcessingViewModel.FusedImageChannel.SelectedBorderType = _selectedBorderType;
-        ImageProcessingViewModel.FusedImageChannel.SelectedInterpolationMethod = _selectedInterpolationMethod;
         ImageProcessingViewModel.ImageChannel1.FlipHorizontal = _flipChannel1Horizontal;
         ImageProcessingViewModel.ImageChannel1.FlipVertical = _flipChannel1Vertical;
         ImageProcessingViewModel.ImageChannel2.FlipHorizontal = _flipChannel2Horizontal;
         ImageProcessingViewModel.ImageChannel2.FlipVertical = _flipChannel2Vertical;
-        ImageProcessingViewModel.FusedImageChannel.SelectedImageScalingDirection = _imageScalingMode;
     }
 
     #endregion

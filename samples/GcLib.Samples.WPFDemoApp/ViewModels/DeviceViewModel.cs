@@ -81,11 +81,6 @@ internal sealed class DeviceViewModel : ObservableRecipient
     }
 
     /// <summary>
-    /// Available device channels.
-    /// </summary>
-    public DeviceModel[] Devices { get; }
-
-    /// <summary>
     /// Currently selected device channel.
     /// </summary>
     public DeviceModel SelectedDevice
@@ -194,26 +189,18 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <param name="deviceProvider">Service providing devices.</param>
     /// <param name="fusionConfigurationService">Service managing loading/saving of fusion system configurations.</param>
     /// <param name="deviceChannels">Available device channels.</param>
-    public DeviceViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, IDeviceProvider deviceProvider, IConfigurationService fusionConfigurationService, DeviceModel[] deviceChannels)
+    public DeviceViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, IDeviceProvider deviceProvider, IConfigurationService fusionConfigurationService, DeviceModel device)
     {
         // Get required services.
         _windowService = windowService;
         _dispatcherService = dispatcherService;
         _deviceProvider = deviceProvider;
         _fusionConfigurationService = fusionConfigurationService;
-
-        // Populate devices.
-        Devices = deviceChannels;
-
-        // Hook up eventhandlers to events in devices.
-        foreach (DeviceModel device in Devices)
-        {
-            device.ConnectionLost += DeviceModel_ConnectionLost;
-            device.PropertyChanged += DeviceModel_PropertyChanged;          
-        }
             
         // Set default device to be selected at start-up.
-        SelectedDevice = Devices[0];
+        SelectedDevice = device;
+        SelectedDevice.ConnectionLost += DeviceModel_ConnectionLost;
+        SelectedDevice.PropertyChanged += DeviceModel_PropertyChanged;
 
         // Default settings at startup.
         CanLoadConfiguration = true;
@@ -271,11 +258,9 @@ internal sealed class DeviceViewModel : ObservableRecipient
         catch (Exception)
         {
             // Disconnect devices.
-            foreach (DeviceModel device in Devices)
-            {
-                if (device.IsConnected)
-                    await device.DisconnectDeviceAsync();
-            }
+            if (SelectedDevice.IsConnected)
+                await SelectedDevice.DisconnectDeviceAsync();
+
 
             // Rethrow.
             throw;
@@ -327,11 +312,8 @@ internal sealed class DeviceViewModel : ObservableRecipient
         try
         {
             // Make sure devices are updated before saving.
-            foreach (DeviceModel device in Devices)
-            {
-                if (device.IsConnected)
-                    await device.UpdateDeviceAsync();
-            }
+            if (SelectedDevice.IsConnected)
+                await SelectedDevice.UpdateDeviceAsync();
 
             // Store configuration to file.
             await _fusionConfigurationService.StoreAsync(filePath);
@@ -434,11 +416,8 @@ internal sealed class DeviceViewModel : ObservableRecipient
 
                 // Build filename using device model name(s) and current date.
                 fileName = "FusionConfiguration";
-                foreach (DeviceModel device in Devices)
-                {
-                    if (device.IsConnected)
-                        fileName += $"_{device.ModelName}";
-                }
+                if (SelectedDevice.IsConnected)
+                    fileName += $"_{SelectedDevice.ModelName}";
                 fileName += $"_{DateTime.Now:yyyyMMdd}.xml";
             }
 
@@ -546,14 +525,14 @@ internal sealed class DeviceViewModel : ObservableRecipient
         if (e.PropertyName == nameof(DeviceModel.IsConnected))
         {
             // Enable saving of configuration if any device is connected (disable if none is connected).
-            CanSaveConfiguration = Array.Exists(Devices, p => p.IsConnected);
+            CanSaveConfiguration = SelectedDevice.IsConnected;
 
             // Notify commands of changes.
             OpenParameterDialogWindowCommand?.NotifyCanExecuteChanged();
             ConnectCameraFromDialogCommand?.NotifyCanExecuteChanged();
 
             // Reset file path if no device is connected.
-            if (Array.Exists(Devices, p => p.IsConnected) == false)
+            if (SelectedDevice.IsConnected == false)
                 ConfigurationFilePath = null;
         }
     }
@@ -664,11 +643,8 @@ internal sealed class DeviceViewModel : ObservableRecipient
         if (e.Cancel == false)
         {
             // Disconnect devices.
-            foreach (DeviceModel device in Devices)
-            {
-                if (device.IsConnected)
-                    await device.DisconnectDeviceAsync();
-            }
+            if (SelectedDevice.IsConnected)
+                await SelectedDevice.DisconnectDeviceAsync();
         }
     }
 

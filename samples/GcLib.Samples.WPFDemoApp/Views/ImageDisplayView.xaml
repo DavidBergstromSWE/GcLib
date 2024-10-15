@@ -10,45 +10,31 @@
              DataContext="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel}"
              d:DesignHeight="650" d:DesignWidth="800">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
+    <!--Display control-->
+    <controls:ImageViewer x:Name="imageViewer" IsEnabled="True" Grid.Row="0" Grid.RowSpan="2"
+                            ImageBorderBrush="{DynamicResource MahApps.Brushes.TextBox.Border.Focus}"
+                            BitmapScaling="{Binding SelectedBitmapScalingMode, Mode=OneWay}"
+                            ShowPixelInspector="True"
+                            ShowImageFormat="True"
+                            ShowImageMetaData="True"
+                            MouseWheelZoomingEnabled="True" SelectionBoxZoomingEnabled="True"
+                            d:Grid.Column="0" d:Grid.ColumnSpan="3"
+                            d:Visibility="Visible" 
+                            ImageSource="{Binding Channel1SourceImage, Mode=OneWay}"
+                            DisplayedImage="{Binding Channel1ProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}">
+        <controls:ImageViewer.Style>
+            <Style TargetType="controls:ImageViewer">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="True">
+                        <Setter Property="ImageBackground" Value="IndianRed"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="False">
+                        <Setter Property="ImageBackground" Value="Transparent"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </controls:ImageViewer.Style>
+    </controls:ImageViewer>
 
-        <Grid.Resources>
-            <conv:IsEqualConverter x:Key="IsEqualConverter"/>
-        </Grid.Resources>
-
-        <!--Display control-->
-        <controls:ImageViewer x:Name="imageViewer" IsEnabled="True" Grid.Row="0" Grid.RowSpan="2"
-                                ImageBorderBrush="{DynamicResource MahApps.Brushes.TextBox.Border.Focus}"
-                                BitmapScaling="{Binding SelectedBitmapScalingMode, Mode=OneWay}"
-                                ShowPixelInspector="True"
-                                ShowImageFormat="True"
-                                ShowImageMetaData="True"
-                                MouseWheelZoomingEnabled="True" SelectionBoxZoomingEnabled="True"
-                                d:Grid.Column="0" d:Grid.ColumnSpan="3"
-                                d:Visibility="Visible" 
-                                ImageSource="{Binding Channel1SourceImage, Mode=OneWay}"
-                                DisplayedImage="{Binding Channel1ProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}">
-            <controls:ImageViewer.Style>
-                <Style TargetType="controls:ImageViewer">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="True">
-                            <Setter Property="ImageBackground" Value="IndianRed"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded}" Value="False">
-                            <Setter Property="ImageBackground" Value="Transparent"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </controls:ImageViewer.Style>
-        </controls:ImageViewer>
-
-    </Grid>
 
 </UserControl>
