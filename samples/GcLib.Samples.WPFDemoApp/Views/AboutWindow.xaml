@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewmodels:AboutWindowViewModel}"
         Name="aboutWindow"
-        Title="{Binding Title, FallbackValue='About FUSIONVIEWER v1.0.0'}" TitleCharacterCasing="Normal"
+        Title="{Binding Title, FallbackValue='About IMAGEVIEWER v1.0.0'}" TitleCharacterCasing="Normal"
         Height="265" Width="600" ResizeMode="NoResize">
 
     <mah:MetroWindow.DataContext>
@@ -61,12 +61,12 @@
                     Orientation="Vertical"
                     Margin="15 0 0 0">
             <TextBlock TextWrapping="Wrap" TextAlignment="Justify">
-                <Run Text="FUSIONVIEWER" FontWeight="Bold" />
-                <Run Text="is a WPF demo application for real-time image fusion of two camera channels. The application uses the GenICam/GenTL-based" />
+                <Run Text="IMAGEVIEWER" FontWeight="Bold" />
+                <Run Text="is a WPF demo application for" />
                 <Hyperlink NavigateUri="https://dev.azure.com/MySimLabs/GcLib/" RequestNavigate="Hyperlink_RequestNavigate">
                     GcLib
                 </Hyperlink>
-                <Run Text="library for controlling settings and streaming of cameras."/>
+                <Run Text=", a library for controlling settings and streaming of cameras."/>
                 <Run Text="The OpenCV .NET wrapper"/>
                 <Hyperlink NavigateUri="https://www.emgu.com/wiki/index.php/Main_Page" RequestNavigate="Hyperlink_RequestNavigate">
                     EmguCV
@@ -110,11 +110,11 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 3 0 0">
                 <TextBlock Text="Company:" Style="{DynamicResource Label}"/>
-                <TextBlock Text="Totalförsvarets Forskningsinstitut (FOI)" Style="{DynamicResource Value}"/>
+                <TextBlock Text="MySimLabs" Style="{DynamicResource Value}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 3 0 0" >
                 <TextBlock Text="Date:" Style="{DynamicResource Label}" />
-                <TextBlock Text="{Binding VersionString}" d:Text="2021-05-11 (Build: 1234, Rev. 1)" Style="{DynamicResource Value}"/>
+                <TextBlock Text="{Binding VersionString}" d:Text="2024-10-15 (Build: 1234, Rev. 1)" Style="{DynamicResource Value}"/>
             </StackPanel>
         </StackPanel>
 

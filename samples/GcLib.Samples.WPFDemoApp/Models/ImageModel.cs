@@ -24,16 +24,10 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
     private bool _flipHorizontal;
     private bool _flipVertical;
     private double _brightness;
-    private bool _invertContrast;
 
     #endregion
 
     #region Properties
-
-    /// <summary>
-    /// Image channel that data belongs to.
-    /// </summary>
-    public DisplayChannel ImageChannel { get; }
 
     /// <summary>
     /// Raw (un-processed) image data.
@@ -115,15 +109,6 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         set => SetProperty(ref _brightness, value);
     }
 
-    /// <summary>
-    /// Invert contrast of image.
-    /// </summary>
-    public bool InvertContrast
-    {
-        get => _invertContrast;
-        set => SetProperty(ref _invertContrast, value);
-    }
-
     #endregion
 
     #region Events
@@ -202,10 +187,8 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
     /// Creates a new model for the storage and processing of image data.
     /// </summary>
     /// <param name="channel">Channel owner.</param>
-    public ImageModel(DisplayChannel channel)
+    public ImageModel()
     {
-        ImageChannel = channel;
-
         InitializeSettings();
     }
 
@@ -224,7 +207,6 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         FlipHorizontal = false;
         FlipVertical = false;
 
-        InvertContrast = false;
         Brightness = 0;
 
         // Re-enable logging.
@@ -255,9 +237,6 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         FlipHorizontal = reader.Name == nameof(FlipHorizontal) && bool.Parse(reader.ReadElementContentAsString());
         FlipVertical = reader.Name == nameof(FlipVertical) && bool.Parse(reader.ReadElementContentAsString());
 
-        // Read if contrast inversion was used.
-        InvertContrast = reader.Name == nameof(InvertContrast) && bool.Parse(reader.ReadElementContentAsString());
-
         // Read brightness setting.
         Brightness = reader.Name == nameof(Brightness) ? reader.ReadElementContentAsDouble() : 0;
     }
@@ -268,9 +247,6 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         // Write flip settings.
         writer.WriteElementString(nameof(FlipHorizontal), FlipHorizontal.ToString());
         writer.WriteElementString(nameof(FlipVertical), FlipVertical.ToString());
-
-        // Write if contrast inversion is used.
-        writer.WriteElementString(nameof(InvertContrast), InvertContrast.ToString());
 
         // Write brightness setting.
         writer.WriteElementString(nameof(Brightness), Brightness.ToString());

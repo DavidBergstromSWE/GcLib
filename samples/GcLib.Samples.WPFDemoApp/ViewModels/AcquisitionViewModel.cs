@@ -380,8 +380,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         // Stop acquisition on all channels.
         await _dispatcherService.Invoke(StopAsync);
 
-        string channelName = ((AcquisitionModel)sender).DeviceModel.ChannelName;
-
         // Show error message to user.
         _dispatcherService.Invoke(() =>
         {
@@ -409,7 +407,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 
         // ToDo: Log warning message instead? Too verbose?
         // Send message to status bar? Remove?
-        _ = Messenger.Send(new StatusBarLogMessage($"Frames have been lost in {acquisitionModel.DeviceModel.ChannelName} (Total number: {frameDroppedEventArgs.LostFrameCount}).", LogEventLevel.Warning));
+        _ = Messenger.Send(new StatusBarLogMessage($"Frames have been lost (Total number: {frameDroppedEventArgs.LostFrameCount}).", LogEventLevel.Warning));
     }
 
     /// <summary>
@@ -424,8 +422,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 
             if (IsRecording)
                 await _dispatcherService.Invoke(StopAsync);
-
-            string channelName = (sender as AcquisitionModel).ImageModel.ImageChannel.ToString();
 
             // Show error message to user.
             _windowService.ShowMessageDialog(this, "Recording error!", eventArgs.ErrorMessage, MessageDialogStyle.Affirmative, MetroDialogHelper.DefaultSettings);
@@ -466,9 +462,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         {
             _isAborting = true;
 
-            DisplayChannel displayChannel = (sender as ImageModel).ImageChannel;
-
-            Log.Error(ex, "Exception thrown while processing image in {Channel}", displayChannel);
+            Log.Error(ex, "Exception thrown while processing image");
 
             _dispatcherService.Invoke(() =>
             {
@@ -476,7 +470,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
                 StopCommand.Execute(null);
 
                 // Show error message.
-                _ = _windowService.ShowMessageDialog(this, "Image Processing Error!", $"Exception thrown while processing image in {displayChannel}: {ex.Message}", MessageDialogStyle.Affirmative, MetroDialogHelper.MessageDialogSettings);
+                _ = _windowService.ShowMessageDialog(this, "Image Processing Error!", $"Exception thrown while processing image: {ex.Message}", MessageDialogStyle.Affirmative, MetroDialogHelper.MessageDialogSettings);
             });
 
             _isAborting = false;

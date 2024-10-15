@@ -84,7 +84,7 @@ internal sealed class ConfigurationService : IConfigurationService
 
             // Read device information.
             DeviceInfo deviceInfo = new();
-            if (reader.Name == nameof(DeviceInfo) && reader.GetAttribute("Device") == _device.DeviceIndex.ToString())
+            if (reader.Name == nameof(DeviceInfo))
             {
                 reader.ReadStartElement(nameof(DeviceInfo));
                 deviceInfo = new DeviceInfo(VendorName: reader.ReadElementContentAsString(), ModelName: reader.ReadElementContentAsString(), UniqueID: reader.ReadElementContentAsString());
@@ -106,7 +106,7 @@ internal sealed class ConfigurationService : IConfigurationService
             // Restore device properties.
             if (_device.IsConnected)
             {
-                if (reader.Name == "PropertyList" && reader.GetAttribute("Device") == _device.DeviceIndex.ToString())
+                if (reader.Name == "PropertyList")
                 {
                     // Read device properties.
                     reader.ReadStartElement("PropertyList");
@@ -123,14 +123,14 @@ internal sealed class ConfigurationService : IConfigurationService
             }
 
             // Restore channel processing settings.
-                if (reader.Name == "Processing" && reader.GetAttribute(0) == _imageProcessing.ImageChannel.ToString())
+                if (reader.Name == "Processing")
                 {
                     reader.ReadStartElement("Processing");
                     _imageProcessing.ReadXml(reader);
 
                     reader.ReadEndElement();
 
-                    Log.Debug("Processing settings restored to {Channel}", _imageProcessing.ImageChannel.ToString());
+                    Log.Debug("Processing settings restored");
                 }
 
             reader.ReadEndElement();
@@ -171,7 +171,6 @@ internal sealed class ConfigurationService : IConfigurationService
         if (_device.IsConnected)
         {
             _xmlWriter.WriteStartElement(nameof(DeviceInfo));
-            _xmlWriter.WriteAttributeString("Device", _device.DeviceIndex.ToString());
             _xmlWriter.WriteElementString(nameof(DeviceModel.VendorName), _device.VendorName);
             _xmlWriter.WriteElementString(nameof(DeviceModel.ModelName), _device.ModelName);
             _xmlWriter.WriteElementString(nameof(DeviceModel.UniqueID), _device.UniqueID);
@@ -182,14 +181,12 @@ internal sealed class ConfigurationService : IConfigurationService
         if (_device.IsConnected)
         {
             _xmlWriter.WriteStartElement("PropertyList");
-            _xmlWriter.WriteAttributeString("Device", _device.DeviceIndex.ToString());
             _device.WriteXml(_xmlWriter);
             _xmlWriter.WriteEndElement();
         }
 
         // Store image channel processing settings.
         _xmlWriter.WriteStartElement("Processing");
-        _xmlWriter.WriteAttributeString(nameof(_imageProcessing.ImageChannel), _imageProcessing.ImageChannel.ToString());
         _imageProcessing.WriteXml(_xmlWriter);
         _xmlWriter.WriteEndElement();
 
