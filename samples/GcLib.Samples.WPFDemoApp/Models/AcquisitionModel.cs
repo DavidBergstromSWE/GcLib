@@ -120,7 +120,7 @@ internal class AcquisitionModel : ObservableObject
 
         // Initialize grabbing thread with device ID.
         if (deviceModel != null)
-            _imageGrabbingThread = new GcProcessingThread(ID: deviceModel.DeviceIndex.ToString());
+            _imageGrabbingThread = new GcProcessingThread();
     }
 
     #endregion
@@ -136,13 +136,13 @@ internal class AcquisitionModel : ObservableObject
     public virtual async Task StartAcquisitionAsync(bool startGrabbing = false)
     {
         if (DeviceModel.IsConnected == false)
-            throw new InvalidOperationException($"No device is connected to {DeviceModel.ChannelName}!");
+            throw new InvalidOperationException($"No device is connected!");
 
         if (IsAcquiring)
-            throw new InvalidOperationException($"Acquisition is already actively running on {DeviceModel.ChannelName}!");
+            throw new InvalidOperationException($"Acquisition is already actively running!");
 
         // Open datastream.
-        _dataStream = DeviceModel.Device.OpenDataStream(DeviceModel.DeviceIndex.ToString());
+        _dataStream = DeviceModel.Device.OpenDataStream();
 
         // Hook handler to events announcing dropped frames.
         _dataStream.FrameDropped += OnFrameDropped;
@@ -164,16 +164,16 @@ internal class AcquisitionModel : ObservableObject
                 StartGrabbing();
 
             // Log information.
-            Log.Debug("Acquisition on {channel} started", DeviceModel.ChannelName);
+            Log.Debug("Acquisition started");
         }
         catch (Exception ex)
         {
             // Stop acquisition and wait for it to finish.
             await StopAcquisitionAsync();
 
-            Log.Error(ex, "Failed to start acquisition on {channel}", DeviceModel.ChannelName);
+            Log.Error(ex, "Failed to start acquisition");
                 
-            throw new InvalidOperationException($"Failed to start acquisition on {DeviceModel.ChannelName}: {ex.Message}");
+            throw new InvalidOperationException($"Failed to start acquisition: {ex.Message}");
         }
     }
 
@@ -184,10 +184,10 @@ internal class AcquisitionModel : ObservableObject
     public virtual void StartGrabbing()
     {
         if (IsAcquiring == false)
-            throw new InvalidOperationException($"No acquisition is actively running on {DeviceModel.ChannelName}!");
+            throw new InvalidOperationException($"No acquisition is actively running!");
 
         if (IsGrabbing)
-            throw new InvalidOperationException($"{DeviceModel.ChannelName} is already grabbing!");
+            throw new InvalidOperationException($"Grabbing has already been started!");
 
         // Hook handler to events announcing new buffers for processing.
         _imageGrabbingThread.BufferProcess += ImageModel.OnBufferProcess;
@@ -197,7 +197,7 @@ internal class AcquisitionModel : ObservableObject
 
         IsGrabbing = true;
 
-        Log.Verbose("Grabbing started on {channel}", DeviceModel.ChannelName);
+        Log.Verbose("Grabbing started");
     }
 
     /// <summary>
@@ -210,10 +210,10 @@ internal class AcquisitionModel : ObservableObject
     public virtual Task StartRecordingAsync(string subString = "", bool startGrabbing = false)
     {
         if (DeviceModel.IsConnected == false)
-            throw new InvalidOperationException($"No device is connected to {DeviceModel.ChannelName}!");
+            throw new InvalidOperationException($"No device is connected!");
 
         if (IsAcquiring)
-            throw new InvalidOperationException($"Acquisition is already actively running on {DeviceModel.ChannelName}!");
+            throw new InvalidOperationException($"Acquisition is already actively running!");
 
         // Create file path by adding substring to end of filename.
         string filePath = Path.GetDirectoryName(FilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(FilePath) + subString + ".bin";
@@ -235,10 +235,10 @@ internal class AcquisitionModel : ObservableObject
     public virtual async Task StopAcquisitionAsync()
     {
         if (DeviceModel.IsConnected == false)
-            throw new InvalidOperationException($"No device is connected to {DeviceModel.ChannelName}!");
+            throw new InvalidOperationException($"No device is connected!");
 
         if (IsAcquiring == false)
-            throw new InvalidOperationException($"No acquisition is actively running on {DeviceModel.ChannelName}!");
+            throw new InvalidOperationException($"No acquisition is actively running!");
 
         // Unregister eventhandlers.
         DeviceModel.Device.AcquisitionStarted -= OnAcquisitionStarted;
@@ -258,7 +258,7 @@ internal class AcquisitionModel : ObservableObject
 
         IsGrabbing = false;
 
-        Log.Verbose("Grabbing stopped on {channel}", DeviceModel.ChannelName);
+        Log.Verbose("Grabbing stopped");
 
         // Stop streaming image data from device.
         _dataStream.Stop();
@@ -269,7 +269,7 @@ internal class AcquisitionModel : ObservableObject
         IsAcquiring = false;
 
         // Log information.
-        Log.Debug("Acquisition on {channel} stopped", DeviceModel.ChannelName);
+        Log.Debug("Acquisition stopped");
     }
 
     #endregion
@@ -301,7 +301,7 @@ internal class AcquisitionModel : ObservableObject
         ImageWriter.Start();
 
         // Log information.
-        Log.Debug("Recording of {channel} to {file} started", ImageModel.ImageChannel.ToString(), ImageWriter.FilePath);
+        Log.Debug("Recording to {file} started", ImageWriter.FilePath);
     }
 
     /// <summary>
@@ -314,13 +314,13 @@ internal class AcquisitionModel : ObservableObject
         ImageModel.RawImageAdded -= ImageWriter.OnBufferTransferred;
         ImageModel.ProcessedImageAdded -= ImageWriter.OnBufferTransferred;
 
-        Log.Verbose("Stopping recording thread on {channel}", ImageModel.ImageChannel.ToString());
+        Log.Verbose("Stopping recording thread");
 
         // Stop writing images to disk.
         await ImageWriter.StopAsync();
 
         // Log information.
-        Log.Debug("Recording of {channel} to {file} finished ({buffers} buffers and {bytes} bytes written)", ImageModel.ImageChannel.ToString(), ImageWriter.FilePath, ImageWriter.BuffersWritten, ImageWriter.FileSize);
+        Log.Debug("Recording to {file} finished ({buffers} buffers and {bytes} bytes written)", ImageWriter.FilePath, ImageWriter.BuffersWritten, ImageWriter.FileSize);
 
         // Unhook exception eventhandler.
         ImageWriter.WritingAborted -= OnWritingAborted;
@@ -408,7 +408,7 @@ internal class AcquisitionModel : ObservableObject
     protected void OnWritingAborted(object sender, WritingAbortedEventArgs eventArgs)
     {
         // Abort recording with error message.
-        OnRecordingAborted(this, new WritingAbortedEventArgs($"Recording of {ImageModel.ImageChannel} to {ImageWriter.FilePath} was aborted: {eventArgs.ErrorMessage}", eventArgs.Exception));
+        OnRecordingAborted(this, new WritingAbortedEventArgs($"Recording to {ImageWriter.FilePath} was aborted: {eventArgs.ErrorMessage}", eventArgs.Exception));
     }
 
     #endregion

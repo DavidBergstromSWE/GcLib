@@ -48,7 +48,7 @@ internal sealed class MockViewModelLocator
 /// </summary>
 internal sealed class MockDeviceViewModel
 {
-    public static DeviceModel[] Devices => [new(DeviceIndex.Device1, "Channel1", "VirtualCam", "FOI", "VirtualCam1") { IsConnected = true }, new(DeviceIndex.Device2, "Channel2") { IsConnected = false }];
+    public static DeviceModel[] Devices => [new("VirtualCam", "FOI", "VirtualCam1") { IsConnected = true }, new() { IsConnected = false }];
     public static DeviceModel SelectedDevice { get; set; } = Devices[0];
     public static bool IsEnabled => true;
     public static ICommand ConnectCameraFromDialogCommand { get; }
@@ -60,8 +60,8 @@ internal sealed class MockDeviceViewModel
 /// </summary>
 internal sealed class MockImageProcessingViewModel
 {
-    public static ImageModel ImageChannel1 => new(DisplayChannel.Channel1) { Brightness = 100.0 };
-    public static ImageModel ImageChannel2 => new(DisplayChannel.Channel2);
+    public static ImageModel ImageChannel1 => new() { Brightness = 100.0 };
+    public static ImageModel ImageChannel2 => new();
     public static ImageModel[] ImageChannels => [ImageChannel1, ImageChannel2];
     public static ImageModel SelectedImageChannel { get; set; } = ImageChannels[0];
     public static string ChannelName => "Channel1";

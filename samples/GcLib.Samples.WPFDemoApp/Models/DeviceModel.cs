@@ -15,7 +15,7 @@ using Serilog;
 namespace FusionViewer.Models;
 
 /// <summary>
-/// Models a camera device used as an input acquisition channel for image fusion.
+/// Models a camera device.
 /// </summary>
 internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
 {
@@ -33,22 +33,6 @@ internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
     #endregion
 
     #region Properties
-
-    [MinLength(1, ErrorMessage = "Alias must be at least 1 character")]
-    [MaxLength(9, ErrorMessage = "Alias can not be longer than 9 characters")]
-    /// <summary>
-    /// Name of channel.
-    /// </summary>
-    public string ChannelName
-    {
-        get => _channelName;
-        set => TrySetProperty(ref _channelName, value, out _);
-    }
-
-    /// <summary>
-    /// Index of device.
-    /// </summary>
-    public DeviceIndex DeviceIndex { get; }
 
     /// <summary>
     /// Model name of device. 
@@ -116,29 +100,21 @@ internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
     #region Constructors
 
     /// <summary>
-    /// Instantiates a new model for a device.
+    /// Instantiate a new empty device.
     /// </summary>
-    /// <param name="deviceIndex">Index for device.</param>
-    /// <param name="channelName">Name of channel.</param>
-    public DeviceModel(DeviceIndex deviceIndex, string channelName)
+    public DeviceModel()
     {
-        DeviceIndex = deviceIndex;
-        ChannelName = channelName;
         SetDeviceInfo();
     }
 
     /// <summary>
-    /// Instantiates a new mockup model for a device, with dummy model name, vendor name and ID.
+    /// Instantiate a new empty device, with model name, vendor name and ID.
     /// </summary>
-    /// <param name="deviceIndex">Index for device.</param>
-    /// <param name="channelName">Name of channel.</param>
     /// <param name="modelName">Name of model.</param>
     /// <param name="vendorName">Name of vendor.</param>
     /// <param name="uniqueID">Device ID.</param>
-    public DeviceModel(DeviceIndex deviceIndex, string channelName, string modelName, string vendorName, string uniqueID)
+    public DeviceModel(string modelName, string vendorName, string uniqueID)
     {
-        DeviceIndex = deviceIndex;
-        ChannelName = channelName;
         SetDeviceInfo(modelName, vendorName, uniqueID);
     }
 
@@ -147,7 +123,7 @@ internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
     #region Public methods
 
     /// <summary>
-    /// Connects to a device using device information.
+    /// Connect a device using device information.
     /// </summary>
     /// <param name="deviceInfo">Top-level info about device.</param>
     /// <param name="deviceProvider">Provider of devices.</param>
@@ -157,7 +133,7 @@ internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
     {
         IsConnecting = true;
 
-        Log.Debug("Attempting to connect device {Device} (ID: {ID}) to {Channel}", deviceInfo.ModelName, deviceInfo.UniqueID, ChannelName);
+        Log.Debug("Attempting to connect device {Device} (ID: {ID})", deviceInfo.ModelName, deviceInfo.UniqueID);
 
         try
         {
@@ -170,13 +146,13 @@ internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
             IsConnected = true;
 
             // Announce connection event.
-            _ = WeakReferenceMessenger.Default.Send(new DeviceConnectedMessage(DeviceIndex));
+            _ = WeakReferenceMessenger.Default.Send(new DeviceConnectedMessage());
 
             // Hook eventhandler to lost connection events.
             Device.ConnectionLost += OnConnectionLost;
 
             // Log information.
-            Log.Information("Device {Device} (ID: {ID}) connected to {Channel}", deviceInfo.ModelName, deviceInfo.UniqueID, ChannelName);
+            Log.Information("Device {Device} (ID: {ID}) connected", deviceInfo.ModelName, deviceInfo.UniqueID);
         }
         catch (TargetInvocationException ex)
         {
@@ -209,7 +185,7 @@ internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
     public async Task DisconnectDeviceAsync()
     {
         if (IsConnected == false)
-            throw new InvalidOperationException($"No device is connected to {ChannelName}!");
+            throw new InvalidOperationException($"No device is connected!");
 
         // Close device (and wait for task completion).
         await Task.Run(Device.Close);
@@ -218,10 +194,10 @@ internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
         Device.ConnectionLost -= OnConnectionLost;
 
         // Announce disconnection event.
-        _ = WeakReferenceMessenger.Default.Send(new DeviceDisconnectedMessage(DeviceIndex));
+        _ = WeakReferenceMessenger.Default.Send(new DeviceDisconnectedMessage());
 
         // Log information.
-        Log.Information("Device {Device} (ID: {ID}) disconnected from {Channel}", ModelName, UniqueID, ChannelName);
+        Log.Information("Device {Device} (ID: {ID}) disconnected", ModelName, UniqueID);
 
         // Update device info.
         Device = null;
@@ -237,7 +213,7 @@ internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
     public Task UpdateDeviceAsync()
     {
         if (IsConnected == false)
-            throw new InvalidOperationException($"No device is connected to {ChannelName}!");
+            throw new InvalidOperationException($"No device is connected!");
 
         // Update parameter collection of device with current parameter values (and wait for task completion).
         return Task.Run(Device.Parameters.Update);

@@ -76,8 +76,8 @@ public partial class App : Application
             .AddTransient<LogWindowViewModel>()
             .AddTransient<ShortcutWindowViewModel>()
             .AddSingleton(logModel)
-            .AddSingleton(new ImageModel(DisplayChannel.Channel1))
-            .AddSingleton(new DeviceModel(DeviceIndex.Device1, "Device"))
+            .AddSingleton(new ImageModel())
+            .AddSingleton(new DeviceModel())
             .AddSingleton<IDeviceProvider, GcSystem>()
             .AddLogging(loggingBuilder => loggingBuilder.AddSerilog())
             .BuildServiceProvider());

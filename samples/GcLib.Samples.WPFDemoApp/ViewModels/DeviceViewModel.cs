@@ -580,7 +580,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
         // Show dialog to user.
         await _windowService.ShowMessageAsync(viewModel: this,
                                               title: "Device error!",
-                                              message: $"Connection to device on {deviceModel.ChannelName} was lost!",
+                                              message: $"Connection to device was lost!",
                                               style: MessageDialogStyle.Affirmative,
                                               settings: MetroDialogHelper.DefaultSettings);
     }

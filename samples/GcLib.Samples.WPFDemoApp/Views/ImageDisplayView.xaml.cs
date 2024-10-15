@@ -10,10 +10,10 @@ namespace FusionViewer.Views;
 public partial class ImageDisplayView : UserControl
 {
     /// <summary>
-    /// Stores settings for an <see cref="ImageViewer"/> control.
+    /// Stores settings for an <see cref="FusionViewer"/> control.
     /// </summary>
     /// <remarks>
-    /// Creates a stored setting for an <see cref="ImageViewer"/> control.
+    /// Creates a stored setting for an <see cref="FusionViewer"/> control.
     /// </remarks>
     /// <param name="stretch">Stretch mode for displayed image.</param>
     /// <param name="scale">Scale of displayed image.</param>
