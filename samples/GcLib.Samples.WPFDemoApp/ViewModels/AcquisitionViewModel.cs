@@ -148,15 +148,15 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// <param name="dialogService">Service providing windows and dialogs.</param>
     /// <param name="dispatcherService">Service providing dispatching and running of actions onto the UI thread.</param>
     /// <param name="deviceChannels">Available device channels.</param>
-    /// <param name="imageChannels">Available image channels.</param>
-    public AcquisitionViewModel(IMetroWindowService dialogService, IDispatcherService dispatcherService, DeviceModel device, ImageModel[] imageChannels)
+    /// <param name="imageChannel">Available image channels.</param>
+    public AcquisitionViewModel(IMetroWindowService dialogService, IDispatcherService dispatcherService, DeviceModel device, ImageModel imageChannel)
     {
         // Get required services.
         _windowService = dialogService;
         _dispatcherService = dispatcherService;
 
         // Instantiate acquisition channels.
-        AcquisitionChannel = new AcquisitionModel(device, imageChannels[0]);
+        AcquisitionChannel = new AcquisitionModel(device, imageChannel);
 
         // Default file paths.
 #if DEBUG
@@ -175,8 +175,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         device.PropertyChanged += DeviceModel_PropertyChanged;
 
         // Register eventhandlers to available images.
-        foreach (ImageModel image in imageChannels)
-            image.ProcessingException += ImageModel_ProcessingException;
+        imageChannel.ProcessingException += ImageModel_ProcessingException;
 
         // Instantiate commands.
         PlayCommand = new AsyncRelayCommand(PlayAsync, CanAcquire);

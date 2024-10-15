@@ -63,7 +63,7 @@ public partial class App : Application
             .AddTransient<IDispatcherService, DispatcherService>()
             .AddTransient<IThemeService, ThemeService>()
             .AddScoped<IMetroWindowService, MetroWindowService>()
-            .AddSingleton<IConfigurationService, FusionConfigurationService>()
+            .AddSingleton<IConfigurationService, ConfigurationService>()
             .AddSingleton<ISettingsService, ApplicationSettingsService>()
             .AddScoped<MainWindowViewModel>()
             .AddScoped<ImageProcessingViewModel>()
@@ -76,7 +76,7 @@ public partial class App : Application
             .AddTransient<LogWindowViewModel>()
             .AddTransient<ShortcutWindowViewModel>()
             .AddSingleton(logModel)
-            .AddSingleton(CreateImageModels())
+            .AddSingleton(new ImageModel(DisplayChannel.Channel1))
             .AddSingleton(new DeviceModel(DeviceIndex.Device1, "Device"))
             .AddSingleton<IDeviceProvider, GcSystem>()
             .AddLogging(loggingBuilder => loggingBuilder.AddSerilog())
@@ -92,24 +92,6 @@ public partial class App : Application
 
         // Shut down all child windows on main window closing.
         Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
-    }
-
-    /// <summary>
-    /// Creates an array of models for input devices.
-    /// </summary>
-    /// <returns>Array of device models.</returns>
-    private static DeviceModel[] CreateDeviceModels()
-    {
-        return [new(DeviceIndex.Device1, "Channel1"), new(DeviceIndex.Device2, "Channel2")];
-    }
-
-    /// <summary>
-    /// Creates an array of models for storing images.
-    /// </summary>
-    /// <returns>Array of image models.</returns>
-    private static ImageModel[] CreateImageModels()
-    {
-        return [new(DisplayChannel.Channel1), new(DisplayChannel.Channel2)];
     }
 
     /// <summary>
