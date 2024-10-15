@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,9 +12,9 @@ using Serilog;
 namespace FusionViewer.Utilities.IO;
 
 /// <summary>
-/// Manages storing and restoring of fusion system configurations, including device and processing settings.
+/// Manages storing and restoring of system configurations, including device and processing settings.
 /// </summary>
-internal sealed class FusionConfigurationService : IConfigurationService
+internal sealed class ConfigurationService : IConfigurationService
 {
     #region Fields
 
@@ -30,14 +29,14 @@ internal sealed class FusionConfigurationService : IConfigurationService
     private readonly XmlReaderSettings _xmlReaderSettings;
 
     /// <summary>
-    /// Devices where device settings are stored.
+    /// Device where device settings is stored.
     /// </summary>
     private readonly DeviceModel _device;
 
     /// <summary>
     /// Image channels where processing settings are stored.
     /// </summary>
-    private readonly ImageModel[] _imageModels;
+    private readonly ImageModel _imageProcessing;
 
     /// <summary>
     /// Provides device information and connections.
@@ -45,15 +44,15 @@ internal sealed class FusionConfigurationService : IConfigurationService
     private readonly IDeviceProvider _deviceProvider;
 
     /// <summary>
-    /// Creates a new service for reading/writing fusion system configurations.
+    /// Creates a new service for reading/writing system configurations.
     /// </summary>
     /// <param name="deviceModels">Devices where device settings are stored.</param>
     /// <param name="imageModels">Image channels where image processing settings are stored.</param>
     /// <param name="deviceProvider">Provides access to physical devices.</param>
-    public FusionConfigurationService(DeviceModel device, ImageModel[] imageModels, IDeviceProvider deviceProvider)
+    public ConfigurationService(DeviceModel device, ImageModel imageModel, IDeviceProvider deviceProvider)
     {
         _device = device;
-        _imageModels = imageModels;
+        _imageProcessing = imageModel;
         _deviceProvider = deviceProvider;
 
         _xmlWriterSettings = new() { Indent = true, NewLineOnAttributes = false };
@@ -84,28 +83,25 @@ internal sealed class FusionConfigurationService : IConfigurationService
                 throw new FileFormatException($"File is not a configuration file!");
 
             // Read device information.
-            List<DeviceInfo> deviceInfos = [];
+            DeviceInfo deviceInfo = new();
             if (reader.Name == nameof(DeviceInfo) && reader.GetAttribute("Device") == _device.DeviceIndex.ToString())
             {
                 reader.ReadStartElement(nameof(DeviceInfo));
-                deviceInfos.Add(new DeviceInfo(VendorName: reader.ReadElementContentAsString(), ModelName: reader.ReadElementContentAsString(), UniqueID: reader.ReadElementContentAsString()));
+                deviceInfo = new DeviceInfo(VendorName: reader.ReadElementContentAsString(), ModelName: reader.ReadElementContentAsString(), UniqueID: reader.ReadElementContentAsString());
                 reader.ReadEndElement();
             }
 
-            ValidateDeviceAvailability(deviceInfos);
+            ValidateDeviceAvailability(deviceInfo);
 
-            // Disconnect devices if necessary.
+            // Disconnect device if necessary.
             if (_device.IsConnected)
                 await _device.DisconnectDeviceAsync();
 
                 token.ThrowIfCancellationRequested();
 
-            // Connect devices.
-            for (var i = 0; i < deviceInfos.Count; i++)
-            {
-                await _device.ConnectDeviceAsync(deviceInfos[i], _deviceProvider);
-                token.ThrowIfCancellationRequested();
-            }
+            // Connect device.
+            await _device.ConnectDeviceAsync(deviceInfo, _deviceProvider);
+            token.ThrowIfCancellationRequested();
 
             // Restore device properties.
             if (_device.IsConnected)
@@ -127,18 +123,15 @@ internal sealed class FusionConfigurationService : IConfigurationService
             }
 
             // Restore channel processing settings.
-            foreach (var imageModel in _imageModels)
-            {
-                if (reader.Name == "Processing" && reader.GetAttribute(0) == imageModel.ImageChannel.ToString())
+                if (reader.Name == "Processing" && reader.GetAttribute(0) == _imageProcessing.ImageChannel.ToString())
                 {
                     reader.ReadStartElement("Processing");
-                    imageModel.ReadXml(reader);
+                    _imageProcessing.ReadXml(reader);
 
                     reader.ReadEndElement();
 
-                    Log.Debug("Processing settings restored to {Channel}", imageModel.ImageChannel.ToString());
+                    Log.Debug("Processing settings restored to {Channel}", _imageProcessing.ImageChannel.ToString());
                 }
-            }
 
             reader.ReadEndElement();
         }
@@ -167,7 +160,7 @@ internal sealed class FusionConfigurationService : IConfigurationService
         // Start document.
         _xmlWriter.WriteStartDocument();
 
-        // Starts fusion system configuration root element.
+        // Starts system configuration root element.
         _xmlWriter.WriteStartElement("FusionViewer", "SystemConfiguration");
         _xmlWriter.WriteAttributeString("Version", MainWindowViewModel.MajorMinorVersion);
 
@@ -195,13 +188,10 @@ internal sealed class FusionConfigurationService : IConfigurationService
         }
 
         // Store image channel processing settings.
-        foreach (ImageModel image in _imageModels)
-        {
-            _xmlWriter.WriteStartElement("Processing");
-            _xmlWriter.WriteAttributeString(nameof(image.ImageChannel), image.ImageChannel.ToString());
-            image.WriteXml(_xmlWriter);
-            _xmlWriter.WriteEndElement();
-        }
+        _xmlWriter.WriteStartElement("Processing");
+        _xmlWriter.WriteAttributeString(nameof(_imageProcessing.ImageChannel), _imageProcessing.ImageChannel.ToString());
+        _imageProcessing.WriteXml(_xmlWriter);
+        _xmlWriter.WriteEndElement();
 
         // Close root element.
         _xmlWriter.WriteEndElement();
@@ -217,23 +207,21 @@ internal sealed class FusionConfigurationService : IConfigurationService
     #region Private methods
 
     /// <summary>
-    /// Validates availability of devices and throws <see cref="InvalidOperationException"/> if any of the devices is not accessible.
+    /// Validates availability of device and throws <see cref="InvalidOperationException"/> if device is not accessible.
     /// </summary>
-    /// <param name="deviceInfos">Top-level info about devices.</param>
+    /// <param name="deviceInfo">Top-level info about device.</param>
     /// <exception cref="InvalidOperationException"></exception>
-    private void ValidateDeviceAvailability(List<DeviceInfo> deviceInfos)
+    private void ValidateDeviceAvailability(DeviceInfo deviceInfo)
     {
         // Update system on available devices.
         _deviceProvider.UpdateDeviceList();
 
         // Check device availability and build exception message if not found.
         string exceptionMessage = string.Empty;
-        foreach (DeviceInfo deviceInfo in deviceInfos)
-        {
-            GcDeviceInfo gcDeviceInfo = _deviceProvider.GetDeviceInfo(deviceInfo.UniqueID);
-            if (gcDeviceInfo is null || (gcDeviceInfo.IsOpen || gcDeviceInfo.IsAccessible) == false)
-                exceptionMessage += $"\nDevice {deviceInfo.ModelName} (ID: {deviceInfo.UniqueID}) not found!";
-        }
+        GcDeviceInfo gcDeviceInfo = _deviceProvider.GetDeviceInfo(deviceInfo.UniqueID);
+        if (gcDeviceInfo is null || (gcDeviceInfo.IsOpen || gcDeviceInfo.IsAccessible) == false)
+            exceptionMessage += $"\nDevice {deviceInfo.ModelName} (ID: {deviceInfo.UniqueID}) not found!";
+
 
         // Raise exception if device is not found.
         if (string.IsNullOrEmpty(exceptionMessage))

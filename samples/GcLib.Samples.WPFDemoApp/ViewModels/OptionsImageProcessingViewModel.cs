@@ -14,8 +14,6 @@ internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptio
     private readonly Inter _selectedInterpolationMethod;
     private readonly bool _flipChannel1Horizontal;
     private readonly bool _flipChannel1Vertical;
-    private readonly bool _flipChannel2Horizontal;
-    private readonly bool _flipChannel2Vertical;
 
     #endregion
 
@@ -41,10 +39,8 @@ internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptio
         ImageProcessingViewModel = imageProcessingViewModel;
 
         // Store initial settings.
-        _flipChannel1Horizontal = ImageProcessingViewModel.ImageChannel1.FlipHorizontal;
-        _flipChannel1Vertical = ImageProcessingViewModel.ImageChannel1.FlipVertical;
-        _flipChannel2Horizontal = ImageProcessingViewModel.ImageChannel2.FlipHorizontal;
-        _flipChannel2Vertical = ImageProcessingViewModel.ImageChannel2.FlipVertical;
+        _flipChannel1Horizontal = ImageProcessingViewModel.SelectedImageChannel.FlipHorizontal;
+        _flipChannel1Vertical = ImageProcessingViewModel.SelectedImageChannel.FlipVertical;
     }
 
     #endregion
@@ -55,10 +51,8 @@ internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptio
     public void CancelChanges()
     {
         // Restore initial settings.
-        ImageProcessingViewModel.ImageChannel1.FlipHorizontal = _flipChannel1Horizontal;
-        ImageProcessingViewModel.ImageChannel1.FlipVertical = _flipChannel1Vertical;
-        ImageProcessingViewModel.ImageChannel2.FlipHorizontal = _flipChannel2Horizontal;
-        ImageProcessingViewModel.ImageChannel2.FlipVertical = _flipChannel2Vertical;
+        ImageProcessingViewModel.SelectedImageChannel.FlipHorizontal = _flipChannel1Horizontal;
+        ImageProcessingViewModel.SelectedImageChannel.FlipVertical = _flipChannel1Vertical;
     }
 
     #endregion

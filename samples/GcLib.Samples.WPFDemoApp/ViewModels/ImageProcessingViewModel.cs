@@ -32,21 +32,6 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
     #region Properties
 
     /// <summary>
-    /// First input image channel.
-    /// </summary>
-    public ImageModel ImageChannel1 { get; }
-
-    /// <summary>
-    /// Second input image channel.
-    /// </summary>
-    public ImageModel ImageChannel2 { get; }
-
-    /// <summary>
-    /// Available image channels.
-    /// </summary>
-    public ImageModel[] ImageChannels { get; }
-
-    /// <summary>
     /// Selected image channel for editing processing settings.
     /// </summary>
     public ImageModel SelectedImageChannel
@@ -68,20 +53,13 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
     /// <summary>
     /// Instantiates a new model for a view handling the processing of images.
     /// </summary>
-    public ImageProcessingViewModel(IMetroWindowService dialogService, ImageModel[] imageChannels)
+    public ImageProcessingViewModel(IMetroWindowService dialogService, ImageModel imageChannel)
     {
         // Get required services.
         _windowService = dialogService;
 
         // Available image channels.
-        ImageChannels = imageChannels;
-
-        // Are these needed?
-        ImageChannel1 = ImageChannels[0];
-        ImageChannel2 = ImageChannels[1];
-
-        // Default editing channel.
-        SelectedImageChannel = ImageChannels[0];
+        SelectedImageChannel = imageChannel;
 
         // Activate viewmodel for message sending/receiving.
         IsActive = true;
@@ -96,19 +74,7 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
     /// </summary>
     public void ClearImages()
     {
-        foreach (ImageModel channel in ImageChannels)
-            channel.ClearImages();
-    }
-
-    /// <summary>
-    /// Clear images stored in specified image channel.
-    /// </summary>
-    /// <param name="imageChannel">Channel.</param>
-    public void ClearImages(DisplayChannel imageChannel)
-    {
-        // Clear images in specified channel.
-        var imageModel = Array.Find(ImageChannels, m => m.ImageChannel == imageChannel);
-        imageModel.ClearImages();
+        SelectedImageChannel.ClearImages();
     }
 
     #endregion
@@ -180,16 +146,16 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
         // Register as recipient of device connection messages.
         Messenger.Register<DeviceConnectedMessage>(this, (r, m) =>
         {
-            ClearImages(m.DisplayChannel);
+            ClearImages();
         });
 
         // Register as recipient of device disconnection messages.
         Messenger.Register<DeviceDisconnectedMessage>(this, (r, m) =>
         {
-            ClearImages(m.DisplayChannel);
+            ClearImages();
 
             // Reset processing settings.              
-            Array.Find(ImageChannels, o => o.ImageChannel == m.DisplayChannel).InitializeSettings();
+            SelectedImageChannel.InitializeSettings();
         });
     }
 
