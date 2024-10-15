@@ -1,11 +1,8 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Emgu.CV;
 using FusionViewer.Models;
 using FusionViewer.Utilities.Dialogs;
 using FusionViewer.Utilities.Messages;
@@ -45,11 +42,6 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
     public ImageModel ImageChannel2 { get; }
 
     /// <summary>
-    /// Fused output image channel.
-    /// </summary>
-    public FusedImageModel FusedImageChannel { get; }
-
-    /// <summary>
     /// Available image channels.
     /// </summary>
     public ImageModel[] ImageChannels { get; }
@@ -71,25 +63,6 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
 
     #endregion
 
-    #region Commands
-
-    /// <summary>
-    /// Relays a UI request to load a geometric calibration from file.
-    /// </summary>
-    public IRelayCommand LoadCalibrationDataCommand { get; }
-
-    /// <summary>
-    /// Relays a UI request to edit an existing geometric calibration.
-    /// </summary>
-    public IRelayCommand EditCalibrationDataCommand { get; }
-
-    /// <summary>
-    /// Relays a UI request to clear an existing geometric calibration.
-    /// </summary>
-    public IRelayCommand ClearCalibrationDataCommand { get; }
-
-    #endregion
-
     #region Constructors
 
     /// <summary>
@@ -106,42 +79,12 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
         // Are these needed?
         ImageChannel1 = ImageChannels[0];
         ImageChannel2 = ImageChannels[1];
-        FusedImageChannel = ImageChannels[2] as FusedImageModel;
-
-        // Hook eventhandler to PropertyChanged events in image channels.
-        foreach (ImageModel imageChannel in ImageChannels)
-            imageChannel.PropertyChanged += ImageModel_PropertyChanged;
 
         // Default editing channel.
         SelectedImageChannel = ImageChannels[0];
 
-        // Instantiate commands.
-        LoadCalibrationDataCommand = new RelayCommand(LoadCalibrationDataFromFileDialog);
-        EditCalibrationDataCommand = new RelayCommand(EditCalibrationData, HasCalibrationData);
-        ClearCalibrationDataCommand = new RelayCommand(ClearCalibrationData, HasCalibrationData);
-
         // Activate viewmodel for message sending/receiving.
         IsActive = true;
-    }
-
-    #endregion
-
-    #region Events
-
-    /// <summary>
-    /// Eventhandler to PropertyChanged events raised in an image channel.
-    /// </summary>
-    private void ImageModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
-    {
-        if (sender is FusedImageModel fusedImageModel)
-        {
-            if (e.PropertyName == nameof(FusedImageModel.CalibrationData))
-            {
-                // Notify calibration commands of property changes.
-                ClearCalibrationDataCommand.NotifyCanExecuteChanged();
-                EditCalibrationDataCommand.NotifyCanExecuteChanged();
-            }
-        }
     }
 
     #endregion
@@ -166,23 +109,11 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
         // Clear images in specified channel.
         var imageModel = Array.Find(ImageChannels, m => m.ImageChannel == imageChannel);
         imageModel.ClearImages();
-
-        // Also clear fused channel.
-        FusedImageChannel.ClearImages();
     }
 
     #endregion
 
     #region Private methods
-
-    /// <summary>
-    /// Checks if calibration data is available.
-    /// </summary>
-    /// <returns>True if data is available.</returns>
-    private bool HasCalibrationData()
-    {
-        return FusedImageChannel.CalibrationData != null;
-    }
 
     /// <summary>
     /// Load calibration data from file dialog window.
@@ -227,12 +158,6 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
                 rowIndex++;
             }
 
-            // Update affine transformation matrix.
-            FusedImageChannel.CalibrationData = new GeometricCalibration(deviceIndex, new Matrix<double>(data).Transpose());
-
-            ClearCalibrationDataCommand.NotifyCanExecuteChanged();
-            EditCalibrationDataCommand.NotifyCanExecuteChanged();
-
             // Confirm in UI.
             _ = _windowService.ShowMessageDialog(this, "File loaded!", $"Calibration file \'{filePath}\' successfully loaded.", MessageDialogStyle.Affirmative, MetroDialogHelper.DefaultSettings);
 
@@ -246,38 +171,6 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
             // Log error.
             Log.Error(ex, "Failed to load calibration from {FileName}", filePath);
         }
-    }
-
-    /// <summary>
-    /// Opens a dialog window to edit the current geometric calibration.
-    /// </summary>
-    private void EditCalibrationData()
-    {
-        // Cache current settings.
-        var data = FusedImageChannel.CalibrationData.AffineTransform.Clone();
-
-        // Show dialog.
-        var result = _windowService.ShowDialog(new EditCalibrationDialogWindowViewModel(FusedImageChannel));
-
-        // Reset if cancelled.
-        if (result == false)
-        {
-            FusedImageChannel.CalibrationData = new GeometricCalibration(DeviceIndex.Device1, data);
-        }
-    }
-
-    /// <summary>
-    /// Clear geometric calibration data.
-    /// </summary>
-    private void ClearCalibrationData()
-    {
-        FusedImageChannel.CalibrationData = new GeometricCalibration();
-
-        ClearCalibrationDataCommand.NotifyCanExecuteChanged();
-        EditCalibrationDataCommand.NotifyCanExecuteChanged();
-
-        // Log information.
-        Log.Information("Calibration data cleared");
     }
 
     protected override void OnActivated()
@@ -297,7 +190,6 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
 
             // Reset processing settings.              
             Array.Find(ImageChannels, o => o.ImageChannel == m.DisplayChannel).InitializeSettings();
-            FusedImageChannel.InitializeSettings();
         });
     }
 

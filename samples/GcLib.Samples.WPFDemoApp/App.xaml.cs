@@ -77,7 +77,7 @@ public partial class App : Application
             .AddTransient<ShortcutWindowViewModel>()
             .AddSingleton(logModel)
             .AddSingleton(CreateImageModels())
-            .AddSingleton(CreateDeviceModels())
+            .AddSingleton(new DeviceModel(DeviceIndex.Device1, "Device"))
             .AddSingleton<IDeviceProvider, GcSystem>()
             .AddLogging(loggingBuilder => loggingBuilder.AddSerilog())
             .BuildServiceProvider());
@@ -109,7 +109,7 @@ public partial class App : Application
     /// <returns>Array of image models.</returns>
     private static ImageModel[] CreateImageModels()
     {
-        return [new(DisplayChannel.Channel1), new(DisplayChannel.Channel2), new FusedImageModel()];
+        return [new(DisplayChannel.Channel1), new(DisplayChannel.Channel2)];
     }
 
     /// <summary>

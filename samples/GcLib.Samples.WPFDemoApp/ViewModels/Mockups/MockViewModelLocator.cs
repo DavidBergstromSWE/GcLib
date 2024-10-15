@@ -62,8 +62,7 @@ internal sealed class MockImageProcessingViewModel
 {
     public static ImageModel ImageChannel1 => new(DisplayChannel.Channel1) { Brightness = 100.0 };
     public static ImageModel ImageChannel2 => new(DisplayChannel.Channel2);
-    public static FusedImageModel FusedImageChannel => new();
-    public static ImageModel[] ImageChannels => [ImageChannel1, ImageChannel2, FusedImageChannel];
+    public static ImageModel[] ImageChannels => [ImageChannel1, ImageChannel2];
     public static ImageModel SelectedImageChannel { get; set; } = ImageChannels[0];
     public static string ChannelName => "Channel1";
     public static ICommand OpenParameterDialogWindowCommand { get; }

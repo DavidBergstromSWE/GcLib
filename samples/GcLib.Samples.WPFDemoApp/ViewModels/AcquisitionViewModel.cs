@@ -69,22 +69,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// <summary>
     /// First input acquisition channel.
     /// </summary>
-    public AcquisitionModel AcquisitionChannel1 { get; }
-
-    /// <summary>
-    /// Second input acquisition channel.
-    /// </summary>
-    public AcquisitionModel AcquisitionChannel2 { get; }
-
-    /// <summary>
-    /// Fused output acquisition channel.
-    /// </summary>
-    public FusedAcquisitionModel FusedAcquisitionChannel { get; }
-
-    /// <summary>
-    /// Available acquisition channels.
-    /// </summary>
-    public AcquisitionModel[] AcquisitionChannels { get; }
+    public AcquisitionModel AcquisitionChannel { get; }
 
     /// <summary>
     /// Indicates that filenames will be auto-generated (by current date and time).
@@ -164,42 +149,30 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// <param name="dispatcherService">Service providing dispatching and running of actions onto the UI thread.</param>
     /// <param name="deviceChannels">Available device channels.</param>
     /// <param name="imageChannels">Available image channels.</param>
-    public AcquisitionViewModel(IMetroWindowService dialogService, IDispatcherService dispatcherService, DeviceModel[] deviceChannels, ImageModel[] imageChannels)
+    public AcquisitionViewModel(IMetroWindowService dialogService, IDispatcherService dispatcherService, DeviceModel device, ImageModel[] imageChannels)
     {
         // Get required services.
         _windowService = dialogService;
         _dispatcherService = dispatcherService;
 
         // Instantiate acquisition channels.
-        AcquisitionChannel1 = new AcquisitionModel(deviceChannels[0], imageChannels[0]);
-        AcquisitionChannel2 = new AcquisitionModel(deviceChannels[1], imageChannels[1]);
-        FusedAcquisitionChannel = new FusedAcquisitionModel(AcquisitionChannel1, AcquisitionChannel2, imageChannels[2] as FusedImageModel);
-
-        // TODO: Only list needed?
-        AcquisitionChannels = [AcquisitionChannel1, AcquisitionChannel2, FusedAcquisitionChannel];
+        AcquisitionChannel = new AcquisitionModel(device, imageChannels[0]);
 
         // Default file paths.
 #if DEBUG
-        AcquisitionChannel1.FilePath = Path.GetFullPath(@"C:\testdata\channel1data.bin");
-        AcquisitionChannel2.FilePath = Path.GetFullPath(@"C:\testdata\channel2data.bin");
-        FusedAcquisitionChannel.FilePath = Path.GetFullPath(@"C:\testdata\fusedchanneldata.bin");
+        AcquisitionChannel.FilePath = Path.GetFullPath(@"C:\testdata\channel1data.bin");
 #else
-        AcquisitionChannel1.FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\channel1data.bin");
-        AcquisitionChannel2.FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\channel2data.bin");
-        FusedAcquisitionChannel.FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\fusedchanneldata.bin");
+        AcquisitionChannel.FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\channel1data.bin");
 #endif
         // Register eventhandlers to available acquisition channels.
-        foreach (AcquisitionModel channel in AcquisitionChannels)
-        {
-            channel.AcquisitionStopped += Channel_AcquisitionStopped;
-            channel.FrameDropped += Channel_FrameDropped;
-            channel.AcquisitionAborted += Channel_AcquisitionAborted;
-            channel.RecordingAborted += Channel_RecordingAborted;
-        }
+        AcquisitionChannel.AcquisitionStopped += Channel_AcquisitionStopped;
+        AcquisitionChannel.FrameDropped += Channel_FrameDropped;
+        AcquisitionChannel.AcquisitionAborted += Channel_AcquisitionAborted;
+        AcquisitionChannel.RecordingAborted += Channel_RecordingAborted;
+
 
         // Register eventhandlers to available input devices.
-        foreach (DeviceModel device in deviceChannels)
-            device.PropertyChanged += DeviceModel_PropertyChanged;
+        device.PropertyChanged += DeviceModel_PropertyChanged;
 
         // Register eventhandlers to available images.
         foreach (ImageModel image in imageChannels)
@@ -250,11 +223,10 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         try
         {
             // Use Parallel library? Task.WhenAll?
-            foreach (var channel in AcquisitionChannels.Where(ch => ch.IsEnabled))
-                await channel.StartAcquisitionAsync();
+            await AcquisitionChannel.StartAcquisitionAsync();
 
             // Synchronize grabbing from channels.
-            Parallel.ForEach(AcquisitionChannels.Where(channel => channel.IsEnabled), (channel) => channel.StartGrabbing());
+            AcquisitionChannel.StartGrabbing();
 
             IsBusy = true;
         }
@@ -276,7 +248,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         Log.Information("Recording started");
 
         // Show warning dialog to user that files will be overwritten (with yes or no choices).
-        if (AutoGenerateFileNames == false && (File.Exists(AcquisitionChannel1.FilePath) || File.Exists(AcquisitionChannel2.FilePath) || File.Exists(FusedAcquisitionChannel.FilePath)))
+        if (AutoGenerateFileNames == false && File.Exists(AcquisitionChannel.FilePath))
         {
             var result = _windowService.ShowMessageDialog(this, "Warning!", "File already exists! Overwrite?", MessageDialogStyle.AffirmativeAndNegative, MetroDialogHelper.DefaultSettings);
             if (result == MessageDialogResult.Negative)
@@ -295,32 +267,29 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         try
         {
             // Save input channel timestamps to file (matching file path and substring).
-            if (LogTimeStamps && AcquisitionChannel1.IsEnabled && AcquisitionChannel2.IsEnabled)
+            if (LogTimeStamps && AcquisitionChannel.IsEnabled)
             {
                 // Create directory if it doesn't already exist.
-                _ = Directory.CreateDirectory(Path.GetDirectoryName(AcquisitionChannel1.FilePath));
+                _ = Directory.CreateDirectory(Path.GetDirectoryName(AcquisitionChannel.FilePath));
 
                 if (AppendTimeStamps)
                 {
                     // Log to same file (and append).
-                    _timeStampWriter = new(Path.GetDirectoryName(AcquisitionChannel1.FilePath) + Path.DirectorySeparatorChar + "timestamps" + ".csv", append: true);
+                    _timeStampWriter = new(Path.GetDirectoryName(AcquisitionChannel.FilePath) + Path.DirectorySeparatorChar + "timestamps" + ".csv", append: true);
                 }
                 else
                 {
                     // Log to separate files.
-                    _timeStampWriter = new(Path.GetDirectoryName(AcquisitionChannel1.FilePath) + Path.DirectorySeparatorChar + "timestamps" + (AutoGenerateFileNames ? dateTimeSubString : string.Empty) + ".csv", append: false);
+                    _timeStampWriter = new(Path.GetDirectoryName(AcquisitionChannel.FilePath) + Path.DirectorySeparatorChar + "timestamps" + (AutoGenerateFileNames ? dateTimeSubString : string.Empty) + ".csv", append: false);
                 }
                 
             }
 
             // Start input channel recordings (try/catch? Synchronize start using ManuelResetEventSlim?).
-            foreach (AcquisitionModel channel in AcquisitionChannels.Where(ch => ch.IsEnabled))
-            {
-                await channel.StartRecordingAsync(AutoGenerateFileNames ? dateTimeSubString : string.Empty);
-            }
+            await AcquisitionChannel.StartRecordingAsync(AutoGenerateFileNames ? dateTimeSubString : string.Empty);
 
             // Start grabbing here?
-            Parallel.ForEach(AcquisitionChannels.Where(channel => channel.IsEnabled), (channel) => channel.StartGrabbing());
+            AcquisitionChannel.StartGrabbing();
 
             IsBusy = true;
         }
@@ -345,11 +314,8 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         try
         {
             // Stop acquisition on all channels.
-            foreach (var channel in AcquisitionChannels)
-            {
-                if (channel.IsAcquiring)
-                    await channel.StopAcquisitionAsync();
-            }
+            if (AcquisitionChannel.IsAcquiring)
+                await AcquisitionChannel.StopAcquisitionAsync();
 
             // Close timestamp writer.
             if (IsRecording && LogTimeStamps)
@@ -381,7 +347,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
             return false;
 
         // Disable while connecting to devices.
-        if (AcquisitionChannel1.DeviceModel.IsConnecting || AcquisitionChannel2.DeviceModel.IsConnecting)
+        if (AcquisitionChannel.DeviceModel.IsConnecting)
             return false;
 
         // Request status from PlayBackViewModel.
@@ -390,7 +356,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
             return !message.Response;
 
         // Enable if at least one device is connected.
-        return AcquisitionChannel1.DeviceModel.IsConnected || AcquisitionChannel2.DeviceModel.IsConnected;
+        return AcquisitionChannel.DeviceModel.IsConnected;
     }
 
     /// <summary>
@@ -479,7 +445,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         if (e.PropertyName == nameof(DeviceModel.IsConnected))
         {
             // Enable view (acquisition buttons) if at least one device is connected.
-            IsEnabled = AcquisitionChannel1.DeviceModel.IsConnected || AcquisitionChannel2.DeviceModel.IsConnected;
+            IsEnabled = AcquisitionChannel.DeviceModel.IsConnected;
             NotifyAcquisitionCommands();
         }
         if (e.PropertyName == nameof(DeviceModel.IsConnecting))

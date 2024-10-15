@@ -14,11 +14,7 @@ internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSu
 
     // Initial settings.
     private readonly bool _initialSaveChannel1Data;
-    private readonly bool _initialSaveChannel2Data;
-    private readonly bool _initialSaveFusedRawData;
     private readonly string _initialChannel1FilePath;
-    private readonly string _initialChannel2FilePath;
-    private readonly string _initialFusionFilePath;
     private readonly bool _initialAutoGenerateFileNames;
     private readonly bool _initialLogTimeStamps;
     private readonly bool _initialAppendTimeStamps;
@@ -45,11 +41,6 @@ internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSu
     #region Commands
 
     /// <summary>
-    /// Relays a request invoked by a UI command to open a dialogue window for letting user select a new file path for recorded fused data.
-    /// </summary>
-    public IRelayCommand<string> BrowseFusionFilePathCommand { get; }
-
-    /// <summary>
     /// Relays a request invoked by a UI command to open a dialogue window for letting user select a new file path for recorded channel 1 data.
     /// </summary>
     public IRelayCommand<string> BrowseChannel1FilePathCommand { get; }
@@ -72,20 +63,14 @@ internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSu
         _windowService = windowService;
 
         // Store initial settings.
-        _initialSaveChannel1Data = AcquisitionViewModel.AcquisitionChannel1.SaveRawData;
-        _initialSaveChannel2Data = AcquisitionViewModel.AcquisitionChannel2.SaveRawData;
-        _initialSaveFusedRawData = AcquisitionViewModel.FusedAcquisitionChannel.SaveRawData;
-        _initialChannel1FilePath = AcquisitionViewModel.AcquisitionChannel1.FilePath;
-        _initialChannel2FilePath = AcquisitionViewModel.AcquisitionChannel2.FilePath;
-        _initialFusionFilePath = AcquisitionViewModel.FusedAcquisitionChannel.FilePath;
+        _initialSaveChannel1Data = AcquisitionViewModel.AcquisitionChannel.SaveRawData;
+        _initialChannel1FilePath = AcquisitionViewModel.AcquisitionChannel.FilePath;
         _initialAutoGenerateFileNames = AcquisitionViewModel.AutoGenerateFileNames;
         _initialLogTimeStamps = AcquisitionViewModel.LogTimeStamps;
         _initialAppendTimeStamps = AcquisitionViewModel.AppendTimeStamps;
 
         // Instantiate commands.
-        BrowseFusionFilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.FusedAcquisitionChannel.FilePath = FindFilePath(s));
-        BrowseChannel1FilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel1.FilePath = FindFilePath(s));
-        BrowseChannel2FilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel2.FilePath = FindFilePath(s));
+        BrowseChannel1FilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.FilePath = FindFilePath(s));
     }
 
     #endregion
@@ -96,12 +81,8 @@ internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSu
     public void CancelChanges()
     {
         // Restore initial settings.
-        AcquisitionViewModel.AcquisitionChannel1.SaveRawData = _initialSaveChannel1Data;
-        AcquisitionViewModel.AcquisitionChannel2.SaveRawData = _initialSaveChannel2Data;
-        AcquisitionViewModel.FusedAcquisitionChannel.SaveRawData = _initialSaveFusedRawData;
-        AcquisitionViewModel.AcquisitionChannel1.FilePath = _initialChannel1FilePath;
-        AcquisitionViewModel.AcquisitionChannel2.FilePath = _initialChannel2FilePath;
-        AcquisitionViewModel.FusedAcquisitionChannel.FilePath = _initialFusionFilePath;
+        AcquisitionViewModel.AcquisitionChannel.SaveRawData = _initialSaveChannel1Data;
+        AcquisitionViewModel.AcquisitionChannel.FilePath = _initialChannel1FilePath;
         AcquisitionViewModel.AutoGenerateFileNames = _initialAutoGenerateFileNames;
         AcquisitionViewModel.LogTimeStamps = _initialLogTimeStamps;
         AcquisitionViewModel.AppendTimeStamps = _initialAppendTimeStamps;

@@ -83,11 +83,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     public ImageModel Channel2 { get; }
 
     /// <summary>
-    /// Fused image channel.
-    /// </summary>
-    public FusedImageModel FusedChannel { get; }
-
-    /// <summary>
     /// Selected display mode.
     /// </summary>
     public DisplayChannel SelectedDisplayChannel
@@ -100,7 +95,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
                 // Unsubscribe from image updates in all channels.
                 Channel1.ImagesUpdated -= Channel_ImagesUpdated;
                 Channel2.ImagesUpdated -= Channel_ImagesUpdated;
-                FusedChannel.ImagesUpdated -= Channel_ImagesUpdated;
 
                 // Subscribe to image updates in selected channel.
                 if (SelectedDisplayChannel != DisplayChannel.All)
@@ -111,7 +105,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
                 {
                     Channel1.ImagesUpdated += Channel_ImagesUpdated;
                     Channel2.ImagesUpdated += Channel_ImagesUpdated;
-                    FusedChannel.ImagesUpdated += Channel_ImagesUpdated;
                 }
 
                 UpdateImages();
@@ -147,16 +140,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     /// Processed image of channel 2.
     /// </summary>
     public GcBuffer Channel2ProcessedImage => Channel2.ProcessedImage;
-
-    /// <summary>
-    /// Raw image of fused channel.
-    /// </summary>
-    public GcBuffer FusedChannelSourceImage => FusedChannel.RawImage;
-
-    /// <summary>
-    /// Processed image of fused channel.
-    /// </summary>
-    public GcBuffer FusedChannelProcessedImage => FusedChannel.ProcessedImage;
 
     /// <summary>
     /// List of available bitmap scaling modes (for displaying images in ImageViewer control).
@@ -288,7 +271,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
 
         Channel1 = imageChannels[0];
         Channel2 = imageChannels[1];
-        FusedChannel = imageChannels[2] as FusedImageModel;
 
         // Default display channel.
         SelectedChannel = Channel1;
@@ -421,17 +403,11 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
                 OnPropertyChanged(nameof(Channel2SourceImage));
                 OnPropertyChanged(nameof(Channel2ProcessedImage));
                 break;
-            case DisplayChannel.FusedChannel:
-                OnPropertyChanged(nameof(FusedChannelSourceImage));
-                OnPropertyChanged(nameof(FusedChannelProcessedImage));
-                break;
             default:
                 OnPropertyChanged(nameof(Channel1SourceImage));
                 OnPropertyChanged(nameof(Channel1ProcessedImage));
                 OnPropertyChanged(nameof(Channel2SourceImage));
                 OnPropertyChanged(nameof(Channel2ProcessedImage));
-                OnPropertyChanged(nameof(FusedChannelSourceImage));
-                OnPropertyChanged(nameof(FusedChannelProcessedImage));
                 break;
         }
 
@@ -451,8 +427,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         {
             DisplayChannel.Channel1 => Channel1,
             DisplayChannel.Channel2 => Channel2,
-            DisplayChannel.FusedChannel => FusedChannel,
-            DisplayChannel.All => FusedChannel,
             _ => throw new NotImplementedException()
         };
 
