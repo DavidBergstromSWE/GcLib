@@ -2,12 +2,11 @@
 using CommunityToolkit.Mvvm.Messaging;
 using FusionViewer.Models;
 using FusionViewer.Utilities.Messages;
-using FusionViewer.Utilities.Services;
 
 namespace FusionViewer.ViewModels;
 
 /// <summary>
-/// Models a view handling the processing of input (device) and output (fusion) channel images.
+/// Models a view handling the processing of input (device) images.
 /// </summary>
 internal sealed class ImageProcessingViewModel : ObservableRecipient
 {
@@ -16,10 +15,6 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
     // backing-fields
     private ImageModel _selectedImageChannel;
 
-    /// <summary>
-    /// Service providing windows and dialogs.
-    /// </summary>
-    private readonly IMetroWindowService _windowService;
 
     #endregion
 
@@ -41,11 +36,8 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
     /// <summary>
     /// Instantiates a new model for a view handling the processing of images.
     /// </summary>
-    public ImageProcessingViewModel(IMetroWindowService dialogService, ImageModel imageChannel)
+    public ImageProcessingViewModel(ImageModel imageChannel)
     {
-        // Get required services.
-        _windowService = dialogService;
-
         // Available image channels.
         SelectedImageChannel = imageChannel;
 

@@ -11,15 +11,13 @@
              d:DesignHeight="650" d:DesignWidth="800">
 
     <!--Display control-->
-    <controls:ImageViewer x:Name="imageViewer" IsEnabled="True" Grid.Row="0" Grid.RowSpan="2"
+    <controls:ImageViewer x:Name="imageViewer" IsEnabled="True"
                             ImageBorderBrush="{DynamicResource MahApps.Brushes.TextBox.Border.Focus}"
                             BitmapScaling="{Binding SelectedBitmapScalingMode, Mode=OneWay}"
                             ShowPixelInspector="True"
                             ShowImageFormat="True"
                             ShowImageMetaData="True"
                             MouseWheelZoomingEnabled="True" SelectionBoxZoomingEnabled="True"
-                            d:Grid.Column="0" d:Grid.ColumnSpan="3"
-                            d:Visibility="Visible" 
                             ImageSource="{Binding SourceImage, Mode=OneWay}"
                             DisplayedImage="{Binding ProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}">
         <controls:ImageViewer.Style>

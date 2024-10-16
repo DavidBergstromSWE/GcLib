@@ -48,8 +48,7 @@ internal sealed class MockViewModelLocator
 /// </summary>
 internal sealed class MockDeviceViewModel
 {
-    public static DeviceModel[] Devices => [new("VirtualCam", "FOI", "VirtualCam1") { IsConnected = true }, new() { IsConnected = false }];
-    public static DeviceModel SelectedDevice { get; set; } = Devices[0];
+    public static DeviceModel SelectedDevice { get; set; } = new("VirtualCam", "MySimLabs", "VirtualCam1") { IsConnected = true };
     public static bool IsEnabled => true;
     public static ICommand ConnectCameraFromDialogCommand { get; }
     public static ICommand OpenParameterDialogWindowCommand { get; }
@@ -60,10 +59,7 @@ internal sealed class MockDeviceViewModel
 /// </summary>
 internal sealed class MockImageProcessingViewModel
 {
-    public static ImageModel ImageChannel1 => new() { Brightness = 100.0 };
-    public static ImageModel ImageChannel2 => new();
-    public static ImageModel[] ImageChannels => [ImageChannel1, ImageChannel2];
-    public static ImageModel SelectedImageChannel { get; set; } = ImageChannels[0];
+    public static ImageModel SelectedImageChannel { get; set; } = new() { Brightness = 100.0 };
     public static string ChannelName => "Channel1";
     public static ICommand OpenParameterDialogWindowCommand { get; }
 }
@@ -73,7 +69,7 @@ internal sealed class MockImageProcessingViewModel
 /// </summary>
 internal sealed class MockOpenDeviceDialogWindowViewModel
 {
-    public static GcDeviceInfo SelectedDevice { get; set; } = new GcDeviceInfo(vendorName: "FOI",
+    public static GcDeviceInfo SelectedDevice { get; set; } = new GcDeviceInfo(vendorName: "MySimLabs",
                                                                                modelName: "VirtualCam",
                                                                                serialNumber: "1.0",
                                                                                uniqueID: "VirtualCam1",
