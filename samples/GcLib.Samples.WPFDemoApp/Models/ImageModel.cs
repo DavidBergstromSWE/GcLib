@@ -54,12 +54,9 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
                         OnProcessingException(ex);
                     }
                 }
-                else
-                {
-                    ProcessedImage = null;
-                }
+                else ProcessedImage = null;
 
-                OnImagesUpdated(); // move to ProcessedImage setter?
+                OnImagesUpdated();
             }
         }
     }
@@ -72,13 +69,8 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         get => _processedImage;
         private set
         {
-            if (SetProperty(ref _processedImage, value))
-            {
-                if (_processedImage != null)
-                {
-                    OnProcessedImageAdded(_processedImage);
-                }
-            }
+            if (SetProperty(ref _processedImage, value) && _processedImage != null)
+                OnProcessedImageAdded(_processedImage);
         }
     }
 
@@ -231,8 +223,6 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
     /// <inheritdoc/>
     public virtual void ReadXml(XmlReader reader)
     {
-        // ToDo: Use TryParse to improve robustness while reading xml configuration file.
-
         // Read flip settings.
         FlipHorizontal = reader.Name == nameof(FlipHorizontal) && bool.Parse(reader.ReadElementContentAsString());
         FlipVertical = reader.Name == nameof(FlipVertical) && bool.Parse(reader.ReadElementContentAsString());
@@ -267,9 +257,6 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         var mat = buffer.ToMat();
 
         // Convert 4-channel image to 3. 
-        // ToDo: Create class or method for color conversion?
-        // ToDo: Create Dictionary containing supported image formats and conversions needed (see Accord.Net)?
-
         if (mat.NumberOfChannels == 4)
             CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);
 
