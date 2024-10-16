@@ -61,19 +61,19 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     #region Properties
 
     /// <summary>
-    /// Image channel 1.
+    /// Display channel.
     /// </summary>
-    public ImageModel Channel1 { get; }
+    public ImageModel DisplayChannel { get; }
 
     /// <summary>
     /// Raw image of channel 1.
     /// </summary>
-    public GcBuffer Channel1SourceImage => Channel1.RawImage;
+    public GcBuffer SourceImage => DisplayChannel.RawImage;
 
     /// <summary>
     /// Processed image of channel 1.
     /// </summary>
-    public GcBuffer Channel1ProcessedImage => Channel1.ProcessedImage;
+    public GcBuffer ProcessedImage => DisplayChannel.ProcessedImage;
 
     /// <summary>
     /// List of available bitmap scaling modes (for displaying images in ImageViewer control).
@@ -198,8 +198,8 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         _windowService = windowService;
         _dispatcherService = dispatcherService;
 
-        Channel1 = imageChannel;
-        Channel1.ImagesUpdated += Channel_ImagesUpdated;
+        DisplayChannel = imageChannel;
+        DisplayChannel.ImagesUpdated += Channel_ImagesUpdated;
 
         // Default bitmap scaling mode.
         SelectedBitmapScalingMode = BitmapScalingMode.Linear;
@@ -217,7 +217,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         SynchronizeViews = false;
 
         // Instantiate commands.
-        OpenFullScreenImageWindowCommand = new RelayCommand(OpenFullScreenImageWindow, () => Channel1.ProcessedImage != null);
+        OpenFullScreenImageWindowCommand = new RelayCommand(OpenFullScreenImageWindow, () => DisplayChannel.ProcessedImage != null);
 
         // Activate viewmodel for message sending/receiving.
         IsActive = true;
@@ -242,7 +242,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
             }
             else UpdateImages();
 
-            if (sender == Channel1) 
+            if (sender == DisplayChannel) 
             {
                 _timeStamps.Put((ulong)DateTime.Now.Ticks);
                 OnPropertyChanged(nameof(CurrentFPS));
@@ -258,7 +258,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         Messenger.Register<PropertyChangedMessage<bool>, string>(this, "Busy", BusyHandler);
 
         // Register as recipient of messages requesting currently selected image channel for display.
-        Messenger.Register<SelectedChannelRequestMessage>(this, (r, m) => { m.Reply(Channel1); });
+        Messenger.Register<SelectedChannelRequestMessage>(this, (r, m) => { m.Reply(DisplayChannel); });
     }
 
     /// <summary>
@@ -300,13 +300,13 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     private void UpdateImages()
     {
         // Notify of property changes.
-        OnPropertyChanged(nameof(Channel1SourceImage));
-        OnPropertyChanged(nameof(Channel1ProcessedImage));
+        OnPropertyChanged(nameof(SourceImage));
+        OnPropertyChanged(nameof(ProcessedImage));
 
         OpenFullScreenImageWindowCommand?.NotifyCanExecuteChanged();
 
         // Notify of update.
-        Messenger.Send(new ImagesUpdatedMessage(Channel1.RawImage, Channel1.ProcessedImage));
+        Messenger.Send(new ImagesUpdatedMessage(DisplayChannel.RawImage, DisplayChannel.ProcessedImage));
     }
 
     /// <summary>
