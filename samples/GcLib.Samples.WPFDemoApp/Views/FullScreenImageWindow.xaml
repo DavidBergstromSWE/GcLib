@@ -119,16 +119,9 @@
         </Grid.ColumnDefinitions>
 
 
-        <!-- Channel 1 -->
-        <Image x:Name="channel1Viewer" 
-               RenderOptions.BitmapScalingMode="{Binding SelectedBitmapScalingMode, Mode=OneWay}">
-            <Image.Source>
-                <MultiBinding Converter="{StaticResource GcBufferToBitmapSourceConverter}">
-                    <Binding Path="Channel1.ProcessedImage"/>
-                    <Binding Path="IsEnabled" ElementName="channel1Viewer"/>
-                </MultiBinding>
-            </Image.Source>
-        </Image>
+        <!-- Image -->
+        <Image Source="{Binding ProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}"
+               RenderOptions.BitmapScalingMode="{Binding SelectedBitmapScalingMode, Mode=OneWay}"/>
 
         <!-- Frame info -->
         <Border Grid.Column="0" 
@@ -149,7 +142,7 @@
                                 <Setter Property="Text">
                                     <Setter.Value>
                                         <MultiBinding StringFormat="{}{0} (FPS: {1:0.0})">
-                                            <Binding Source="{StaticResource ViewModelLocator}" Path="ImageDisplayViewModel.Channel1.RawImage.TimeStamp" Converter="{StaticResource TimestampConverter}"/>
+                                            <Binding Source="{StaticResource ViewModelLocator}" Path="ImageDisplayViewModel.SourceImage.TimeStamp" Converter="{StaticResource TimestampConverter}"/>
                                             <Binding Source="{StaticResource ViewModelLocator}" Path="ImageDisplayViewModel.CurrentFPS" />
                                         </MultiBinding>
                                     </Setter.Value>

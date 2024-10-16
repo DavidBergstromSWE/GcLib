@@ -20,8 +20,8 @@
                             MouseWheelZoomingEnabled="True" SelectionBoxZoomingEnabled="True"
                             d:Grid.Column="0" d:Grid.ColumnSpan="3"
                             d:Visibility="Visible" 
-                            ImageSource="{Binding Channel1SourceImage, Mode=OneWay}"
-                            DisplayedImage="{Binding Channel1ProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}">
+                            ImageSource="{Binding SourceImage, Mode=OneWay}"
+                            DisplayedImage="{Binding ProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}">
         <controls:ImageViewer.Style>
             <Style TargetType="controls:ImageViewer">
                 <Style.Triggers>
