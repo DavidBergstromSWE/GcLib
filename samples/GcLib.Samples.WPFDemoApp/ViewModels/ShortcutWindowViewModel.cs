@@ -20,16 +20,10 @@ internal sealed class ShortcutWindowViewModel : ObservableObject
     public ShortcutWindowViewModel()
     {
         // Load/save
-        Shortcuts.Add(new Shortcut(new KeyGesture(Key.L, ModifierKeys.Control), "I/O", "Load fusion configuration"));
-        Shortcuts.Add(new Shortcut(new KeyGesture(Key.S, ModifierKeys.Control), "I/O", "Save fusion configuration"));
+        Shortcuts.Add(new Shortcut(new KeyGesture(Key.L, ModifierKeys.Control), "I/O", "Load configuration"));
+        Shortcuts.Add(new Shortcut(new KeyGesture(Key.S, ModifierKeys.Control), "I/O", "Save configuration"));
         Shortcuts.Add(new Shortcut(new KeyGesture(Key.R, ModifierKeys.Control), "I/O", "Open recorded sequence"));
         Shortcuts.Add(new Shortcut(new KeyGesture(Key.X, ModifierKeys.Control), "I/O", "Close recorded sequence"));
-
-        // Display
-        Shortcuts.Add(new Shortcut(new KeyGesture(Key.F1), "Display", "Display channel 1"));
-        Shortcuts.Add(new Shortcut(new KeyGesture(Key.F2), "Display", "Display channel 2"));
-        Shortcuts.Add(new Shortcut(new KeyGesture(Key.F3), "Display", "Display fused channel"));
-        Shortcuts.Add(new Shortcut(new KeyGesture(Key.F4), "Display", "Display all channels"));
 
         // Acquisition
         Shortcuts.Add(new Shortcut(new KeyGesture(Key.F6), "Acquisition", "Start live view"));
