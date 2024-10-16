@@ -60,8 +60,8 @@
 
     <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
 
-        <Button Style="{StaticResource DeviceConnectionButton}"
-                Margin="0 0 0 20" HorizontalAlignment="Center" Width="125"
+        <Button Style="{StaticResource DeviceConnectionButton}" FontSize="14"
+                Margin="0 0 0 20" HorizontalAlignment="Center" Width="150"
                 Command="{Binding ConnectCameraFromDialogCommand}" CommandParameter="{Binding SelectedDevice}"/>
 
         <StackPanel Orientation="Horizontal">
