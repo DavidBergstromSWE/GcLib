@@ -48,7 +48,7 @@
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands>
             <Border BorderBrush="Black" BorderThickness="1" Margin="2">
-                <Image Source="/Resources/Images/Fusion_296x296.png" Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <Image Source="/Resources/Images/logo_296x296.png" Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality"/>
             </Border>
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
@@ -206,9 +206,42 @@
                                    d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}"/>
 
         <!--Image histogram-->
-        <views:HistogramView x:Name="histogramView"
+        <Expander Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2"
+                  BorderThickness="0" 
+                  mah:VisibilityHelper.IsVisible="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.IsEnabled}"
+                  Margin="5 60 5 0"
+                  ExpandDirection="Left" IsExpanded="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.ShowLiveHistogram, Mode=TwoWay}"
+                  mah:HeaderedControlHelper.HeaderBackground="Transparent" mah:HeaderedControlHelper.HeaderForeground="{DynamicResource MahApps.Brushes.ThemeForeground}">
+            <Expander.Style>
+                <Style TargetType="Expander">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsExpanded, RelativeSource={RelativeSource Self}}" Value="False">
+                            <Setter Property="Header">
+                                <Setter.Value>
+                                    <TextBlock Text="Histogram" FontSize="14" FontWeight="Bold" Margin="0 3 0 0">
+                                        <TextBlock.LayoutTransform>
+                                            <RotateTransform Angle="90"/>
+                                        </TextBlock.LayoutTransform>
+                                    </TextBlock>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="ToolTip" Value="Show Live Histogram"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsExpanded, RelativeSource={RelativeSource Self}}" Value="True">
+                            <Setter Property="Header" Value=""/>
+                            <Setter Property="Padding" Value="0 0 5 0"/>
+                            <Setter Property="ToolTip" Value="Close live histogram"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Expander.Style>
+            <views:HistogramView x:Name="histogramView"
                              Grid.Row="2" Grid.Column="4"
-                             Margin="20 60 0 0"/>
+                             Margin="10 0 15 0"/>
+        </Expander>
+
+        
         <views:PlayBackView x:Name="playbackView"
                             Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2"
                             HorizontalAlignment="Center"/>

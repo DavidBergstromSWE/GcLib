@@ -48,7 +48,7 @@ internal sealed class MockViewModelLocator
 /// </summary>
 internal sealed class MockDeviceViewModel
 {
-    public static DeviceModel SelectedDevice { get; set; } = new("VirtualCam", "MySimLabs", "VirtualCam1") { IsConnected = true };
+    public static DeviceModel Device { get; set; } = new("VirtualCam", "MySimLabs", "VirtualCam1") { IsConnected = true };
     public static bool IsEnabled => true;
     public static ICommand ConnectCameraFromDialogCommand { get; }
     public static ICommand OpenParameterDialogWindowCommand { get; }
