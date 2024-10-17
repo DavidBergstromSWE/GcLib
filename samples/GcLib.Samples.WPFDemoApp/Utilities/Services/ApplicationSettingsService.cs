@@ -10,8 +10,7 @@ namespace FusionViewer.Utilities.Services;
 /// <param name="mainWindowViewModel">Main window settings.</param>
 /// <param name="deviceViewModel">Device view settings.</param>
 /// <param name="acquisitionViewModel">Acquisition view settings.</param>
-/// <param name="imageDisplayViewModel">Image display view settings.</param>
-internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewModel, DeviceViewModel deviceViewModel, AcquisitionViewModel acquisitionViewModel, ImageDisplayViewModel imageDisplayViewModel) : ISettingsService
+internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewModel, DeviceViewModel deviceViewModel, AcquisitionViewModel acquisitionViewModel) : ISettingsService
 {
     /// <summary>
     /// Application settings.
@@ -32,15 +31,10 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
 
         // AcquisitionViewModel settings.
         acquisitionViewModel.AutoGenerateFileNames = _settings.AutoGenerateFileNames;
-        acquisitionViewModel.AcquisitionChannel.SaveRawData = _settings.Channel1SaveRawData;
-        acquisitionViewModel.AcquisitionChannel.SaveProcessedData = _settings.Channel1SaveProcessedData;
-        if (Directory.Exists(Path.GetDirectoryName(_settings.Channel1SaveFilePath)))
-            acquisitionViewModel.AcquisitionChannel.FilePath = _settings.Channel1SaveFilePath;
-        acquisitionViewModel.LogTimeStamps = _settings.LogTimeStamps;
-        acquisitionViewModel.AppendTimeStamps = _settings.AppendTimeStamps;
-
-        // ImageDisplayView settings.
-        imageDisplayViewModel.SynchronizeViews = _settings.SynchronizeViews;
+        acquisitionViewModel.AcquisitionChannel.SaveRawData = _settings.SaveRawData;
+        acquisitionViewModel.AcquisitionChannel.SaveProcessedData = _settings.SaveProcessedData;
+        if (Directory.Exists(Path.GetDirectoryName(_settings.SaveFilePath)))
+            acquisitionViewModel.AcquisitionChannel.FilePath = _settings.SaveFilePath;
     }
 
     /// <inheritdoc />
@@ -55,14 +49,9 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
 
         // AcquisitionView settings.
         _settings.AutoGenerateFileNames = acquisitionViewModel.AutoGenerateFileNames;
-        _settings.Channel1SaveRawData = acquisitionViewModel.AcquisitionChannel.SaveRawData;
-        _settings.Channel1SaveProcessedData = acquisitionViewModel.AcquisitionChannel.SaveProcessedData;
-        _settings.Channel1SaveFilePath = acquisitionViewModel.AcquisitionChannel.FilePath;
-        _settings.LogTimeStamps = acquisitionViewModel.LogTimeStamps;
-        _settings.AppendTimeStamps = acquisitionViewModel.AppendTimeStamps;
-
-        // ImageDisplayView settings.
-        _settings.SynchronizeViews = imageDisplayViewModel.SynchronizeViews;
+        _settings.SaveRawData = acquisitionViewModel.AcquisitionChannel.SaveRawData;
+        _settings.SaveProcessedData = acquisitionViewModel.AcquisitionChannel.SaveProcessedData;
+        _settings.SaveFilePath = acquisitionViewModel.AcquisitionChannel.FilePath;
 
         // Save settings.
         _settings.Save();

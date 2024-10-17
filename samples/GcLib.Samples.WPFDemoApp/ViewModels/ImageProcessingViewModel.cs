@@ -13,7 +13,7 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
     #region Fields
 
     // backing-fields
-    private ImageModel _selectedImageChannel;
+    private ImageModel _imageChannel;
 
 
     #endregion
@@ -21,12 +21,12 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
     #region Properties
 
     /// <summary>
-    /// Selected image channel for editing processing settings.
+    /// Image data channel for processing.
     /// </summary>
-    public ImageModel SelectedImageChannel
+    public ImageModel ImageChannel
     {
-        get => _selectedImageChannel;
-        set => SetProperty(ref _selectedImageChannel, value);
+        get => _imageChannel;
+        set => SetProperty(ref _imageChannel, value);
     }
 
     #endregion
@@ -36,25 +36,13 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
     /// <summary>
     /// Instantiates a new model for a view handling the processing of images.
     /// </summary>
+    /// <param name="imageChannel">Image data channel.</param>
     public ImageProcessingViewModel(ImageModel imageChannel)
     {
-        // Available image channels.
-        SelectedImageChannel = imageChannel;
+        ImageChannel = imageChannel;
 
         // Activate viewmodel for message sending/receiving.
         IsActive = true;
-    }
-
-    #endregion
-
-    #region Public methods
-
-    /// <summary>
-    /// Clear all stored images in all image channels.
-    /// </summary>
-    public void ClearImages()
-    {
-        SelectedImageChannel.ClearImages();
     }
 
     #endregion
@@ -68,16 +56,16 @@ internal sealed class ImageProcessingViewModel : ObservableRecipient
         // Register as recipient of device connection messages.
         Messenger.Register<DeviceConnectedMessage>(this, (r, m) =>
         {
-            ClearImages();
+            ImageChannel.ClearImages();
         });
 
         // Register as recipient of device disconnection messages.
         Messenger.Register<DeviceDisconnectedMessage>(this, (r, m) =>
         {
-            ClearImages();
+            ImageChannel.ClearImages();
 
             // Reset processing settings.              
-            SelectedImageChannel.InitializeSettings();
+            ImageChannel.InitializeSettings();
         });
     }
 

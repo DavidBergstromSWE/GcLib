@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -19,7 +18,7 @@ using Serilog.Events;
 namespace FusionViewer.ViewModels;
 
 /// <summary>
-/// Models a view for handling acquisition and recording of image data from input (device) and output (fusion) channels.
+/// Models a view for handling acquisition and recording of image data from an input (device) channel.
 /// </summary>
 internal sealed class AcquisitionViewModel : ObservableRecipient
 {
@@ -30,8 +29,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     private bool _isBusy;
     private bool _isRecording;
     private bool _autoGenerateFileNames;
-    private bool _logTimeStamps;
-    private bool _appendTimeStamps;
 
     /// <summary>
     /// Service providing windows and dialogs.
@@ -42,11 +39,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// Service providing dispatching and running of actions onto the UI thread.
     /// </summary>
     private readonly IDispatcherService _dispatcherService;
-
-    /// <summary>
-    /// Writes timestamps to a csv file.
-    /// </summary>
-    private StreamWriter _timeStampWriter;
 
     /// <summary>
     /// True if an active acquisition is currently being aborted.
@@ -67,7 +59,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     }
 
     /// <summary>
-    /// First input acquisition channel.
+    /// Input (device) channel.
     /// </summary>
     public AcquisitionModel AcquisitionChannel { get; }
 
@@ -99,44 +91,8 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     public bool IsRecording
     {
         get => _isRecording;
-        private set
-        {
-            if (SetProperty(ref _isRecording, value))
-            {
-                if (_isRecording)
-                {
-                    // Register class as recipient for timestamp pairing messages.
-                    Messenger.Register<TimeStampPairingMessage>(this, (sender, msg) => 
-                    {
-                        // Append comma separated timestamps to file in a single terminated line.
-                        if (LogTimeStamps && msg.TimeStamp1 != null && msg.TimeStamp2 != null)
-                            _timeStampWriter?.WriteLine(string.Join(", ", msg.TimeStamp1, msg.TimeStamp2));
-                    });
-                }
-                else Messenger.Unregister<TimeStampPairingMessage>(this);
-            }
-        }
+        private set => SetProperty(ref _isRecording, value);
     }
-
-    /// <summary>
-    /// True if matched timestamps of input channels should be logged to file.
-    /// </summary>
-    public bool LogTimeStamps
-    {
-        get => _logTimeStamps;
-        set => SetProperty(ref _logTimeStamps, value);
-    }
-
-    /// <summary>
-    /// Appends logged timestamps to same file.
-    /// </summary>
-    public bool AppendTimeStamps
-    {
-        get => _appendTimeStamps;
-        set => SetProperty(ref _appendTimeStamps, value);
-    }
-
-    // ToDo: Add filepath string for timestamp csv file?
 
     #endregion
 
@@ -160,9 +116,9 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 
         // Default file paths.
 #if DEBUG
-        AcquisitionChannel.FilePath = Path.GetFullPath(@"C:\testdata\channel1data.bin");
+        AcquisitionChannel.FilePath = Path.GetFullPath(@"C:\testdata\recording.bin");
 #else
-        AcquisitionChannel.FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\channel1data.bin");
+        AcquisitionChannel.FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\recording.bin");
 #endif
         // Register eventhandlers to available acquisition channels.
         AcquisitionChannel.AcquisitionStopped += Channel_AcquisitionStopped;
@@ -174,15 +130,10 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         // Register eventhandlers to available input devices.
         device.PropertyChanged += DeviceModel_PropertyChanged;
 
-        // Register eventhandlers to available images.
-        imageChannel.ProcessingException += ImageModel_ProcessingException;
-
         // Instantiate commands.
         PlayCommand = new AsyncRelayCommand(PlayAsync, CanAcquire);
         StopCommand = new AsyncRelayCommand(StopAsync, () => IsBusy);
         RecordCommand = new AsyncRelayCommand(RecordAsync, CanAcquire);
-
-        LogTimeStamps = false;
 
         // Activate viewmodel for message sending/receiving.
         IsActive = true;
@@ -218,7 +169,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     {
         Log.Information("Live view started");
 
-        // TODO : Synchronize thread starts using ManuelResetEventSlim?
         try
         {
             // Use Parallel library? Task.WhenAll?
@@ -265,25 +215,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 
         try
         {
-            // Save input channel timestamps to file (matching file path and substring).
-            if (LogTimeStamps && AcquisitionChannel.IsEnabled)
-            {
-                // Create directory if it doesn't already exist.
-                _ = Directory.CreateDirectory(Path.GetDirectoryName(AcquisitionChannel.FilePath));
-
-                if (AppendTimeStamps)
-                {
-                    // Log to same file (and append).
-                    _timeStampWriter = new(Path.GetDirectoryName(AcquisitionChannel.FilePath) + Path.DirectorySeparatorChar + "timestamps" + ".csv", append: true);
-                }
-                else
-                {
-                    // Log to separate files.
-                    _timeStampWriter = new(Path.GetDirectoryName(AcquisitionChannel.FilePath) + Path.DirectorySeparatorChar + "timestamps" + (AutoGenerateFileNames ? dateTimeSubString : string.Empty) + ".csv", append: false);
-                }
-                
-            }
-
             // Start input channel recordings (try/catch? Synchronize start using ManuelResetEventSlim?).
             await AcquisitionChannel.StartRecordingAsync(AutoGenerateFileNames ? dateTimeSubString : string.Empty);
 
@@ -315,10 +246,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
             // Stop acquisition on all channels.
             if (AcquisitionChannel.IsAcquiring)
                 await AcquisitionChannel.StopAcquisitionAsync();
-
-            // Close timestamp writer.
-            if (IsRecording && LogTimeStamps)
-                _timeStampWriter?.Close();
 
             // Update UI state.
             IsBusy = false;
@@ -373,7 +300,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     #region Events
 
     /// <summary>
-    /// Eventhandler to <see cref="AcquisitionModel.AcquisitionAborted"/> events, raised in one of the acquisition channels.
+    /// Eventhandler to <see cref="AcquisitionModel.AcquisitionAborted"/> events, raised in the acquisition channel.
     /// </summary>
     private async void Channel_AcquisitionAborted(object sender, AcquisitionAbortedEventArgs eventArgs)
     {
@@ -390,7 +317,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     }
 
     /// <summary>
-    /// Eventhandler to <see cref="AcquisitionModel.AcquisitionStopped"/> events, raised in one of the acquisition channels.
+    /// Eventhandler to <see cref="AcquisitionModel.AcquisitionStopped"/> events, raised in the acquisition channel.
     /// </summary>
     private async void Channel_AcquisitionStopped(object sender, EventArgs e)
     {
@@ -399,14 +326,10 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     }
 
     /// <summary>
-    /// Eventhandler to <see cref="AcquisitionModel.FrameDropped"/> events, raised in one of the acquisition channels.
+    /// Eventhandler to <see cref="AcquisitionModel.FrameDropped"/> events, raised in the acquisition channel.
     /// </summary>
     private void Channel_FrameDropped(object sender, FrameDroppedEventArgs frameDroppedEventArgs)
     {
-        var acquisitionModel = (AcquisitionModel)sender;
-
-        // ToDo: Log warning message instead? Too verbose?
-        // Send message to status bar? Remove?
         _ = Messenger.Send(new StatusBarLogMessage($"Frames have been lost (Total number: {frameDroppedEventArgs.LostFrameCount}).", LogEventLevel.Warning));
     }
 
@@ -439,41 +362,14 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     {
         if (e.PropertyName == nameof(DeviceModel.IsConnected))
         {
-            // Enable view (acquisition buttons) if at least one device is connected.
+            // Enable view (acquisition buttons) if a device is connected.
             IsEnabled = AcquisitionChannel.DeviceModel.IsConnected;
             NotifyAcquisitionCommands();
         }
         if (e.PropertyName == nameof(DeviceModel.IsConnecting))
         {
-            // Disable view (acquisition buttons) while connecting to a device.
+            // Disable view (acquisition buttons) while connecting to a new device.
             NotifyAcquisitionCommands();
-        }
-    }
-
-    /// <summary>
-    /// Eventhandler to <see cref="ImageModel.ProcessingException"/> events raised in an image channel.
-    /// </summary>
-    /// <param name="sender">ImageModel.</param>
-    /// <param name="ex">Exception thrown.</param>
-    private void ImageModel_ProcessingException(object sender, Exception ex)
-    {
-        // Adds thread safety (avoids multiple thread calls).
-        if (_isAborting == false)
-        {
-            _isAborting = true;
-
-            Log.Error(ex, "Exception thrown while processing image");
-
-            _dispatcherService.Invoke(() =>
-            {
-                // Stop acquisition.
-                StopCommand.Execute(null);
-
-                // Show error message.
-                _ = _windowService.ShowMessageDialog(this, "Image Processing Error!", $"Exception thrown while processing image: {ex.Message}", MessageDialogStyle.Affirmative, MetroDialogHelper.MessageDialogSettings);
-            });
-
-            _isAborting = false;
         }
     }
 
@@ -522,7 +418,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         // Register as recipient for messages requesting active acquisitions to stop.
         Messenger.Register<StopAcquisitionAsyncRequestMessage>(this, (r, m) => 
         {
-            // Stop acquisition on all channels.
+            // Stop acquisition.
             if (IsBusy)
                 m.Reply(StopAsync());
             else m.Reply(Task.CompletedTask);

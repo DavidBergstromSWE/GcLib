@@ -19,11 +19,11 @@
         <!--Device connection/disconnection buttons -->
         <Style x:Key="DeviceConnectionButton" BasedOn="{StaticResource MahApps.Styles.Button}" TargetType="Button">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="True">
+                <DataTrigger Binding="{Binding Device.IsConnected}" Value="True">
                     <Setter Property="ToolTip" Value="Disconnect device"/>
                     <Setter Property="Content" Value="Disconnect"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding SelectedDevice.IsConnected}" Value="False">
+                <DataTrigger Binding="{Binding Device.IsConnected}" Value="False">
                     <Setter Property="ToolTip" Value="Connect to new device"/>
                     <Setter Property="Content" Value="Select/Connect"/>
                 </DataTrigger>
@@ -62,19 +62,19 @@
 
         <Button Style="{StaticResource DeviceConnectionButton}" FontSize="14"
                 Margin="0 0 0 20" HorizontalAlignment="Center" Width="150"
-                Command="{Binding ConnectCameraFromDialogCommand}" CommandParameter="{Binding SelectedDevice}"/>
+                Command="{Binding ConnectCameraFromDialogCommand}"/>
 
         <StackPanel Orientation="Horizontal">
             <Label Content="Model:" Width="75" FontWeight="Bold" />
-            <Label Content="{Binding SelectedDevice.ModelName, Mode=OneWay}" MaxWidth="150"/>
+            <Label Content="{Binding Device.ModelName, Mode=OneWay}" MaxWidth="150"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
             <Label Content="Vendor:" Width="75" FontWeight="Bold" />
-            <Label Content="{Binding SelectedDevice.VendorName, Mode=OneWay}" MaxWidth="150"/>
+            <Label Content="{Binding Device.VendorName, Mode=OneWay}" MaxWidth="150"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
             <Label Content="UniqueID:" Width="75" FontWeight="Bold" />
-            <Label Content="{Binding SelectedDevice.UniqueID, Mode=OneWay}" MaxWidth="150"/>
+            <Label Content="{Binding Device.UniqueID, Mode=OneWay}" MaxWidth="150"/>
         </StackPanel>
         <Button Style="{StaticResource DeviceSettingsButton}"                            
             Command="{Binding OpenParameterDialogWindowCommand}"
@@ -84,7 +84,7 @@
                 <iconPacks:PackIconControl Kind="{x:Static iconPacks:PackIconPicolIconsKind.VideoInformation}" Margin="8 1 0 0"/>
             </StackPanel>
         </Button>
-        <mah:ProgressRing IsActive="{Binding SelectedDevice.IsConnecting, Mode=OneWay}"/>
+        <mah:ProgressRing IsActive="{Binding Device.IsConnecting, Mode=OneWay}"/>
     </StackPanel>
 
 </UserControl>

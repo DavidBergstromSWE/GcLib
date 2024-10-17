@@ -36,7 +36,7 @@ internal sealed class MainWindowViewModel : ObservableRecipient
     /// <summary>
     /// Application title.
     /// </summary>
-    public static string Title => "FUSIONVIEWER";
+    public static string Title => "ImageViewer";
 
     /// <summary>
     /// Application version string.

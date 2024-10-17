@@ -20,7 +20,7 @@ using Serilog;
 namespace FusionViewer.ViewModels;
 
 /// <summary>
-/// Models a view for connecting/disconnecting to devices and loading/saving device settings. 
+/// Models a view for connecting/disconnecting to a device and loading/saving device settings. 
 /// </summary>
 internal sealed class DeviceViewModel : ObservableRecipient
 {
@@ -29,7 +29,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
     // Backing-fields.
     private bool _canLoadConfiguration;
     private bool _canSaveConfiguration;
-    private DeviceModel _selectedDevice;
+    private DeviceModel _device;
     private bool _isEnabled;
     private uint _deviceParameterUpdateTimeDelay;
     private string _configurationFilePath;
@@ -50,9 +50,9 @@ internal sealed class DeviceViewModel : ObservableRecipient
     private readonly IDispatcherService _dispatcherService;
 
     /// <summary>
-    /// Service managing loading/saving of fusion system configurations.
+    /// Service managing loading/saving of system configurations.
     /// </summary>
-    private readonly IConfigurationService _fusionConfigurationService;
+    private readonly IConfigurationService _configurationService;
 
     /// <summary>
     /// Signals to a <see cref="CancellationToken"/> that it should be canceled.
@@ -81,17 +81,15 @@ internal sealed class DeviceViewModel : ObservableRecipient
     }
 
     /// <summary>
-    /// Currently selected device channel.
+    /// Device channel.
     /// </summary>
-    public DeviceModel SelectedDevice
+    public DeviceModel Device
     {
-        get => _selectedDevice;
+        get => _device;
         set
         {
-            if (SetProperty(ref _selectedDevice, value))
-            {
+            if (SetProperty(ref _device, value))
                 OpenParameterDialogWindowCommand?.NotifyCanExecuteChanged();
-            }
         }
     }
 
@@ -129,19 +127,19 @@ internal sealed class DeviceViewModel : ObservableRecipient
     public IRelayCommand OpenParameterDialogWindowCommand { get; }
 
     /// <summary>
-    /// Relays a request invoked by a UI command to load a fusion system configuration from file selected in a dialog window.
+    /// Relays a request invoked by a UI command to load a system configuration from file selected in a dialog window.
     /// </summary>
     public IAsyncRelayCommand LoadConfigurationDialogCommand { get; }
 
     /// <summary>
-    /// Relays a request invoked by a UI command to save a fusion system configuration to file selected in a dialog window.
+    /// Relays a request invoked by a UI command to save a system configuration to file selected in a dialog window.
     /// </summary>
     public IAsyncRelayCommand<bool> SaveConfigurationDialogCommand { get; }
 
     /// <summary>
     /// Relays a request invoked by a UI command to connect to a device selected from a dialog window.
     /// </summary>
-    public IAsyncRelayCommand<DeviceModel> ConnectCameraFromDialogCommand { get; }
+    public IAsyncRelayCommand ConnectCameraFromDialogCommand { get; }
 
     #endregion
 
@@ -187,20 +185,20 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <param name="windowService">Service providing windows and dialogs.</param>
     /// <param name="dispatcherService">Service providing dispatching and running of actions onto the UI thread.</param>
     /// <param name="deviceProvider">Service providing devices.</param>
-    /// <param name="fusionConfigurationService">Service managing loading/saving of fusion system configurations.</param>
+    /// <param name="configurationService">Service managing loading/saving of fusion system configurations.</param>
     /// <param name="deviceChannels">Available device channels.</param>
-    public DeviceViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, IDeviceProvider deviceProvider, IConfigurationService fusionConfigurationService, DeviceModel device)
+    public DeviceViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, IDeviceProvider deviceProvider, IConfigurationService configurationService, DeviceModel device)
     {
         // Get required services.
         _windowService = windowService;
         _dispatcherService = dispatcherService;
         _deviceProvider = deviceProvider;
-        _fusionConfigurationService = fusionConfigurationService;
+        _configurationService = configurationService;
             
-        // Set default device to be selected at start-up.
-        SelectedDevice = device;
-        SelectedDevice.ConnectionLost += DeviceModel_ConnectionLost;
-        SelectedDevice.PropertyChanged += DeviceModel_PropertyChanged;
+        // Hook eventhandlers to device events.
+        Device = device;
+        Device.ConnectionLost += DeviceModel_ConnectionLost;
+        Device.PropertyChanged += DeviceModel_PropertyChanged;
 
         // Default settings at startup.
         CanLoadConfiguration = true;
@@ -209,10 +207,10 @@ internal sealed class DeviceViewModel : ObservableRecipient
         DeviceParameterUpdateTimeDelay = 500;
 
         // Instantiate commands.
-        OpenParameterDialogWindowCommand = new RelayCommand(() => OpenParameterDialogWindow(SelectedDevice), () => IsEnabled && SelectedDevice.IsConnecting == false && SelectedDevice.IsConnected);
+        OpenParameterDialogWindowCommand = new RelayCommand(() => OpenParameterDialogWindow(Device), () => IsEnabled && Device.IsConnecting == false && Device.IsConnected);
         LoadConfigurationDialogCommand = new AsyncRelayCommand(LoadConfigurationDialogAsync, () => CanLoadConfiguration);
         SaveConfigurationDialogCommand = new AsyncRelayCommand<bool>(SaveConfigurationDialogAsync, b => CanSaveConfiguration);
-        ConnectCameraFromDialogCommand = new AsyncRelayCommand<DeviceModel>(ConnectCameraFromDialogAsync, (d) => IsEnabled);
+        ConnectCameraFromDialogCommand = new AsyncRelayCommand(ConnectCameraFromDialogAsync, () => IsEnabled);
 
         // Activate viewmodel for message sending/receiving.
         IsActive = true;
@@ -223,7 +221,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
     #region Private methods
 
     /// <summary>
-    /// Loads a fusion configuration from file, with the option of cancelling the operation.
+    /// Loads a system configuration from file, with the option of cancelling the operation.
     /// </summary>
     /// <param name="filePath">Path to configuration file.</param>
     /// <param name="token">Token for cancellation.</param>
@@ -248,7 +246,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
 
         try
         {
-            await _fusionConfigurationService.RestoreAsync(filePath, token);
+            await _configurationService.RestoreAsync(filePath, token);
         }
         catch (InvalidOperationException ex)
         {
@@ -258,8 +256,8 @@ internal sealed class DeviceViewModel : ObservableRecipient
         catch (Exception)
         {
             // Disconnect devices.
-            if (SelectedDevice.IsConnected)
-                await SelectedDevice.DisconnectDeviceAsync();
+            if (Device.IsConnected)
+                await Device.DisconnectDeviceAsync();
 
 
             // Rethrow.
@@ -312,11 +310,11 @@ internal sealed class DeviceViewModel : ObservableRecipient
         try
         {
             // Make sure devices are updated before saving.
-            if (SelectedDevice.IsConnected)
-                await SelectedDevice.UpdateDeviceAsync();
+            if (Device.IsConnected)
+                await Device.UpdateDeviceAsync();
 
             // Store configuration to file.
-            await _fusionConfigurationService.StoreAsync(filePath);
+            await _configurationService.StoreAsync(filePath);
 
             // Build dialog message.
             string dialogMessage = $"Settings successfully saved to \'{filePath}\' .";
@@ -352,14 +350,13 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <summary>
     /// Opens a dialog window for selecting a device to asynchronously connect to.
     /// </summary>
-    /// <param name="deviceModel">DeviceModel.</param>
     /// <returns>(awaitable) <see cref="Task"/>.</returns>
-    private async Task ConnectCameraFromDialogAsync(DeviceModel deviceModel)
+    private async Task ConnectCameraFromDialogAsync()
     {
-        if (deviceModel.IsConnected)
+        if (Device.IsConnected)
         {
             // Disconnect device.
-            await deviceModel.DisconnectDeviceAsync();
+            await Device.DisconnectDeviceAsync();
         }
         else
         {
@@ -375,13 +372,11 @@ internal sealed class DeviceViewModel : ObservableRecipient
             // Retrieve selected device from dialog.
             var deviceInfo = new DeviceInfo(dialogViewModel.SelectedDevice);
 
-            // Make new device the currently selected one.
-            SelectedDevice = deviceModel;
 
             try
             {
                 // Open device.
-                await deviceModel.ConnectDeviceAsync(deviceInfo, _deviceProvider);
+                await Device.ConnectDeviceAsync(deviceInfo, _deviceProvider);
             }
             catch (Exception ex)
             {
@@ -415,9 +410,9 @@ internal sealed class DeviceViewModel : ObservableRecipient
                 useExisting = false;
 
                 // Build filename using device model name(s) and current date.
-                fileName = "FusionConfiguration";
-                if (SelectedDevice.IsConnected)
-                    fileName += $"_{SelectedDevice.ModelName}";
+                fileName = "Configuration";
+                if (Device.IsConnected)
+                    fileName += $"_{Device.ModelName}";
                 fileName += $"_{DateTime.Now:yyyyMMdd}.xml";
             }
 
@@ -517,7 +512,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
     #region Eventhandlers
 
     /// <summary>
-    /// Event-handling method to <see cref="INotifyPropertyChanged.PropertyChanged"/> events in DeviceModel.
+    /// Event-handling method to <see cref="INotifyPropertyChanged.PropertyChanged"/> events in device.
     /// </summary>
     private void DeviceModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
     {
@@ -525,14 +520,14 @@ internal sealed class DeviceViewModel : ObservableRecipient
         if (e.PropertyName == nameof(DeviceModel.IsConnected))
         {
             // Enable saving of configuration if any device is connected (disable if none is connected).
-            CanSaveConfiguration = SelectedDevice.IsConnected;
+            CanSaveConfiguration = Device.IsConnected;
 
             // Notify commands of changes.
             OpenParameterDialogWindowCommand?.NotifyCanExecuteChanged();
             ConnectCameraFromDialogCommand?.NotifyCanExecuteChanged();
 
             // Reset file path if no device is connected.
-            if (SelectedDevice.IsConnected == false)
+            if (Device.IsConnected == false)
                 ConfigurationFilePath = null;
         }
     }
@@ -643,8 +638,8 @@ internal sealed class DeviceViewModel : ObservableRecipient
         if (e.Cancel == false)
         {
             // Disconnect devices.
-            if (SelectedDevice.IsConnected)
-                await SelectedDevice.DisconnectDeviceAsync();
+            if (Device.IsConnected)
+                await Device.DisconnectDeviceAsync();
         }
     }
 

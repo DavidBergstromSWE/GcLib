@@ -58,7 +58,7 @@ internal sealed class ConfigurationService : IConfigurationService
         _xmlWriterSettings = new() { Indent = true, NewLineOnAttributes = false };
 
         _xmlReaderSettings = new() { IgnoreComments = true, IgnoreWhitespace = true };
-        _xmlReaderSettings.Schemas.Add("SystemConfiguration", @"Resources\XMLSchemas\FusionConfigurationXMLSchema.xsd");
+        _xmlReaderSettings.Schemas.Add("SystemConfiguration", @"Resources\XMLSchemas\SystemConfigurationXMLSchema.xsd");
         _xmlReaderSettings.ValidationType = ValidationType.Schema;
     }
 
@@ -78,7 +78,7 @@ internal sealed class ConfigurationService : IConfigurationService
             using var reader = XmlReader.Create(filePath, _xmlReaderSettings);
 
             if (reader.MoveToContent() != XmlNodeType.None
-                && (reader.Name == "FusionViewer" && reader.NamespaceURI == "SystemConfiguration"
+                && (reader.Name == MainWindowViewModel.Title && reader.NamespaceURI == "SystemConfiguration"
                 && reader.Read()) == false)
                 throw new FileFormatException($"File is not a configuration file!");
 
@@ -161,11 +161,11 @@ internal sealed class ConfigurationService : IConfigurationService
         _xmlWriter.WriteStartDocument();
 
         // Starts system configuration root element.
-        _xmlWriter.WriteStartElement("FusionViewer", "SystemConfiguration");
+        _xmlWriter.WriteStartElement(MainWindowViewModel.Title, "SystemConfiguration");
         _xmlWriter.WriteAttributeString("Version", MainWindowViewModel.MajorMinorVersion);
 
         if (_device.IsConnected == false)
-            throw new InvalidOperationException("Configuration must contain at least one device!");
+            throw new InvalidOperationException("No device is connected!");
 
         // Store device top-level information.
         if (_device.IsConnected)
