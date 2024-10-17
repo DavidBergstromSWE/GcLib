@@ -236,7 +236,7 @@
                     </Style.Triggers>
                 </Style>
             </Expander.Style>
-            <views:HistogramView x:Name="histogramView"
+            <views:HistogramView x:Name="histogramView" mah:VisibilityHelper.IsVisible="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.ContainsData}"
                              Grid.Row="2" Grid.Column="4"
                              Margin="10 0 15 0"/>
         </Expander>
