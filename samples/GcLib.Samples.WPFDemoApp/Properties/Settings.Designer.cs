@@ -62,72 +62,24 @@ namespace GcLib.Samples.WPFDemoApp.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool Channel1SaveRawData {
+        public bool SaveRawData {
             get {
-                return ((bool)(this["Channel1SaveRawData"]));
+                return ((bool)(this["SaveRawData"]));
             }
             set {
-                this["Channel1SaveRawData"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool Channel2SaveRawData {
-            get {
-                return ((bool)(this["Channel2SaveRawData"]));
-            }
-            set {
-                this["Channel2SaveRawData"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool FusedChannelSaveRawData {
-            get {
-                return ((bool)(this["FusedChannelSaveRawData"]));
-            }
-            set {
-                this["FusedChannelSaveRawData"] = value;
+                this["SaveRawData"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Channel1SaveFilePath {
+        public string SaveFilePath {
             get {
-                return ((string)(this["Channel1SaveFilePath"]));
+                return ((string)(this["SaveFilePath"]));
             }
             set {
-                this["Channel1SaveFilePath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Channel2SaveFilePath {
-            get {
-                return ((string)(this["Channel2SaveFilePath"]));
-            }
-            set {
-                this["Channel2SaveFilePath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string FusedChannelSaveFilePath {
-            get {
-                return ((string)(this["FusedChannelSaveFilePath"]));
-            }
-            set {
-                this["FusedChannelSaveFilePath"] = value;
+                this["SaveFilePath"] = value;
             }
         }
         
@@ -146,72 +98,12 @@ namespace GcLib.Samples.WPFDemoApp.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool Channel1SaveProcessedData {
+        public bool SaveProcessedData {
             get {
-                return ((bool)(this["Channel1SaveProcessedData"]));
+                return ((bool)(this["SaveProcessedData"]));
             }
             set {
-                this["Channel1SaveProcessedData"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool Channel2SaveProcessedData {
-            get {
-                return ((bool)(this["Channel2SaveProcessedData"]));
-            }
-            set {
-                this["Channel2SaveProcessedData"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool FusedChannelSaveProcessedData {
-            get {
-                return ((bool)(this["FusedChannelSaveProcessedData"]));
-            }
-            set {
-                this["FusedChannelSaveProcessedData"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool LogTimeStamps {
-            get {
-                return ((bool)(this["LogTimeStamps"]));
-            }
-            set {
-                this["LogTimeStamps"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool AppendTimeStamps {
-            get {
-                return ((bool)(this["AppendTimeStamps"]));
-            }
-            set {
-                this["AppendTimeStamps"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool SynchronizeViews {
-            get {
-                return ((bool)(this["SynchronizeViews"]));
-            }
-            set {
-                this["SynchronizeViews"] = value;
+                this["SaveProcessedData"] = value;
             }
         }
     }

@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FusionViewer.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="GcLib.Samples.WPFDemoApp.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="ThemeName" Type="System.String" Scope="User">
@@ -11,44 +11,17 @@
     <Setting Name="ParameterUpdateDelay" Type="System.UInt32" Scope="User">
       <Value Profile="(Default)">500</Value>
     </Setting>
-    <Setting Name="Channel1SaveRawData" Type="System.Boolean" Scope="User">
+    <Setting Name="SaveRawData" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="Channel2SaveRawData" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
-    <Setting Name="FusedChannelSaveRawData" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="Channel1SaveFilePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="Channel2SaveFilePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="FusedChannelSaveFilePath" Type="System.String" Scope="User">
+    <Setting Name="SaveFilePath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="AutoGenerateFileNames" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="Channel1SaveProcessedData" Type="System.Boolean" Scope="User">
+    <Setting Name="SaveProcessedData" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="Channel2SaveProcessedData" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="FusedChannelSaveProcessedData" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
-    <Setting Name="LogTimeStamps" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
-    <Setting Name="AppendTimeStamps" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="SynchronizeViews" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

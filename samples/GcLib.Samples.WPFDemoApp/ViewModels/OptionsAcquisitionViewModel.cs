@@ -39,7 +39,7 @@ internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSu
     #region Commands
 
     /// <summary>
-    /// Relays a request invoked by a UI command to open a dialogue window for letting user select a new file path for recorded channel 1 data.
+    /// Relays a request invoked by a UI command to open a dialogue window for letting user select a new file path for recorded data.
     /// </summary>
     public IRelayCommand<string> BrowseChannelFilePathCommand { get; }
 

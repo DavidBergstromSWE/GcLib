@@ -25,10 +25,6 @@
             <RowDefinition Height="15" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="*" />
             <RowDefinition Height="15" />
         </Grid.RowDefinitions>
 
@@ -78,7 +74,8 @@
         <StackPanel Grid.Row="2" Grid.Column="4"
                     Orientation="Horizontal" Margin="10 5 0 0">
             <TextBox x:Name="Channel1FilePath"
-                     Text="{Binding AcquisitionViewModel.AcquisitionChannel.FilePath, FallbackValue=C:\\testdata\\channel1data.bin}" 
+                     Text="{Binding AcquisitionViewModel.AcquisitionChannel.FilePath}"
+                     d:Text="C:\testdata.recording.bin"
                      IsEnabled="{Binding ElementName=AutoGen, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"/>
             <Button Style="{StaticResource Browsebutton}" 
                     Content="{iconPacks:Material Kind=FolderSearchOutline}"
@@ -88,7 +85,7 @@
 
         <!-- Auto-generate filenames togglebutton -->
         <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="5"
-                    Margin="25 0 0 0" Orientation="Vertical" >
+                    Margin="20 0 0 0" Orientation="Vertical" >
             <mah:ToggleSwitch x:Name="AutoGen"
                               Header="Auto-generate" mah:HeaderedControlHelper.HeaderFontSize="12"
                               OnContent="on" OffContent="off" FontSize="12" MinWidth="80" Width="85" MaxWidth="90"

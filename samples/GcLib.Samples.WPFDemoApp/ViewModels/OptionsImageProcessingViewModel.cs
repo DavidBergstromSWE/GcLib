@@ -39,8 +39,8 @@ internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptio
         ImageProcessingViewModel = imageProcessingViewModel;
 
         // Store initial settings.
-        _flipChannel1Horizontal = ImageProcessingViewModel.SelectedImageChannel.FlipHorizontal;
-        _flipChannel1Vertical = ImageProcessingViewModel.SelectedImageChannel.FlipVertical;
+        _flipChannel1Horizontal = ImageProcessingViewModel.ImageChannel.FlipHorizontal;
+        _flipChannel1Vertical = ImageProcessingViewModel.ImageChannel.FlipVertical;
     }
 
     #endregion
@@ -51,8 +51,8 @@ internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptio
     public void CancelChanges()
     {
         // Restore initial settings.
-        ImageProcessingViewModel.SelectedImageChannel.FlipHorizontal = _flipChannel1Horizontal;
-        ImageProcessingViewModel.SelectedImageChannel.FlipVertical = _flipChannel1Vertical;
+        ImageProcessingViewModel.ImageChannel.FlipHorizontal = _flipChannel1Horizontal;
+        ImageProcessingViewModel.ImageChannel.FlipVertical = _flipChannel1Vertical;
     }
 
     #endregion

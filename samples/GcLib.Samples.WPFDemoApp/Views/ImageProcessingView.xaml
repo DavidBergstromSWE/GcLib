@@ -19,7 +19,7 @@
             <TextBlock Text="Brightness" FontSize="12" Width="60" VerticalAlignment="Center"/>
             <Slider Name="brightnessSlider" Style="{StaticResource MahApps.Styles.Slider}" VerticalAlignment="Center" Margin="10 0 0 0" 
                     FontSize="11" Width="85"
-                    Value="{Binding SelectedImageChannel.Brightness, Mode=TwoWay, FallbackValue=0}" 
+                    Value="{Binding ImageChannel.Brightness, Mode=TwoWay, FallbackValue=0}" 
                     Minimum="-255" Maximum="255" 
                     TickFrequency="5" IsSnapToTickEnabled="True"
                     SmallChange="1" LargeChange="10"
