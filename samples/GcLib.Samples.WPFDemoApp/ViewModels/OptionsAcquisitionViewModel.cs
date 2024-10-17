@@ -13,11 +13,9 @@ internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSu
     #region Fields
 
     // Initial settings.
-    private readonly bool _initialSaveChannel1Data;
-    private readonly string _initialChannel1FilePath;
+    private readonly bool _initialSaveData;
+    private readonly string _initialFilePath;
     private readonly bool _initialAutoGenerateFileNames;
-    private readonly bool _initialLogTimeStamps;
-    private readonly bool _initialAppendTimeStamps;
 
     /// <summary>
     /// Service providing windows and dialogs.
@@ -43,12 +41,7 @@ internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSu
     /// <summary>
     /// Relays a request invoked by a UI command to open a dialogue window for letting user select a new file path for recorded channel 1 data.
     /// </summary>
-    public IRelayCommand<string> BrowseChannel1FilePathCommand { get; }
-
-    /// <summary>
-    /// Relays a request invoked by a UI command to open a dialogue window for letting user select a new file path for recorded channel 2 data.
-    /// </summary>
-    public IRelayCommand<string> BrowseChannel2FilePathCommand { get; }
+    public IRelayCommand<string> BrowseChannelFilePathCommand { get; }
 
     #endregion
 
@@ -63,14 +56,12 @@ internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSu
         _windowService = windowService;
 
         // Store initial settings.
-        _initialSaveChannel1Data = AcquisitionViewModel.AcquisitionChannel.SaveRawData;
-        _initialChannel1FilePath = AcquisitionViewModel.AcquisitionChannel.FilePath;
+        _initialSaveData = AcquisitionViewModel.AcquisitionChannel.SaveRawData;
+        _initialFilePath = AcquisitionViewModel.AcquisitionChannel.FilePath;
         _initialAutoGenerateFileNames = AcquisitionViewModel.AutoGenerateFileNames;
-        _initialLogTimeStamps = AcquisitionViewModel.LogTimeStamps;
-        _initialAppendTimeStamps = AcquisitionViewModel.AppendTimeStamps;
 
         // Instantiate commands.
-        BrowseChannel1FilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.FilePath = FindFilePath(s));
+        BrowseChannelFilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.FilePath = FindFilePath(s));
     }
 
     #endregion
@@ -81,11 +72,9 @@ internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSu
     public void CancelChanges()
     {
         // Restore initial settings.
-        AcquisitionViewModel.AcquisitionChannel.SaveRawData = _initialSaveChannel1Data;
-        AcquisitionViewModel.AcquisitionChannel.FilePath = _initialChannel1FilePath;
+        AcquisitionViewModel.AcquisitionChannel.SaveRawData = _initialSaveData;
+        AcquisitionViewModel.AcquisitionChannel.FilePath = _initialFilePath;
         AcquisitionViewModel.AutoGenerateFileNames = _initialAutoGenerateFileNames;
-        AcquisitionViewModel.LogTimeStamps = _initialLogTimeStamps;
-        AcquisitionViewModel.AppendTimeStamps = _initialAppendTimeStamps;
     }
 
     #endregion

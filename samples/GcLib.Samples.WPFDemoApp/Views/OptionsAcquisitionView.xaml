@@ -65,92 +65,35 @@
                    HorizontalAlignment="Center" Margin="10 0 0 0"
                    Text="Processed" FontSize="11"/>
 
-        <!-- Channel 1 settings -->
+        <!-- Recording settings -->
         <TextBlock Grid.Row="2" Grid.Column="1" 
-                   Text="Channel 1:" 
-                   VerticalAlignment="Bottom" Margin="0 0 10 0"/>
+                   Text="Save data:" 
+                   VerticalAlignment="Center" Margin="0 5 10 0"/>
         <CheckBox Grid.Row="2" Grid.Column="2" 
-                  IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel1.SaveRawData, FallbackValue=true}" 
-                  ToolTip="Save raw data from channel 1"/>
+                  IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel.SaveRawData, FallbackValue=true}" 
+                  ToolTip="Save raw data"/>
         <CheckBox Grid.Row="2" Grid.Column="3"
-                  IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel1.SaveProcessedData}"
-                  ToolTip="Save processed data from channel 1"/>
+                  IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel.SaveProcessedData}"
+                  ToolTip="Save processed data"/>
         <StackPanel Grid.Row="2" Grid.Column="4"
                     Orientation="Horizontal" Margin="10 5 0 0">
             <TextBox x:Name="Channel1FilePath"
-                     Text="{Binding AcquisitionViewModel.AcquisitionChannel1.FilePath, FallbackValue=C:\\testdata\\channel1data.bin}" 
+                     Text="{Binding AcquisitionViewModel.AcquisitionChannel.FilePath, FallbackValue=C:\\testdata\\channel1data.bin}" 
                      IsEnabled="{Binding ElementName=AutoGen, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"/>
             <Button Style="{StaticResource Browsebutton}" 
                     Content="{iconPacks:Material Kind=FolderSearchOutline}"
                     IsEnabled="{Binding ElementName=AutoGen, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"
-                    Command="{Binding BrowseChannel1FilePathCommand}" CommandParameter="{Binding ElementName=Channel1FilePath, Path=Text}"/>
-        </StackPanel>
-
-        <!-- Channel 2 settings -->
-        <TextBlock Grid.Row="3" Grid.Column="1" 
-                   Text="Channel 2:" 
-                   VerticalAlignment="Bottom"/>
-        <CheckBox Grid.Row="3" Grid.Column="2"
-                  IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel2.SaveRawData, FallbackValue=true}"
-                  ToolTip="Save raw data from channel 2"/>
-        <CheckBox Grid.Row="3" Grid.Column="3"
-                  IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel2.SaveProcessedData}" 
-                  ToolTip="Save processed data from channel 2"/>
-        <StackPanel Grid.Row="3" Grid.Column="4"
-                    Orientation="Horizontal" Margin="10 5 0 0">
-            <TextBox x:Name="Channel2FilePath" 
-                     Text="{Binding AcquisitionViewModel.AcquisitionChannel2.FilePath, FallbackValue=C:\\testdata\\channel2data.bin}" 
-                     IsEnabled="{Binding ElementName=AutoGen, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"/>
-            <Button Style="{StaticResource Browsebutton}"
-                    IsEnabled="{Binding ElementName=AutoGen, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"
-                    Command="{Binding BrowseChannel2FilePathCommand}" CommandParameter="{Binding ElementName=Channel2FilePath, Path=Text}"
-                    Content="{iconPacks:Material Kind=FolderSearchOutline}"/>
-        </StackPanel>
-
-        <!-- Fused channel settings -->
-        <TextBlock Grid.Row="4" Grid.Column="1"
-                   Text="Fusion:" 
-                   VerticalAlignment="Bottom"/>
-        <CheckBox Grid.Row="4" Grid.Column="2"
-                  IsChecked="{Binding AcquisitionViewModel.FusedAcquisitionChannel.SaveRawData}"
-                  ToolTip="Save raw fused data"/>
-        <CheckBox Grid.Row="4" Grid.Column="3"
-                  IsChecked="{Binding AcquisitionViewModel.FusedAcquisitionChannel.SaveProcessedData, FallbackValue=true}"
-                  ToolTip="Save processed fused data" />
-        <StackPanel Grid.Row="4" Grid.Column="4"
-                    Orientation="Horizontal" Margin="10 5 0 0">
-            <TextBox x:Name="FusionFilePath"
-                     Text="{Binding AcquisitionViewModel.FusedAcquisitionChannel.FilePath, FallbackValue=C:\\testdata\\fusedchanneldata.bin}" 
-                     IsEnabled="{Binding ElementName=AutoGen, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"/>
-            <Button Style="{StaticResource Browsebutton}"
-                    IsEnabled="{Binding ElementName=AutoGen, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"
-                    Command="{Binding BrowseFusionFilePathCommand}" CommandParameter="{Binding ElementName=FusionFilePath, Path=Text}"
-                    Content="{iconPacks:Material Kind=FolderSearchOutline}"/>
+                    Command="{Binding BrowseChannelFilePathCommand}" CommandParameter="{Binding ElementName=Channel1FilePath, Path=Text}"/>
         </StackPanel>
 
         <!-- Auto-generate filenames togglebutton -->
-        <StackPanel Grid.Row="2" Grid.RowSpan="3" Grid.Column="5"
-                    Margin="20 0 0 0" Orientation="Vertical" VerticalAlignment="Center" >
+        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="5"
+                    Margin="25 0 0 0" Orientation="Vertical" >
             <mah:ToggleSwitch x:Name="AutoGen"
-                              Header="Auto-generate" mah:HeaderedControlHelper.HeaderFontSize="12" mah:HeaderedControlHelper.HeaderFontWeight="Bold" mah:HeaderedControlHelper.HeaderMargin="0 0 0 0"
+                              Header="Auto-generate" mah:HeaderedControlHelper.HeaderFontSize="12"
                               OnContent="on" OffContent="off" FontSize="12" MinWidth="80" Width="85" MaxWidth="90"
-                              ToolTip="Enable to auto-generate filenames (based on current date and time)" ToolTipService.InitialShowDelay="500"
+                              ToolTip="Enable to auto-generate filename (based on current date and time)" ToolTipService.InitialShowDelay="500"
                               IsOn="{Binding AcquisitionViewModel.AutoGenerateFileNames}"/>
-        </StackPanel>
-
-        <!-- Save input channel timestamps to file -->
-        <StackPanel Margin="0 20 0 0" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="4" Orientation="Horizontal">
-            <TextBlock Text="Log timestamps" VerticalAlignment="Center"/>
-            <CheckBox Margin="25 0 0 0" IsChecked="{Binding AcquisitionViewModel.LogTimeStamps, FallbackValue=true}" 
-                      ToolTip="Logs recorded timestamps from matched input images to csv file"/>
-            <TextBlock Margin="30 0 0 0" FontSize="11" Text="Append to same file:" VerticalAlignment="Center"/>
-            <CheckBox Margin="10 0 0 0" Style="{StaticResource MahApps.Styles.CheckBox.Win10}" 
-                      IsChecked="{Binding AcquisitionViewModel.AppendTimeStamps, FallbackValue=False}"
-                      ToolTip="Appends recorded timestamps to same or separate file">
-                <CheckBox.LayoutTransform>
-                    <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
-                </CheckBox.LayoutTransform>
-            </CheckBox>
         </StackPanel>
 
     </Grid>

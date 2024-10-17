@@ -59,7 +59,7 @@
         <KeyBinding Key="L" Modifiers="Ctrl" Command="{Binding Source={StaticResource ViewModelLocator}, Path=DeviceViewModel.LoadConfigurationDialogCommand}"/>
         <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding Source={StaticResource ViewModelLocator}, Path=DeviceViewModel.SaveConfigurationDialogCommand}" CommandParameter="{StaticResource TrueValue}"/>
         <!-- Recordings -->
-        <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.OpenSequenceCommand}" CommandParameter="{Binding Source={StaticResource ViewModelLocator}, Path=ImageDisplayViewModel.SelectedChannel}"/>
+        <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.OpenSequenceCommand}"/>
         <KeyBinding Key="X" Modifiers="Ctrl" Command="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.CloseSequenceCommand}"/>
         <!-- Acquisition -->
         <KeyBinding Key="F6" Command="{Binding Source={StaticResource ViewModelLocator}, Path=AcquisitionViewModel.PlayCommand}"/>
@@ -118,7 +118,7 @@
                     <Separator />
                     <MenuItem Header="Open recording..."
                               Icon="{iconPacks:Material Kind=Filmstrip}"
-                              Command="{Binding ElementName=playbackView, Path=DataContext.OpenSequenceCommand}" CommandParameter="{Binding ElementName=imageDisplayView, Path=DataContext.SelectedChannel}"
+                              Command="{Binding ElementName=playbackView, Path=DataContext.OpenSequenceCommand}"
                               InputGestureText="Ctrl+R"/>
                     <MenuItem Header="Close recording"
                               Icon="{iconPacks:Material Kind=FilmstripOff}"
@@ -132,6 +132,9 @@
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </MenuItem>
+                </MenuItem>
+                <MenuItem x:Name="EditMenu" Header="_Edit" >
+                    <MenuItem Header="Options..." Icon="{iconPacks:Entypo Kind=Cog}" Command="{Binding OpenOptionsWindowCommand}" />
                 </MenuItem>
                 <MenuItem x:Name="Window" Header="_Window">
                     <MenuItem Header="Show Full Screen" 

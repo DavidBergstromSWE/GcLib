@@ -223,7 +223,7 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
     /// <summary>
     /// Relays command to open a previously recorded image sequence for playback.
     /// </summary>
-    public IAsyncRelayCommand<ImageModel> OpenSequenceCommand { get; }
+    public IAsyncRelayCommand OpenSequenceCommand { get; }
 
     /// <summary>
     /// Relays command to close an opened image sequence and exit playback mode.
@@ -271,13 +271,14 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
     /// <summary>
     /// Instantiates a new model for a view handling playback of previously recorded image data.
     /// </summary>
-    public PlayBackViewModel(IMetroWindowService dialogService)
+    public PlayBackViewModel(IMetroWindowService dialogService, ImageModel imageModel)
     {
         // Get required services.
         _windowService = dialogService;
+        _playbackChannel = imageModel;
 
         // Instantiate commands.
-        OpenSequenceCommand = new AsyncRelayCommand<ImageModel>(OpenSequenceAsync, m => _canOpenSequence);
+        OpenSequenceCommand = new AsyncRelayCommand(OpenSequenceAsync, () => _canOpenSequence);
         CloseSequenceCommand = new RelayCommand(CloseSequence, () => IsLoaded);
         GoToStartCommand = new RelayCommand(GoToStart, () => IsEnabled);
         GoToEndCommand = new RelayCommand(GoToEnd, () => IsEnabled);
@@ -352,8 +353,7 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
     /// <summary>
     /// Open file dialog and load selected image sequence.
     /// </summary>
-    /// <param name="imageModel">Image channel to use for playback.</param>
-    private async Task OpenSequenceAsync(ImageModel imageModel)
+    private async Task OpenSequenceAsync()
     {
         // Retrieve filepath from dialog.
         string filePath = _windowService.ShowOpenFileDialog(title: "Select image sequence file", multiSelect: false, filter: "Image sequence files (*.bin)|*.bin", defaultExtension: "bin");
@@ -363,9 +363,6 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
         // Close any previously opened sequences.
         if (IsLoaded)
             CloseSequence();
-
-        // Update display channel to use for playback.
-        _playbackChannel = imageModel;
 
         // Cache currently displayed image into memory.
         _cachedBuffer = _playbackChannel.RawImage;
