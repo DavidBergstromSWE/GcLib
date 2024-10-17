@@ -20,7 +20,7 @@
         <mah:WindowCommands>
             <Border BorderBrush="Black" BorderThickness="1" 
                     Margin="2">
-                <Image Source="/Resources/Images/Fusion_296x296.png" 
+                <Image Source="/Resources/Images/logo_296x296.png" 
                        Width="25" Height="25" 
                        RenderOptions.BitmapScalingMode="HighQuality"/>
             </Border>

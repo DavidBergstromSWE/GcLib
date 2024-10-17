@@ -29,18 +29,12 @@
                     </MultiBinding>
                 </mah:ToggleSwitch.Visibility>
             </mah:ToggleSwitch>
-            <CheckBox x:Name="showLiveHistogramCheckBox"
-                      Style="{StaticResource MahApps.Styles.CheckBox}"
-                      IsChecked="{Binding ShowLiveHistogram}" d:IsChecked="True"
-                      Content="Show Histogram"
-                      Margin="-25 0 0 0"
-                      ToolTip="Show image histogram" ToolTipService.InitialShowDelay="500"/>
         </StackPanel>
 
         <!-- Histogram view control -->
         <controls:HistogramViewer x:Name="histogramViewer"
                                   Height="175"
-                                  Margin="10 -6 0 0"
+                                  Margin="10 0 -40 0"
                                   Theme="{Binding Source={StaticResource ViewModelLocator}, Path=MainWindowViewModel.SelectedTheme}"
                                   IsEnabled="{Binding ShowLiveHistogram}" d:IsEnabled="true"
                                   Histogram="{Binding Histogram}"
