@@ -14,7 +14,7 @@
     <controls:ImageViewer x:Name="imageViewer" IsEnabled="True"
                             ImageBorderBrush="{DynamicResource MahApps.Brushes.TextBox.Border.Focus}"
                             BitmapScaling="{Binding SelectedBitmapScalingMode, Mode=OneWay}"
-                            ShowPixelInspector="True"
+                            ShowPixelInspector="{Binding ShowPixelInspector}"
                             ShowImageFormat="True"
                             ShowImageMetaData="True"
                             MouseWheelZoomingEnabled="True" SelectionBoxZoomingEnabled="True"

@@ -71,18 +71,6 @@
                       ToolTip="Upper frame rate limit (in Hz)"/>
         </StackPanel>
         
-        <!-- View synchronization -->
-        <TextBlock Grid.Row="4" Grid.Column="1"
-                   Margin="0 8 0 0"
-                   VerticalAlignment="Center"
-                   Text="Synchronize views:" Foreground="Red" FontStyle="Italic" />
-        <CheckBox Grid.Row="4" Grid.Column="2"
-                  Margin="10 8 0 0"
-                  VerticalAlignment="Bottom"
-                  IsChecked="{Binding DisplayViewModel.SynchronizeViews, Mode=TwoWay, FallbackValue=False}"
-                  ToolTip="Synchronize scaling and translation of images between channel views (Warning: The mode is experimental at this point and will only work correctly if all channels have the same resolution!)"
-                  ToolTipService.InitialShowDelay="500"/>
-        
         <!-- Full screen options -->
         <TextBlock Text="Full screen mode:" FontStyle="Italic" FontWeight="Bold" TextDecorations="Underline"
                    Grid.Row="1" Grid.Column="3"
@@ -97,16 +85,6 @@
                   Margin="10 8 0 0"
                   IsChecked="{Binding DisplayViewModel.ShowFullScreenFrameInfo}" 
                   ToolTip="Show image info in full screen mode"
-                  ToolTipService.InitialShowDelay="500"/>
-
-        <TextBlock Grid.Row="3" Grid.Column="3" 
-                   Margin="80 8 0 0"
-                   VerticalAlignment="Center"
-                   Text="Show channel info:"/>
-        <CheckBox Grid.Row="3" Grid.Column="4" 
-                  Margin="10 8 0 0" 
-                  IsChecked="{Binding DisplayViewModel.ShowFullScreenChannelInfo}" 
-                  ToolTip="Show channel label in full screen mode"
                   ToolTipService.InitialShowDelay="500"/>
 
     </Grid>
