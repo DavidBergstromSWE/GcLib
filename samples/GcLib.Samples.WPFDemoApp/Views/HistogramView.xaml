@@ -12,7 +12,7 @@
              DataContext="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel}"
              IsEnabled="{Binding IsEnabled}">
 
-    <StackPanel Orientation="Vertical">
+    <StackPanel Orientation="Vertical" mah:VisibilityHelper.IsCollapsed="{Binding ElementName=histogramViewer, Path=ContainsData, Converter={StaticResource InverseBooleanConverter}}">
 
         <!-- Processed/Raw data toggleswitch and histogram viewer enabling checkbox -->
         <StackPanel Orientation="Horizontal">

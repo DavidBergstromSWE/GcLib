@@ -90,6 +90,7 @@
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -206,10 +207,9 @@
                                    d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}"/>
 
         <!--Image histogram-->
-        <Expander Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2"              
+        <Expander Grid.Row="2" Grid.Column="5"             
                   BorderThickness="0" 
-                  mah:VisibilityHelper.IsVisible="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.IsEnabled}"
-                  Margin="5 60 5 0"
+                  Margin="5 60 -15 0"
                   ExpandDirection="Left" IsExpanded="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.ShowLiveHistogram, Mode=TwoWay}"
                   mah:HeaderedControlHelper.HeaderBackground="Transparent" mah:HeaderedControlHelper.HeaderForeground="{DynamicResource MahApps.Brushes.ThemeForeground}">
             <Expander.Style>
@@ -230,15 +230,15 @@
                         </DataTrigger>
                         <DataTrigger Binding="{Binding IsExpanded, RelativeSource={RelativeSource Self}}" Value="True">
                             <Setter Property="Header" Value=""/>
-                            <Setter Property="Padding" Value="0 0 5 0"/>
+                            <Setter Property="Padding" Value="0 0 0 0"/>
                             <Setter Property="ToolTip" Value="Close live histogram"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Expander.Style>
-            <views:HistogramView x:Name="histogramView" mah:VisibilityHelper.IsVisible="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.ContainsData}"
+            <views:HistogramView x:Name="histogramView"
                              Grid.Row="2" Grid.Column="4"
-                             Margin="10 0 15 0"/>
+                             Margin="10 0 25 0"/>
         </Expander>
 
         
