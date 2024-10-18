@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml;
@@ -28,7 +27,6 @@ internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
     private string _modelName;
     private string _vendorName;
     private string _uniqueID;
-    private string _channelName;
 
     #endregion
 

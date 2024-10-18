@@ -11,7 +11,6 @@ internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptio
     #region Fields
 
     // Initial settings.
-    private readonly Inter _selectedInterpolationMethod;
     private readonly bool _flipChannel1Horizontal;
     private readonly bool _flipChannel1Vertical;
 

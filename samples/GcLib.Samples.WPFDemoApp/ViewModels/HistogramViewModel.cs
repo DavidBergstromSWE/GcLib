@@ -126,16 +126,7 @@ internal sealed class HistogramViewModel : ObservableRecipient
     public ImageHistogram Histogram
     {
         get => _histogram;
-        private set
-        {
-            if (SetProperty(ref _histogram, value))
-                OnPropertyChanged(nameof(ContainsData));
-        }
-    }
-
-    public bool ContainsData 
-    {
-        get => Histogram != null;
+        private set => SetProperty(ref _histogram, value);
     }
 
     #endregion

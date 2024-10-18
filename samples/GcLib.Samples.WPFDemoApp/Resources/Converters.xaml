@@ -12,5 +12,6 @@
     <conv:TimestampConverter x:Key="TimestampConverter"/>
     <conv:IsEqualConverter x:Key="IsEqualConverter"/>
     <conv:IsNotEqualConverter x:Key="IsNotEqualConverter"/>
+    <conv:NullToBooleanConverter x:Key="NullToBooleanConverter"/>
 
 </ResourceDictionary>

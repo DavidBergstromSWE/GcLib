@@ -206,7 +206,7 @@
                                    d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}"/>
 
         <!--Image histogram-->
-        <Expander Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2"
+        <Expander Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="2"              
                   BorderThickness="0" 
                   mah:VisibilityHelper.IsVisible="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.IsEnabled}"
                   Margin="5 60 5 0"
