@@ -29,7 +29,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     private uint _targetFPS;
     private bool _showFullScreenFrameInfo;
     private bool _showFullScreenChannelInfo;
-    private bool _synchronizeViews;
 
     /// <summary>
     /// Service providing windows and dialogs.
@@ -164,15 +163,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         set => SetProperty(ref _showFullScreenChannelInfo, value);
     }
 
-    /// <summary>
-    /// Synchronize image scaling and translation between views.
-    /// </summary>
-    public bool SynchronizeViews
-    {
-        get => _synchronizeViews;
-        set => SetProperty(ref _synchronizeViews, value);
-    }
-
     #endregion
 
     #region Commands
@@ -212,9 +202,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
 
         // Default targeted frame rate.
         TargetFPS = 30;
-
-        // Default view synchronization.
-        SynchronizeViews = false;
 
         // Instantiate commands.
         OpenFullScreenImageWindowCommand = new RelayCommand(OpenFullScreenImageWindow, () => _imageChannel.ProcessedImage != null);

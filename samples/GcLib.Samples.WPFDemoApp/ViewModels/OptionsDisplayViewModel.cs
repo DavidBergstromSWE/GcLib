@@ -17,7 +17,6 @@ internal sealed class OptionsDisplayViewModel : ObservableObject, IOptionsSubVie
     private readonly uint _targetFPS;
     private readonly bool _showFullScreenFrameInfo;
     private readonly bool _showFullScreenChannelInfo;
-    private readonly bool _synchronizeViews;
 
     #endregion
 
@@ -49,7 +48,6 @@ internal sealed class OptionsDisplayViewModel : ObservableObject, IOptionsSubVie
         _showPixelInspector = DisplayViewModel.ShowPixelInspector;
         _showFullScreenFrameInfo = DisplayViewModel.ShowFullScreenFrameInfo;
         _showFullScreenChannelInfo = DisplayViewModel.ShowFullScreenChannelInfo;
-        _synchronizeViews = DisplayViewModel.SynchronizeViews;
     }
 
     #endregion
@@ -66,7 +64,6 @@ internal sealed class OptionsDisplayViewModel : ObservableObject, IOptionsSubVie
         DisplayViewModel.TargetFPS = _targetFPS;
         DisplayViewModel.ShowFullScreenFrameInfo = _showFullScreenFrameInfo;
         DisplayViewModel.ShowFullScreenChannelInfo = _showFullScreenChannelInfo;
-        DisplayViewModel.SynchronizeViews = _synchronizeViews;
     }
 
     #endregion
