@@ -174,6 +174,7 @@ internal sealed class HistogramViewModel : ObservableRecipient
         if (buffer == null)
         {
             Histogram = null;
+            ShowLiveHistogram = false;
             return;
         }
 
