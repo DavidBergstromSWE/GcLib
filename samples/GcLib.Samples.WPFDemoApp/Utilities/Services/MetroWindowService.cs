@@ -125,7 +125,6 @@ internal sealed class MetroWindowService : WindowService, IMetroWindowService
     #region IDialogService
 
     /// <inheritdoc/>
-    /// TODO: Add more parameters for e.g. dialog buttons, title etc.
     /// <exception cref="TypeLoadException"/>
     /// <exception cref="InvalidOperationException"/>
     public bool? ShowDialog(object viewModel)

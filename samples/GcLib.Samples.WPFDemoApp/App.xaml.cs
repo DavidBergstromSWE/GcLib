@@ -25,7 +25,6 @@ public partial class App : Application
     /// <summary>
     /// Enables and disables logging of application events. 
     /// </summary>
-    /// ToDo: Use messenger for enabling/disabling logging?
     public static bool IsLoggingEnabled { get; set; }
 
     protected override void OnStartup(StartupEventArgs e)

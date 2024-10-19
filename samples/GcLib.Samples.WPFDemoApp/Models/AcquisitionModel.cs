@@ -130,8 +130,7 @@ internal class AcquisitionModel : ObservableObject
     /// <summary>
     /// Start acquisition in device.
     /// </summary>
-    /// <param name="startGrabbing">True if image grabbing should be started automatically on the device datastream. If false, grabbing needs to be manually started using <see cref="StartGrabbing"/>, 
-    /// which will be useful in acquisition scenarios where synchronization of grabbing from multiple channels is needed.</param>
+    /// <param name="startGrabbing">True if image grabbing should be started automatically on the device datastream. If false, grabbing needs to be manually started using <see cref="StartGrabbing"/>.</param>
     /// <exception cref="InvalidOperationException"/>
     public virtual async Task StartAcquisitionAsync(bool startGrabbing = false)
     {
@@ -204,8 +203,7 @@ internal class AcquisitionModel : ObservableObject
     /// Start recording image data to file.
     /// </summary>
     /// <param name="subString">Substring to add to file name.</param>
-    /// <param name="startGrabbing">True if image grabbing should be started automatically on the device datastream. If false, grabbing needs to be manually started using <see cref="StartGrabbing"/>, 
-    /// which will be useful in acquisition scenarios where synchronization of grabbing from multiple channels is needed.</param>
+    /// <param name="startGrabbing">True if image grabbing should be started automatically on the device datastream. If false, grabbing needs to be manually started using <see cref="StartGrabbing"/>.</param>
     /// <exception cref="InvalidOperationException"></exception>
     public virtual Task StartRecordingAsync(string subString = "", bool startGrabbing = false)
     {
@@ -217,8 +215,6 @@ internal class AcquisitionModel : ObservableObject
 
         // Create file path by adding substring to end of filename.
         string filePath = Path.GetDirectoryName(FilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(FilePath) + subString + ".bin";
-
-        // ToDo: Add check of valid file path? User authorization, path too long etc.
 
         // Start writing to file.
         if (SaveRawData || SaveProcessedData)

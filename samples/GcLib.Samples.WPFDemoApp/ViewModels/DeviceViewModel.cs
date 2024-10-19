@@ -186,7 +186,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <param name="dispatcherService">Service providing dispatching and running of actions onto the UI thread.</param>
     /// <param name="deviceProvider">Service providing devices.</param>
     /// <param name="configurationService">Service managing loading/saving of fusion system configurations.</param>
-    /// <param name="deviceChannels">Available device channels.</param>
+    /// <param name="device">Device channel.</param>
     public DeviceViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, IDeviceProvider deviceProvider, IConfigurationService configurationService, DeviceModel device)
     {
         // Get required services.
@@ -255,7 +255,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
         }
         catch (Exception)
         {
-            // Disconnect devices.
+            // Disconnect device.
             if (Device.IsConnected)
                 await Device.DisconnectDeviceAsync();
 
@@ -637,7 +637,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
     {
         if (e.Cancel == false)
         {
-            // Disconnect devices.
+            // Disconnect device.
             if (Device.IsConnected)
                 await Device.DisconnectDeviceAsync();
         }

@@ -46,7 +46,6 @@ public partial class ImageProcessingView : UserControl
         if (e.Key == Key.F4)
         {
             // Execute keybinding command instead.
-            // ToDo: Move to utility/helper class?
             var binding = App.Current.MainWindow.InputBindings.Cast<KeyBinding>().Where(k => k.Key == Key.F4);
             if (binding.Any())
                 binding.First()?.Command.Execute((DisplayChannel)binding.First().CommandParameter);

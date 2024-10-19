@@ -103,8 +103,8 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// </summary>
     /// <param name="dialogService">Service providing windows and dialogs.</param>
     /// <param name="dispatcherService">Service providing dispatching and running of actions onto the UI thread.</param>
-    /// <param name="deviceChannels">Available device channels.</param>
-    /// <param name="imageChannel">Available image channels.</param>
+    /// <param name="device">Device channel.</param>
+    /// <param name="imageChannel">Image data source.</param>
     public AcquisitionViewModel(IMetroWindowService dialogService, IDispatcherService dispatcherService, DeviceModel device, ImageModel imageChannel)
     {
         // Get required services.
@@ -127,7 +127,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         AcquisitionChannel.RecordingAborted += Channel_RecordingAborted;
 
 
-        // Register eventhandlers to available input devices.
+        // Register eventhandler to input device.
         device.PropertyChanged += DeviceModel_PropertyChanged;
 
         // Instantiate commands.
@@ -163,7 +163,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     #region Public methods
 
     /// <summary>
-    /// Start acquisition on available channels.
+    /// Start acquisition.
     /// </summary>
     public async Task PlayAsync()
     {
@@ -171,26 +171,19 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 
         try
         {
-            // Use Parallel library? Task.WhenAll?
             await AcquisitionChannel.StartAcquisitionAsync();
-
-            // Synchronize grabbing from channels.
             AcquisitionChannel.StartGrabbing();
-
             IsBusy = true;
         }
         catch (Exception ex)
         {
-            // Stop acquisitions.
             await StopAsync();
-
-            // Show dialog to user.
             _ = _windowService.ShowMessageDialog(this, "Acquisition error!", ex.Message, MessageDialogStyle.Affirmative, MetroDialogHelper.DefaultSettings);
         }
     }
 
     /// <summary>
-    /// Start recording on available channels.
+    /// Start recording.
     /// </summary>
     public async Task RecordAsync()
     {
@@ -203,7 +196,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
             if (result == MessageDialogResult.Negative)
             {
                 Log.Information("Recording cancelled");
-
                 return;
             }
         }
@@ -215,27 +207,20 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 
         try
         {
-            // Start input channel recordings (try/catch? Synchronize start using ManuelResetEventSlim?).
             await AcquisitionChannel.StartRecordingAsync(AutoGenerateFileNames ? dateTimeSubString : string.Empty);
-
-            // Start grabbing here?
             AcquisitionChannel.StartGrabbing();
-
             IsBusy = true;
         }
         catch (Exception ex)
         {
-            // Stop acquisitions.
             await StopAsync();
-
-            // Show dialog to user.
             _ = _windowService.ShowMessageDialog(this, "Acquisition error!", "Failed to start acquisition: " + ex.Message, MessageDialogStyle.Affirmative, MetroDialogHelper.DefaultSettings);
         }
 
     }
 
     /// <summary>
-    /// Stop acquisition or recording on available channels.
+    /// Stop acquisition/recording.
     /// </summary>
     public async Task StopAsync()
     {
@@ -243,7 +228,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 
         try
         {
-            // Stop acquisition on all channels.
             if (AcquisitionChannel.IsAcquiring)
                 await AcquisitionChannel.StopAcquisitionAsync();
 
@@ -253,7 +237,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         }
         catch (Exception ex)
         {
-            // Show dialog to user.
             _ = _windowService.ShowMessageDialog(this, "Acquisition error!", "Failed to stop acquisition: " + ex.Message, MessageDialogStyle.Affirmative, MetroDialogHelper.DefaultSettings);
         }
     }
@@ -272,7 +255,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         if (IsBusy)
             return false;
 
-        // Disable while connecting to devices.
+        // Disable while connecting to device.
         if (AcquisitionChannel.DeviceModel.IsConnecting)
             return false;
 
@@ -281,7 +264,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         if (message.HasReceivedResponse && message.Response)
             return !message.Response;
 
-        // Enable if at least one device is connected.
+        // Enable if device is connected.
         return AcquisitionChannel.DeviceModel.IsConnected;
     }
 
@@ -304,10 +287,10 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// </summary>
     private async void Channel_AcquisitionAborted(object sender, AcquisitionAbortedEventArgs eventArgs)
     {
-        // Stop acquisition on all channels.
+        // Stop acquisition.
         await _dispatcherService.Invoke(StopAsync);
 
-        // Show error message to user.
+        // Show error message.
         _dispatcherService.Invoke(() =>
         {
             _ = _windowService.ShowMessageDialog(this, "Acquisition error!", eventArgs.ErrorMessage, MessageDialogStyle.Affirmative, MetroDialogHelper.DefaultSettings);
@@ -321,7 +304,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// </summary>
     private async void Channel_AcquisitionStopped(object sender, EventArgs e)
     {
-        // Stop acquisition on all channels.
+        // Stop acquisition.
         await _dispatcherService.Invoke(StopAsync);
     }
 
@@ -356,13 +339,13 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     }
 
     /// <summary>
-    /// Eventhandler to PropertyChanged events in a device.
+    /// Eventhandler to PropertyChanged events in device.
     /// </summary>
     private void DeviceModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(DeviceModel.IsConnected))
         {
-            // Enable view (acquisition buttons) if a device is connected.
+            // Enable view (acquisition buttons) if device is connected.
             IsEnabled = AcquisitionChannel.DeviceModel.IsConnected;
             NotifyAcquisitionCommands();
         }
