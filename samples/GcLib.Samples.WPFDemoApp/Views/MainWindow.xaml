@@ -85,19 +85,18 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <!--Menu System-->
@@ -161,9 +160,9 @@
         </DockPanel>
 
         <!--Device control (connection, selection and parameter viewing)-->
-        <Expander Grid.Row="1" Grid.Column="1"
+        <Expander Grid.Row="1" Grid.Column="0"
                   BorderThickness="0"
-                  Margin="-15 60 5 0"
+                  Margin="5 60 5 0"
                   ExpandDirection="Right" IsExpanded="True"
                   mah:HeaderedControlHelper.HeaderBackground="Transparent" mah:HeaderedControlHelper.HeaderForeground="{DynamicResource MahApps.Brushes.ThemeForeground}">
             <Expander.Style>
@@ -191,6 +190,7 @@
                 </Style>
             </Expander.Style>
             <views:DeviceView x:Name="deviceView"
+                              Grid.Row="1" Grid.Column="0"
                               d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=DeviceViewModel}"/>
         </Expander>
 
@@ -201,7 +201,7 @@
 
         <!--Image processing-->
         <views:ImageProcessingView x:Name="imageProcessingView"
-                                   Grid.Row="1" Grid.Column="3"
+                                   Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
                                    Margin="0 20 0 0" 
                                    HorizontalAlignment="Center" VerticalAlignment="Top"
                                    d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}"/>
@@ -209,7 +209,7 @@
         <!--Image histogram-->
         <Expander Grid.Row="1" Grid.Column="5"             
                   BorderThickness="0" 
-                  Margin="5 60 -15 0"
+                  Margin="5 60 5 0"
                   ExpandDirection="Left" IsExpanded="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.ShowLiveHistogram, Mode=TwoWay}"
                   mah:HeaderedControlHelper.HeaderBackground="Transparent" mah:HeaderedControlHelper.HeaderForeground="{DynamicResource MahApps.Brushes.ThemeForeground}">
             <Expander.Style>
@@ -230,7 +230,7 @@
                         </DataTrigger>
                         <DataTrigger Binding="{Binding IsExpanded, RelativeSource={RelativeSource Self}}" Value="True">
                             <Setter Property="Header" Value=""/>
-                            <Setter Property="Padding" Value="0 0 0 0"/>
+                            <Setter Property="Padding" Value="0"/>
                             <Setter Property="ToolTip" Value="Close live histogram"/>
                         </DataTrigger>
                     </Style.Triggers>
@@ -241,7 +241,7 @@
                              Margin="10 0 25 0"/>
         </Expander>
 
-        
+        <!--Playback-->
         <views:PlayBackView x:Name="playbackView"
                             Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
                             HorizontalAlignment="Center"/>
@@ -253,10 +253,8 @@
                                HorizontalAlignment="Center"
                                Visibility="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 
-        <!--Playback-->
-
         <!--Status bar-->
-        <DockPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="7">
+        <DockPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="6" Height="30">
             <StatusBar>
                 <StatusBarItem>
                     <StackPanel Orientation="Horizontal">
