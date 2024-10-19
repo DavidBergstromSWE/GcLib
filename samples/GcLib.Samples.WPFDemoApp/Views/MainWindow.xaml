@@ -95,14 +95,13 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
 
         <!--Menu System-->
-        <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5">
+        <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4">
             <Menu x:Name="Menu" FontSize="14" DockPanel.Dock="Top">
                 <MenuItem x:Name="FileMenu" Header="_File" >
                     <MenuItem Header="Load configuration..." 
@@ -162,7 +161,7 @@
         </DockPanel>
 
         <!--Device control (connection, selection and parameter viewing)-->
-        <Expander Grid.Row="2" Grid.Column="1"
+        <Expander Grid.Row="1" Grid.Column="1"
                   BorderThickness="0"
                   Margin="-15 60 5 0"
                   ExpandDirection="Right" IsExpanded="True"
@@ -191,23 +190,24 @@
                     </Style.Triggers>
                 </Style>
             </Expander.Style>
-            <views:DeviceView x:Name="deviceView" d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=DeviceViewModel}"/>
+            <views:DeviceView x:Name="deviceView"
+                              d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=DeviceViewModel}"/>
         </Expander>
 
         <!--Image display-->
         <views:ImageDisplayView x:Name="imageDisplayView" 
-                                Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
+                                Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
                                 Margin="0 20 0 0"/>
 
         <!--Image processing-->
         <views:ImageProcessingView x:Name="imageProcessingView"
-                                   Grid.Row="2" Grid.Column="3"
+                                   Grid.Row="1" Grid.Column="3"
                                    Margin="0 20 0 0" 
                                    HorizontalAlignment="Center" VerticalAlignment="Top"
                                    d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}"/>
 
         <!--Image histogram-->
-        <Expander Grid.Row="2" Grid.Column="5"             
+        <Expander Grid.Row="1" Grid.Column="5"             
                   BorderThickness="0" 
                   Margin="5 60 -15 0"
                   ExpandDirection="Left" IsExpanded="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.ShowLiveHistogram, Mode=TwoWay}"
@@ -243,12 +243,12 @@
 
         
         <views:PlayBackView x:Name="playbackView"
-                            Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2"
+                            Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
                             HorizontalAlignment="Center"/>
 
         <!--Acquisition (live, stop and record)-->
         <views:AcquisitionView x:Name="acquisitionView" 
-                               Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2"
+                               Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
                                Margin="0 30" 
                                HorizontalAlignment="Center"
                                Visibility="{Binding Source={StaticResource ViewModelLocator}, Path=PlayBackViewModel.IsLoaded, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
@@ -256,7 +256,7 @@
         <!--Playback-->
 
         <!--Status bar-->
-        <DockPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="6">
+        <DockPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="7">
             <StatusBar>
                 <StatusBarItem>
                     <StackPanel Orientation="Horizontal">

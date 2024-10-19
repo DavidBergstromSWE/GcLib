@@ -229,7 +229,9 @@ internal sealed class HistogramViewModel : ObservableRecipient
             if (message.NewValue)
             {
                 // Disable view during playback.
-                IsEnabled = false;           
+                IsEnabled = false;
+                Histogram = null;
+                ShowLiveHistogram = false;
             }
             else
             {
