@@ -23,7 +23,6 @@ namespace FusionViewer.ViewModels;
 /// <summary>
 /// Models a view for handling playback of previously recorded image data.
 /// </summary>
-/// TODO: Create PlayBackModel or service?
 internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
 {
     #region Fields
@@ -598,8 +597,6 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
     /// </summary>
     private void OnCurrentFrameUpdated()
     {
-        // TODO: Make async?
-
         // Only update if within range.
         if (CurrentFrame >= FirstFrame && CurrentFrame <= LastFrame && _imageReader != null)
         {
@@ -686,7 +683,7 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
     {
         if (disposing)
         {
-            // TODO: dispose managed state (managed objects)
+            // dispose managed state (managed objects)
         }
 
         // Free unmanaged resources (unmanaged objects) and override finalizer.

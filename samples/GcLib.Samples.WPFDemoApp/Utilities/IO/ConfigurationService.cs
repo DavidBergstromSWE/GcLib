@@ -46,12 +46,12 @@ internal sealed class ConfigurationService : IConfigurationService
     /// <summary>
     /// Creates a new service for reading/writing system configurations.
     /// </summary>
-    /// <param name="deviceModels">Devices where device settings are stored.</param>
-    /// <param name="imageModels">Image channels where image processing settings are stored.</param>
+    /// <param name="deviceModel">Device where device settings are stored.</param>
+    /// <param name="imageModel">Image channel where image processing settings are stored.</param>
     /// <param name="deviceProvider">Provides access to physical devices.</param>
-    public ConfigurationService(DeviceModel device, ImageModel imageModel, IDeviceProvider deviceProvider)
+    public ConfigurationService(DeviceModel deviceModel, ImageModel imageModel, IDeviceProvider deviceProvider)
     {
-        _device = device;
+        _device = deviceModel;
         _imageProcessing = imageModel;
         _deviceProvider = deviceProvider;
 

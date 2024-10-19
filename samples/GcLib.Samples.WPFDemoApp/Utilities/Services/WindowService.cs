@@ -16,7 +16,6 @@ internal class WindowService : IWindowService
     #region Public methods
 
     /// <inheritdoc/>
-    /// TODO: Add more parameters for e.g. modal/modeless, startup location, etc.
     /// <exception cref="TypeLoadException"/>
     /// <exception cref="InvalidOperationException"/>
     public void ShowWindow(object viewModel)

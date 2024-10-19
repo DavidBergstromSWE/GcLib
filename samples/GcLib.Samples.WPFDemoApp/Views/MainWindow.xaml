@@ -238,7 +238,7 @@
             </Expander.Style>
             <views:HistogramView x:Name="histogramView"
                              Grid.Row="2" Grid.Column="4"
-                             Margin="10 0 25 0"/>
+                             Margin="10 0 0 0"/>
         </Expander>
 
         <!--Playback-->

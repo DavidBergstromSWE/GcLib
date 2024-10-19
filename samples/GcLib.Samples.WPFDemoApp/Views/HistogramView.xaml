@@ -19,7 +19,7 @@
             <mah:ToggleSwitch IsOn="{Binding ShowProcessed}" d:IsOn="True"
                               d:Visibility="Visible"
                               OffContent="Raw" OnContent="Processed" 
-                              ContentPadding="-4" Margin="5 0 0 0"
+                              ContentPadding="-4"
                               FontSize="12"
                               ToolTip="Toggles between showing raw and processed image data" ToolTipService.InitialShowDelay="500">
                 <mah:ToggleSwitch.Visibility>
@@ -33,8 +33,7 @@
 
         <!-- Histogram view control -->
         <controls:HistogramViewer x:Name="histogramViewer"
-                                  Height="175"
-                                  Margin="10 0 -40 0"
+                                  Margin="5 0 0 0"
                                   Theme="{Binding Source={StaticResource ViewModelLocator}, Path=MainWindowViewModel.SelectedTheme}"
                                   IsEnabled="{Binding ShowLiveHistogram}" d:IsEnabled="true"
                                   Histogram="{Binding Histogram}"

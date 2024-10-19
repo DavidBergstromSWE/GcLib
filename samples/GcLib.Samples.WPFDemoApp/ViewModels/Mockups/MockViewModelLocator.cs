@@ -21,7 +21,7 @@ internal sealed class MockViewModelLocator
     public static MockDeviceViewModel DeviceViewModel => new();
 
     /// <summary>
-    /// View model for processing and fusion of images.
+    /// View model for processing of images.
     /// </summary>
     public static MockImageProcessingViewModel ImageProcessingViewModel => new();
 
@@ -60,7 +60,7 @@ internal sealed class MockDeviceViewModel
 internal sealed class MockImageProcessingViewModel
 {
     public static ImageModel SelectedImageChannel { get; set; } = new() { Brightness = 100.0 };
-    public static string ChannelName => "Channel1";
+    public static string ChannelName => "Channel";
     public static ICommand OpenParameterDialogWindowCommand { get; }
 }
 
@@ -77,7 +77,7 @@ internal sealed class MockOpenDeviceDialogWindowViewModel
                                                                                userDefinedName: "MyCameraSimulator");
     public static List<GcDeviceInfo> DeviceList => [SelectedDevice];
 
-    private static readonly GcDeviceClassInfo _classInfo = new(nameof(VirtualCam), "1.0", typeof(VirtualCam));
+    private static readonly GcDeviceClassInfo _classInfo = new(SelectedDevice.ModelName, SelectedDevice.SerialNumber, typeof(VirtualCam));
 }
 
 /// <summary>
@@ -121,7 +121,7 @@ internal sealed class MockLogWindowViewModel
     /// Fake collection of logging events (usable as design time data).
     /// </summary>
     public static List<LogEvent> LogEvents => [
-        new LogEvent(new DateTime(2023, 1, 4, 12, 25, 37, 32), LogEventLevel.Information, "FusionViewer started (v1.0.8404)"),
+        new LogEvent(new DateTime(2023, 1, 4, 12, 25, 37, 32), LogEventLevel.Information, "ImageViewer started (v1.0.0)"),
         new LogEvent(new DateTime(2023, 1, 4, 12, 25, 37, 532), LogEventLevel.Debug, "VirtualCam added (VirtualCam v1.0.0.0)"),
         new LogEvent(new DateTime(2023, 1, 4, 12, 25, 37, 759), LogEventLevel.Warning, "Unable to add device class of type PvCam"),
         new LogEvent(new DateTime(2023, 1, 4, 12, 25, 39, 120), LogEventLevel.Error, "Failed to open device!"),
