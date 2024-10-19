@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Data;
 
-namespace FusionViewer.Converters;
+namespace ImagerViewerApp.Converters;
 
 /// <summary>
 /// Converts multiple boolean values to a single boolean value by a logical AND operation.

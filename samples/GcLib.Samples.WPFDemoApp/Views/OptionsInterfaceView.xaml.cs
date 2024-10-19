@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace FusionViewer.Views;
+namespace ImagerViewerApp.Views;
 
 /// <summary>
 /// Interaction logic for InterfaceOptionsView.xaml

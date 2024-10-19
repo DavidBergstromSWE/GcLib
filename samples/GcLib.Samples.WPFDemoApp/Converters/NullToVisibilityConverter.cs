@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace FusionViewer.Converters;
+namespace ImagerViewerApp.Converters;
 
 /// <summary>
 /// Converts a (nullable) <see cref="object"/> to a <see cref="System.Windows.Visibility"/> value.

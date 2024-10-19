@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Win32;
 
-namespace FusionViewer.Utilities.Services;
+namespace ImagerViewerApp.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing dialogs (eg. modal windows).

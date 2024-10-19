@@ -6,7 +6,7 @@ using GcLib;
 using GcLib.Utilities.Threading;
 using Serilog;
 
-namespace FusionViewer.Models;
+namespace ImagerViewerApp.Models;
 
 /// <summary>
 /// Grabs, acquires and records image data from a device (input channel) datastream.

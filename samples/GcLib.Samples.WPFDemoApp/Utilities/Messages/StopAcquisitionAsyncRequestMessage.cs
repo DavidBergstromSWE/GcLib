@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 
-namespace FusionViewer.Utilities.Messages;
+namespace ImagerViewerApp.Utilities.Messages;
 
 /// <summary>
 /// A message requesting all active acquisitions to stop, returning the task.

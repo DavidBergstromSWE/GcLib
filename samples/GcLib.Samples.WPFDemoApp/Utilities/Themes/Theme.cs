@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 
-namespace FusionViewer.Utilities.Themes;
+namespace ImagerViewerApp.Utilities.Themes;
 
 /// <summary>
 /// Stores data about a theme for the user interface.

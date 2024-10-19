@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Emgu.CV.CvEnum;
 
-namespace FusionViewer.ViewModels;
+namespace ImagerViewerApp.ViewModels;
 
 /// <summary>
 /// View model for handling image processing related options.

@@ -1,4 +1,4 @@
-﻿namespace FusionViewer.Utilities.Services;
+﻿namespace ImagerViewerApp.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing access to application settings.

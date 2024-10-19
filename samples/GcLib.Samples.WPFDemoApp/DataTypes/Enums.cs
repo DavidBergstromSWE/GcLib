@@ -1,6 +1,6 @@
 ﻿using GcLib;
 
-namespace FusionViewer;
+namespace ImagerViewerApp;
 
 /// <summary>
 /// Device index.

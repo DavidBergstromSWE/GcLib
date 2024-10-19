@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace FusionViewer.ViewModels;
+namespace ImagerViewerApp.ViewModels;
 
 /// <summary>
 /// View model for handling device-related options.

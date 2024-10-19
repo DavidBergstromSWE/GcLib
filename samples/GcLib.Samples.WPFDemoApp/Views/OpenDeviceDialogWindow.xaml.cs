@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using MahApps.Metro.Controls;
 
-namespace FusionViewer.Views;
+namespace ImagerViewerApp.Views;
 
 /// <summary>
 /// Dialog for a window allowing user selection of a device from a list of available devices on the system.

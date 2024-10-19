@@ -1,9 +1,9 @@
-﻿using FusionViewer.Models;
+﻿using ImagerViewerApp.Models;
 using Serilog.Core;
 using Serilog.Events;
 using System;
 
-namespace FusionViewer.Utilities.Logging;
+namespace ImagerViewerApp.Utilities.Logging;
 
 /// <summary>
 /// Sink where received log events are forwarded to an application log data store. 

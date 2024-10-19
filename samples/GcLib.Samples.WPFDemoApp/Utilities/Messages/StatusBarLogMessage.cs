@@ -1,6 +1,6 @@
 ﻿using Serilog.Events;
 
-namespace FusionViewer.Utilities.Messages;
+namespace ImagerViewerApp.Utilities.Messages;
 
 /// <summary>
 /// A log message for the status bar.

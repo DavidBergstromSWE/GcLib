@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Input;
 
-namespace FusionViewer.Converters;
+namespace ImagerViewerApp.Converters;
 
 /// <summary>
 /// Converts a <see cref="KeyGesture"/> to a display-friendly string.

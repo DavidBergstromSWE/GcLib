@@ -1,7 +1,7 @@
 ﻿using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace FusionViewer.ViewModels;
+namespace ImagerViewerApp.ViewModels;
 
 /// <summary>
 /// View model for handling display-related options.

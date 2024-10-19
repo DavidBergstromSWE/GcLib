@@ -6,16 +6,16 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using FusionViewer.Models;
-using FusionViewer.Utilities.Dialogs;
-using FusionViewer.Utilities.Messages;
-using FusionViewer.Utilities.Services;
+using ImagerViewerApp.Models;
+using ImagerViewerApp.Utilities.Dialogs;
+using ImagerViewerApp.Utilities.Messages;
+using ImagerViewerApp.Utilities.Services;
 using GcLib;
 using MahApps.Metro.Controls.Dialogs;
 using Serilog;
 using Serilog.Events;
 
-namespace FusionViewer.ViewModels;
+namespace ImagerViewerApp.ViewModels;
 
 /// <summary>
 /// Models a view for handling acquisition and recording of image data from an input (device) channel.

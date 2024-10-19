@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using FusionViewer.Views;
+using ImagerViewerApp.Views;
 using Serilog;
 
-namespace FusionViewer.Utilities.Services;
+namespace ImagerViewerApp.Utilities.Services;
 
 /// <summary>
 /// Service providing windows.

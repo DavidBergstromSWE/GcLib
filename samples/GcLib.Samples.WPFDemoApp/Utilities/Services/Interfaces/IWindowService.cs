@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace FusionViewer.Utilities.Services;
+namespace ImagerViewerApp.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing windows of type <see cref="Window"/>.

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows;
 
-namespace FusionViewer.Utilities.Behaviors;
+namespace ImagerViewerApp.Utilities.Behaviors;
 
 /// <summary>
 /// Attachable behavior for objects of type <see cref="MenuItem"/> in a <see cref="ContextMenu"/>, where checkable menu items can be grouped together (similar to a group of radiobuttons).

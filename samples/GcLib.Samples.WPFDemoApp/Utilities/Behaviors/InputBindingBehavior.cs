@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
-namespace FusionViewer.Utilities.Behaviors;
+namespace ImagerViewerApp.Utilities.Behaviors;
 
 /// <summary>
 /// Attached behaviour allowing inputbindings to be propagated from a UserControl or FrameworkElement to a parent window. 

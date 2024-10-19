@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace FusionViewer;
+namespace ImagerViewerApp;
 
 /// <summary>
 /// Represents a keyboard shortcut in the application.

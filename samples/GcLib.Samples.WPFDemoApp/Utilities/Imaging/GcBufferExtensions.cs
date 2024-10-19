@@ -5,7 +5,7 @@ using Emgu.CV.Util;
 using GcLib;
 using PixelFormat = GcLib.PixelFormat;
 
-namespace FusionViewer.Utilities.Imaging;
+namespace ImagerViewerApp.Utilities.Imaging;
 
 /// <summary>
 /// Provides extension methods for the <see cref="GcBuffer"/> class in <see cref="GcLib"/> library to support WPF applications.

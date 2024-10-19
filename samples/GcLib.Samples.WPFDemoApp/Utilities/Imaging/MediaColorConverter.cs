@@ -1,4 +1,4 @@
-﻿namespace FusionViewer.Utilities.Imaging;
+﻿namespace ImagerViewerApp.Utilities.Imaging;
 
 /// <summary>
 /// Color converter class, containing methods for converting between different color representations in the Windows system.

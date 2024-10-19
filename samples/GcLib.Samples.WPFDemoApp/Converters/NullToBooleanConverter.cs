@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace FusionViewer.Converters;
+namespace ImagerViewerApp.Converters;
 
 /// <summary>
 /// Converts a (nullable) <see cref="object"/> to a <see cref="bool"/> value. The converted value will be <see langword="false"/> if object is null and <see langword="true"/> if object is not null.
