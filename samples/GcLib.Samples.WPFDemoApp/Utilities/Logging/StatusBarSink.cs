@@ -1,10 +1,10 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.Messaging;
-using FusionViewer.Utilities.Messages;
+using ImagerViewerApp.Utilities.Messages;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace FusionViewer.Utilities.Logging;
+namespace ImagerViewerApp.Utilities.Logging;
 
 /// <summary>
 /// Sink where received log events are forwarded as messages of type <see cref="StatusBarLogMessage"/>. 

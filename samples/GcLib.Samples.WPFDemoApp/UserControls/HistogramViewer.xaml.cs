@@ -7,11 +7,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-using FusionViewer.Utilities.Imaging;
+using ImagerViewerApp.Utilities.Imaging;
 using ScottPlot;
-using Theme = FusionViewer.Utilities.Themes.Theme;
+using Theme = ImagerViewerApp.Utilities.Themes.Theme;
 
-namespace FusionViewer.UserControls;
+namespace ImagerViewerApp.UserControls;
 
 /// <summary>
 /// Type of plot for drawing histogram bins.

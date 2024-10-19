@@ -1,4 +1,4 @@
-﻿namespace FusionViewer.Utilities.Messages;
+﻿namespace ImagerViewerApp.Utilities.Messages;
 
 /// <summary>
 /// A message announcing the disconnection of a device.

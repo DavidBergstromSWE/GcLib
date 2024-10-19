@@ -1,8 +1,8 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Media;
-using FusionViewer.UserControls;
+using ImagerViewerApp.UserControls;
 
-namespace FusionViewer.Views;
+namespace ImagerViewerApp.Views;
 
 /// <summary>
 /// Interaction logic for ImageDisplayView.xaml
@@ -10,10 +10,10 @@ namespace FusionViewer.Views;
 public partial class ImageDisplayView : UserControl
 {
     /// <summary>
-    /// Stores settings for an <see cref="FusionViewer"/> control.
+    /// Stores settings for an <see cref="ImagerViewerApp"/> control.
     /// </summary>
     /// <remarks>
-    /// Creates a stored setting for an <see cref="FusionViewer"/> control.
+    /// Creates a stored setting for an <see cref="ImagerViewerApp"/> control.
     /// </remarks>
     /// <param name="stretch">Stretch mode for displayed image.</param>
     /// <param name="scale">Scale of displayed image.</param>

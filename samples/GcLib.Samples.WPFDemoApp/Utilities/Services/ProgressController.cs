@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using MahApps.Metro.Controls.Dialogs;
 
-namespace FusionViewer.Utilities.Services;
+namespace ImagerViewerApp.Utilities.Services;
 
 /// <summary>
 /// Controller of an opened progress dialog. The class if a wrapper for the <see cref="ProgressDialogController"/> in MahApps.Metro framework.

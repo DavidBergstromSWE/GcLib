@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
-using FusionViewer.Models;
-using FusionViewer.ViewModels;
+using ImagerViewerApp.Models;
+using ImagerViewerApp.ViewModels;
 using GcLib;
 using Serilog;
 
-namespace FusionViewer.Utilities.IO;
+namespace ImagerViewerApp.Utilities.IO;
 
 /// <summary>
 /// Manages storing and restoring of system configurations, including device and processing settings.

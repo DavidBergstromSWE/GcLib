@@ -1,12 +1,12 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.Messaging;
-using FusionViewer.Models;
-using FusionViewer.Utilities.Messages;
+using ImagerViewerApp.Models;
+using ImagerViewerApp.Utilities.Messages;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Events;
 
-namespace FusionViewer.Utilities.Logging;
+namespace ImagerViewerApp.Utilities.Logging;
 
 /// <summary>
 /// Extension class for <see cref="LoggerSinkConfiguration"/>, providing configurations for custom sinks.

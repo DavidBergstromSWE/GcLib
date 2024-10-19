@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using System;
-using FusionViewer.ViewModels;
+using ImagerViewerApp.ViewModels;
 
-namespace FusionViewer.Utilities.Services;
+namespace ImagerViewerApp.Utilities.Services;
 
 /// <summary>
 /// Service providing loading/saving access to application settings.

@@ -1,4 +1,4 @@
-﻿namespace FusionViewer.ViewModels;
+﻿namespace ImagerViewerApp.ViewModels;
 
 /// <summary>
 /// Interface for a view model representing an options sub-view.

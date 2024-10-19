@@ -6,14 +6,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using FusionViewer.Models;
-using FusionViewer.Utilities.Messages;
-using FusionViewer.Utilities.Services;
+using ImagerViewerApp.Models;
+using ImagerViewerApp.Utilities.Messages;
+using ImagerViewerApp.Utilities.Services;
 using GcLib;
 using GcLib.Utilities.Collections;
 using GcLib.Utilities.Threading;
 
-namespace FusionViewer.ViewModels;
+namespace ImagerViewerApp.ViewModels;
 
 /// <summary>
 /// View model exposing properties and commands related to the displaying of images.

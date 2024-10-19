@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using GcLib.Utilities.Collections;
 
-namespace FusionViewer.Converters;
+namespace ImagerViewerApp.Converters;
 
 /// <summary>
 /// Converts the container name of a <see cref="ReadOnlyParameterCollection"/> using the supplied parameter.

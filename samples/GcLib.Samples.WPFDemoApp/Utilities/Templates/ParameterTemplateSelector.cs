@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using GcLib;
 
-namespace FusionViewer.Utilities.Templates;
+namespace ImagerViewerApp.Utilities.Templates;
 
 /// <summary>
 /// Provides a way to choose a <see cref="DataTemplate"/> suited for a specific <see cref="GcParameter"/> type.

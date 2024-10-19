@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
-using FusionViewer.Utilities.Dialogs;
-using FusionViewer.Utilities.Services;
+using ImagerViewerApp.Utilities.Dialogs;
+using ImagerViewerApp.Utilities.Services;
 using GcLib;
 using MahApps.Metro.Controls.Dialogs;
 
-namespace FusionViewer.ViewModels;
+namespace ImagerViewerApp.ViewModels;
 
 /// <summary>
 /// View model for the selection of a device to connect to.

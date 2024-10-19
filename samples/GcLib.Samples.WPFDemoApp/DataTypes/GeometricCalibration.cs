@@ -1,7 +1,7 @@
 ﻿using System;
 using Emgu.CV;
 
-namespace FusionViewer;
+namespace ImagerViewerApp;
 
 /// <summary>
 /// Represents data used in spatial co-registration of two imaging channels.

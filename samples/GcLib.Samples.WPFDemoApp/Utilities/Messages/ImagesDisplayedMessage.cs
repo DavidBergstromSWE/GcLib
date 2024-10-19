@@ -1,6 +1,6 @@
 ﻿using GcLib;
 
-namespace FusionViewer.Utilities.Messages;
+namespace ImagerViewerApp.Utilities.Messages;
 
 /// <summary>
 /// A message announcing the updating of images.

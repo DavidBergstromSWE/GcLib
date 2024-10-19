@@ -4,18 +4,18 @@ using System.Windows;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Emgu.CV;
-using FusionViewer.Models;
-using FusionViewer.Utilities.IO;
-using FusionViewer.Utilities.Logging;
-using FusionViewer.Utilities.Services;
-using FusionViewer.Utilities.Themes;
-using FusionViewer.ViewModels;
+using ImagerViewerApp.Models;
+using ImagerViewerApp.Utilities.IO;
+using ImagerViewerApp.Utilities.Logging;
+using ImagerViewerApp.Utilities.Services;
+using ImagerViewerApp.Utilities.Themes;
+using ImagerViewerApp.ViewModels;
 using GcLib;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
-namespace FusionViewer;
+namespace ImagerViewerApp;
 
 /// <summary>
 /// Interaction logic for App.xaml

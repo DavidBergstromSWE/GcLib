@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Media;
 using ControlzEx.Theming;
 
-namespace FusionViewer.Utilities.Themes;
+namespace ImagerViewerApp.Utilities.Themes;
 
 /// <summary>
 /// Service providing themes for the user interface.

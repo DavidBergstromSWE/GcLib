@@ -9,7 +9,7 @@ using GcLib;
 using GcLib.Utilities.Imaging;
 using GcLib.Utilities.Threading;
 
-namespace FusionViewer.Models;
+namespace ImagerViewerApp.Models;
 
 /// <summary>
 /// Processes and stores acquired image data.

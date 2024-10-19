@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace FusionViewer.Views;
+namespace ImagerViewerApp.Views;
 
 public partial class PlayBackView : UserControl
 {

@@ -1,4 +1,4 @@
-﻿namespace FusionViewer;
+﻿namespace ImagerViewerApp;
 
 /// <summary>
 /// Stores data for an image histogram.

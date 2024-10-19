@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MahApps.Metro.Controls.Dialogs;
 
-namespace FusionViewer.Utilities.Services;
+namespace ImagerViewerApp.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing dialogs and windows to the application. The interface extends <see cref="IDialogService"/> and <see cref="IWindowService"/> with functionality specific to the <see cref="MahApps.Metro"/> framework.

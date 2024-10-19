@@ -2,10 +2,10 @@
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
-using FusionViewer.Utilities.Imaging;
+using ImagerViewerApp.Utilities.Imaging;
 using GcLib;
 
-namespace FusionViewer.Converters;
+namespace ImagerViewerApp.Converters;
 
 /// <summary>
 /// Converts an image of <see cref="GcBuffer"/> type to an image of <see cref="BitmapSource"/> type.

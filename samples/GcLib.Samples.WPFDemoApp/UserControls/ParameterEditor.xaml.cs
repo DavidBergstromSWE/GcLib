@@ -13,7 +13,7 @@ using CommunityToolkit.Mvvm.Input;
 using GcLib;
 using GcLib.Utilities.Collections;
 
-namespace FusionViewer.UserControls;
+namespace ImagerViewerApp.UserControls;
 
 /// <summary>
 /// Control for displaying and editing parameters, with parameter category filter and parameter search string functionality.
