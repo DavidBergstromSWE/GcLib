@@ -33,6 +33,30 @@
       <HintPath>APIs\Ximea\lib\xiApi.NETX64.dll</HintPath>
     </Reference>
   </ItemGroup>
+	
+	<ItemGroup>
+		<ContentWithTargetPath Include="APIs\Spinnaker\lib\Spinnaker_v140.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>Spinnaker_v140.dll</TargetPath>
+		</ContentWithTargetPath>
+		<None Include="APIs\Spinnaker\lib\Spinnaker_v140.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ContentWithTargetPath Include="APIs\Ximea\lib\xiapi64.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>xiapi64.dll</TargetPath>
+		</ContentWithTargetPath>
+		<None Include="APIs\Ximea\lib\xiapi64.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ContentWithTargetPath Include="APIs\PCO\lib\SC2_Cam.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>SC2_Cam.dll</TargetPath>
+		</ContentWithTargetPath>
+	</ItemGroup>
+	
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
