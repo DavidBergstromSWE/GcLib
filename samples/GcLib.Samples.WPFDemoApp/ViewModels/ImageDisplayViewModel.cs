@@ -28,7 +28,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     private bool _limitFPS;
     private uint _targetFPS;
     private bool _showFullScreenFrameInfo;
-    private bool _showFullScreenChannelInfo;
 
     /// <summary>
     /// Service providing windows and dialogs.
@@ -41,9 +40,9 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     private readonly IDispatcherService _dispatcherService;
 
     /// <summary>
-    /// Display channel.
+    /// Image source.
     /// </summary>
-    private readonly ImageModel _imageChannel;
+    private readonly ImageModel _imageSource;
 
     /// <summary>
     /// Frame rate manager, used for stabilizing frame rate.
@@ -65,17 +64,17 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     #region Properties
 
     /// <summary>
-    /// Raw image of channel 1.
+    /// Raw image.
     /// </summary>
-    public GcBuffer SourceImage => _imageChannel.RawImage;
+    public GcBuffer SourceImage => _imageSource.RawImage;
 
     /// <summary>
-    /// Processed image of channel 1.
+    /// Processed image.
     /// </summary>
-    public GcBuffer ProcessedImage => _imageChannel.ProcessedImage;
+    public GcBuffer ProcessedImage => _imageSource.ProcessedImage;
 
     /// <summary>
-    /// List of available bitmap scaling modes (for displaying images in ImageViewer control).
+    /// List of available bitmap scaling modes.
     /// </summary>
     public static List<BitmapScalingMode> BitmapScalingModes => Enum.GetValues<BitmapScalingMode>().Distinct().Skip(1).ToList();
 
@@ -154,15 +153,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         set => SetProperty(ref _showFullScreenFrameInfo, value);
     }
 
-    /// <summary>
-    /// Show channel info in full screen mode.
-    /// </summary>
-    public bool ShowFullScreenChannelInfo
-    {
-        get => _showFullScreenChannelInfo;
-        set => SetProperty(ref _showFullScreenChannelInfo, value);
-    }
-
     #endregion
 
     #region Commands
@@ -181,15 +171,15 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     /// </summary>
     /// <param name="windowService">Service providing windows and dialogs.</param>
     /// <param name="dispatcherService">Service providing dispatching and running of actions onto the UI thread.</param>
-    /// <param name="imageChannel">Available image channels.</param>
-    public ImageDisplayViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, ImageModel imageChannel)
+    /// <param name="imageSource">Image source.</param>
+    public ImageDisplayViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, ImageModel imageSource)
     {
         // Retrieve required services.
         _windowService = windowService;
         _dispatcherService = dispatcherService;
 
-        _imageChannel = imageChannel;
-        _imageChannel.ImagesUpdated += Channel_ImagesUpdated;
+        _imageSource = imageSource;
+        _imageSource.ImagesUpdated += Channel_ImagesUpdated;
 
         // Default bitmap scaling mode.
         SelectedBitmapScalingMode = BitmapScalingMode.Linear;
@@ -204,7 +194,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         TargetFPS = 30;
 
         // Instantiate commands.
-        OpenFullScreenImageWindowCommand = new RelayCommand(OpenFullScreenImageWindow, () => _imageChannel.ProcessedImage != null);
+        OpenFullScreenImageWindowCommand = new RelayCommand(OpenFullScreenImageWindow, () => _imageSource.ProcessedImage != null);
 
         // Activate viewmodel for message sending/receiving.
         IsActive = true;
@@ -215,8 +205,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     #region Events
 
     /// <summary>
-    /// Eventhandler to events raised in one of the displaychannels that images (both raw and processed) have been updated. 
-    /// Handler updates the displayed images if (and only if) the displaychannel is the currently selected one.
+    /// Eventhandler to <see cref="ImageModel.ImagesUpdated"/> events raised in image source. 
     /// </summary>
     private void Channel_ImagesUpdated(object sender, EventArgs eventArgs)
     {
@@ -229,11 +218,8 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
             }
             else UpdateImages();
 
-            if (sender == _imageChannel) 
-            {
-                _timeStamps.Put((ulong)DateTime.Now.Ticks);
-                OnPropertyChanged(nameof(CurrentFPS));
-            }
+            _timeStamps.Put((ulong)DateTime.Now.Ticks);
+            OnPropertyChanged(nameof(CurrentFPS));
         });
     }
 
@@ -243,9 +229,6 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
 
         // Register as recipient for messages over the "Busy" channel.
         Messenger.Register<PropertyChangedMessage<bool>, string>(this, "Busy", BusyHandler);
-
-        // Register as recipient of messages requesting currently selected image channel for display.
-        Messenger.Register<SelectedChannelRequestMessage>(this, (r, m) => { m.Reply(_imageChannel); });
     }
 
     /// <summary>
@@ -293,7 +276,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         OpenFullScreenImageWindowCommand?.NotifyCanExecuteChanged();
 
         // Notify of update.
-        Messenger.Send(new ImagesUpdatedMessage(_imageChannel.RawImage, _imageChannel.ProcessedImage));
+        Messenger.Send(new ImagesUpdatedMessage(_imageSource.RawImage, _imageSource.ProcessedImage));
     }
 
     /// <summary>
