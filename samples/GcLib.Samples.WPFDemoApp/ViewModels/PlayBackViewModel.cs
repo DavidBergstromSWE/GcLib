@@ -72,7 +72,7 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
     /// <summary>
     /// Image channel for playback.
     /// </summary>
-    private ImageModel _playbackChannel;
+    private readonly ImageModel _playbackChannel;
 
     /// <summary>
     /// Stores processing settings of playback channel.

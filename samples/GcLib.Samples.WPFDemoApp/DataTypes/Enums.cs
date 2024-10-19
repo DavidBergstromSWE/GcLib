@@ -3,44 +3,6 @@
 namespace ImagerViewer;
 
 /// <summary>
-/// Device index.
-/// </summary>
-public enum DeviceIndex
-{
-    /// <summary>
-    /// First device.
-    /// </summary>
-    Device1 = 1,
-    /// <summary>
-    /// Second device.
-    /// </summary>
-    Device2
-}
-
-/// <summary>
-/// Image channel for display.
-/// </summary>
-public enum DisplayChannel
-{
-    /// <summary>
-    /// Input channel 1.
-    /// </summary>
-    Channel1 = 1,
-    /// <summary>
-    /// Input channel 2.
-    /// </summary>
-    Channel2,
-    /// <summary>
-    /// Fused output channel.
-    /// </summary>
-    FusedChannel,
-    /// <summary>
-    /// All channels.
-    /// </summary>
-    All
-}
-
-/// <summary>
 /// Device parameter visibility.
 /// </summary>
 public enum Visibility
@@ -57,21 +19,6 @@ public enum Visibility
     /// Advanced features that might bring the cameras into a state where it will not work properly anymore if it is set incorrectly for the cameras current mode of operation.
     /// </summary>
     Guru = GcVisibility.Guru
-}
-
-/// <summary>
-/// Image resizing direction.
-/// </summary>
-public enum ScalingDirection
-{
-    /// <summary>
-    /// Upscaling of image size.
-    /// </summary>
-    UpScale = 0,
-    /// <summary>
-    /// Downscaling of image size.
-    /// </summary>
-    DownScale
 }
 
 /// <summary>

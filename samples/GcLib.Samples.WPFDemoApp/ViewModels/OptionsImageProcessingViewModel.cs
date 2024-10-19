@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Emgu.CV.CvEnum;
 
 namespace ImagerViewer.ViewModels;
 

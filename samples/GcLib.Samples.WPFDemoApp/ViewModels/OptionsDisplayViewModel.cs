@@ -16,7 +16,6 @@ internal sealed class OptionsDisplayViewModel : ObservableObject, IOptionsSubVie
     private readonly bool _limitFPS;
     private readonly uint _targetFPS;
     private readonly bool _showFullScreenFrameInfo;
-    private readonly bool _showFullScreenChannelInfo;
 
     #endregion
 

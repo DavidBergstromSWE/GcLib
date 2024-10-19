@@ -101,9 +101,6 @@ internal static class GcBufferExtensions
     {
         // Round to nearest 4 bytes.
         return (int)(width * bitsPerPixel / 8 + (width % 4));
-        //return 4 * (int)Math.Round((double)width * bitsPerPixel / 8 / 4); // slower?
-
-        //return (int)(width * bitsPerPixel / 8); // old version
     }
 
     /// <summary>

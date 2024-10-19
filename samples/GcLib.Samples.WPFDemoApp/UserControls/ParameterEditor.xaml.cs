@@ -382,22 +382,6 @@ public partial class ParameterEditor : UserControl, INotifyPropertyChanged, IDis
         Dispose();
     }
 
-    /// <summary>
-    /// Eventhandler to key events in ComboBox.
-    /// </summary>
-    private void ComboBox_PreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        // Disable default behaviour of opening combobox when F4 key is pressed and execute keybinding command instead.
-        if (e.Key == Key.F4)
-        {         
-            var binding = Application.Current.MainWindow.InputBindings.Cast<KeyBinding>().Where(k => k.Key == Key.F4);
-            if (binding.Any())
-                binding.First()?.Command.Execute((DisplayChannel)binding.First().CommandParameter);
-
-            e.Handled = true;
-        }
-    }
-
     #endregion
 
     #region IDisposable
