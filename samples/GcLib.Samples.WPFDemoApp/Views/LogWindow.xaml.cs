@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using MahApps.Metro.Controls;
 
-namespace ImagerViewerApp.Views;
+namespace ImagerViewer.Views;
 
 /// <summary>
 /// Interaction logic for LogWindow.xaml

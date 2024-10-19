@@ -1,9 +1,9 @@
-﻿using ImagerViewerApp.Models;
+﻿using ImagerViewer.Models;
 using Serilog.Core;
 using Serilog.Events;
 using System;
 
-namespace ImagerViewerApp.Utilities.Logging;
+namespace ImagerViewer.Utilities.Logging;
 
 /// <summary>
 /// Sink where received log events are forwarded to an application log data store. 

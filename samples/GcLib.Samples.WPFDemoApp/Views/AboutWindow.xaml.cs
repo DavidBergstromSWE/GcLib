@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Navigation;
 using MahApps.Metro.Controls;
 
-namespace ImagerViewerApp.Views;
+namespace ImagerViewer.Views;
 
 /// <summary>
 /// Dialog for an About window, displaying general application and author information.

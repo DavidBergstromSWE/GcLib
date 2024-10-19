@@ -1,4 +1,4 @@
-﻿namespace ImagerViewerApp.ViewModels;
+﻿namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// Interface for a view model representing an options sub-view.

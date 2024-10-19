@@ -4,18 +4,18 @@ using System.Windows;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Emgu.CV;
-using ImagerViewerApp.Models;
-using ImagerViewerApp.Utilities.IO;
-using ImagerViewerApp.Utilities.Logging;
-using ImagerViewerApp.Utilities.Services;
-using ImagerViewerApp.Utilities.Themes;
-using ImagerViewerApp.ViewModels;
+using ImagerViewer.Models;
+using ImagerViewer.Utilities.IO;
+using ImagerViewer.Utilities.Logging;
+using ImagerViewer.Utilities.Services;
+using ImagerViewer.Utilities.Themes;
+using ImagerViewer.ViewModels;
 using GcLib;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
-namespace ImagerViewerApp;
+namespace ImagerViewer;
 
 /// <summary>
 /// Interaction logic for App.xaml

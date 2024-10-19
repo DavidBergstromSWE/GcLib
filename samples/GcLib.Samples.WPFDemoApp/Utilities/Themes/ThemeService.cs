@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Media;
 using ControlzEx.Theming;
 
-namespace ImagerViewerApp.Utilities.Themes;
+namespace ImagerViewer.Utilities.Themes;
 
 /// <summary>
 /// Service providing themes for the user interface.

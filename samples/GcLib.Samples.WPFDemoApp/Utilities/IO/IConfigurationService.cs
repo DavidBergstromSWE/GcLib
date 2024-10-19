@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace ImagerViewerApp.Utilities.IO;
+namespace ImagerViewer.Utilities.IO;
 
 /// <summary>
 /// Interface for a service managing the storing and restoring of a configuration.

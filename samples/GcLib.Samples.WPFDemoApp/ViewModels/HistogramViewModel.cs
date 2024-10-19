@@ -2,12 +2,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using ImagerViewerApp.UserControls;
-using ImagerViewerApp.Utilities.Messages;
+using ImagerViewer.UserControls;
+using ImagerViewer.Utilities.Messages;
 using GcLib;
 using GcLib.Utilities.Imaging;
 
-namespace ImagerViewerApp.ViewModels;
+namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// View model for displaying image histograms.

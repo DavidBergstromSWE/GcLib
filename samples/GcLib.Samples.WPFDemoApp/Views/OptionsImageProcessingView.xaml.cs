@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace ImagerViewerApp.Views;
+namespace ImagerViewer.Views;
 
 /// <summary>
 /// Interaction logic for ImageProcessingOptionsView.xaml

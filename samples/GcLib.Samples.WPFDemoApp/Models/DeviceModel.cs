@@ -7,11 +7,11 @@ using System.Xml.Schema;
 using System.Xml.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using ImagerViewerApp.Utilities.Messages;
+using ImagerViewer.Utilities.Messages;
 using GcLib;
 using Serilog;
 
-namespace ImagerViewerApp.Models;
+namespace ImagerViewer.Models;
 
 /// <summary>
 /// Models a camera device.

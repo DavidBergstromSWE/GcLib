@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 
-namespace ImagerViewerApp.Converters;
+namespace ImagerViewer.Converters;
 
 /// <summary>
 /// Converts two boolean values to a <see cref="System.Windows.Visibility"/> value by a logical AND operation. The converted value will be Visible if both booleans are true and Collapsed otherwise.

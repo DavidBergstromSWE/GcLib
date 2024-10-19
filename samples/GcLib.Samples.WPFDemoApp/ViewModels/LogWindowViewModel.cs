@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using ImagerViewerApp.Models;
+using ImagerViewer.Models;
 using Serilog.Events;
 
-namespace ImagerViewerApp.ViewModels;
+namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// Model for a view displaying application logging information.

@@ -1,7 +1,7 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace ImagerViewerApp.Views
+namespace ImagerViewer.Views
 {
     /// <summary>
     /// Interaction logic for DeviceView.xaml

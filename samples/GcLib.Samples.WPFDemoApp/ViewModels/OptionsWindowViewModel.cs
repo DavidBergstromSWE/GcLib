@@ -2,9 +2,9 @@
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ImagerViewerApp.Utilities.Services;
+using ImagerViewer.Utilities.Services;
 
-namespace ImagerViewerApp.ViewModels;
+namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// View model for handling UI options.

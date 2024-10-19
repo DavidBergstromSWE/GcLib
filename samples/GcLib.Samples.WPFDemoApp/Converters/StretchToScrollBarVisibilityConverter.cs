@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace ImagerViewerApp.Converters;
+namespace ImagerViewer.Converters;
 
 /// <summary>
 /// Converts <see cref="Stretch"/> value to <see cref="ScrollBarVisibility"/> value. Converted value will be Auto if no stretch is used and Disabled otherwise.

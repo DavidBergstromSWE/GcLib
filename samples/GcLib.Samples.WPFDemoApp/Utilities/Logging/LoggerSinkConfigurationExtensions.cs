@@ -1,12 +1,12 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.Messaging;
-using ImagerViewerApp.Models;
-using ImagerViewerApp.Utilities.Messages;
+using ImagerViewer.Models;
+using ImagerViewer.Utilities.Messages;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Events;
 
-namespace ImagerViewerApp.Utilities.Logging;
+namespace ImagerViewer.Utilities.Logging;
 
 /// <summary>
 /// Extension class for <see cref="LoggerSinkConfiguration"/>, providing configurations for custom sinks.

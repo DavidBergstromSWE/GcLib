@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Serilog.Events;
 
-namespace ImagerViewerApp.Models;
+namespace ImagerViewer.Models;
 
 /// <summary>
 /// Stores logging data for the application.

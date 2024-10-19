@@ -2,7 +2,7 @@
 using System.Windows.Data;
 using MahApps.Metro.Controls;
 
-namespace ImagerViewerApp.Views;
+namespace ImagerViewer.Views;
 
 /// <summary>
 /// Dialog for a window allowing editing of an existing geometric calibration.

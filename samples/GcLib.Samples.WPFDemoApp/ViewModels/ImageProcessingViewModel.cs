@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using ImagerViewerApp.Models;
-using ImagerViewerApp.Utilities.Messages;
+using ImagerViewer.Models;
+using ImagerViewer.Utilities.Messages;
 
-namespace ImagerViewerApp.ViewModels;
+namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// Models a view handling the processing of input (device) images.

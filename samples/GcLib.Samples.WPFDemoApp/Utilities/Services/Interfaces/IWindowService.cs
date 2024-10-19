@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace ImagerViewerApp.Utilities.Services;
+namespace ImagerViewer.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing windows of type <see cref="Window"/>.

@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using ImagerViewerApp.Models;
-using ImagerViewerApp.UserControls;
+using ImagerViewer.Models;
+using ImagerViewer.UserControls;
 using GcLib;
 using ScottPlot;
 using Serilog.Events;
 
-namespace ImagerViewerApp.ViewModels;
+namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// Provides view models in design time, being populated by dummy properties and commands.

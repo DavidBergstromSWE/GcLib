@@ -1,4 +1,4 @@
-﻿namespace ImagerViewerApp;
+﻿namespace ImagerViewer;
 
 /// <summary>
 /// Stores data for an image histogram.

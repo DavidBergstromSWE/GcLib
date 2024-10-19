@@ -2,11 +2,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using ImagerViewerApp.Utilities.Messages;
-using ImagerViewerApp.Utilities.Services;
-using ImagerViewerApp.Utilities.Themes;
+using ImagerViewer.Utilities.Messages;
+using ImagerViewer.Utilities.Services;
+using ImagerViewer.Utilities.Themes;
 
-namespace ImagerViewerApp.ViewModels;
+namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// View model for the main window.
