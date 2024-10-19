@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ImagerViewerApp.Converters;
+namespace ImagerViewer.Converters;
 
 /// <summary>
 /// Converts a boolean value to a <see cref="System.Windows.Visibility"/> value. The converted value will be Visible if boolean is true and Hidden otherwise.

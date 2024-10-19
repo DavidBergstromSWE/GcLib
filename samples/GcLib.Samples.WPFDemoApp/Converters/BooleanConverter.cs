@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ImagerViewerApp.Converters;
+namespace ImagerViewer.Converters;
 
 /// <summary>
 /// Converts a <see cref="bool"/> value to configurable target values for <see langword="true"/> and <see langword="false"/>.

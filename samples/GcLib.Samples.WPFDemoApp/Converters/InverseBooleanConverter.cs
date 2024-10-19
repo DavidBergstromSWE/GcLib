@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ImagerViewerApp.Converters;
+namespace ImagerViewer.Converters;
 
 /// <summary>
 /// Converts a boolean value to its inverse value (e.g. <see langword="true"/> to <see langword="false"/> and <see langword="false"/> to <see langword="true"/>).

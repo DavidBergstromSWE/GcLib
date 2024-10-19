@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Media;
 
-namespace ImagerViewerApp.Utilities.Services;
+namespace ImagerViewer.Utilities.Services;
 
 /// <summary>
 /// Interface for a controller of an opened progress dialog.

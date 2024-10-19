@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace ImagerViewerApp;
+namespace ImagerViewer;
 
 /// <summary>
 /// Represents a keyboard shortcut in the application.

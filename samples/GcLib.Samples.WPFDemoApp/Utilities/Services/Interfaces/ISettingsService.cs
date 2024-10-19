@@ -1,4 +1,4 @@
-﻿namespace ImagerViewerApp.Utilities.Services;
+﻿namespace ImagerViewer.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing access to application settings.

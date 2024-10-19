@@ -1,8 +1,8 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Media;
-using ImagerViewerApp.UserControls;
+using ImagerViewer.UserControls;
 
-namespace ImagerViewerApp.Views;
+namespace ImagerViewer.Views;
 
 /// <summary>
 /// Interaction logic for ImageDisplayView.xaml
@@ -10,10 +10,10 @@ namespace ImagerViewerApp.Views;
 public partial class ImageDisplayView : UserControl
 {
     /// <summary>
-    /// Stores settings for an <see cref="ImagerViewerApp"/> control.
+    /// Stores settings for an <see cref="ImagerViewer"/> control.
     /// </summary>
     /// <remarks>
-    /// Creates a stored setting for an <see cref="ImagerViewerApp"/> control.
+    /// Creates a stored setting for an <see cref="ImagerViewer"/> control.
     /// </remarks>
     /// <param name="stretch">Stretch mode for displayed image.</param>
     /// <param name="scale">Scale of displayed image.</param>

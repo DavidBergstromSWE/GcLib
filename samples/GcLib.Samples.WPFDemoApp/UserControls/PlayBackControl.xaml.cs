@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using CommunityToolkit.Mvvm.Input;
 
-namespace ImagerViewerApp.UserControls;
+namespace ImagerViewer.UserControls;
 
 /// <summary>
 /// Playback control with play/pause and forward/backward stepping buttons, text label and a slider.

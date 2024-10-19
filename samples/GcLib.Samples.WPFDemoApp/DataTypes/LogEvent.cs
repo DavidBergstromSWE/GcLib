@@ -1,7 +1,7 @@
 ﻿using System;
 using Serilog.Events;
 
-namespace ImagerViewerApp;
+namespace ImagerViewer;
 
 /// <summary>
 /// Represents a logging event, described by a timestamped message and an importance level.

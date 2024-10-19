@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using MahApps.Metro.Controls;
 
-namespace ImagerViewerApp.Views;
+namespace ImagerViewer.Views;
 
 /// <summary>
 /// Window exposing user options for application.

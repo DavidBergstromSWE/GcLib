@@ -1,6 +1,6 @@
 ﻿using GcLib;
 
-namespace ImagerViewerApp.Utilities.Messages;
+namespace ImagerViewer.Utilities.Messages;
 
 /// <summary>
 /// A message announcing the updating of images.

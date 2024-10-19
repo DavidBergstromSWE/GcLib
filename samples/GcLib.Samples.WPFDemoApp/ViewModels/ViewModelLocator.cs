@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 
-namespace ImagerViewerApp.ViewModels;
+namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// Provides view models in runtime, by resolving instances from an IoC container.

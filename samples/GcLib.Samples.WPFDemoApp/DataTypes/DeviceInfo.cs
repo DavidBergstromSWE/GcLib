@@ -1,6 +1,6 @@
 ﻿using GcLib;
 
-namespace ImagerViewerApp;
+namespace ImagerViewer;
 
 /// <summary>
 /// Brief top-level description of a device.

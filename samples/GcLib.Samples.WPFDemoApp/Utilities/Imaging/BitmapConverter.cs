@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace ImagerViewerApp.Utilities.Imaging;
+namespace ImagerViewer.Utilities.Imaging;
 
 /// <summary>
 /// Utility class for converting bitmaps between <see cref="System.Drawing.Imaging"/> and <see cref="System.Windows.Media.Imaging"/> namespaces.

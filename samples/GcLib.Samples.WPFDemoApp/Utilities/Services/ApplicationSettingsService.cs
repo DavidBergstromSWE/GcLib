@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using System;
-using ImagerViewerApp.ViewModels;
+using ImagerViewer.ViewModels;
 
-namespace ImagerViewerApp.Utilities.Services;
+namespace ImagerViewer.Utilities.Services;
 
 /// <summary>
 /// Service providing loading/saving access to application settings.

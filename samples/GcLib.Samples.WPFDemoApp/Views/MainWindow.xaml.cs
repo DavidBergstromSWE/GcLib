@@ -3,7 +3,7 @@ using System.Windows.Input;
 using MahApps.Metro.Controls;
 using Serilog;
 
-namespace ImagerViewerApp.Views;
+namespace ImagerViewer.Views;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml

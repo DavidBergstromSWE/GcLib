@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Win32;
 
-namespace ImagerViewerApp.Utilities.Services;
+namespace ImagerViewer.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing dialogs (eg. modal windows).

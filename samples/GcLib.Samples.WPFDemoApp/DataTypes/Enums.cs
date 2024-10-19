@@ -1,6 +1,6 @@
 ﻿using GcLib;
 
-namespace ImagerViewerApp;
+namespace ImagerViewer;
 
 /// <summary>
 /// Device index.

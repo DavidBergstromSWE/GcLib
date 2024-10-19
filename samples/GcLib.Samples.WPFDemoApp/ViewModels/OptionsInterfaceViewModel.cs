@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ImagerViewerApp.Utilities.Themes;
+using ImagerViewer.Utilities.Themes;
 
-namespace ImagerViewerApp.ViewModels;
+namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// View model for handling user interface related options.

@@ -1,4 +1,4 @@
-﻿namespace ImagerViewerApp.Utilities.Messages;
+﻿namespace ImagerViewer.Utilities.Messages;
 
 /// <summary>
 /// A message announcing the connection of a device.

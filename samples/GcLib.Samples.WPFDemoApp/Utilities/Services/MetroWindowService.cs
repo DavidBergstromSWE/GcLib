@@ -7,7 +7,7 @@ using System.Windows;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 
-namespace ImagerViewerApp.Utilities.Services;
+namespace ImagerViewer.Utilities.Services;
 
 /// <summary>
 /// Service providing windows and dialogs adapted to an application using the <see cref="MahApps.Metro"/> framework.

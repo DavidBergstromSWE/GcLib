@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using MahApps.Metro.Controls;
 
-namespace ImagerViewerApp.Views
+namespace ImagerViewer.Views
 {
     /// <summary>
     /// Interaction logic for ShortcutWindow.xaml
