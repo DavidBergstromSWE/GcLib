@@ -25,11 +25,6 @@
         </Grid.RowDefinitions>
 
         <Grid.Resources>
-            <!-- Control styling -->
-            <Style TargetType="ComboBox" BasedOn="{StaticResource MahApps.Styles.ComboBox}">
-                <EventSetter Event="PreviewKeyDown" Handler="ComboBox_PreviewKeyDown"/>
-            </Style>
-            
             <!-- Converters -->
             <conv:IsNotEqualConverter x:Key="IsNotEqualConverter"/>
             <conv:FloatLogScaleConverter x:Key="FloatLogScaleConverter"/>
