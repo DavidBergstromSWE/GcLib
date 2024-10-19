@@ -47,7 +47,6 @@ internal sealed class OptionsDisplayViewModel : ObservableObject, IOptionsSubVie
         _selectedBitmapScalingMode = DisplayViewModel.SelectedBitmapScalingMode;
         _showPixelInspector = DisplayViewModel.ShowPixelInspector;
         _showFullScreenFrameInfo = DisplayViewModel.ShowFullScreenFrameInfo;
-        _showFullScreenChannelInfo = DisplayViewModel.ShowFullScreenChannelInfo;
     }
 
     #endregion
@@ -63,7 +62,6 @@ internal sealed class OptionsDisplayViewModel : ObservableObject, IOptionsSubVie
         DisplayViewModel.LimitFPS = _limitFPS;
         DisplayViewModel.TargetFPS = _targetFPS;
         DisplayViewModel.ShowFullScreenFrameInfo = _showFullScreenFrameInfo;
-        DisplayViewModel.ShowFullScreenChannelInfo = _showFullScreenChannelInfo;
     }
 
     #endregion

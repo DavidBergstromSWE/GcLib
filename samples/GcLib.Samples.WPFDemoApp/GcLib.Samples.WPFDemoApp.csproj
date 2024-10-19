@@ -32,6 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Images\logo_296x296.png" />
     <None Remove="Resources\Images\Resources\Splash.png" />
   </ItemGroup>
 
@@ -53,6 +54,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\GcLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Images\logo_296x296.png" />
   </ItemGroup>
 
   <ItemGroup>

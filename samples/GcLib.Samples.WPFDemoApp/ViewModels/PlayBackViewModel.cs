@@ -321,9 +321,6 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
                 if (IsLoaded)
                     CloseSequence();
 
-                // Request display channel to use for playback.
-                _playbackChannel = Messenger.Send<SelectedChannelRequestMessage>().Response;
-
                 // Cache currently displayed image into memory.
                 _cachedBuffer = _playbackChannel.RawImage;
 
