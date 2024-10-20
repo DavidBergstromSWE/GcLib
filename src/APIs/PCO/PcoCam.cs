@@ -166,7 +166,7 @@ public sealed partial class PcoCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
     #region IDeviceClassDescriptor
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("pco.sdk", FileHelper.GetAssemblyFileVersion("pco.sdk.dll"), typeof(PcoCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("pco.sdk", FileHelper.GetAssemblyFileVersion("SC2_Cam.dll"), typeof(PcoCam));
 
     #endregion
 }

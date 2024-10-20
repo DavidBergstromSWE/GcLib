@@ -2313,6 +2313,206 @@
             Pixel format 12bit
              </summary>
         </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono8LS3A">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG8LS3A">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG10LS3A">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG10pLS3A">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono10LS3A">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono10pLS3A">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB10LS3A">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB10pLS3A">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB8LS3A">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR10LS3A">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR10pLS3A">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR8LS3A">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG10LS3A">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG10pLS3A">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG8LS3A">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG12LS3A">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG12pLS3A">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG16LS3A">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB12LS3A">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB12pLS3A">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB16LS3A">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR12LS3A">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR12pLS3A">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR16LS3A">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG12LS3A">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG12pLS3A">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG16LS3A">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono12LS3A">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono12pLS3A">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono16LS3A">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono14LS3A">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG14LS3A">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB14LS3A">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR14LS3A">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG14LS3A">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono14pLS3A">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG14pLS3A">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB14pLS3A">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR14pLS3A">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG14pLS3A">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
         <member name="T:xiApi.NET.xiExc">
             <summary> 
             Internal exception handler for xiAPI.NET.
@@ -2445,6 +2645,11 @@
         <member name="F:xiApi.NET.TEST_PATTERN_GENERATOR_SELECTOR.FPGA">
             <summary>
              FPGA Test Pattern Generator
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.TEST_PATTERN_GENERATOR_SELECTOR.MCU">
+            <summary>
+             MCU Test Pattern Generator
             </summary>
         </member>
         <member name="T:xiApi.NET.VERSION">

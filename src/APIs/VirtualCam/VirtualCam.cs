@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
 
 namespace GcLib;
 
@@ -97,7 +96,7 @@ public sealed partial class VirtualCam : GcDevice, IDeviceEnumerator, IDeviceCla
     #region IDeviceClassDescriptor
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new(nameof(VirtualCam), Assembly.GetExecutingAssembly().GetName().Version.ToString(), typeof(VirtualCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new(nameof(VirtualCam), "1.0", typeof(VirtualCam));
 
     #endregion
 }

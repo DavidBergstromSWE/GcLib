@@ -54,7 +54,7 @@ public partial class App : Application
         // Start logging.
         IsLoggingEnabled = true;
 
-        Log.Information("FusionViewer started (v{version})", MainWindowViewModel.MajorMinorVersion); 
+        Log.Information("{App} started (v{version})", MainWindowViewModel.Title, MainWindowViewModel.MajorMinorVersion); 
 
         // Configure services for dependency injection.
         Ioc.Default.ConfigureServices(
