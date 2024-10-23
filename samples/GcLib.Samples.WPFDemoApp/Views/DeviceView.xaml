@@ -77,8 +77,8 @@
             <Label Content="{Binding Device.UniqueID, Mode=OneWay}" MaxWidth="150"/>
         </StackPanel>
         <Button Style="{StaticResource DeviceSettingsButton}"                            
-            Command="{Binding OpenParameterDialogWindowCommand}"
-            CommandParameter="{Binding}">
+                Command="{Binding OpenParameterDialogWindowCommand}"
+                CommandParameter="{Binding}">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="SETTINGS"/>
                 <iconPacks:PackIconControl Kind="{x:Static iconPacks:PackIconPicolIconsKind.VideoInformation}" Margin="8 1 0 0"/>

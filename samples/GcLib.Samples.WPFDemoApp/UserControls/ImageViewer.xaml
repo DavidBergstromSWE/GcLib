@@ -98,7 +98,7 @@
                            RenderOptions.BitmapScalingMode="{Binding BitmapScaling}"
                            StretchDirection="Both"
                            Source="{Binding DisplayedImage}"
-                           d:Source="\Resources\Images\dazzling.png"
+                           d:Source="\Resources\Images\GcLib.png"
                            MouseEnter="Image_MouseEnter"
                            MouseLeave="Image_MouseLeave"                                       
                            MouseLeftButtonDown="Image_MouseLeftButtonDown"
@@ -197,11 +197,11 @@
             <sys:String x:Key="notAvailable">n/a</sys:String>
             </StackPanel.Resources>
             <TextBlock FontSize="11" VerticalAlignment="Center" Margin="0 0 5 0">
-                    <Run Text="{Binding ImageSource.Width, Mode=OneWay, FallbackValue=640}"/>
+                    <Run Text="{Binding ImageSource.Width, Mode=OneWay, FallbackValue=1920}"/>
                     <Run Text="x"/>
-                    <Run Text="{Binding ImageSource.Height, Mode=OneWay, FallbackValue=480}"/>
+                    <Run Text="{Binding ImageSource.Height, Mode=OneWay, FallbackValue=1080}"/>
                     <Run Text="-"/>
-                    <Run Text="{Binding ImageSource.PixelFormat, Mode=OneWay, FallbackValue=Mono8}"/>
+                    <Run Text="{Binding ImageSource.PixelFormat, Mode=OneWay, FallbackValue=RGB8}"/>
             </TextBlock>
         </StackPanel>
 

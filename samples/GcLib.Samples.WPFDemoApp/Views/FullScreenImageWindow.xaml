@@ -121,6 +121,7 @@
 
         <!-- Image -->
         <Image Source="{Binding ProcessedImage, Converter={StaticResource GcBufferToBitmapSourceConverter}}"
+               d:Source="\Resources\Images\GcLib.png"
                RenderOptions.BitmapScalingMode="{Binding SelectedBitmapScalingMode, Mode=OneWay}"/>
 
         <!-- Frame info -->

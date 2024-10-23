@@ -132,7 +132,7 @@ public partial class App : Application
         // Close libraries.
         CloseLibraries();
 
-        Log.Information("FusionViewer closed");
+        Log.Information("{App} closed", MainWindowViewModel.Title);
         Log.CloseAndFlush();
 
         base.OnExit(e);
@@ -156,7 +156,7 @@ public partial class App : Application
     /// </summary>
     private static void CloseLibraries()
     {
-        // Dispose system level in GcLib (really needed?).
+        // Dispose system level in GcLib.
         var system = Ioc.Default.GetRequiredService<IDeviceProvider>() as GcSystem;
         system?.Dispose();
 
