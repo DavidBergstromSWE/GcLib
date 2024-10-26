@@ -37,11 +37,6 @@ public sealed partial class VirtualCam
         private DateTime _time0;
 
         /// <summary>
-        /// Frame ID (counts number of frames generated since opening camera).
-        /// </summary>
-        private uint _frameID;
-
-        /// <summary>
         /// Counts number of frames since acquisition start.
         /// </summary>
         private uint _frameCounter;
@@ -69,7 +64,6 @@ public sealed partial class VirtualCam
             _cameraClock.Start();
 
             // Reset frame counters.
-            _frameID = 0;
             _frameCounter = 0;
 
             // Initialize GenApi parameters/features.

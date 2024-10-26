@@ -190,7 +190,7 @@ public sealed partial class VirtualCam
                                 height: (uint)Height,
                                 pixelFormat: (PixelFormat)PixelFormat.IntValue,
                                 pixelDynamicRangeMax: GenICamConverter.GetDynamicRangeMax((PixelFormat)PixelFormat.IntValue),
-                                frameID: _frameID++,
+                                frameID: _frameCounter,
                                 timeStamp: (ulong)TimeStamp.Value);
         }
 
@@ -207,7 +207,7 @@ public sealed partial class VirtualCam
                 {
                     // Load image from directory.
                     var mat = new Emgu.CV.Mat(_framePaths[(int)_frameCounter++], Emgu.CV.CvEnum.ImreadModes.Unchanged);
-                    buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(mat.Depth), _frameID++, (ulong)TimeStamp.Value);
+                    buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(mat.Depth), ++_frameCounter, (ulong)TimeStamp.Value);
                 }
                 else
                 {

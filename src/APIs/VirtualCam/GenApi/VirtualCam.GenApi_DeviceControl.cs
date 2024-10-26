@@ -96,8 +96,7 @@ public sealed partial class VirtualCam
                     // Reset and synchronize timestamp to PC time.
                     _time0 = DateTime.Now;
 
-                    // Reset frame counters.
-                    _frameID = 0;
+                    // Reset frame counter.
                     _frameCounter = 0;
 
                     // Reset to initial parameter values.
