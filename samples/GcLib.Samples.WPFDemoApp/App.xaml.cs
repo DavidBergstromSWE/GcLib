@@ -18,7 +18,7 @@ using Serilog;
 namespace ImagerViewer;
 
 /// <summary>
-/// Interaction logic for App.xaml
+/// ImageViewer is a demo app for the <see cref="GcLib"/> library. The app demonstrates how to connect to devices, change device parameter settings and display live image streams. The app also provide some elementary recording and playback functionality.
 /// </summary>
 public partial class App : Application
 {

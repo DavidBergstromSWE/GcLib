@@ -185,7 +185,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <param name="windowService">Service providing windows and dialogs.</param>
     /// <param name="dispatcherService">Service providing dispatching and running of actions onto the UI thread.</param>
     /// <param name="deviceProvider">Service providing devices.</param>
-    /// <param name="configurationService">Service managing loading/saving of fusion system configurations.</param>
+    /// <param name="configurationService">Service managing loading/saving of system configurations.</param>
     /// <param name="device">Device channel.</param>
     public DeviceViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, IDeviceProvider deviceProvider, IConfigurationService configurationService, DeviceModel device)
     {
@@ -555,7 +555,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
         // Set progress bar to be indeterminate.
         controller?.SetIndeterminate();
 
-        // Stop active acquisitions on all channels.
+        // Stop active acquisitions.
         await _dispatcherService.Invoke(() => Messenger.Send<StopAcquisitionAsyncRequestMessage>().Response);
 
         // Cache device information before disconnecting it.

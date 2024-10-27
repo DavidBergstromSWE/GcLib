@@ -30,12 +30,12 @@
         <StackPanel Grid.Row="1" Grid.Column="2" Margin="5 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
             <ToggleButton Padding="5" VerticalAlignment="Center"
                           IsChecked="{Binding ImageProcessingViewModel.ImageChannel.FlipHorizontal}"
-                          ToolTip="Flip channel 1 horizontally" 
+                          ToolTip="Flip horizontally" 
                           ToolTipService.InitialShowDelay="500"
                           Content="{iconPacks:VaadinIcons Kind=FlipH}"/>
             <ToggleButton Margin="2 0 0 0" Padding="5" VerticalAlignment="Center"
                           IsChecked="{Binding ImageProcessingViewModel.ImageChannel.FlipVertical}"
-                          ToolTip="Flip channel 1 vertically" 
+                          ToolTip="Flip vertically" 
                           ToolTipService.InitialShowDelay="500"
                           Content="{iconPacks:VaadinIcons Kind=FlipV}"/>
         </StackPanel>

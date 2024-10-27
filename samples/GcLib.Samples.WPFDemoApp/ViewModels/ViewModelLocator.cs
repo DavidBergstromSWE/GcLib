@@ -18,12 +18,12 @@ internal sealed class ViewModelLocator
     public static DeviceViewModel DeviceViewModel => Ioc.Default.GetRequiredService<DeviceViewModel>();
 
     /// <summary>
-    /// View model for the acquisition and recording of image data from input (camera) and output (fusion) channels.
+    /// View model for the acquisition and recording of image data from an input (camera) channel.
     /// </summary>
     public static AcquisitionViewModel AcquisitionViewModel => Ioc.Default.GetRequiredService<AcquisitionViewModel>();
 
     /// <summary>
-    /// View model for processing and fusion of images.
+    /// View model for processing of images.
     /// </summary>
     public static ImageProcessingViewModel ImageProcessingViewModel => Ioc.Default.GetRequiredService<ImageProcessingViewModel>();
 

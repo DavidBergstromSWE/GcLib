@@ -111,7 +111,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         _windowService = dialogService;
         _dispatcherService = dispatcherService;
 
-        // Instantiate acquisition channels.
+        // Instantiate acquisition channel.
         AcquisitionChannel = new AcquisitionModel(device, imageChannel);
 
         // Default file paths.
@@ -120,7 +120,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 #else
         AcquisitionChannel.FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\recording.bin");
 #endif
-        // Register eventhandlers to available acquisition channels.
+        // Register eventhandlers to acquisition channel.
         AcquisitionChannel.AcquisitionStopped += Channel_AcquisitionStopped;
         AcquisitionChannel.FrameDropped += Channel_FrameDropped;
         AcquisitionChannel.AcquisitionAborted += Channel_AcquisitionAborted;
