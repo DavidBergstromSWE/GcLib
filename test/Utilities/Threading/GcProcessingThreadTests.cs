@@ -116,6 +116,7 @@ public class GcProcessingThreadTests
 
         // Act
         _mockStream.Raise(s => s.BufferTransferred += null, new BufferTransferredEventArgs(FakeBufferProvider.GetFakeBuffer()));
+        Thread.Sleep(100);
         _processingThread.Stop();
         _processingThread.WaitComplete();
 
