@@ -8,7 +8,7 @@ Currently supported APIs are:
 [PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (partially implemented). 
 
 > [!NOTE]
-> Please note that some APIs may require a license.
+> Please note that some APIs may require a license and driver installation.
 
 Contributors are welcome to the project, please see this [short guide](CONTRIBUTING.md) for further info.
 
