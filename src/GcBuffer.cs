@@ -8,7 +8,7 @@ using GcLib.Utilities.Numbers;
 namespace GcLib;
 
 /// <summary>
-/// Represents the buffer level in the GenICam/GenTL standard module hierarchy and is responsible for the storage and format conversion of an image buffer. Image data is stored as a managed byte array, with chunkdata such as frame ID, timestamp, width, height and pixel format stored as properties. 
+/// Represents the buffer level in the GenICam/GenTL standard module hierarchy and is responsible for the storage and format conversion of an image buffer. Image data is stored as a managed byte array, with metadata such as frame ID, timestamp, width, height and pixel format stored as properties. 
 /// </summary>
 public sealed class GcBuffer
 {
