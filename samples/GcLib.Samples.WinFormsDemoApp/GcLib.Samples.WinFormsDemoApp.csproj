@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Emgu.CV.UI" Version="4.9.0.5494">
+    <PackageReference Include="Emgu.CV.UI" Version="4.10.0.5680">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
     <PackageReference Include="Serilog" Version="4.2.0" />
