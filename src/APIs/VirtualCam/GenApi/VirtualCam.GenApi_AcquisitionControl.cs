@@ -111,9 +111,7 @@ public sealed partial class VirtualCam
                         if (Directory.Exists(ImageDirectory) == false)
                             throw new DirectoryNotFoundException($"Directory '{ImageDirectory}' not found!");
 
-                        _framePaths = Directory.EnumerateFiles(ImageDirectory, "*.*", SearchOption.TopDirectoryOnly)
-                                               .Where(s => s.EndsWith(".bmp") || s.EndsWith(".png"))
-                                               .ToList();
+                        _framePaths = [.. Directory.EnumerateFiles(ImageDirectory, "*.*", SearchOption.TopDirectoryOnly).Where(s => s.EndsWith(".bmp") || s.EndsWith(".png"))];
                         if (_framePaths.Count == 0)
                             throw new FileNotFoundException($"No image files of type bmp or png found in '{ImageDirectory}'!");
                     }
@@ -138,9 +136,7 @@ public sealed partial class VirtualCam
                             if (AcquisitionFailureEvent.IntValue == (int)AcquisitionFailureEventType.ConnectionLost)
                                 _virtualCam.OnConnectionLost();
                             else
-                            {
                                 _virtualCam.OnAcquisitionAborted(new AcquisitionAbortedEventArgs("Acquisition aborted due to hardware failure!"));
-                            }
                         });
                     }
                 });
@@ -206,8 +202,8 @@ public sealed partial class VirtualCam
                 if (_frameCounter <= _framePaths.Count - 1)
                 {
                     // Load image from directory.
-                    var mat = new Emgu.CV.Mat(_framePaths[(int)_frameCounter++], Emgu.CV.CvEnum.ImreadModes.Unchanged);
-                    buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(mat.Depth), ++_frameCounter, (ulong)TimeStamp.Value);
+                    var mat = new Emgu.CV.Mat(_framePaths[(int)_frameCounter], Emgu.CV.CvEnum.ImreadModes.Unchanged);
+                    buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(mat.Depth), _frameCounter++, (ulong)TimeStamp.Value);
                 }
                 else
                 {
@@ -222,7 +218,7 @@ public sealed partial class VirtualCam
                                                                       height: (uint)Height,
                                                                       pixelFormat: (PixelFormat)PixelFormat.IntValue,
                                                                       testPattern: (TestPattern)TestPattern.IntValue,
-                                                                      frameNumber: ++_frameCounter));
+                                                                      frameNumber: _frameCounter++));
             }
 
             // Raise new buffer event.
