@@ -2,7 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
              x:Name="histogramViewerControl" 
              IsEnabledChanged="HistogramViewerControl_IsEnabledChanged"
              mc:Ignorable="d">
@@ -11,7 +12,7 @@
         <StackPanel Orientation="Vertical" Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
             
             <!--Histogram plot (ScottPlot)-->
-            <WpfPlot x:Name="wpfPlot" Width="250" Height="150" FontSize="10"/>
+            <ScottPlot:WpfPlot x:Name="wpfPlot" Width="250" Height="150" FontSize="10"/>
 
             <!--RGB channel filtering-->
             <StackPanel Orientation="Horizontal" Margin="0 8 0 0"

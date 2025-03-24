@@ -46,6 +46,8 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
     private bool _showBlue;
     private bool _containsData;
 
+    private readonly double[] _zeros = new double[255];
+
     /// <summary>
     /// Array of BGR colors.
     /// </summary>
@@ -256,9 +258,9 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
         ShowRed = ShowGreen = ShowBlue = true;
 
         // Initialize histogram control.
-        wpfPlot.Configuration.DoubleClickBenchmark = true;
-        wpfPlot.Configuration.Pan = false;
-        wpfPlot.Configuration.Zoom = false;
+        //wpfPlot.Configuration.DoubleClickBenchmark = true;
+        //wpfPlot.Configuration.Pan = false;
+        //wpfPlot.Configuration.Zoom = false;
     }
 
     #endregion
@@ -291,10 +293,10 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
     private void PlotHistogram()
     {
         // Prevent new rendering (if plotting is done from separate thread).
-        wpfPlot.Plot.RenderLock();
+        wpfPlot.Plot.RenderManager.EnableRendering = false;
 
         // Specify bin locations.
-        double[] xs = DataGen.Consecutive<double>(pointCount: SelectedHistSize, spacing: (_histogramMaxValue + 1) / SelectedHistSize, offset: (_histogramMaxValue + 1) / 2 / SelectedHistSize);
+        double[] xs = Generate.Consecutive(count: SelectedHistSize, delta: (_histogramMaxValue + 1) / SelectedHistSize, first: (_histogramMaxValue + 1) / 2 / SelectedHistSize);
 
         // Plot histogram data for all image channels.
         for (int i = 0; i < Math.Min(_numChannels, 3); i++)
@@ -311,13 +313,13 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
             for (int j = 0; j < ys.Length; j++)
                 ys[j] = _histogramData[i, j];
 
-            PlotData(wpfPlot.Plot, xs, ys, plotColor, SelectedPlotType);            
+            PlotData(wpfPlot.Plot, xs, ys, ScottPlot.Color.FromARGB((uint)plotColor.ToArgb()), SelectedPlotType);
         }
 
         FormatPlot(wpfPlot.Plot);
 
         // Enable new rendering.
-        wpfPlot.Plot.RenderUnlock();
+        wpfPlot.Plot.RenderManager.EnableRendering = true;
     }
 
     /// <summary>
@@ -327,30 +329,35 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
     /// <param name="ys">Data along y axis.</param>
     /// <param name="plotColor">Color to use for plotting data.</param>
     /// <param name="histogramPlotType">Type of plot.</param>
-    private void PlotData(Plot plot, double[] xs, double[] ys, System.Drawing.Color plotColor, HistogramPlotType histogramPlotType)
+    private void PlotData(Plot plot, double[] xs, double[] ys, ScottPlot.Color plotColor, HistogramPlotType histogramPlotType)
     {
         // Select plot type based on user-selected option.
         switch (histogramPlotType)
         {
             case HistogramPlotType.Fill:
             default:
-                ScottPlot.Plottable.Polygon fillPlot = plot.AddFill(xs: xs, ys: ys, color:plotColor);
-                fillPlot.FillColor = System.Drawing.Color.FromArgb(64, plotColor);
-                fillPlot.LineWidth = 2;
+                var fillPlot = plot.Add.FillY(xs: xs, ys1: ys, ys2: _zeros[0..ys.Length]);
+                fillPlot.FillStyle.Color = plotColor;
+                fillPlot.LineStyle.Width = 1;
                 break;
 
             case HistogramPlotType.Bar:
-                ScottPlot.Plottable.BarPlot barPlot = plot.AddBar(positions: xs, values: ys, color: plotColor);
-                barPlot.BarWidth = (_histogramMaxValue + 1) / ys.Length;
-                barPlot.BorderLineWidth = 1.2f;
+                var barPlot = plot.Add.Bars(positions: xs, values: ys);
+                foreach (var bar in barPlot.Bars)
+                {
+                    bar.Size = 0;
+                    bar.LineWidth = 1;
+                    bar.FillStyle.Color = plotColor;
+                    bar.FillStyle.AntiAlias = false;
+                }
+
+                barPlot.Color = plotColor;
                 break;
 
             case HistogramPlotType.Line:
-                ScottPlot.Plottable.SignalPlot linePlot = plot.AddSignal(ys: ys, sampleRate: (double)ys.Length / (_histogramMaxValue + 1), color: plotColor);
-                //ScottPlot.Plottable.SignalPlotConst<double> linePlot = plot.AddSignalConst(ys, (double)ys.Length / (_histogramMaxValue + 1), plotColor);
-                linePlot.OffsetX = ((float)_histogramMaxValue + 1) / 2 / ys.Length;
+                var linePlot = plot.Add.Signal(ys: ys, period: (double)(_histogramMaxValue + 1) / ys.Length, color: plotColor);
                 linePlot.MarkerSize = 0;
-                linePlot.LineStyle = LineStyle.Solid;
+                linePlot.LineStyle.Pattern = LinePattern.Solid;
                 linePlot.LineWidth = 2;
                 break;
         }
@@ -362,29 +369,28 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
     private void FormatPlot(Plot plot)
     {
         // Format plot.
-        _ = plot.XAxis.Label("DN", size: (float)wpfPlot.FontSize, bold: true);
-        plot.XAxis.Ticks(major: true, minor: true);
-        plot.XAxis.TickLabelStyle(fontSize: (float)wpfPlot.FontSize, fontBold: true);
-        plot.XAxis.TickLabelNotation(multiplier: true);
-        plot.YAxis.Ticks(enable: false);
-        plot.YAxis.Hide(hidden: true);
+        plot.XLabel("DN", size: 11);
+        //plot.XAxis.Ticks(major: true, minor: true);
+        //plot.XAxis.TickLabelStyle(fontSize: (float)wpfPlot.FontSize, fontBold: true);
+        //plot.XAxis.TickLabelNotation(multiplier: true);
+        //plot.YAxis.Ticks(enable: false);
 
-        // Hide frame borders.
-        plot.YAxis.Line(false); // left
-        plot.XAxis2.Line(false); // top
-        plot.YAxis2.Line(false); // right
-        plot.XAxis.Line(true); // bottom
+        // Only show x-axis.
+        plot.Axes.Left.IsVisible = false;
+        plot.Axes.Bottom.IsVisible = true;
+        plot.Axes.Right.IsVisible = false;
+        plot.Axes.Top.IsVisible = false;
 
-        plot.Layout(padding: 0); // use minimum padding around plot.
-        plot.XAxis.MajorGrid(enable: ShowGrid, color: System.Drawing.Color.DarkGray, lineStyle: LineStyle.Solid, lineWidth: 1);
-        plot.YAxis.MajorGrid(enable: false);
+        plot.Axes.SetLimitsX(0, _histogramMaxValue);
+        plot.Axes.Margins(left: 0.05, right: 0.05, bottom: 0.0, top: 0.1);
+        plot.DataBackground.Color = ScottPlot.Color.FromARGB((uint)_backgroundColor.ToArgb());
 
-        plot.AxisAuto(verticalMargin: 0); // add some margin to x-axis, but use a tight y-axis fit.
+        if (ShowGrid == false)
+            plot.HideGrid();
 
-        // Coloring.
-        plot.XAxis.Color(color: _foregroundColor);
-        plot.YAxis.Color(color: _foregroundColor);
-        plot.Style(figureBackground: _backgroundColor, dataBackground: _backgroundColor);
+        // Tick styling
+        plot.Axes.Bottom.TickLabelStyle.FontSize = 11;
+        plot.Axes.Bottom.TickLabelStyle.Bold = true;
     }
 
     #endregion
