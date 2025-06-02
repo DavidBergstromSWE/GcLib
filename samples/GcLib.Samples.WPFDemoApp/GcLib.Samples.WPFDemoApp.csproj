@@ -46,7 +46,7 @@
     <PackageReference Include="ScottPlot" Version="4.1.74" />
     <PackageReference Include="ScottPlot.WPF" Version="4.1.74" />
     <PackageReference Include="Serilog" Version="4.3.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.TextWriter" Version="3.0.0" />
