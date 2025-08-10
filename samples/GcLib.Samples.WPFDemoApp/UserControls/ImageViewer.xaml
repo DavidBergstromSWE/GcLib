@@ -111,8 +111,8 @@
                         </Image.LayoutTransform>
                         <Image.ContextMenu>
                             <ContextMenu FontSize="12">
-                                <MenuItem Icon="{iconPacks:Unicons Kind=SaveLine}" Header="Save Image To Disk" Command="{Binding SaveDisplayedImageCommand}"/>
-                                <MenuItem Icon="{iconPacks:Unicons Kind=CopyLine}" Header="Copy Image To Clipboard" Command="{Binding CopyDisplayedImageCommand}"/>
+                                <MenuItem Icon="{iconPacks:Unicons Kind=Save}" Header="Save Image To Disk" Command="{Binding SaveDisplayedImageCommand}"/>
+                                <MenuItem Icon="{iconPacks:Unicons Kind=Copy}" Header="Copy Image To Clipboard" Command="{Binding CopyDisplayedImageCommand}"/>
                             </ContextMenu>
                         </Image.ContextMenu>
                     </Image>
