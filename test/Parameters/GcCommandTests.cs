@@ -36,7 +36,7 @@ public class GcCommandTests
     public void GcCommand_InvalidName_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcCommand(name: "Name containing white spaces", category: "Test", method: () => { }));
+        Assert.Throws<ArgumentException>(() => new GcCommand(name: "Name containing white spaces", category: "Test", method: () => { }));
     }
 
     [TestMethod]
@@ -46,7 +46,7 @@ public class GcCommandTests
         var gcCommand = new GcCommand("NonimplementedParameter");
 
         // Assert
-        Assert.IsTrue(gcCommand.Name == "NonimplementedParameter");
+        Assert.AreEqual("NonimplementedParameter", gcCommand.Name);
         Assert.IsFalse(gcCommand.IsImplemented);
     }
 
@@ -77,7 +77,7 @@ public class GcCommandTests
         var gcCommand = new GcCommand("NonimplementedParameter");
 
         // Assert
-        Assert.ThrowsException<InvalidOperationException>(gcCommand.Execute);
+        Assert.Throws<InvalidOperationException>(gcCommand.Execute);
     }
 
     [TestMethod]

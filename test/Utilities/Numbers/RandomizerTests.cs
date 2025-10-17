@@ -136,6 +136,6 @@ public class RandomizerTests
         var randomizer = new Randomizer();
 
         // Act/Assert
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => randomizer.Next(min, max));
+        Assert.Throws<ArgumentOutOfRangeException>(() => randomizer.Next(min, max));
     }
 }

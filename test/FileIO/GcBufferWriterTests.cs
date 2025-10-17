@@ -53,16 +53,16 @@ namespace GcLib.UnitTests
         public void GcBufferWriter_ValidateInitialization()
         {
             // Assert
-            Assert.IsTrue(GcBufferWriter.FileHeaderSize == 0);
-            Assert.IsTrue(GcBufferWriter.ImageHeaderSize == 32);
+            Assert.AreEqual<uint>(0, GcBufferWriter.FileHeaderSize);
+            Assert.AreEqual<uint>(32, GcBufferWriter.ImageHeaderSize);
 
             Assert.IsNotNull(_writer);
             Assert.IsFalse(_writer.IsDisposed);
             Assert.IsFalse(_writer.IsWriting);
-            Assert.IsTrue(_writer.FileSize == 0);
-            Assert.IsTrue(_writer.FilePath == _path);
-            Assert.IsTrue(_writer.BuffersQueued == 0);
-            Assert.IsTrue(_writer.ThreadPriority == System.Threading.ThreadPriority.BelowNormal);
+            Assert.AreEqual(0, _writer.FileSize);
+            Assert.AreEqual(_path, _writer.FilePath);
+            Assert.AreEqual(0, _writer.BuffersQueued);
+            Assert.AreEqual(System.Threading.ThreadPriority.BelowNormal, _writer.ThreadPriority);
         }
 
         #endregion
@@ -77,7 +77,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsTrue(_writer.IsWriting);
-            Assert.IsTrue(_writer.FileSize == GcBufferWriter.FileHeaderSize);
+            Assert.AreEqual(GcBufferWriter.FileHeaderSize, _writer.FileSize);
         }
 
         [TestMethod]
@@ -87,7 +87,7 @@ namespace GcLib.UnitTests
             _writer.Start();
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => _writer.Start());
+            Assert.Throws<InvalidOperationException>(() => _writer.Start());
         }
 
         [TestMethod]
@@ -97,7 +97,7 @@ namespace GcLib.UnitTests
             _writer.Dispose();
 
             // Act/Assert
-            Assert.ThrowsException<ObjectDisposedException>(_writer.Start);
+            Assert.Throws<ObjectDisposedException>(_writer.Start);
         }
 
         #endregion
@@ -152,8 +152,8 @@ namespace GcLib.UnitTests
             await _writer.StopAsync();
 
             // Assert
-            Assert.IsTrue(_writer.BuffersQueued == 0);
-            Assert.IsTrue(_writer.BuffersWritten == 1);
+            Assert.AreEqual(0, _writer.BuffersQueued);
+            Assert.AreEqual(1, _writer.BuffersWritten);
         }
 
         [TestMethod]
@@ -168,7 +168,7 @@ namespace GcLib.UnitTests
             _writer.Dispose();
 
             // Assert
-            Assert.IsTrue(_writer.FileSize == new FileInfo(_path).Length);
+            Assert.AreEqual(new FileInfo(_path).Length, _writer.FileSize);
         }
 
         [TestMethod]
@@ -200,8 +200,8 @@ namespace GcLib.UnitTests
             await _writer.StopAsync();
 
             // Assert
-            Assert.IsTrue(_writer.BuffersQueued == 0);
-            Assert.IsTrue(_writer.BuffersWritten == numBuffers);
+            Assert.AreEqual(0, _writer.BuffersQueued);
+            Assert.AreEqual(numBuffers, _writer.BuffersWritten);
         }
 
         [TestMethod]
@@ -219,7 +219,7 @@ namespace GcLib.UnitTests
             _writer.Dispose();
 
             // Assert
-            Assert.IsTrue(_writer.FileSize == new FileInfo(_path).Length);
+            Assert.AreEqual(new FileInfo(_path).Length, _writer.FileSize);
         }
 
         [TestMethod]
@@ -251,8 +251,8 @@ namespace GcLib.UnitTests
             await _writer.StopAsync(true);
 
             // Assert
-            Assert.IsTrue(_writer.BuffersQueued == 0);
-            Assert.IsTrue(_writer.BuffersWritten <= numBuffers);
+            Assert.AreEqual(0, _writer.BuffersQueued);
+            Assert.IsLessThanOrEqualTo(numBuffers, _writer.BuffersWritten);
         }
 
         [TestMethod]
@@ -271,7 +271,7 @@ namespace GcLib.UnitTests
             _writer.Dispose();
 
             // Assert
-            Assert.IsTrue(_writer.FileSize == new FileInfo(_path).Length);
+            Assert.AreEqual(new FileInfo(_path).Length, _writer.FileSize);
         }
 
         #endregion
@@ -286,7 +286,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsTrue(_writer.IsDisposed);
-            Assert.IsTrue(_writer.BuffersQueued == 0);
+            Assert.AreEqual(0, _writer.BuffersQueued);
         }
 
         [TestMethod]
@@ -306,10 +306,10 @@ namespace GcLib.UnitTests
             Assert.IsNotNull(_writer);
             Assert.IsTrue(_writer.IsDisposed);
             Assert.IsFalse(_writer.IsWriting);
-            Assert.IsTrue(_writer.FileSize > 0);
-            Assert.IsTrue(_writer.FilePath == _path);
-            Assert.IsTrue(_writer.BuffersQueued == 0);
-            Assert.IsTrue(_writer.ThreadPriority == System.Threading.ThreadPriority.BelowNormal);
+            Assert.IsGreaterThan(0, _writer.FileSize);
+            Assert.AreEqual(_path, _writer.FilePath);
+            Assert.AreEqual(0, _writer.BuffersQueued);
+            Assert.AreEqual(System.Threading.ThreadPriority.BelowNormal, _writer.ThreadPriority);
         }
 
         #endregion

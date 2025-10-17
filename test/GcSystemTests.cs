@@ -47,8 +47,8 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsNotNull(_system);
-            Assert.IsTrue(_system.GetNumDevices() == 0);
-            Assert.IsFalse(_system.GetDeviceList().Count != 0);
+            Assert.AreEqual<uint>(0, _system.GetNumDevices());
+            Assert.IsEmpty(_system.GetDeviceList());
         }
 
         [TestMethod]
@@ -58,7 +58,7 @@ namespace GcLib.UnitTests
             _system = new GcSystem();
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => new GcSystem());
+            Assert.Throws<InvalidOperationException>(() => new GcSystem());
         }
 
         #endregion
@@ -103,7 +103,7 @@ namespace GcLib.UnitTests
             var devices= _system.GetDeviceList();
 
             // Assert
-            Assert.IsTrue(devices.Count != 0);
+            Assert.IsNotEmpty(devices);
         }
 
         [TestMethod]
@@ -117,7 +117,7 @@ namespace GcLib.UnitTests
             uint count = _system.GetNumDevices();
 
             // Assert
-            Assert.IsTrue(count > 0);
+            Assert.IsGreaterThan<uint>(0, count);
         }
 
         [TestMethod]
@@ -145,7 +145,7 @@ namespace GcLib.UnitTests
             _system.UpdateDeviceList();
 
             // Act/Assert
-            Assert.ThrowsException<ArgumentException>(() => _system.OpenDevice("FakeID"));
+            Assert.Throws<ArgumentException>(() => _system.OpenDevice("FakeID"));
         }
 
 
@@ -159,7 +159,7 @@ namespace GcLib.UnitTests
             _system.OpenDevice(devices[0]);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => _system.OpenDevice(devices[0]));
+            Assert.Throws<InvalidOperationException>(() => _system.OpenDevice(devices[0]));
         }
 
         [TestMethod]
@@ -191,7 +191,7 @@ namespace GcLib.UnitTests
             var actualID = _system.GetDeviceID(0);
 
             // Assert
-            Assert.IsTrue(actualID == expectedID);
+            Assert.AreEqual(expectedID, actualID);
         }
 
         [TestMethod]
@@ -272,8 +272,8 @@ namespace GcLib.UnitTests
             _system.Dispose();
 
             // Assert
-            Assert.IsTrue(_system.GetNumDevices() == 0);
-            Assert.IsFalse(_system.GetDeviceList().Count != 0);
+            Assert.AreEqual<uint>(0, _system.GetNumDevices());
+            Assert.IsEmpty(_system.GetDeviceList());
         }
 
         [TestMethod]

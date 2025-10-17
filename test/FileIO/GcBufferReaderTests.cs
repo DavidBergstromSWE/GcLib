@@ -44,12 +44,12 @@ namespace GcLib.UnitTests
             // Assert
             Assert.IsNotNull(_reader);
 
-            Assert.IsTrue(_reader.FilePath == _pathToValidFile);
-            Assert.IsTrue(_reader.FrameCount == 10);
-            Assert.IsTrue(_reader.PayloadSize == 320 * 240 * GenICamConverter.GetBitsPerPixel(PixelFormat.Mono8) / 8);
-            Assert.IsTrue(_reader.FileSize == 768320);
-            Assert.IsTrue(_reader.FrameIndex == 0);
-            Assert.IsTrue(_reader.FrameRate == 0);
+            Assert.AreEqual(_pathToValidFile, _reader.FilePath);
+            Assert.AreEqual<ulong>(10, _reader.FrameCount);
+            Assert.AreEqual(320 * 240 * GenICamConverter.GetBitsPerPixel(PixelFormat.Mono8) / 8, _reader.PayloadSize);
+            Assert.AreEqual<ulong>(768320, _reader.FileSize);
+            Assert.AreEqual<ulong>(0, _reader.FrameIndex);
+            Assert.AreEqual<double>(0, _reader.FrameRate);
             Assert.IsFalse(_reader.IsDisposed);
             Assert.IsFalse(_reader.IsOpen);
         }
@@ -58,7 +58,7 @@ namespace GcLib.UnitTests
         public void GcBufferReader_InvalidFile_ThrowsIOException()
         {
             // Act/Assert
-            Assert.ThrowsException<IOException>(() => new GcBufferReader(_pathToInvalidFile));
+            Assert.Throws<IOException>(() => new GcBufferReader(_pathToInvalidFile));
         }
 
         #endregion
@@ -76,9 +76,9 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsTrue(_reader.IsOpen);
-            Assert.IsTrue(_reader.FrameCount == 10);
+            Assert.AreEqual<ulong>(10, _reader.FrameCount);
             Assert.IsTrue(_reader.FrameRate >= 34.8 && _reader.FrameRate <= 34.9);
-            Assert.IsTrue(_reader.FrameIndex == 0);
+            Assert.AreEqual<ulong>(0, _reader.FrameIndex);
         }
 
         [TestMethod]
@@ -89,7 +89,7 @@ namespace GcLib.UnitTests
             var tokenSource = new CancellationTokenSource(0);
 
             // Act/Assert
-            await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => _reader.OpenAsync(token: tokenSource.Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(() => _reader.OpenAsync(token: tokenSource.Token));
             Assert.IsTrue(tokenSource.Token.IsCancellationRequested);
 
             tokenSource?.Dispose();
@@ -150,7 +150,7 @@ namespace GcLib.UnitTests
             }
 
             // Assert
-            Assert.IsTrue(actualFrameCount == expectedFrameCount);
+            Assert.AreEqual(expectedFrameCount, actualFrameCount);
         }
 
         [TestMethod]
@@ -237,8 +237,8 @@ namespace GcLib.UnitTests
             _reader.Dispose();
 
             // Act/Assert
-            Assert.ThrowsException<ObjectDisposedException>(() => _reader.ReadImage(out GcBuffer buffer, 0));
-            Assert.ThrowsException<ObjectDisposedException>(() => _reader.ReadImage(out GcBuffer buffer));
+            Assert.Throws<ObjectDisposedException>(() => _reader.ReadImage(out GcBuffer buffer, 0));
+            Assert.Throws<ObjectDisposedException>(() => _reader.ReadImage(out GcBuffer buffer));
         }
 
         [TestMethod]
@@ -248,8 +248,8 @@ namespace GcLib.UnitTests
             _reader = new GcBufferReader(_pathToValidFile);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => _reader.ReadImage(out GcBuffer buffer, 0));
-            Assert.ThrowsException<InvalidOperationException>(() => _reader.ReadImage(out GcBuffer buffer));
+            Assert.Throws<InvalidOperationException>(() => _reader.ReadImage(out GcBuffer buffer, 0));
+            Assert.Throws<InvalidOperationException>(() => _reader.ReadImage(out GcBuffer buffer));
         }
 
         #endregion
@@ -269,7 +269,7 @@ namespace GcLib.UnitTests
             var actualTime = _reader.GetTimeStamp(4);
 
             // Assert
-            Assert.IsTrue(expectedTime == actualTime);
+            Assert.AreEqual(actualTime, expectedTime);
         }
 
         [TestMethod]
@@ -280,7 +280,7 @@ namespace GcLib.UnitTests
             await _reader.OpenAsync();
 
             // Act/Assert
-            Assert.ThrowsException<IndexOutOfRangeException>(() => _reader.GetTimeStamp(_reader.FrameCount));
+            Assert.Throws<IndexOutOfRangeException>(() => _reader.GetTimeStamp(_reader.FrameCount));
         }
 
         [TestMethod]
@@ -291,7 +291,7 @@ namespace GcLib.UnitTests
             _reader.Dispose();
 
             // Act/Assert
-            Assert.ThrowsException<ObjectDisposedException>(() => _reader.GetTimeStamp(0));
+            Assert.Throws<ObjectDisposedException>(() => _reader.GetTimeStamp(0));
         }
 
         [TestMethod]
@@ -301,7 +301,7 @@ namespace GcLib.UnitTests
             _reader = new GcBufferReader(_pathToValidFile);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => _reader.GetTimeStamp(0));
+            Assert.Throws<InvalidOperationException>(() => _reader.GetTimeStamp(0));
         }
 
         #endregion

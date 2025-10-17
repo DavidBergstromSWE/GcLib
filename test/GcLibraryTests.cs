@@ -54,7 +54,7 @@ namespace GcLib.UnitTests
             GcLibrary.Init();
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => GcLibrary.Init());
+            Assert.Throws<InvalidOperationException>(() => GcLibrary.Init());
         }
 
         [TestMethod]
@@ -64,7 +64,7 @@ namespace GcLib.UnitTests
             GcLibrary.Init();
 
             // Assert
-            Assert.IsTrue(GcLibrary.GetRegisteredDeviceClasses().Count > 0);
+            Assert.IsNotEmpty(GcLibrary.GetRegisteredDeviceClasses());
         }
 
         [TestMethod]
@@ -74,7 +74,7 @@ namespace GcLib.UnitTests
             GcLibrary.Init(false);
 
             // Assert
-            Assert.IsTrue(GcLibrary.GetRegisteredDeviceClasses().Count == 0);
+            Assert.IsEmpty(GcLibrary.GetRegisteredDeviceClasses());
         }
 
         [TestMethod]
@@ -109,7 +109,7 @@ namespace GcLib.UnitTests
             GcLibrary.Init();
 
             // Act/Assert
-            Assert.ThrowsException<ArgumentException>(GcLibrary.Register<VirtualCam>);
+            Assert.Throws<ArgumentException>(GcLibrary.Register<VirtualCam>);
         }
 
         [TestMethod]
@@ -133,7 +133,7 @@ namespace GcLib.UnitTests
             GcLibrary.Init(false);
 
             // Act/Assert
-            Assert.ThrowsException<ArgumentException>(GcLibrary.Unregister<VirtualCam>);
+            Assert.Throws<ArgumentException>(GcLibrary.Unregister<VirtualCam>);
 
         }
 
@@ -147,14 +147,14 @@ namespace GcLib.UnitTests
             var types = GcLibrary.GetAvailableDeviceClasses();
 
             // Assert
-            Assert.IsTrue(types.Count > 0);
+            Assert.IsNotEmpty(types);
         }
 
         [TestMethod]
         public void GetAvailableDeviceClasses_IsNotInitialized_ThrowsInvalidOperationException()
         {
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(GcLibrary.GetAvailableDeviceClasses);
+            Assert.Throws<InvalidOperationException>(GcLibrary.GetAvailableDeviceClasses);
         }
 
         [TestMethod]
@@ -167,7 +167,7 @@ namespace GcLib.UnitTests
             var types = GcLibrary.GetRegisteredDeviceClasses();
 
             // Assert
-            Assert.IsTrue(types.Count > 0);
+            Assert.IsNotEmpty(types);
         }
 
         [TestMethod]
@@ -177,7 +177,7 @@ namespace GcLib.UnitTests
             var types = GcLibrary.GetRegisteredDeviceClasses();
 
             // Assert
-            Assert.IsTrue(types.Count == 0);
+            Assert.IsEmpty(types);
         }
 
         [TestMethod]
@@ -203,7 +203,7 @@ namespace GcLib.UnitTests
             GcLibrary.Close();
 
             // Assert
-            Assert.ThrowsException<InvalidOperationException>(GcLibrary.GetAvailableDeviceClasses);
+            Assert.Throws<InvalidOperationException>(GcLibrary.GetAvailableDeviceClasses);
         }
 
         [TestMethod]
@@ -216,7 +216,7 @@ namespace GcLib.UnitTests
             GcLibrary.Close();
 
             // Assert
-            Assert.IsTrue(GcLibrary.GetRegisteredDeviceClasses().Count == 0);
+            Assert.IsEmpty(GcLibrary.GetRegisteredDeviceClasses());
         }
 
         #endregion

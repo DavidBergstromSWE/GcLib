@@ -66,14 +66,14 @@ namespace GcLib.UnitTests
             // Assert
             Assert.IsNotNull(_dataStream);
 
-            Assert.IsTrue(_dataStream.StreamID == streamID);
-            Assert.IsTrue(_dataStream.AwaitDeliveryCount == 0);
-            Assert.IsTrue(_dataStream.DeliveredFrameCount == 0);
-            Assert.IsTrue(_dataStream.LostFrameCount == 0);
-            Assert.IsTrue(_dataStream.FailedFrameCount == 0);
-            Assert.IsTrue(_dataStream.FrameRate == 0);
-            Assert.IsTrue(_dataStream.FrameRateAverage == 0);
-            Assert.IsTrue(_dataStream.OutputBufferQueueCapacity == capacity);
+            Assert.AreEqual(streamID, _dataStream.StreamID);
+            Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
+            Assert.AreEqual<ulong>(0, _dataStream.DeliveredFrameCount);
+            Assert.AreEqual<ulong>(0, _dataStream.LostFrameCount);
+            Assert.AreEqual<ulong>(0, _dataStream.FailedFrameCount);
+            Assert.AreEqual(0, _dataStream.FrameRate);
+            Assert.AreEqual(0, _dataStream.FrameRateAverage);
+            Assert.AreEqual(capacity, (int)_dataStream.OutputBufferQueueCapacity);
 
             Assert.IsFalse(_dataStream.IsStreaming);
             Assert.IsTrue(_dataStream.IsOpen);
@@ -120,12 +120,12 @@ namespace GcLib.UnitTests
             _dataStream.Start();
 
             // Assert
-            Assert.IsTrue(_dataStream.AwaitDeliveryCount == 0);
-            Assert.IsTrue(_dataStream.DeliveredFrameCount == 0);
-            Assert.IsTrue(_dataStream.LostFrameCount == 0);
-            Assert.IsTrue(_dataStream.FailedFrameCount == 0);
-            Assert.IsTrue(_dataStream.FrameRate == 0);
-            Assert.IsTrue(_dataStream.FrameRateAverage == 0);
+            Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
+            Assert.AreEqual<ulong>(0, _dataStream.DeliveredFrameCount);
+            Assert.AreEqual<ulong>(0, _dataStream.LostFrameCount);
+            Assert.AreEqual<ulong>(0, _dataStream.FailedFrameCount);
+            Assert.AreEqual(0, _dataStream.FrameRate);
+            Assert.AreEqual(0, _dataStream.FrameRateAverage);
         }
 
         [TestMethod]
@@ -140,7 +140,7 @@ namespace GcLib.UnitTests
             _dataStream.Start();
 
             // Assert
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
         }
 
         [TestMethod]
@@ -155,7 +155,7 @@ namespace GcLib.UnitTests
             _dataStream.Start();
 
             // Assert
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
         }
 
         [TestMethod]
@@ -166,7 +166,7 @@ namespace GcLib.UnitTests
             _dataStream.Start();
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => _dataStream.Start());
+            Assert.Throws<InvalidOperationException>(() => _dataStream.Start());
         }
 
         [TestMethod]
@@ -187,7 +187,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsFalse(_dataStream.IsStreaming);
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
         }
 
         [TestMethod]
@@ -205,8 +205,8 @@ namespace GcLib.UnitTests
                 _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
 
             // Assert
-            Assert.IsTrue(_dataStream.DeliveredFrameCount == (ulong)count);
-            Assert.IsTrue(_dataStream.AwaitDeliveryCount == count);
+            Assert.AreEqual((ulong)count, _dataStream.DeliveredFrameCount);
+            Assert.AreEqual(count, _dataStream.AwaitDeliveryCount);
         }
 
         [TestMethod]
@@ -223,7 +223,7 @@ namespace GcLib.UnitTests
             _dataStream.Stop();
 
             // Assert
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
         }
 
         [TestMethod]
@@ -240,7 +240,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsFalse(_dataStream.IsStreaming);
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
         }
 
         [TestMethod]
@@ -292,7 +292,7 @@ namespace GcLib.UnitTests
             _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => _dataStream.GetParentDevice());
+            Assert.Throws<InvalidOperationException>(() => _dataStream.GetParentDevice());
         }
 
         #endregion
@@ -310,7 +310,7 @@ namespace GcLib.UnitTests
             _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
 
             // Assert
-            Assert.IsTrue(_dataStream.AwaitDeliveryCount == 1);
+            Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
         }
 
         [TestMethod]
@@ -327,7 +327,7 @@ namespace GcLib.UnitTests
             _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
 
             // Assert
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
             Assert.IsNotNull(buffer);
             Assert.AreEqual(_testBuffer, buffer);
         }
@@ -343,10 +343,10 @@ namespace GcLib.UnitTests
             _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
 
             // Assert
-            Assert.IsTrue(_dataStream.AwaitDeliveryCount == 1);
-            Assert.IsTrue(_dataStream.DeliveredFrameCount == 1);
-            Assert.IsTrue(_dataStream.FrameRate > 0);
-            Assert.IsTrue(_dataStream.FrameRateAverage > 0);
+            Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
+            Assert.AreEqual<ulong>(1, _dataStream.DeliveredFrameCount);
+            Assert.IsGreaterThan(0, _dataStream.FrameRate);
+            Assert.IsGreaterThan(0, _dataStream.FrameRateAverage);
         }
 
         [TestMethod]
@@ -359,8 +359,8 @@ namespace GcLib.UnitTests
             _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
 
             // Assert
-            Assert.IsTrue(_dataStream.AwaitDeliveryCount == 0);
-            Assert.IsTrue(_dataStream.DeliveredFrameCount == 0);
+            Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
+            Assert.AreEqual<ulong>(0, _dataStream.DeliveredFrameCount);
         }
 
         [TestMethod]
@@ -378,7 +378,7 @@ namespace GcLib.UnitTests
                 _mockDevice.Raise(s => s.FailedBuffer += null, EventArgs.Empty);
 
             // Assert
-            Assert.IsTrue((int)_dataStream.FailedFrameCount == count);
+            Assert.AreEqual(count, (int)_dataStream.FailedFrameCount);
         }
 
         #endregion

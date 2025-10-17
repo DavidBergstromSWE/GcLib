@@ -80,7 +80,7 @@ public class GcEnumerationTests
         var nonMember = new GcEnumEntry("FakeEnum", 21);
 
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", nonMember, entries));
+        Assert.Throws<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", nonMember, entries));
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public class GcEnumerationTests
         var entry = new GcEnumEntry("Enum0", 0);
 
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", entry, entries));
+        Assert.Throws<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", entry, entries));
     }
 
     [TestMethod]
@@ -117,7 +117,7 @@ public class GcEnumerationTests
         Assert.AreEqual(gcEnumeration.Name, "TestEnumeration");
         Assert.AreEqual(gcEnumeration.Category, "Test");
         Assert.IsTrue(Enumerable.SequenceEqual(gcEnumeration.Entries.Select(e => e.ValueString), typeof(ValidEnum).GetEnumNames()));
-        Assert.IsTrue(gcEnumeration.Entries.Contains(gcEnumeration.CurrentEntry));
+        Assert.Contains(gcEnumeration.CurrentEntry, gcEnumeration.Entries);
         Assert.AreEqual(gcEnumeration.StringValue, expectedEntry.ToString());
         Assert.AreEqual(gcEnumeration.IntValue, (int)expectedEntry);
         Assert.AreEqual(gcEnumeration.NumericValue, gcEnumeration.IntValue);
@@ -131,21 +131,21 @@ public class GcEnumerationTests
     public void GcEnumeration_Type_TypeNotEnum_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", DayOfWeek.Friday, typeof(int)));
+        Assert.Throws<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", DayOfWeek.Friday, typeof(int)));
     }
 
     [TestMethod]
     public void GcEnumeration_Type_EntryNotMember_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", DayOfWeek.Friday, typeof(ValidEnum)));
+        Assert.Throws<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", DayOfWeek.Friday, typeof(ValidEnum)));
     }
 
     [TestMethod]
     public void GcEnumeration_Type_EntriesNotUnique_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", InvalidEnum.First, typeof(InvalidEnum)));
+        Assert.Throws<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", InvalidEnum.First, typeof(InvalidEnum)));
     }
 
     [TestMethod]
@@ -172,7 +172,7 @@ public class GcEnumerationTests
         Assert.AreEqual(gcEnumeration.Name, "TestEnumeration");
         Assert.AreEqual(gcEnumeration.Category, "Test");
         Assert.IsTrue(Enumerable.SequenceEqual(gcEnumeration.GetSymbolics(), array.Select(s => s.ToString())));
-        Assert.IsTrue(gcEnumeration.Entries.Contains(gcEnumeration.CurrentEntry));
+        Assert.Contains(gcEnumeration.CurrentEntry, gcEnumeration.Entries);
         Assert.AreEqual(gcEnumeration.StringValue, expectedEntry.ToString());
         Assert.AreEqual(gcEnumeration.IntValue, (int)expectedEntry);
         Assert.AreEqual(gcEnumeration.NumericValue, gcEnumeration.IntValue);
@@ -186,21 +186,21 @@ public class GcEnumerationTests
     public void GcEnumeration_EnumArray_EntryNotMember_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", DayOfWeek.Friday, [ValidEnum.First, ValidEnum.Third]));
+        Assert.Throws<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", DayOfWeek.Friday, [ValidEnum.First, ValidEnum.Third]));
     }
 
     [TestMethod]
     public void GcEnumeration_EnumArray_EntriesNotUnique_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", ValidEnum.Zero, [ValidEnum.Zero, ValidEnum.Zero, ValidEnum.Third]));
+        Assert.Throws<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", ValidEnum.Zero, [ValidEnum.Zero, ValidEnum.Zero, ValidEnum.Third]));
     }
 
     [TestMethod]
     public void GcEnumeration_InvalidName_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcEnumeration(name: "Name containing white spaces", category: "Test", enumEntry: DayOfWeek.Monday, enumType: typeof(DayOfWeek)));
+        Assert.Throws<ArgumentException>(() => new GcEnumeration(name: "Name containing white spaces", category: "Test", enumEntry: DayOfWeek.Monday, enumType: typeof(DayOfWeek)));
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration("NonimplementedParameter");
 
         // Assert
-        Assert.IsTrue(gcEnumeration.Name == "NonimplementedParameter");
+        Assert.AreEqual("NonimplementedParameter", gcEnumeration.Name);
         Assert.IsFalse(gcEnumeration.IsImplemented);
     }
 
@@ -241,7 +241,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration");
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.StringValue = "FakeEnum");
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.StringValue = "FakeEnum");
     }
 
     [TestMethod]
@@ -252,7 +252,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.StringValue = "FakeEnum");
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.StringValue = "FakeEnum");
     }
 
     [TestMethod]
@@ -278,7 +278,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration");
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.IntValue = 1);
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.IntValue = 1);
     }
 
     [TestMethod]
@@ -289,7 +289,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.IntValue = 42);
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.IntValue = 42);
     }
 
     [TestMethod]
@@ -315,7 +315,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration");
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.NumericValue = 1);
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.NumericValue = 1);
     }
 
     [TestMethod]
@@ -326,7 +326,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.NumericValue = 3.14);
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.NumericValue = 3.14);
     }
 
     [TestMethod]
@@ -351,7 +351,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration");
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.CurrentEntry);
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.CurrentEntry);
     }
 
     [TestMethod]
@@ -451,7 +451,7 @@ public class GcEnumerationTests
 
         // Assert
         Assert.IsNotNull(entry);
-        Assert.IsTrue(entries.Contains(entry));
+        Assert.Contains(entry, entries);
         Assert.AreEqual(entry, entries[1]);
     }
 
@@ -463,7 +463,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.GetEntryByName("FakeEnum"));
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.GetEntryByName("FakeEnum"));
     }
 
     [TestMethod]
@@ -478,7 +478,7 @@ public class GcEnumerationTests
 
         // Assert
         Assert.IsNotNull(entry);
-        Assert.IsTrue(entries.Contains(entry));
+        Assert.Contains(entry, entries);
         Assert.AreEqual(entry, entries[1]);
     }
 
@@ -490,7 +490,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.GetEntry(5));
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.GetEntry(5));
     }
 
     [TestMethod]
@@ -505,7 +505,7 @@ public class GcEnumerationTests
 
         // Assert
         Assert.IsNotNull(entry);
-        Assert.IsTrue(entries.Contains(entry));
+        Assert.Contains(entry, entries);
         Assert.AreEqual(entry, entries[1]);
     }
 
@@ -517,7 +517,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.GetEntry(3.14));
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.GetEntry(3.14));
     }
 
     [TestMethod]
@@ -572,7 +572,7 @@ public class GcEnumerationTests
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration");
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcEnumeration.FromString("Enum0"));
+        Assert.Throws<InvalidOperationException>(() => gcEnumeration.FromString("Enum0"));
     }
 
     [TestMethod]

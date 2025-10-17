@@ -37,10 +37,10 @@ namespace GcLib.UnitTests
             _device = new Mock<GcDevice>();
 
             // Assert
-            Assert.IsTrue(_device.Object.PayloadSize == 0);
+            Assert.AreEqual<uint>(0, _device.Object.PayloadSize);
             Assert.IsNull(_device.Object.DeviceInfo);
             Assert.IsNull(_device.Object.Parameters);
-            Assert.IsTrue(_device.Object.BufferCapacity == 0);
+            Assert.AreEqual<uint>(0, _device.Object.BufferCapacity);
             Assert.IsFalse(_device.Object.IsAcquiring);
         }
 
@@ -57,14 +57,14 @@ namespace GcLib.UnitTests
             // Act
             uint count = _device.Object.GetNumDataStreams();
 
-            Assert.IsTrue(count == 0);
+            Assert.AreEqual<uint>(0, count);
         }
 
         [TestMethod]
-        [DataRow(1)]
-        [DataRow(2)]
-        [DataRow(3)]
-        public void GetNumDataStreams_MultipleDataStreamsOpened_ReturnsExpectedNumber(int expectedCount)
+        [DataRow(1u)]
+        [DataRow(2u)]
+        [DataRow(3u)]
+        public void GetNumDataStreams_MultipleDataStreamsOpened_ReturnsExpectedNumber(uint expectedCount)
         {
             // Arrange
             _device = new Mock<GcDevice>();
@@ -75,7 +75,7 @@ namespace GcLib.UnitTests
             var actualCount = _device.Object.GetNumDataStreams();
 
             // Assert
-            Assert.IsTrue(actualCount == expectedCount);
+            Assert.AreEqual(expectedCount, actualCount);
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace GcLib.UnitTests
             var actualID = _device.Object.GetDataStreamID(0);
 
             // Assert
-            Assert.IsTrue(actualID == expectedID);
+            Assert.AreEqual(expectedID, actualID);
         }
 
         [TestMethod]
@@ -119,7 +119,7 @@ namespace GcLib.UnitTests
                 _device.Object.OpenDataStream();
 
             // Act/Assert
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() => _device.Object.GetDataStreamID((uint)count));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _device.Object.GetDataStreamID((uint)count));
         }
 
         [TestMethod]
@@ -134,7 +134,7 @@ namespace GcLib.UnitTests
             _device.Object.Close();
 
             // Assert
-            Assert.IsTrue(_device.Object.GetNumDataStreams() == 0);
+            Assert.AreEqual<uint>(0, _device.Object.GetNumDataStreams());
         }
 
         [TestMethod]
@@ -149,7 +149,7 @@ namespace GcLib.UnitTests
             _device.Object.Close();
 
             // Assert
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
         }
 
         [TestMethod]

@@ -46,19 +46,19 @@ public class GcIntegerTests
         Assert.IsNotNull(gcInteger);
         Assert.IsTrue(gcInteger.IsImplemented);
         Assert.AreEqual(gcInteger.Type, GcParameterType.Integer);
-        Assert.IsTrue(gcInteger.Name == "TestInteger");
-        Assert.IsTrue(gcInteger.Category == "Test");
-        Assert.IsTrue(gcInteger.Value == 42);
-        Assert.IsTrue(gcInteger.Min == 0);
-        Assert.IsTrue(gcInteger.Max == 100);
-        Assert.IsTrue(gcInteger.Increment == 1);
-        Assert.IsTrue(gcInteger.IncrementMode == EIncMode.fixedIncrement);
+        Assert.AreEqual("TestInteger", gcInteger.Name);
+        Assert.AreEqual("Test", gcInteger.Category);
+        Assert.AreEqual(42, gcInteger.Value);
+        Assert.AreEqual(0, gcInteger.Min);
+        Assert.AreEqual(100, gcInteger.Max);
+        Assert.AreEqual(1, gcInteger.Increment);
+        Assert.AreEqual(EIncMode.fixedIncrement, gcInteger.IncrementMode);
         Assert.IsNull(gcInteger.ListOfValidValue);
-        Assert.IsTrue(gcInteger.Unit == "kronor");
+        Assert.AreEqual("kronor", gcInteger.Unit);
         Assert.IsTrue(gcInteger.IsReadable);
         Assert.IsTrue(gcInteger.IsWritable);
-        Assert.IsTrue(gcInteger.Visibility == GcVisibility.Beginner);
-        Assert.IsTrue(gcInteger.Description == "This is a unit test parameter.");
+        Assert.AreEqual(GcVisibility.Beginner, gcInteger.Visibility);
+        Assert.AreEqual("This is a unit test parameter.", gcInteger.Description);
     }
 
     [TestMethod]
@@ -81,39 +81,39 @@ public class GcIntegerTests
 
         // Assert
         Assert.IsNotNull(gcInteger);
-        Assert.IsTrue(gcInteger.Name == "TestInteger");
-        Assert.IsTrue(gcInteger.Category == "Test");
-        Assert.IsTrue(gcInteger.Value == 40);
-        Assert.IsTrue(gcInteger.Min == 0);
-        Assert.IsTrue(gcInteger.Max == 100);
-        Assert.IsTrue(gcInteger.IncrementMode == EIncMode.listIncrement);
+        Assert.AreEqual("TestInteger", gcInteger.Name);
+        Assert.AreEqual("Test", gcInteger.Category);
+        Assert.AreEqual(40, gcInteger.Value);
+        Assert.AreEqual(0, gcInteger.Min);
+        Assert.AreEqual(100, gcInteger.Max);
+        Assert.AreEqual(EIncMode.listIncrement, gcInteger.IncrementMode);
         Assert.IsNotNull(gcInteger.ListOfValidValue);
-        Assert.IsTrue(gcInteger.Unit == "kronor");
+        Assert.AreEqual("kronor", gcInteger.Unit);
         Assert.IsTrue(gcInteger.IsReadable);
         Assert.IsTrue(gcInteger.IsWritable);
-        Assert.IsTrue(gcInteger.Visibility == GcVisibility.Beginner);
-        Assert.IsTrue(gcInteger.Description == "This is a unit test parameter.");
+        Assert.AreEqual(GcVisibility.Beginner, gcInteger.Visibility);
+        Assert.AreEqual("This is a unit test parameter.", gcInteger.Description);
     }
 
     [TestMethod]
     public void GcInteger_InvalidName_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcInteger(name: "Name containing white spaces", category: "Test", value: 42, min: 0, max: 100));
+        Assert.Throws<ArgumentException>(() => new GcInteger(name: "Name containing white spaces", category: "Test", value: 42, min: 0, max: 100));
     }
 
     [TestMethod]
     public void GcInteger_InvalidMinimumMaximum_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcInteger(name: "TestInteger", category: "Test", value: 42, min: 43, max: 41));
+        Assert.Throws<ArgumentException>(() => new GcInteger(name: "TestInteger", category: "Test", value: 42, min: 43, max: 41));
     }
 
     [TestMethod]
     public void GcInteger_InvalidValue_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcInteger(name: "TestInteger", category: "Test", value: 101, min: 0, max: 100));
+        Assert.Throws<ArgumentException>(() => new GcInteger(name: "TestInteger", category: "Test", value: 101, min: 0, max: 100));
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public class GcIntegerTests
     public void GcInteger_InvalidListOfValidValues_ThrowsArgumentException(long min, long max)
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcInteger(name: "TestInteger", category: "Test", value: 30, min: min, max: max, incrementMode: EIncMode.listIncrement, listOfValidValue: [10, 20, 30, 40, 50]));
+        Assert.Throws<ArgumentException>(() => new GcInteger(name: "TestInteger", category: "Test", value: 30, min: min, max: max, incrementMode: EIncMode.listIncrement, listOfValidValue: [10, 20, 30, 40, 50]));
     }
 
     [TestMethod]
@@ -132,7 +132,7 @@ public class GcIntegerTests
         var gcInteger = new GcInteger("NonimplementedParameter");
 
         // Assert
-        Assert.IsTrue(gcInteger.Name == "NonimplementedParameter");
+        Assert.AreEqual("NonimplementedParameter", gcInteger.Name);
         Assert.IsFalse(gcInteger.IsImplemented);
     }
 
@@ -246,7 +246,7 @@ public class GcIntegerTests
         gcInteger.Value = inputValue;
 
         // Assert
-        Assert.IsTrue(validValues.Contains(gcInteger.Value));
+        Assert.Contains(gcInteger.Value, validValues);
     }
 
     [TestMethod]
@@ -419,8 +419,8 @@ public class GcIntegerTests
         var gcInteger = GetInteger(value: 42, min: 0, max: 100);
 
         // Act
-        Assert.ThrowsException<FormatException>(() => gcInteger.FromString("HelloWorld"));
-        Assert.ThrowsException<FormatException>(() => gcInteger.FromString("11.12"));
+        Assert.Throws<FormatException>(() => gcInteger.FromString("HelloWorld"));
+        Assert.Throws<FormatException>(() => gcInteger.FromString("11.12"));
     }
 
     [TestMethod]
@@ -430,7 +430,7 @@ public class GcIntegerTests
         var gcInteger = GetInteger(value: 42, min: 0, max: 100);
 
         // Act
-        Assert.ThrowsException<ArgumentNullException>(() => gcInteger.FromString(null));
+        Assert.Throws<ArgumentNullException>(() => gcInteger.FromString(null));
     }
 
     [TestMethod]
@@ -440,7 +440,7 @@ public class GcIntegerTests
         var gcInteger = new GcInteger("NonImplementedParameter");
 
         // Act/Assert
-        Assert.ThrowsException< InvalidOperationException>(() => gcInteger.FromString("33"));
+        Assert.Throws< InvalidOperationException>(() => gcInteger.FromString("33"));
     }
 
     [TestMethod]

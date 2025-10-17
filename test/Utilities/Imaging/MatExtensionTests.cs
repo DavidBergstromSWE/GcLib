@@ -77,10 +77,10 @@ public class MatExtensionTests
         var mat = Mat.Zeros(3, 3, DepthType.Cv8U, 3);
 
         // Act/Assert
-        var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.GetPixel(3, 2));
-        Assert.IsTrue(ex.ParamName == "row");
-        ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.GetPixel(3, 2, 0));
-        Assert.IsTrue(ex.ParamName == "row");
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.GetPixel(3, 2));
+        Assert.AreEqual("row", ex.ParamName);
+        ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.GetPixel(3, 2, 0));
+        Assert.AreEqual("row", ex.ParamName);
     }
 
     [TestMethod]
@@ -90,10 +90,10 @@ public class MatExtensionTests
         var mat = Mat.Zeros(3, 3, DepthType.Cv8U, 3);
 
         // Act/Assert
-        var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.GetPixel(2, 3));
-        Assert.IsTrue(ex.ParamName == "col");
-        ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.GetPixel(2, 3, 0));
-        Assert.IsTrue(ex.ParamName == "col");
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.GetPixel(2, 3));
+        Assert.AreEqual("col", ex.ParamName);
+        ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.GetPixel(2, 3, 0));
+        Assert.AreEqual("col", ex.ParamName);
     }
 
     [TestMethod]
@@ -103,8 +103,8 @@ public class MatExtensionTests
         var mat = Mat.Zeros(3, 3, DepthType.Cv8U, 1);
 
         // Act/Assert
-        var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.GetPixel(2, 2, 1));
-        Assert.IsTrue(ex.ParamName == "channel");
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.GetPixel(2, 2, 1));
+        Assert.AreEqual("channel", ex.ParamName);
     }
 
     [TestMethod]
@@ -152,10 +152,10 @@ public class MatExtensionTests
         var mat = Mat.Zeros(3, 3, DepthType.Cv8U, 3);
 
         // Act/Assert
-        var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.SetPixel(3, 2, [0, 0, 0]));
-        Assert.IsTrue(ex.ParamName == "row");
-        ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.SetPixel(3, 2, 0, 0));
-        Assert.IsTrue(ex.ParamName == "row");
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.SetPixel(3, 2, [0, 0, 0]));
+        Assert.AreEqual("row", ex.ParamName);
+        ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.SetPixel(3, 2, 0, 0));
+        Assert.AreEqual("row", ex.ParamName);
     }
 
     [TestMethod]
@@ -165,10 +165,10 @@ public class MatExtensionTests
         var mat = Mat.Zeros(3, 3, DepthType.Cv8U, 3);
 
         // Act/Assert
-        var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.SetPixel(2, 3, [0, 0, 0]));
-        Assert.IsTrue(ex.ParamName == "col");
-        ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.SetPixel(2, 3, 0, 0));
-        Assert.IsTrue(ex.ParamName == "col");
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.SetPixel(2, 3, [0, 0, 0]));
+        Assert.AreEqual("col", ex.ParamName);
+        ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.SetPixel(2, 3, 0, 0));
+        Assert.AreEqual("col", ex.ParamName);
     }
 
     [TestMethod]
@@ -178,8 +178,8 @@ public class MatExtensionTests
         var mat = Mat.Zeros(3, 3, DepthType.Cv8U, 1);
 
         // Act/Assert
-        var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => mat.SetPixel(2, 2, 1, 0));
-        Assert.IsTrue(ex.ParamName == "channel");
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.SetPixel(2, 2, 1, 0));
+        Assert.AreEqual("channel", ex.ParamName);
     }
 
     [TestMethod]

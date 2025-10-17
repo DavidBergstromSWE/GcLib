@@ -36,28 +36,28 @@ public class GcStringTests
         Assert.IsNotNull(gcString);
         Assert.IsTrue(gcString.IsImplemented);
         Assert.AreEqual(gcString.Type, GcParameterType.String);
-        Assert.IsTrue(gcString.Name == "TestString");
-        Assert.IsTrue(gcString.Category == "Test");
-        Assert.IsTrue(gcString.Value == "HelloWorld");
-        Assert.IsTrue(gcString.MaxLength == 10);
+        Assert.AreEqual("TestString", gcString.Name);
+        Assert.AreEqual("Test", gcString.Category);
+        Assert.AreEqual("HelloWorld", gcString.Value);
+        Assert.AreEqual(10, gcString.MaxLength);
         Assert.IsTrue(gcString.IsReadable);
         Assert.IsTrue(gcString.IsWritable);
-        Assert.IsTrue(gcString.Visibility == GcVisibility.Beginner);
-        Assert.IsTrue(gcString.Description == "This is a unit test parameter.");
+        Assert.AreEqual(GcVisibility.Beginner, gcString.Visibility);
+        Assert.AreEqual("This is a unit test parameter.", gcString.Description);
     }
 
     [TestMethod]
     public void GcString_InvalidName_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcString(name: "Name containing white spaces", category: "Test", value: "HelloWorld", maxLength: 10));
+        Assert.Throws<ArgumentException>(() => new GcString(name: "Name containing white spaces", category: "Test", value: "HelloWorld", maxLength: 10));
     }
 
     [TestMethod]
     public void GcString_InvalidMaxLength_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcString(name: "Name containing white spaces", category: "Test", value: "HelloWorld", maxLength: -1));
+        Assert.Throws<ArgumentException>(() => new GcString(name: "Name containing white spaces", category: "Test", value: "HelloWorld", maxLength: -1));
     }
 
     [TestMethod]
@@ -67,9 +67,9 @@ public class GcStringTests
         var gcString = new GcString("NonimplementedParameter");
 
         // Assert
-        Assert.IsTrue(gcString.Name == "NonimplementedParameter");
+        Assert.AreEqual("NonimplementedParameter", gcString.Name);
         Assert.IsNull(gcString.Value);
-        Assert.IsTrue(gcString.MaxLength == 0);
+        Assert.AreEqual(0, gcString.MaxLength);
         Assert.IsFalse(gcString.IsImplemented);
     }
 
@@ -85,7 +85,7 @@ public class GcStringTests
 
         // Assert
         var actualValue = gcString.Value;
-        Assert.IsTrue(actualValue == expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class GcStringTests
         var gcString = new GcString("NonimplementedParameter");
 
         // Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcString.FromString("GoodbyeUniverse"));
+        Assert.Throws<InvalidOperationException>(() => gcString.FromString("GoodbyeUniverse"));
     }
 
     [TestMethod]
@@ -110,7 +110,7 @@ public class GcStringTests
         var actualValue = gcString.ToString();
 
         // Assert
-        Assert.IsTrue(actualValue == expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ public class GcStringTests
         var maxLength = gcString.MaxLength;
 
         // Act/Assert
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => gcString.Value = new string('a', (int)maxLength + 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => gcString.Value = new string('a', (int)maxLength + 1));
     }
 
     [TestMethod]

@@ -63,21 +63,21 @@ public class GcFloatTests
     public void GcFloat_InvalidName_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcFloat(name: "Name containing white spaces", category: "Test", value: 3.14, min: 0.0, max: 10.0));
+        Assert.Throws<ArgumentException>(() => new GcFloat(name: "Name containing white spaces", category: "Test", value: 3.14, min: 0.0, max: 10.0));
     }
 
     [TestMethod]
     public void GcFloat_InvalidMinimumMaximum_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcFloat(name: "TestFloat", category: "Test", value: 3.14, min: 4.0, max: 3.0));
+        Assert.Throws<ArgumentException>(() => new GcFloat(name: "TestFloat", category: "Test", value: 3.14, min: 4.0, max: 3.0));
     }
 
     [TestMethod]
     public void GcFloat_InvalidValue_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcFloat(name: "TestFloat", category: "Test", value: 4.01, min: 3.9, max: 4.0));
+        Assert.Throws<ArgumentException>(() => new GcFloat(name: "TestFloat", category: "Test", value: 4.01, min: 3.9, max: 4.0));
     }
 
     [TestMethod]
@@ -87,7 +87,7 @@ public class GcFloatTests
         var gcFloat = new GcFloat("NonimplementedParameter");
 
         // Assert
-        Assert.IsTrue(gcFloat.Name == "NonimplementedParameter");
+        Assert.AreEqual("NonimplementedParameter", gcFloat.Name);
         Assert.IsFalse(gcFloat.IsImplemented);
     }
 
@@ -334,7 +334,7 @@ public class GcFloatTests
         var gcFloat = GetFloat(value: Math.PI, min: 0, max: 100);
 
         // Act
-        Assert.ThrowsException<FormatException>(() => gcFloat.FromString("HelloWorld"));
+        Assert.Throws<FormatException>(() => gcFloat.FromString("HelloWorld"));
     }
 
     [TestMethod]
@@ -344,7 +344,7 @@ public class GcFloatTests
         var gcFloat = GetFloat(value: Math.PI, min: 0, max: 100);
 
         // Act
-        Assert.ThrowsException<ArgumentNullException>(() => gcFloat.FromString(null));
+        Assert.Throws<ArgumentNullException>(() => gcFloat.FromString(null));
     }
 
     [TestMethod]
@@ -354,7 +354,7 @@ public class GcFloatTests
         var gcFloat = new GcInteger("NonImplementedParameter");
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcFloat.FromString(Math.PI.ToString()));
+        Assert.Throws<InvalidOperationException>(() => gcFloat.FromString(Math.PI.ToString()));
     }
 
     [TestMethod]

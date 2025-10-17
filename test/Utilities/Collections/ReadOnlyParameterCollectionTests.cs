@@ -164,7 +164,7 @@ public class ReadOnlyParameterCollectionTests
             var actualValue = collection.GetParameterValue(parameter.Name);
 
             // Assert
-            Assert.IsTrue(actualValue == expectedValue);
+            Assert.AreEqual(expectedValue, actualValue);
         } 
     }
 
@@ -195,7 +195,7 @@ public class ReadOnlyParameterCollectionTests
 
         // Arramge
         var actualValue = collection.GetParameterValue(parameterName);
-        Assert.IsTrue(actualValue == expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public class ReadOnlyParameterCollectionTests
 
         // Assert
         var actualValue = collection.GetParameterValue(parameterName);
-        Assert.IsTrue(actualValue == parameterName);
+        Assert.AreEqual(parameterName, actualValue);
     }
 
     [TestMethod]
@@ -231,7 +231,7 @@ public class ReadOnlyParameterCollectionTests
         var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
         // Act/Assert
-        Assert.ThrowsException<InvalidOperationException>(() => collection.ExecuteParameterCommand(parameterName));
+        Assert.Throws<InvalidOperationException>(() => collection.ExecuteParameterCommand(parameterName));
     }
 
     [TestMethod]
@@ -277,11 +277,11 @@ public class ReadOnlyParameterCollectionTests
 
         // Assert
         Assert.IsNotNull(actualParameter);
-        Assert.IsTrue(actualParameter.Name == expectedParameter.Name);
-        Assert.IsTrue(actualParameter.Category == expectedParameter.Category);
-        Assert.IsTrue(actualParameter.Type == expectedParameter.Type);
-        Assert.IsTrue(actualParameter.Visibility == expectedParameter.Visibility);
-        Assert.IsTrue(actualParameter.ToString() == expectedParameter.ToString());
+        Assert.AreEqual(expectedParameter.Name, actualParameter.Name);
+        Assert.AreEqual(expectedParameter.Category, actualParameter.Category);
+        Assert.AreEqual(expectedParameter.Type, actualParameter.Type);
+        Assert.AreEqual(expectedParameter.Visibility, actualParameter.Visibility);
+        Assert.AreEqual(expectedParameter.ToString(), actualParameter.ToString());
     }
 
     [TestMethod]
