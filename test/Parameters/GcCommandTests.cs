@@ -22,13 +22,13 @@ public class GcCommandTests
 
         // Assert
         Assert.IsNotNull(gcCommand);
-        Assert.AreEqual(gcCommand.Name, "TestCommand");
-        Assert.AreEqual(gcCommand.Category, "Test");
-        Assert.AreEqual(gcCommand.Type, GcParameterType.Command);
+        Assert.AreEqual("TestCommand", gcCommand.Name);
+        Assert.AreEqual("Test", gcCommand.Category);
+        Assert.AreEqual(GcParameterType.Command, gcCommand.Type);
         Assert.IsTrue(gcCommand.IsReadable);
         Assert.IsTrue(gcCommand.IsWritable);
         Assert.IsTrue(gcCommand.IsImplemented);
-        Assert.AreEqual(gcCommand.Visibility, GcVisibility.Beginner);
+        Assert.AreEqual(GcVisibility.Beginner, gcCommand.Visibility);
         Assert.IsFalse(gcCommand.IsDone());
     }
 

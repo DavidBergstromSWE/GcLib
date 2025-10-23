@@ -48,7 +48,7 @@ public sealed class FPSStabilizer(int numSamples = 30)
             return true;
         }
 
-        long[] array = _timeStamps.Where(x => x > 0).ToArray();
+        long[] array = [.. _timeStamps.Where(x => x > 0)];
         if (TimeSpan.TicksPerSecond / (timeNow - (double)array.Min()) * array.Length <= targetFPS)
         {
             _timeStamps.Put(timeNow);

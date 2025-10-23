@@ -20,7 +20,6 @@ public class RandomizerTests
 
             // Assert
             Assert.IsInstanceOfType<bool>(value);
-            Assert.IsNotNull(value);
         }
 	}
 
@@ -38,7 +37,6 @@ public class RandomizerTests
             var item = randomizer.NextItem(collection);
 
             // Assert
-            Assert.IsNotNull(item);
             Assert.IsInstanceOfType<DayOfWeek>(item);
         }
 	}
@@ -58,7 +56,6 @@ public class RandomizerTests
             var integer = randomizer.Next(min, max);
 
             // Assert
-            Assert.IsNotNull(integer);
             Assert.IsInstanceOfType<int>(integer);
             Assert.IsTrue(integer <= max && integer >= min);
         }
@@ -79,7 +76,6 @@ public class RandomizerTests
             var integer = randomizer.Next(min, max);
 
             // Assert
-            Assert.IsNotNull(integer);
             Assert.IsInstanceOfType<long>(integer);
             Assert.IsTrue(integer <= max && integer >= min);
         }
@@ -100,7 +96,6 @@ public class RandomizerTests
             var integer = randomizer.Next(min, max);
 
             // Assert
-            Assert.IsNotNull(integer);
             Assert.IsInstanceOfType<ulong>(integer);
             Assert.IsTrue(integer <= max && integer >= min);
         }
@@ -121,7 +116,6 @@ public class RandomizerTests
             var value = randomizer.Next(min, max);
 
             // Assert
-            Assert.IsNotNull(value);
             Assert.IsInstanceOfType<double>(value);
             Assert.IsTrue(value <= max && value >= min);
         }

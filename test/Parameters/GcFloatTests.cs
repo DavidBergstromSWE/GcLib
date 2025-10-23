@@ -43,20 +43,20 @@ public class GcFloatTests
         // Assert
         Assert.IsNotNull(gcFloat);
         Assert.IsTrue(gcFloat.IsImplemented);
-        Assert.AreEqual(gcFloat.Type, GcParameterType.Float);
-        Assert.AreEqual(gcFloat.Name, "TestFloat");
+        Assert.AreEqual(GcParameterType.Float, gcFloat.Type);
+        Assert.AreEqual("TestFloat", gcFloat.Name);
         Assert.AreEqual(gcFloat.DisplayName, gcFloat.Name);
-        Assert.AreEqual(gcFloat.Category, "Test");
-        Assert.AreEqual(gcFloat.Value, 3.14);
-        Assert.AreEqual(gcFloat.Min, 0.0);
-        Assert.AreEqual(gcFloat.Max, 10.0);
-        Assert.AreEqual(gcFloat.Increment, 0.01);
-        Assert.AreEqual(gcFloat.Unit, "rad");
-        Assert.AreEqual(gcFloat.DisplayPrecision, 2);
+        Assert.AreEqual("Test", gcFloat.Category);
+        Assert.AreEqual(3.14, gcFloat.Value);
+        Assert.AreEqual(0.0, gcFloat.Min);
+        Assert.AreEqual(10.0, gcFloat.Max);
+        Assert.AreEqual(0.01, gcFloat.Increment);
+        Assert.AreEqual("rad", gcFloat.Unit);
+        Assert.AreEqual(2, gcFloat.DisplayPrecision);
         Assert.IsTrue(gcFloat.IsReadable);
         Assert.IsTrue(gcFloat.IsWritable);
-        Assert.AreEqual(gcFloat.Visibility, GcVisibility.Beginner);
-        Assert.AreEqual(gcFloat.Description, "This is a unit test parameter.");
+        Assert.AreEqual(GcVisibility.Beginner, gcFloat.Visibility);
+        Assert.AreEqual("This is a unit test parameter.", gcFloat.Description);
     }
 
     [TestMethod]
@@ -103,7 +103,7 @@ public class GcFloatTests
         double actualValue = gcFloat;
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -121,7 +121,7 @@ public class GcFloatTests
         gcFloat.Value = expectedValue;
 
         // Assert
-        Assert.AreEqual(gcFloat.Value, expectedValue);
+        Assert.AreEqual(expectedValue, gcFloat.Value);
     }
 
     [TestMethod]
@@ -141,7 +141,7 @@ public class GcFloatTests
         gcFloat.Value = inputValue;
 
         // Assert
-        Assert.AreEqual(gcFloat.Value, expectedValue);
+        Assert.AreEqual(expectedValue, gcFloat.Value);
     }
 
     [TestMethod]
@@ -216,7 +216,7 @@ public class GcFloatTests
         var actualString = gcFloat.ToString();
 
         // Assert
-        Assert.AreEqual(actualString, expectedString);
+        Assert.AreEqual(expectedString, actualString);
     }
 
     [TestMethod]
@@ -243,7 +243,7 @@ public class GcFloatTests
         var actualString = gcFloat.ToString();
 
         // Assert
-        Assert.AreEqual(actualString, expectedString);
+        Assert.AreEqual(expectedString, actualString);
     }
 
     [TestMethod]
@@ -290,7 +290,7 @@ public class GcFloatTests
         var actualString = gcFloat.ToString(cultureInfo);
 
         // Assert
-        Assert.AreEqual(actualString, expectedString);
+        Assert.AreEqual(expectedString, actualString);
     }
 
     [TestMethod]
@@ -307,7 +307,7 @@ public class GcFloatTests
         var actualValue = gcFloat.ToString();
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -324,7 +324,7 @@ public class GcFloatTests
         var actualValue = gcFloat.ToString(CultureInfo.InvariantCulture);
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]

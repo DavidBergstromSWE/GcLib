@@ -35,7 +35,7 @@ public class GcStringTests
         // Assert
         Assert.IsNotNull(gcString);
         Assert.IsTrue(gcString.IsImplemented);
-        Assert.AreEqual(gcString.Type, GcParameterType.String);
+        Assert.AreEqual(GcParameterType.String, gcString.Type);
         Assert.AreEqual("TestString", gcString.Name);
         Assert.AreEqual("Test", gcString.Category);
         Assert.AreEqual("HelloWorld", gcString.Value);
@@ -131,7 +131,7 @@ public class GcStringTests
         string actualValue = gcString;
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]

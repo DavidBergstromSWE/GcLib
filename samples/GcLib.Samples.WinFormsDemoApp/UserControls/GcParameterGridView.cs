@@ -80,7 +80,7 @@ public partial class GcParameterGridView : UserControl
     /// <returns></returns>
     private static List<string> GetParameterCategories(IReadOnlyList<GcParameter> parameterList)
     {
-        return parameterList.Select(o => o.Category).Distinct().ToList();
+        return [.. parameterList.Select(o => o.Category).Distinct()];
     }
 
     /// <summary>

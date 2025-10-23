@@ -18,9 +18,9 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsNotNull(gcEnumEntry);
-            Assert.AreEqual(gcEnumEntry.ValueString, expectedString);
-            Assert.AreEqual(gcEnumEntry.ValueInt, expectedInt);
-            Assert.AreEqual(gcEnumEntry.NumericValue, expectedInt);
+            Assert.AreEqual(expectedString, gcEnumEntry.ValueString);
+            Assert.AreEqual(expectedInt, gcEnumEntry.ValueInt);
+            Assert.AreEqual(expectedInt, gcEnumEntry.NumericValue);
         }
 
         [TestMethod]
@@ -34,9 +34,9 @@ namespace GcLib.UnitTests
             var gcEnumEntry = new GcEnumEntry(expectedString, expectedInt, expectedNumeric);
 
             Assert.IsNotNull(gcEnumEntry);
-            Assert.AreEqual(gcEnumEntry.ValueString, expectedString);
-            Assert.AreEqual(gcEnumEntry.ValueInt, expectedInt);
-            Assert.AreEqual(gcEnumEntry.NumericValue, expectedNumeric);
+            Assert.AreEqual(expectedString, gcEnumEntry.ValueString);
+            Assert.AreEqual(expectedInt, gcEnumEntry.ValueInt);
+            Assert.AreEqual(expectedNumeric, gcEnumEntry.NumericValue);
         }
 
         [TestMethod]
@@ -55,7 +55,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsTrue(actualEqual);
-            Assert.AreEqual(actualEqual, expectedEqual);
+            Assert.AreEqual(expectedEqual, actualEqual);
         }
 
         [TestMethod]
@@ -73,7 +73,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsFalse(actualEqual);
-            Assert.AreEqual(actualEqual, expectedEqual);
+            Assert.AreEqual(expectedEqual, actualEqual);
         }
 
         [TestMethod]
@@ -92,7 +92,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsFalse(actualNotEqual);
-            Assert.AreEqual(actualNotEqual, expectedNotEqual);
+            Assert.AreEqual(expectedNotEqual, actualNotEqual);
         }
 
         [TestMethod]
@@ -110,7 +110,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsTrue(actualNotEqual);
-            Assert.AreEqual(actualNotEqual, expectedNotEqual);
+            Assert.AreEqual(expectedNotEqual, actualNotEqual);
         }
 
         [TestMethod]

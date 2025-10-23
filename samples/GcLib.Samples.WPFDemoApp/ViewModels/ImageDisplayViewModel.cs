@@ -76,7 +76,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     /// <summary>
     /// List of available bitmap scaling modes.
     /// </summary>
-    public static List<BitmapScalingMode> BitmapScalingModes => Enum.GetValues<BitmapScalingMode>().Distinct().Skip(1).ToList();
+    public static List<BitmapScalingMode> BitmapScalingModes => [.. Enum.GetValues<BitmapScalingMode>().Distinct().Skip(1)];
 
     /// <summary>
     /// Bitmap scaling mode selected.

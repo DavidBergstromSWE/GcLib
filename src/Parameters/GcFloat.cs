@@ -285,7 +285,7 @@ public sealed class GcFloat : GcParameter
     /// <inheritdoc/>
     public override GcFloat Copy()
     {
-        return new GcFloat(Name, Category, Value, Min, Max, Increment, Unit, DisplayPrecision, IsReadable, IsWritable, Visibility, Description, IsSelector, new List<string>(SelectingParameters), new List<string>(SelectedParameters));
+        return new GcFloat(Name, Category, Value, Min, Max, Increment, Unit, DisplayPrecision, IsReadable, IsWritable, Visibility, Description, IsSelector, [.. SelectingParameters], [.. SelectedParameters]);
     }
 
     #endregion

@@ -258,7 +258,7 @@ public partial class PcoCam
                 },
                 visibility: GcVisibility.Guru,
                 isSelector: true,
-                selectedParameters: new List<string>(GetParameterNames()));
+                selectedParameters: [.. GetParameterNames()]);
 
             _acquisitionMode = new GcEnumeration(
                 name: nameof(AcquisitionMode),

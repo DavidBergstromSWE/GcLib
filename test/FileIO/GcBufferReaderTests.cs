@@ -269,7 +269,7 @@ namespace GcLib.UnitTests
             var actualTime = _reader.GetTimeStamp(4);
 
             // Assert
-            Assert.AreEqual(actualTime, expectedTime);
+            Assert.AreEqual(expectedTime, actualTime);
         }
 
         [TestMethod]

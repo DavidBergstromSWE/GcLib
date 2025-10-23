@@ -45,7 +45,7 @@ public class GcIntegerTests
         // Assert
         Assert.IsNotNull(gcInteger);
         Assert.IsTrue(gcInteger.IsImplemented);
-        Assert.AreEqual(gcInteger.Type, GcParameterType.Integer);
+        Assert.AreEqual(GcParameterType.Integer, gcInteger.Type);
         Assert.AreEqual("TestInteger", gcInteger.Name);
         Assert.AreEqual("Test", gcInteger.Category);
         Assert.AreEqual(42, gcInteger.Value);
@@ -147,7 +147,7 @@ public class GcIntegerTests
         long actualValue = gcInteger;
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -165,7 +165,7 @@ public class GcIntegerTests
         gcInteger.Value = expectedValue;
 
         // Assert
-        Assert.AreEqual(gcInteger.Value, expectedValue);
+        Assert.AreEqual(expectedValue, gcInteger.Value);
     }
 
     [TestMethod]
@@ -182,7 +182,7 @@ public class GcIntegerTests
         var actualValue = gcInteger.Value;
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -199,7 +199,7 @@ public class GcIntegerTests
         var actualValue = gcInteger.Value;
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -212,7 +212,7 @@ public class GcIntegerTests
         gcInteger.Value = 95;
 
         // Assert
-        Assert.AreEqual(gcInteger.Value, 100);
+        Assert.AreEqual(100, gcInteger.Value);
     }
 
     [TestMethod]
@@ -225,7 +225,7 @@ public class GcIntegerTests
         gcInteger.Value = 4;
 
         // Assert
-        Assert.AreEqual(gcInteger.Value, 0);
+        Assert.AreEqual(0, gcInteger.Value);
     }
 
     [TestMethod]
@@ -261,8 +261,8 @@ public class GcIntegerTests
         var actualValue = gcInteger.Min;
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
-        Assert.AreEqual(gcInteger.Value, 15);
+        Assert.AreEqual(expectedValue, actualValue);
+        Assert.AreEqual(15, gcInteger.Value);
     }
 
     [TestMethod]
@@ -290,7 +290,7 @@ public class GcIntegerTests
 
         // Assert
         Assert.AreEqual(gcInteger.Max, gcInteger.Min);
-        Assert.AreEqual(gcInteger.Value, expectedValue);
+        Assert.AreEqual(expectedValue, gcInteger.Value);
     }
 
     [TestMethod]
@@ -305,8 +305,8 @@ public class GcIntegerTests
         var actualValue = gcInteger.Max;
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
-        Assert.AreEqual(gcInteger.Value, 15);
+        Assert.AreEqual(expectedValue, actualValue);
+        Assert.AreEqual(15, gcInteger.Value);
     }
 
     [TestMethod]
@@ -334,7 +334,7 @@ public class GcIntegerTests
 
         // Assert
         Assert.AreEqual(gcInteger.Min, gcInteger.Max);
-        Assert.AreEqual(gcInteger.Value, expectedValue);
+        Assert.AreEqual(expectedValue, gcInteger.Value);
     }
 
     [TestMethod]
@@ -394,7 +394,7 @@ public class GcIntegerTests
         var actualString = gcInteger.ToString();
 
         // Assert
-        Assert.AreEqual(actualString, expectedString);
+        Assert.AreEqual(expectedString, actualString);
     }
 
     [TestMethod]
@@ -409,7 +409,7 @@ public class GcIntegerTests
         var actualValue = gcInteger.ToString();
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]

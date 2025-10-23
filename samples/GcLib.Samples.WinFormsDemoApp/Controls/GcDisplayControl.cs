@@ -255,7 +255,7 @@ public partial class GcDisplayControl : ImageBox
     /// <returns></returns>
     private static double CalcFPS(ulong[] timeStamps)
     {
-        ulong[] array = timeStamps.Where(x => x > 0).ToArray();
+        ulong[] array = [.. timeStamps.Where(x => x > 0)];
         return (double)TimeSpan.TicksPerSecond / (array.Max() - array.Min()) * (array.Length - 1);
     }
 

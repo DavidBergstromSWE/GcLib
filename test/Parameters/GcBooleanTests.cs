@@ -33,10 +33,10 @@ public class GcBooleanTests
         // Assert
         Assert.IsNotNull(gcBoolean);
         Assert.IsTrue(gcBoolean.IsImplemented);
-        Assert.AreEqual(gcBoolean.Type, GcParameterType.Boolean);
+        Assert.AreEqual(GcParameterType.Boolean, gcBoolean.Type);
         Assert.AreEqual("TestBoolean", gcBoolean.Name);
         Assert.AreEqual("Test", gcBoolean.Category);
-        Assert.AreEqual(true, gcBoolean.Value);
+        Assert.IsTrue(gcBoolean.Value);
         Assert.IsTrue(gcBoolean.IsReadable);
         Assert.IsTrue(gcBoolean.IsWritable);
         Assert.AreEqual(GcVisibility.Beginner, gcBoolean.Visibility);
@@ -79,7 +79,7 @@ public class GcBooleanTests
         bool actualValue = gcBoolean;
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]

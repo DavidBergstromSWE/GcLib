@@ -85,7 +85,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsNotNull(classInfo);
-            Assert.AreEqual(classInfo.DeviceType, typeof(VirtualCam));
+            Assert.AreEqual(typeof(VirtualCam), classInfo.DeviceType);
         }
 
         [TestMethod]

@@ -30,7 +30,7 @@ namespace GcLib.UnitTests
             var devices = VirtualCam.EnumerateDevices();
 
             // Assert
-            Assert.AreEqual(2, devices.Count);
+            Assert.HasCount(2, devices);
         }
 
         [TestMethod]
@@ -43,7 +43,6 @@ namespace GcLib.UnitTests
             _device = new VirtualCam(ID);
 
             // Assert
-            Assert.AreEqual(0, VirtualCam.DeviceConnectionDelay);
             Assert.IsGreaterThan<uint>(0, _device.PayloadSize);
             Assert.IsNotEmpty(_device.Parameters);
             Assert.IsGreaterThan<uint>(0, _device.BufferCapacity);

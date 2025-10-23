@@ -19,7 +19,7 @@ public sealed class ReadOnlyParameterCollection(string collectionName, IEnumerab
     /// <summary>
     /// List of parameters in the collection.
     /// </summary>
-    private readonly IReadOnlyList<GcParameter> _parameters = parameters.ToList();
+    private readonly IReadOnlyList<GcParameter> _parameters = [.. parameters];
 
     /// <inheritdoc/>
     public string Name { get; set; } = collectionName;
@@ -33,7 +33,7 @@ public sealed class ReadOnlyParameterCollection(string collectionName, IEnumerab
     /// <inheritdoc/>
     public IReadOnlyList<GcParameter> ToList(GcVisibility visibility = GcVisibility.Guru)
     {
-        return _parameters.Where(p => p.Visibility <= visibility).ToList();
+        return [.. _parameters.Where(p => p.Visibility <= visibility)];
     }
 
     /// <summary>

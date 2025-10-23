@@ -27,13 +27,12 @@ internal sealed class ThemeService : IThemeService
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Theme> Themes => _themeManager.Themes.Select(a => new Theme(schemeColor: a.ColorScheme,
-                                                                                           name: a.Name,
-                                                                                           baseColor: a.BaseColorScheme,
-                                                                                           brush: a.ShowcaseBrush,
-                                                                                           foregroundBrush: a.Resources["MahApps.Brushes.ThemeForeground"] as SolidColorBrush,
-                                                                                           backgroundBrush: a.Resources["MahApps.Brushes.ThemeBackground"] as SolidColorBrush))
-                                                                    .ToList();
+    public IReadOnlyCollection<Theme> Themes => [.. _themeManager.Themes.Select(a => new Theme(schemeColor: a.ColorScheme,
+                                                                                     name: a.Name,
+                                                                                     baseColor: a.BaseColorScheme,
+                                                                                     brush: a.ShowcaseBrush,
+                                                                                     foregroundBrush: a.Resources["MahApps.Brushes.ThemeForeground"] as SolidColorBrush,
+                                                                                     backgroundBrush: a.Resources["MahApps.Brushes.ThemeBackground"] as SolidColorBrush))];
 
     /// <inheritdoc/>
     /// <exception cref="InvalidOperationException"/>

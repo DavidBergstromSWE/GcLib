@@ -120,7 +120,7 @@ public partial class ColorSlider : Control
         get { return thumbRect; }
     }
 
-    private Size _thumbSize = new Size(16, 16);
+    private Size _thumbSize = new(16, 16);
 
     /// <summary>
     /// Gets or sets the size of the thumb.
@@ -171,7 +171,7 @@ public partial class ColorSlider : Control
         }
     }
 
-    private Size _thumbRoundRectSize = new Size(16, 16);
+    private Size _thumbRoundRectSize = new(16, 16);
     /// <summary>
     /// Gets or sets the size of the thumb round rectangle edges.
     /// </summary>
@@ -192,7 +192,7 @@ public partial class ColorSlider : Control
         }
     }
 
-    private Size _borderRoundRectSize = new Size(8, 8);
+    private Size _borderRoundRectSize = new(8, 8);
     /// <summary>
     /// Gets or sets the size of the border round rect.
     /// </summary>
@@ -1143,7 +1143,7 @@ public partial class ColorSlider : Control
             else
             {
                 thumbPath = _thumbCustomShape;
-                Matrix m = new Matrix();
+                Matrix m = new();
                 m.Translate(thumbRect.Left - thumbPath.GetBounds().Left, thumbRect.Top - thumbPath.GetBounds().Top);
                 thumbPath.Transform(m);
             }
@@ -1269,23 +1269,21 @@ public partial class ColorSlider : Control
 
                 if (_mouseEffects && (Capture || mouseInThumbRegion))
                     newThumbPenColor = ControlPaint.Dark(newThumbPenColor);
-                using (Pen thumbPen = new Pen(newThumbPenColor))
+                using Pen thumbPen = new(newThumbPenColor);
+
+                if (_thumbImage != null)
                 {
+                    Bitmap bmp = new(_thumbImage);
+                    bmp.MakeTransparent(Color.FromArgb(255, 0, 255));
+                    Rectangle srceRect = new(0, 0, bmp.Width, bmp.Height);
 
-                    if (_thumbImage != null)
-                    {
-                        Bitmap bmp = new Bitmap(_thumbImage);
-                        bmp.MakeTransparent(Color.FromArgb(255, 0, 255));
-                        Rectangle srceRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                    e.Graphics.DrawImage(bmp, thumbRect, srceRect, GraphicsUnit.Pixel);
+                    bmp.Dispose();
 
-                        e.Graphics.DrawImage(bmp, thumbRect, srceRect, GraphicsUnit.Pixel);
-                        bmp.Dispose();
-
-                    }
-                    else
-                    {
-                        e.Graphics.DrawPath(thumbPen, thumbPath);
-                    }
+                }
+                else
+                {
+                    e.Graphics.DrawPath(thumbPen, thumbPath);
                 }
 
             }
@@ -1295,7 +1293,7 @@ public partial class ColorSlider : Control
             #region draw focusing rectangle
             //draw focusing rectangle
             if (Focused & _drawFocusRectangle)
-                using (Pen p = new Pen(Color.FromArgb(200, ElapsedTopPenColorPaint)))
+                using (Pen p = new(Color.FromArgb(200, ElapsedTopPenColorPaint)))
                 {
                     p.DashStyle = DashStyle.Dot;
                     Rectangle r = ClientRectangle;
@@ -1303,11 +1301,9 @@ public partial class ColorSlider : Control
                     r.Height--;
                     r.X++;
 
-                    using (GraphicsPath gpBorder = CreateRoundRectPath(r, _borderRoundRectSize))
-                    {
-                        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                        e.Graphics.DrawPath(p, gpBorder);
-                    }
+                    using GraphicsPath gpBorder = CreateRoundRectPath(r, _borderRoundRectSize);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawPath(p, gpBorder);
                 }
             #endregion draw focusing rectangle
 
@@ -1345,8 +1341,8 @@ public partial class ColorSlider : Control
                 }
 
                 // pen for ticks
-                Pen penTickL = new Pen(_tickColor, 1f);
-                Pen penTickS = new Pen(_tickColor, 1f);
+                Pen penTickL = new(_tickColor, 1f);
+                Pen penTickS = new(_tickColor, 1f);
                 int idx = 0;
                 int scaleL = 5;     // division length
                 int scaleS = 3;     // subdivision length    
@@ -1358,7 +1354,7 @@ public partial class ColorSlider : Control
                 int startDiv = 0;
 
                 Color _scaleColor = ForeColor;
-                SolidBrush br = new SolidBrush(_scaleColor);
+                SolidBrush br = new(_scaleColor);
 
                 // Calculate max size of text 
                 //string str = String.Format("{0,0:D}", (int)_maximum);
@@ -1789,7 +1785,7 @@ public partial class ColorSlider : Control
     /// <returns></returns>
     public static GraphicsPath CreateRoundRectPath(Rectangle rect, Size size)
     {
-        GraphicsPath gp = new GraphicsPath();
+        GraphicsPath gp = new();
         gp.AddLine(rect.Left + size.Width / 2, rect.Top, rect.Right - size.Width / 2, rect.Top);
         gp.AddArc(rect.Right - size.Width, rect.Top, size.Width, size.Height, 270, 90);
 

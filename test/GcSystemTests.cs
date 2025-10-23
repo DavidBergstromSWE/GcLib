@@ -222,7 +222,7 @@ namespace GcLib.UnitTests
             var actualDeviceInfo = _system.GetDeviceInfo(devices[0].UniqueID);
 
             // Assert
-            Assert.AreEqual(actualDeviceInfo, expectedDeviceInfo);
+            Assert.AreEqual(expectedDeviceInfo, actualDeviceInfo);
         }
 
         [TestMethod]

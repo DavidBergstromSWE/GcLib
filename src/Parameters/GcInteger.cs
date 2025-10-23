@@ -295,15 +295,15 @@ public sealed class GcInteger : GcParameter
                              max: Max,
                              increment: Increment,
                              incrementMode: IncrementMode,
-                             listOfValidValue: ListOfValidValue != null ? new List<long>(ListOfValidValue) : null,
+                             listOfValidValue: ListOfValidValue != null ? [.. ListOfValidValue] : null,
                              unit: Unit,
                              isReadable: IsReadable,
                              isWritable: IsWritable,
                              visibility: Visibility,
                              description: Description,
                              isSelector: IsSelector,
-                             selectingParameters: new List<string>(SelectingParameters),
-                             selectedParameters: new List<string>(SelectedParameters));
+                             selectingParameters: [.. SelectingParameters],
+                             selectedParameters: [.. SelectedParameters]);
     }
 
     #endregion

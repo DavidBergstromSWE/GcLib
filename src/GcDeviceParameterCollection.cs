@@ -90,7 +90,7 @@ public abstract partial class GcDevice : IBufferProducer
         /// <inheritdoc/>
         public IReadOnlyList<GcParameter> ToList(GcVisibility visibility = GcVisibility.Guru)
         {
-            return _parameterDict.Values.Where(p => p.Visibility <= visibility).ToList();
+            return [.. _parameterDict.Values.Where(p => p.Visibility <= visibility)];
         }
 
         /// <inheritdoc/>

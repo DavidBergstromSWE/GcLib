@@ -61,14 +61,12 @@ public partial class BorderedGroupBox : GroupBox
         if (rectangle.Width > 0)
             rectangle.Inflate(2, 0);
 
-        using (var pen = new Pen(BorderColor))
-        {
-            int num = bounds.Top + (font.Height / 2);
-            g.DrawLine(pen, bounds.Left, num - 1, bounds.Left, bounds.Height - 2);
-            g.DrawLine(pen, bounds.Left, bounds.Height - 2, bounds.Width - 1, bounds.Height - 2);
-            g.DrawLine(pen, bounds.Left, num - 1, rectangle.X - 3, num - 1);
-            g.DrawLine(pen, rectangle.X + rectangle.Width + 2, num - 1, bounds.Width - 2, num - 1);
-            g.DrawLine(pen, bounds.Width - 2, num - 1, bounds.Width - 2, bounds.Height - 2);
-        }
+        using var pen = new Pen(BorderColor);
+        int num = bounds.Top + (font.Height / 2);
+        g.DrawLine(pen, bounds.Left, num - 1, bounds.Left, bounds.Height - 2);
+        g.DrawLine(pen, bounds.Left, bounds.Height - 2, bounds.Width - 1, bounds.Height - 2);
+        g.DrawLine(pen, bounds.Left, num - 1, rectangle.X - 3, num - 1);
+        g.DrawLine(pen, rectangle.X + rectangle.Width + 2, num - 1, bounds.Width - 2, num - 1);
+        g.DrawLine(pen, bounds.Width - 2, num - 1, bounds.Width - 2, bounds.Height - 2);
     }
 }

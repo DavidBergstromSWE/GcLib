@@ -108,7 +108,7 @@ public sealed partial class VirtualCam
                 },
                 visibility: GcVisibility.Guru,
                 isSelector: true,
-                selectedParameters: new List<string>(GetParameterNames())); // "all"?
+                selectedParameters: [.. GetParameterNames()]); // "all"?
         }
 
         /// <summary>

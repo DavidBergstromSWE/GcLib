@@ -58,18 +58,18 @@ public class GcEnumerationTests
         // Assert
         Assert.IsNotNull(gcEnumeration);
         Assert.IsTrue(gcEnumeration.IsImplemented);
-        Assert.AreEqual(gcEnumeration.Type, GcParameterType.Enumeration);
-        Assert.AreEqual(gcEnumeration.Name, "TestEnumeration");
-        Assert.AreEqual(gcEnumeration.Category, "Test");
+        Assert.AreEqual(GcParameterType.Enumeration, gcEnumeration.Type);
+        Assert.AreEqual("TestEnumeration", gcEnumeration.Name);
+        Assert.AreEqual("Test", gcEnumeration.Category);
         Assert.IsTrue(Enumerable.SequenceEqual(gcEnumeration.Entries, entries));
-        Assert.AreEqual(gcEnumeration.CurrentEntry, expectedEntry);
+        Assert.AreEqual(expectedEntry, gcEnumeration.CurrentEntry);
         Assert.AreEqual(gcEnumeration.StringValue, expectedEntry.ValueString);
         Assert.AreEqual(gcEnumeration.IntValue, expectedEntry.ValueInt);
         Assert.AreEqual(gcEnumeration.NumericValue, expectedEntry.NumericValue);       
         Assert.IsTrue(gcEnumeration.IsReadable);
         Assert.IsTrue(gcEnumeration.IsWritable);
-        Assert.AreEqual(gcEnumeration.Visibility, GcVisibility.Beginner);
-        Assert.AreEqual(gcEnumeration.Description, "This is a unit test parameter.");
+        Assert.AreEqual(GcVisibility.Beginner, gcEnumeration.Visibility);
+        Assert.AreEqual("This is a unit test parameter.", gcEnumeration.Description);
     }
 
     [TestMethod]
@@ -113,18 +113,18 @@ public class GcEnumerationTests
         // Assert
         Assert.IsNotNull(gcEnumeration);
         Assert.IsTrue(gcEnumeration.IsImplemented);
-        Assert.AreEqual(gcEnumeration.Type, GcParameterType.Enumeration);
-        Assert.AreEqual(gcEnumeration.Name, "TestEnumeration");
-        Assert.AreEqual(gcEnumeration.Category, "Test");
+        Assert.AreEqual(GcParameterType.Enumeration, gcEnumeration.Type);
+        Assert.AreEqual("TestEnumeration", gcEnumeration.Name);
+        Assert.AreEqual("Test", gcEnumeration.Category);
         Assert.IsTrue(Enumerable.SequenceEqual(gcEnumeration.Entries.Select(e => e.ValueString), typeof(ValidEnum).GetEnumNames()));
         Assert.Contains(gcEnumeration.CurrentEntry, gcEnumeration.Entries);
         Assert.AreEqual(gcEnumeration.StringValue, expectedEntry.ToString());
-        Assert.AreEqual(gcEnumeration.IntValue, (int)expectedEntry);
+        Assert.AreEqual((int)expectedEntry, gcEnumeration.IntValue);
         Assert.AreEqual(gcEnumeration.NumericValue, gcEnumeration.IntValue);
         Assert.IsTrue(gcEnumeration.IsReadable);
         Assert.IsTrue(gcEnumeration.IsWritable);
-        Assert.AreEqual(gcEnumeration.Visibility, GcVisibility.Beginner);
-        Assert.AreEqual(gcEnumeration.Description, "This is a unit test parameter.");
+        Assert.AreEqual(GcVisibility.Beginner, gcEnumeration.Visibility);
+        Assert.AreEqual("This is a unit test parameter.", gcEnumeration.Description);
     }
 
     [TestMethod]
@@ -168,18 +168,18 @@ public class GcEnumerationTests
         // Assert
         Assert.IsNotNull(gcEnumeration);
         Assert.IsTrue(gcEnumeration.IsImplemented);
-        Assert.AreEqual(gcEnumeration.Type, GcParameterType.Enumeration);
-        Assert.AreEqual(gcEnumeration.Name, "TestEnumeration");
-        Assert.AreEqual(gcEnumeration.Category, "Test");
+        Assert.AreEqual(GcParameterType.Enumeration, gcEnumeration.Type);
+        Assert.AreEqual("TestEnumeration", gcEnumeration.Name);
+        Assert.AreEqual("Test", gcEnumeration.Category);
         Assert.IsTrue(Enumerable.SequenceEqual(gcEnumeration.GetSymbolics(), array.Select(s => s.ToString())));
         Assert.Contains(gcEnumeration.CurrentEntry, gcEnumeration.Entries);
         Assert.AreEqual(gcEnumeration.StringValue, expectedEntry.ToString());
-        Assert.AreEqual(gcEnumeration.IntValue, (int)expectedEntry);
+        Assert.AreEqual((int)expectedEntry, gcEnumeration.IntValue);
         Assert.AreEqual(gcEnumeration.NumericValue, gcEnumeration.IntValue);
         Assert.IsTrue(gcEnumeration.IsReadable);
         Assert.IsTrue(gcEnumeration.IsWritable);
-        Assert.AreEqual(gcEnumeration.Visibility, GcVisibility.Beginner);
-        Assert.AreEqual(gcEnumeration.Description, "This is a unit test parameter.");
+        Assert.AreEqual(GcVisibility.Beginner, gcEnumeration.Visibility);
+        Assert.AreEqual("This is a unit test parameter.", gcEnumeration.Description);
     }
 
     [TestMethod]
@@ -231,7 +231,7 @@ public class GcEnumerationTests
         var actualStringValue = gcEnumeration.StringValue;
 
         // Assert
-        Assert.AreEqual(actualStringValue, expectedStringValue);
+        Assert.AreEqual(expectedStringValue, actualStringValue);
     }
 
     [TestMethod]
@@ -268,7 +268,7 @@ public class GcEnumerationTests
         var actualIntValue = gcEnumeration.IntValue;
 
         // Assert
-        Assert.AreEqual(actualIntValue, expectedIntValue);
+        Assert.AreEqual(expectedIntValue, actualIntValue);
     }
 
     [TestMethod]
@@ -305,7 +305,7 @@ public class GcEnumerationTests
         var actualNumericValue = gcEnumeration.NumericValue;
 
         // Assert
-        Assert.AreEqual(actualNumericValue, expectedNumericValue);
+        Assert.AreEqual(expectedNumericValue, actualNumericValue);
     }
 
     [TestMethod]
@@ -341,7 +341,7 @@ public class GcEnumerationTests
         var actualEntry = gcEnumeration.CurrentEntry;
 
         // Assert
-        Assert.AreEqual(actualEntry, expectedEntry);
+        Assert.AreEqual(expectedEntry, actualEntry);
     }
 
     [TestMethod]
@@ -365,7 +365,7 @@ public class GcEnumerationTests
         var actualEntries = gcEnumeration.Entries;
 
         // Assert
-        Assert.AreEqual(actualEntries, expectedEntries);
+        Assert.AreEqual(expectedEntries, actualEntries);
         Assert.IsTrue(Enumerable.SequenceEqual(actualEntries, expectedEntries));
     }
 
@@ -400,7 +400,7 @@ public class GcEnumerationTests
         string actualString = gcEnumeration;
 
         // Assert
-        Assert.AreEqual(actualString, expectedString);
+        Assert.AreEqual(expectedString, actualString);
     }
 
     [TestMethod]
@@ -417,7 +417,7 @@ public class GcEnumerationTests
         long actualLong = gcEnumeration;
 
         // Assert
-        Assert.AreEqual(actualLong, expectedLong);
+        Assert.AreEqual(expectedLong, actualLong);
     }
 
     #endregion
