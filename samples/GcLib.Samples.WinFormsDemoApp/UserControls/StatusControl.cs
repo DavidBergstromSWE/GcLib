@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using GcLib;
 using GcLib.Utilities.Threading;
+using System.ComponentModel;
 
 namespace WinFormsDemoApp;
 
@@ -16,11 +17,13 @@ public partial class StatusControl : UserControl
     /// <summary>
     /// Datastream source for status display.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public GcDataStream DataStream { get; set; }
 
     /// <summary>
     /// Display thread source for status display.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public GcProcessingThread DisplayThread
     {
         get => _displayThread;
@@ -39,6 +42,7 @@ public partial class StatusControl : UserControl
     /// <summary>
     /// Recording source for status display.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public GcBufferWriter ImageWriter { get; set; }
 
     /// <summary>
