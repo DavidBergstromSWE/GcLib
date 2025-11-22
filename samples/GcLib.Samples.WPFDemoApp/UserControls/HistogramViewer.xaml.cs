@@ -98,7 +98,7 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
     #region Public fields
 
     public static readonly DependencyProperty HistogramProperty = DependencyProperty.Register(nameof(Histogram), typeof(ImageHistogram), typeof(HistogramViewer), new PropertyMetadata(null, OnHistogramChanged));
-    public static readonly DependencyProperty ShowGridProperty = DependencyProperty.Register(nameof(ShowGrid), typeof(bool), typeof(HistogramViewer), new PropertyMetadata(true, OnPlotSettingsChanged));
+    public static readonly DependencyProperty ShowGridProperty = DependencyProperty.Register(nameof(ShowGrid), typeof(bool), typeof(HistogramViewer), new PropertyMetadata(true, OnShowGridChanged));
     public static readonly DependencyProperty SelectedPlotTypeProperty = DependencyProperty.Register(nameof(SelectedPlotType), typeof(HistogramPlotType), typeof(HistogramViewer), new PropertyMetadata(HistogramPlotType.Fill, OnPlotSettingsChanged));
     public static readonly DependencyProperty SelectedHistSizeProperty = DependencyProperty.Register(nameof(SelectedHistSize), typeof(int), typeof(HistogramViewer), new PropertyMetadata(64, OnPlotSettingsChanged));
     public static readonly DependencyProperty ThemeProperty = DependencyProperty.Register(nameof(Theme), typeof(Theme), typeof(HistogramViewer), new PropertyMetadata(new Theme(), OnThemeChanged));
@@ -339,7 +339,7 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
                 var fillPlot = plot.Add.FillY(xs: xs, ys1: ys, ys2: _zeros[0..ys.Length]);
                 fillPlot.FillStyle.Color = plotColor.Lighten(0.75);
                 fillPlot.LineStyle.Color = plotColor;
-                fillPlot.LineStyle.Width = 1;
+                fillPlot.LineStyle.Width = 2;
                 break;
 
             case HistogramPlotType.Bar:
@@ -371,10 +371,6 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
     {
         // Format plot.
         plot.XLabel("DN", size: 11);
-        //plot.XAxis.Ticks(major: true, minor: true);
-        //plot.XAxis.TickLabelStyle(fontSize: (float)wpfPlot.FontSize, fontBold: true);
-        //plot.XAxis.TickLabelNotation(multiplier: true);
-        //plot.YAxis.Ticks(enable: false);
 
         // Only show x-axis.
         plot.Axes.Left.IsVisible = false;
@@ -388,8 +384,9 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
 
         if (ShowGrid == false)
             plot.HideGrid();
+        else plot.ShowGrid();
 
-        // Tick styling
+        // Tick styling.
         plot.Axes.Bottom.TickLabelStyle.FontSize = 11;
         plot.Axes.Bottom.TickLabelStyle.Bold = true;
     }
@@ -424,6 +421,23 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
         control.ContainsData = true;
         control._isPlotted = false;
     }
+
+    /// <summary>
+    /// Eventhandler method to changes of <see cref="ShowGrid"/>.
+    /// </summary>
+    private static void OnShowGridChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.NewValue == e.OldValue)
+            return;
+
+        var control = d as HistogramViewer;
+
+        if (control.ShowGrid)
+            control.wpfPlot.Plot.ShowGrid();
+        else
+            control.wpfPlot.Plot.HideGrid();
+    }
+
 
     /// <summary>
     /// Eventhandler method to histogram plot settings changes.
