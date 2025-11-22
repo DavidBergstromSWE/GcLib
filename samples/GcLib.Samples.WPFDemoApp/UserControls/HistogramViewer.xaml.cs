@@ -46,7 +46,7 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
     private bool _showBlue;
     private bool _containsData;
 
-    private readonly double[] _zeros = new double[255];
+    private readonly double[] _zeros = new double[256];
 
     /// <summary>
     /// Array of BGR colors.
@@ -337,7 +337,8 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
             case HistogramPlotType.Fill:
             default:
                 var fillPlot = plot.Add.FillY(xs: xs, ys1: ys, ys2: _zeros[0..ys.Length]);
-                fillPlot.FillStyle.Color = plotColor;
+                fillPlot.FillStyle.Color = plotColor.Lighten(0.75);
+                fillPlot.LineStyle.Color = plotColor;
                 fillPlot.LineStyle.Width = 1;
                 break;
 
@@ -345,8 +346,8 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
                 var barPlot = plot.Add.Bars(positions: xs, values: ys);
                 foreach (var bar in barPlot.Bars)
                 {
-                    bar.Size = 0;
-                    bar.LineWidth = 1;
+                    bar.Size = xs[2]-xs[1];
+                    bar.LineWidth = 0;
                     bar.FillStyle.Color = plotColor;
                     bar.FillStyle.AntiAlias = false;
                 }
