@@ -508,6 +508,7 @@ public partial class ColorSlider : Control
     /// <value>The inner color of the thumb.</value>
     [Description("Set Slider thumb inner color")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color ThumbInnerColor
     {
         get { return _thumbInnerColor; }
@@ -525,6 +526,7 @@ public partial class ColorSlider : Control
     /// <value>The color of the thumb pen.</value>
     [Description("Set Slider thumb pen color")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color ThumbPenColor
     {
         get { return _thumbPenColor; }
@@ -559,6 +561,7 @@ public partial class ColorSlider : Control
     /// </summary>
     [Description("Gets or sets the top color of the elapsed")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color ElapsedPenColorTop
     {
         get { return _elapsedPenColorTop; }
@@ -575,6 +578,7 @@ public partial class ColorSlider : Control
     /// </summary>
     [Description("Gets or sets the bottom color of the elapsed")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color ElapsedPenColorBottom
     {
         get { return _elapsedPenColorBottom; }
@@ -591,6 +595,7 @@ public partial class ColorSlider : Control
     /// </summary>
     [Description("Gets or sets the top color of the bar")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color BarPenColorTop
     {
         get { return _barPenColorTop; }
@@ -607,6 +612,7 @@ public partial class ColorSlider : Control
     /// </summary>
     [Description("Gets or sets the bottom color of the bar")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color BarPenColorBottom
     {
         get { return _barPenColorBottom; }
@@ -624,6 +630,7 @@ public partial class ColorSlider : Control
     /// <value>The inner color of the elapsed.</value>
     [Description("Set Slider's elapsed part inner color")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color ElapsedInnerColor
     {
         get { return _elapsedInnerColor; }
@@ -640,6 +647,7 @@ public partial class ColorSlider : Control
     /// </summary>
     [Description("Color of graduations")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color TickColor
     {
         get { return _tickColor; }
@@ -667,6 +675,7 @@ public partial class ColorSlider : Control
 
     [Description("Gets or sets a value used to divide the graduation")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public float TickDivide
     {
         get { return _tickDivide; }
@@ -680,6 +689,7 @@ public partial class ColorSlider : Control
     private float _tickAdd = 0;
     [Description("Gets or sets a value added to the graduation")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public float TickAdd
     {
         get { return _tickAdd; }
@@ -713,6 +723,7 @@ public partial class ColorSlider : Control
     /// </summary>
     [Description("Set the number of intervals between minimum and maximum")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public decimal ScaleDivisions
     {
         get { return _scaleDivisions; }
@@ -734,6 +745,7 @@ public partial class ColorSlider : Control
     /// </summary>
     [Description("Set the number of subdivisions between main divisions of graduation.")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public decimal ScaleSubDivisions
     {
         get { return _scaleSubDivisions; }
@@ -756,6 +768,7 @@ public partial class ColorSlider : Control
     /// </summary>
     [Description("Show or hide subdivisions of graduations")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool ShowSmallScale
     {
         get { return _showSmallScale; }
@@ -789,6 +802,7 @@ public partial class ColorSlider : Control
     /// </summary>
     [Description("Show or hide text value of graduations")]
     [Category("ColorSlider")]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool ShowDivisionsText
     {
         get { return _showDivisionsText; }
