@@ -1,4 +1,6 @@
-﻿namespace GcLib;
+﻿using System;
+
+namespace GcLib;
 
 /// <summary>
 /// Provides top-level information about a device, including vendor name, model name, serial number, unique string identifier, device class and whether device is accessible or already opened/connected.
@@ -13,7 +15,7 @@
 /// <param name="deviceClass">Camera device class type.</param>
 /// <param name="isAccessible">Indicates if camera is accessible or not.</param>
 /// <param name="isOpen">Indicates if camera is connected or not.</param>
-public sealed class GcDeviceInfo(string vendorName, string modelName, string serialNumber, string uniqueID, GcDeviceClassInfo deviceClass, string userDefinedName = "", bool isAccessible = true, bool isOpen = false)
+public sealed class GcDeviceInfo(string vendorName, string modelName, string serialNumber, string uniqueID, GcDeviceClassInfo deviceClass, string userDefinedName = "", bool isAccessible = true, bool isOpen = false) : IEquatable<GcDeviceInfo>
 {
     #region Properties
 
@@ -59,20 +61,31 @@ public sealed class GcDeviceInfo(string vendorName, string modelName, string ser
 
     #endregion
 
-    #region Constructors
+    #region Equality members
 
     public override bool Equals(object obj)
     {
         return obj is GcDeviceInfo dInfo
-               && VendorName.Equals(dInfo.VendorName)
-               && ModelName.Equals(dInfo.ModelName)
-               && SerialNumber.Equals(dInfo.SerialNumber)
-               && UniqueID.Equals(dInfo.UniqueID);
+               && VendorName.Equals(dInfo.VendorName, StringComparison.OrdinalIgnoreCase)
+               && ModelName.Equals(dInfo.ModelName, StringComparison.OrdinalIgnoreCase)
+               && SerialNumber.Equals(dInfo.SerialNumber, StringComparison.OrdinalIgnoreCase)
+               && UniqueID.Equals(dInfo.UniqueID, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public bool Equals(GcDeviceInfo other)
+    {
+        return VendorName.Equals(other.VendorName, StringComparison.OrdinalIgnoreCase)
+               && ModelName.Equals(other.ModelName, StringComparison.OrdinalIgnoreCase)
+               && SerialNumber.Equals(other.SerialNumber, StringComparison.OrdinalIgnoreCase)
+               && UniqueID.Equals(other.UniqueID, StringComparison.OrdinalIgnoreCase);
     }
 
     public override int GetHashCode()
     {
-        return base.GetHashCode();
+        return VendorName.GetHashCode(StringComparison.OrdinalIgnoreCase)
+               ^ ModelName.GetHashCode(StringComparison.OrdinalIgnoreCase)
+               ^ SerialNumber.GetHashCode(StringComparison.OrdinalIgnoreCase)
+               ^ UniqueID.GetHashCode(StringComparison.OrdinalIgnoreCase);
     }
 
     #endregion

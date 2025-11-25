@@ -215,7 +215,7 @@ public sealed partial class PvCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
             vendorName: pvDeviceInfo.VendorName,
             modelName: pvDeviceInfo.ModelName,
             serialNumber: pvDeviceInfo.SerialNumber,
-            uniqueID: pvDeviceInfo.UniqueID, // ConnectionID?
+            uniqueID: pvDeviceInfo.UniqueID.Replace(":", string.Empty),
             userDefinedName: pvDeviceInfo.UserDefinedName,
             deviceClass: DeviceClassInfo,
             isAccessible: pvDeviceInfo.IsConfigurationValid);

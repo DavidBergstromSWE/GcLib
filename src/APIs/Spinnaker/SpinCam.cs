@@ -90,7 +90,7 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
         return new GcDeviceInfo(vendorName: camera.TLDevice.DeviceVendorName,
                                 modelName: camera.TLDevice.DeviceModelName,
                                 serialNumber: camera.TLDevice.DeviceSerialNumber,
-                                uniqueID: camera.TLDevice.DeviceSerialNumber,
+                                uniqueID: camera.TLDevice.DeviceID,
                                 deviceClass: DeviceClassInfo,
                                 userDefinedName: camera.TLDevice.DeviceUserID);
     }

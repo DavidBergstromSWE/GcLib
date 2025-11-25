@@ -90,6 +90,9 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
                 // Missing item: add new.
                 deviceList.Add(device.DeviceInfo);
         }
+        
+        // Remove duplicates from device list (can happen if device is discoverable by multiple APIs).
+        deviceList = [.. deviceList.Distinct()];
 
         // Update list of available devices.
         if (_availableDevices.SequenceEqual(deviceList) == false)
