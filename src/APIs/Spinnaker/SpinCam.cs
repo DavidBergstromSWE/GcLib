@@ -40,7 +40,7 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
 
         if (string.IsNullOrEmpty(deviceID) && cameraList.Count > 0)
             _camera = cameraList[0]; // Get first available device.
-        else _camera = cameraList.GetBySerial(deviceID); // Get specific device.
+        else _camera = cameraList.GetByUniqueID(deviceID); // Get specific device.
 
         if (_camera == null)
             throw new ArgumentException("No camera found!");
