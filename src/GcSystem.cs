@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace GcLib;
 
@@ -150,6 +151,9 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
 
         // Instantiate new device.
         device = (GcDevice)Activator.CreateInstance(deviceInfo.DeviceClassInfo.DeviceType, uniqueID);
+
+        // Log information.
+        GcLibrary.Logger.LogDebug("{deviceModel} (ID: {deviceID}) instantiated using {className} device class", deviceInfo.ModelName, deviceInfo.UniqueID, deviceInfo.DeviceClassInfo.DeviceType.Name);
 
         // Add device to list of connected devices.
         _connectedDevices.Add(device);
