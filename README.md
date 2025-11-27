@@ -2,10 +2,10 @@ Library providing a common interface to control settings and streaming of [GenIC
 GcLib essentially works like a wrapper around the external APIs, hiding their specific implementations and enabling the same code to be used regardless of the camera or vendor.
 
 Currently supported APIs are: 
-[eBUS SDK](https://www.pleora.com/machine-vision-connectivity/ebus-sdk/),
-[xiAPI.NET](https://www.ximea.com/support/wiki/apis/xiAPINET),
-[Spinnaker SDK](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) and
-[PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (partially implemented). 
+[eBUS SDK](https://www.pleora.com/machine-vision-connectivity/ebus-sdk/) (v6.4),
+[xiAPI.NET](https://www.ximea.com/support/wiki/apis/xiAPINET) (v4.28),
+[Spinnaker SDK](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) (v4.2) and
+[PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (v1.30). 
 
 > [!NOTE]
 > Please note that some APIs may require a license and driver installation.
