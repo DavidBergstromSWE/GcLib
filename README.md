@@ -5,7 +5,7 @@ Currently supported APIs are:
 [eBUS SDK](https://www.pleora.com/machine-vision-connectivity/ebus-sdk/) (v6.4),
 [xiAPI.NET](https://www.ximea.com/support/wiki/apis/xiAPINET) (v4.32),
 [Spinnaker SDK](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) (v4.2) and
-[PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (v1.30). 
+[PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (v1.34). 
 
 > [!NOTE]
 > Please note that some APIs may require a license and driver installation.
