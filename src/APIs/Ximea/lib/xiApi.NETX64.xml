@@ -2513,6 +2513,436 @@
             Pixel format 14bit packed (PFNC)
              </summary>
         </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono8MS71">
+             <summary>
+            Pixel format 8bit TOF (A+B+C)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono10MS71">
+             <summary>
+            Pixel format 10bit TOF (A+B+C)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono10pMS71">
+             <summary>
+            Pixel format 10bit packed TOF (A+B+C)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono12MS71">
+             <summary>
+            Pixel format 12bit TOF (A+B+C)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono12pMS71">
+             <summary>
+            Pixel format 12bit packed TOF (A+B+C)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono16MS71">
+             <summary>
+            Pixel format 16bit TOF (A+B+C)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG10LS37">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG10pLS37">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG12LS37">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG12pLS37">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG14LS37">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG14pLS37">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG16LS37">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG8LS37">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB10LS37">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB10pLS37">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB12LS37">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB12pLS37">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB14LS37">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB14pLS37">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB16LS37">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB8LS37">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR10LS37">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR10pLS37">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR12LS37">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR12pLS37">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR14LS37">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR14pLS37">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR16LS37">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR8LS37">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG10LS37">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG10pLS37">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG12LS37">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG12pLS37">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG14LS37">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG14pLS37">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG16LS37">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG8LS37">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono10LS37">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono10pLS37">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono12LS37">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono12pLS37">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono14LS37">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono14pLS37">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono16LS37">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono8LS37">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG10LS38">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG10pLS38">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG12LS38">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG12pLS38">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG14LS38">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG14pLS38">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG16LS38">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerBG8LS38">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB10LS38">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB10pLS38">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB12LS38">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB12pLS38">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB14LS38">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB14pLS38">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB16LS38">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGB8LS38">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR10LS38">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR10pLS38">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR12LS38">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR12pLS38">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR14LS38">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR14pLS38">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR16LS38">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerGR8LS38">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG10LS38">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG10pLS38">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG12LS38">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG12pLS38">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG14LS38">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG14pLS38">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG16LS38">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiBayerRG8LS38">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono10LS38">
+             <summary>
+            Pixel format 10bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono10pLS38">
+             <summary>
+            Pixel format 10bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono12LS38">
+             <summary>
+            Pixel format 12bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono12pLS38">
+             <summary>
+            Pixel format 12bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono14LS38">
+             <summary>
+            Pixel format 14bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono14pLS38">
+             <summary>
+            Pixel format 14bit packed (PFNC)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono16LS38">
+             <summary>
+            Pixel format 16bit
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono8LS38">
+             <summary>
+            Pixel format 8bit
+             </summary>
+        </member>
         <member name="T:xiApi.NET.xiExc">
             <summary> 
             Internal exception handler for xiAPI.NET.
@@ -3057,6 +3487,16 @@
             32 bits per pixel raw data from sensor in single-precision floating point format. 4 bytes per pixel (depacked) raw data
             </summary>
         </member>
+        <member name="F:xiApi.NET.IMG_FORMAT.RAW8X3">
+            <summary>
+            8 bits per pixel raw data from sensor(3 components in a row). 	[ch1 pixel byte] [ch2 pixel byte] [ch3 pixel byte] raw data from 3 channels (e.g. ToF cameras)
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.IMG_FORMAT.RAW16X3">
+            <summary>
+            16 bits per pixel raw data from sensor(3 components in a row). [ch1 pixel byte low] [ch1 pixel byte high] [ch2 pixel byte low] [ch2 pixel byte high] [ch3 pixel byte low] [ch3 pixel byte high] 16 bits (depacked) raw data from 3 channels (e.g. ToF cameras)
+            </summary>
+        </member>
         <member name="T:xiApi.NET.IMG_COLOR_FILTER_ARRAY">
             <summary>
             Bayer color matrix enumerator.
@@ -3130,6 +3570,26 @@
         <member name="F:xiApi.NET.IMG_COLOR_FILTER_ARRAY.TOF_B">
             <summary>
             ToF B only
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.IMG_COLOR_FILTER_ARRAY.TOF_X1X2X3">
+            <summary>
+            ToF X1,X2,X3
+            </summary>
+        </member>
+        <member name="T:xiApi.NET.IMAGE_SEQUENCE_TYPE">
+            <summary>
+            Image sequence type.
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.IMAGE_SEQUENCE_TYPE.E_SEQUENCE_TYPE_DISABLED">
+            <summary>
+            No image sequence.
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.IMAGE_SEQUENCE_TYPE.E_SEQUENCE_TYPE_EXPOSURES">
+            <summary>
+            Image sequence off different exposures. E.g. for HDR.
             </summary>
         </member>
         <member name="T:xiApi.NET.BUFF_POLICY">
@@ -3224,7 +3684,7 @@
         </member>
         <member name="F:xiApi.NET.TRG_SELECTOR.ACQUISITION_START">
             <summary>
-            Trigger starts acquisition of first frame.
+            Selects a trigger that starts the Acquisition.
             </summary>
         </member>
         <member name="T:xiApi.NET.TRG_OVERLAP">
@@ -3234,17 +3694,17 @@
         </member>
         <member name="F:xiApi.NET.TRG_OVERLAP.OFF">
             <summary>
-            No trigger overlap is permitted. If camera is in read-out phase, all triggers are rejected.
+            No trigger overlap is permitted.
             </summary>
         </member>
         <member name="F:xiApi.NET.TRG_OVERLAP.READ_OUT">
             <summary>
-            Trigger is accepted only when sensor is ready to start next exposure with defined exposure time. Trigger is rejected when sensor is not ready for new exposure with defined exposure time. (see Note1)
+            Trigger is accepted immediately after the exposure period. (see Note1)
             </summary>
         </member>
         <member name="F:xiApi.NET.TRG_OVERLAP.PREV_FRAME">
             <summary>
-            Trigger is accepted by camera any time. If sensor is not ready for the next exposure - the trigger is latched and sensor starts exposure as soon as exposure can be started with defined exposure time.
+            Trigger is accepted (latched) at any time during the capture of the previous frame.
             </summary>
         </member>
         <member name="T:xiApi.NET.ACQ_TIMING_MODE">
@@ -3610,6 +4070,36 @@
         <member name="F:xiApi.NET.GPO_SELECTOR.GPO_PORT12">
             <summary>
             GPO port 12
+            </summary>
+        </member>
+        <member name="T:xiApi.NET.METADATA_SAMPLING_MODE">
+            <summary>
+            Metadata sampling mode selector
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.METADATA_SAMPLING_MODE.METADATA_SAMPLING_OFF">
+            <summary>
+            Metadata sampling turned off
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.METADATA_SAMPLING_MODE.METADATA_SAMPLING_POINT_EXPOSURE_START">
+            <summary>
+            Selects the sampling point to exposure start
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.METADATA_SAMPLING_MODE.METADATA_SAMPLING_POINT_EXPOSURE_END">
+            <summary>
+            Selects the sampling point to exposure end
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.METADATA_SAMPLING_MODE.METADATA_SAMPLING_POINT_EXPOSURE_START_END">
+            <summary>
+            Selects the sampling point to exposure start and end
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.METADATA_SAMPLING_MODE.METADATA_SAMPLING_POINT_READOUT_END">
+            <summary>
+            Selects the sampling point to readout end
             </summary>
         </member>
         <member name="T:xiApi.NET.LED_MODE">
@@ -4607,6 +5097,16 @@
             ToF VCSEL Control Voltage in mV
             </summary>
         </member>
+        <member name="F:xiApi.NET.SENSOR_FEATURE_SELECTOR.SENSOR_FEATURE_MULTIPLE_ADC">
+            <summary>
+            Multiple ADC
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.SENSOR_FEATURE_SELECTOR.SENSOR_FEATURE_FAST_TRIGGER_MODE_ENABLE">
+            <summary>
+            Enables a sensor trigger mode that starts exposure immediately at the beginning of the trigger signal. When fast trigger mode is disabled, the camera operates in a trigger mode that allows exposure and readout to overlap, resulting in a higher FPS. For camera model: MU051xG. (on/off)
+            </summary>
+        </member>
         <member name="T:xiApi.NET.EXT_FEATURE_SELECTOR">
             <summary>
             Extended feature selector.
@@ -4704,7 +5204,7 @@
         </member>
         <member name="F:xiApi.NET.EXT_FEATURE_SELECTOR.EXT_FEATURE_SEL_PRINT_STATUS_TO_DEBUG">
             <summary>
-            Prints to debug status information(tepmerature, consumption and other parameters).
+            Prints to debug status information on some scientific cameras e.g. MJ (tepmerature, consumption and other parameters).
             </summary>
         </member>
         <member name="F:xiApi.NET.EXT_FEATURE_SELECTOR.EXT_FEATURE_SEL_BUFFER_HEADER_CHECK_ENABLED">
@@ -5357,6 +5857,36 @@
             12bit per channel, 2 samples,  CMS(averaging) High Gain mode preset.
             </summary>
         </member>
+        <member name="F:xiApi.NET.USER_SET_SELECTOR.US_TOF_DEFAULT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.USER_SET_SELECTOR.US_TOF_LONG_RANGE">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.USER_SET_SELECTOR.US_TOF_SINGLE_READOUT">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.USER_SET_SELECTOR.US_TOF_DEFAULT_EXT_CDS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.USER_SET_SELECTOR.US_TOF_LONG_RANGE_EXT_CDS">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.USER_SET_SELECTOR.US_TOF_SINGLE_READOUT_EXT_CDS">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:xiApi.NET.DUAL_ADC_MODE">
             <summary>
             Mode of DualADC feature
@@ -5465,6 +5995,16 @@
         <member name="F:xiApi.NET.PROBE_SELECTOR.PROBE_SELECTOR_CURRENT_PELTIER2">
             <summary>
             Current probe on peltier #2
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.PROBE_SELECTOR.PROBE_SELECTOR_VOLTAGE_MAINBOARD_VCC_5V0">
+            <summary>
+            Voltage probe on Main Board at VCC_5V0 power supply 
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.PROBE_SELECTOR.PROBE_SELECTOR_CURRENT_MAINBOARD_VCC_5V0">
+            <summary>
+            Current probe on Main Board at VCC_5V0 power supply
             </summary>
         </member>
         <member name="T:xiApi.NET.TOF_READOUT_MODE">
@@ -5922,6 +6462,12 @@
             By default -. Type	 Integer
             </summary>
         </member>
+        <member name="F:xiApi.NET.PRM.AEAG_SKIP_FRAMES_COUNT">
+            <summary>
+             Minimum number of frames to be skipped between AEAG compensation and AEAG re-evaluation
+            By default -. Type	 Integer
+            </summary>
+        </member>
         <member name="F:xiApi.NET.PRM.LIMIT_BANDWIDTH">
             <summary>
              Set/get bandwidth(data rate in Megabits)
@@ -6276,6 +6822,12 @@
             By default -. Type	 Integer
             </summary>
         </member>
+        <member name="F:xiApi.NET.PRM.GPI_LEVEL_AT_IMAGE_READOUT_END">
+            <summary>
+             GPI Level at image readout end
+            By default -. Type	 Integer
+            </summary>
+        </member>
         <member name="F:xiApi.NET.PRM.GPO_SELECTOR">
             <summary>
              Selects GPO
@@ -6285,6 +6837,12 @@
         <member name="F:xiApi.NET.PRM.GPO_MODE">
             <summary>
              Defines GPO functionality
+            By default -. Type	 Enum
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.PRM.METADATA_SAMPLING_MODE">
+            <summary>
+             Defines metadata sampling mode
             By default -. Type	 Enum
             </summary>
         </member>
@@ -7354,6 +7912,16 @@
             32 bits per pixel raw data from sensor in single-precision floating point format. 4 bytes per pixel (depacked) raw data
             </summary>
         </member>
+        <member name="F:xiApi.XI_IMG_FORMAT.RAW8X3">
+            <summary>
+            8 bits per pixel raw data from sensor(3 components in a row). 	[ch1 pixel byte] [ch2 pixel byte] [ch3 pixel byte] raw data from 3 channels (e.g. ToF cameras)
+            </summary>
+        </member>
+        <member name="F:xiApi.XI_IMG_FORMAT.RAW16X3">
+            <summary>
+            16 bits per pixel raw data from sensor(3 components in a row). [ch1 pixel byte low] [ch1 pixel byte high] [ch2 pixel byte low] [ch2 pixel byte high] [ch3 pixel byte low] [ch3 pixel byte high] 16 bits (depacked) raw data from 3 channels (e.g. ToF cameras)
+            </summary>
+        </member>
         <member name="T:xiApi.XI_COLOR_FILTER_ARRAY">
             <summary>
             Internal Ximea API enumerators for Bayer color matrix.
@@ -7427,6 +7995,26 @@
         <member name="F:xiApi.XI_COLOR_FILTER_ARRAY.CFA_TOF_B">
             <summary>
             ToF B only
+            </summary>
+        </member>
+        <member name="F:xiApi.XI_COLOR_FILTER_ARRAY.CFA_TOF_X1X2X3">
+            <summary>
+            ToF X1,X2,X3
+            </summary>
+        </member>
+        <member name="T:xiApi.XI_IMAGE_SEQUENCE_TYPE">
+            <summary>
+            Internal Ximea API enumerators for XI_IMAGE_SEQUENCE_TYPE
+            </summary>
+        </member>
+        <member name="F:xiApi.XI_IMAGE_SEQUENCE_TYPE.IMAGE_SEQUENCE_TYPE_DISABLED">
+            <summary>
+            No image sequence.
+            </summary>
+        </member>
+        <member name="F:xiApi.XI_IMAGE_SEQUENCE_TYPE.IMAGE_SEQUENCE_TYPE_EXPOSURES">
+            <summary>
+            Image sequence off different exposures. E.g. for HDR.
             </summary>
         </member>
         <member name="T:xiApi.XI_DATA_SM">
@@ -7837,6 +8425,21 @@
         <member name="F:xiApi.XI_IMG.data_sign_mode">
             <summary>
             Sign mode or signedness is a property of data.
+            </summary>
+        </member>
+        <member name="F:xiApi.XI_IMG.sequence_type">
+            <summary>
+            Type of image sequence (e.g. seq_disabled, seq_multiple_exposures)
+            </summary>
+        </member>
+        <member name="F:xiApi.XI_IMG.sequence_image_id">
+            <summary>
+            Current image in sequence. Starting from 1. Zero if sequence is disabled.
+            </summary>
+        </member>
+        <member name="F:xiApi.XI_IMG.sequence_length">
+            <summary>
+            Count of images in sequence. Zero for sequence disabled.
             </summary>
         </member>
     </members>
