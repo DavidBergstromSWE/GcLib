@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using PCO.SDK;
+using PCO.SDK.NET;
 
 namespace GcLib;
 
@@ -156,7 +156,7 @@ public partial class PcoCam
             // Initialize some camera settings that current code implementation requires.
             LibWrapper.ResetSettingsToDefault(_cameraHandle); // reset all camera settings to default values
             LibWrapper.SetTimestampMode(_cameraHandle, TimestampMode.Binary); // BCD coded timestamp and frame counter (first 14 pixels)
-            LibWrapper.SetTriggerMode(_cameraHandle, PCO.SDK.TriggerMode.AutoSequence); // auto-sequence trigger mode (signals at the trigger input line are irrelevant) - for external triggering this mode has to be changed! (see manual)
+            LibWrapper.SetTriggerMode(_cameraHandle, PCO.SDK.NET.TriggerMode.AutoSequence); // auto-sequence trigger mode (signals at the trigger input line are irrelevant) - for external triggering this mode has to be changed! (see manual)
 
             // Initialize GenApi parameters/features.
             InitializeParameters();

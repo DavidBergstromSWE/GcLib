@@ -3,8 +3,8 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using PCO.SDK;
-using PCO.Utils;
+using PCO.SDK.NET;
+using PCO.SDK.NET.Utils;
 
 namespace GcLib;
 
@@ -201,7 +201,7 @@ public partial class PcoCam
             //TimestampReset.Execute();
 
             // Ensure frame rate is updated.
-            if (TriggerMode.IntValue == (int)PCO.SDK.TriggerMode.ExternalExposureStart)
+            if (TriggerMode.IntValue == (int)PCO.SDK.NET.TriggerMode.ExternalExposureStart)
                 OnParameterChanged(this, new ParameterInvalidateEventArgs(nameof(AcquisitionFrameRate)));
 
             // Arm camera.

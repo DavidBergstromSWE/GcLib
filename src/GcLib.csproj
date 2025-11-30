@@ -21,8 +21,8 @@
     <PackageReference Include="System.Text.Json" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="pco.sdk">
-      <HintPath>APIs\PCO\lib\pco.sdk.dll</HintPath>
+    <Reference Include="pco.sdk.net">
+      <HintPath>APIs\PCO\lib\pco.sdk.net.dll</HintPath>
     </Reference>
     <Reference Include="PvDotNet">
       <HintPath>APIs\Pleora\lib\PvDotNet.dll</HintPath>

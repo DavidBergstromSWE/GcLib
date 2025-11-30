@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using PCO.SDK;
+using PCO.SDK.NET;
 
 namespace GcLib;
 
