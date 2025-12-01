@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Timers;
 using GcLib.Utilities.IO;
 using PCO.SDK.NET;
