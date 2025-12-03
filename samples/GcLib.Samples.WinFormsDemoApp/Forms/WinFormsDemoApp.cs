@@ -211,11 +211,8 @@ public partial class WinFormsDemoApp : Form
     /// </summary>
     private void CloseDevice()
     {
-        if (_camera != null)
-        {
-            _camera.Close();
-            _camera = null;
-        }
+        _camera?.Close();
+        _camera = null;
     }
 
     /// <summary>
