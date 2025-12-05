@@ -132,7 +132,8 @@ public sealed partial class PvCam
         catch (PvException ex)
         {
             // Can be raised if acquisition is stopped when connection was lost.
-            GcLibrary.Logger.LogError(ex, "Failed to stop acquisition in {ModelName} (ID: {ID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                GcLibrary.Logger.LogError(ex, "Failed to stop acquisition in {ModelName} (ID: {ID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
         }
 
         IsAcquiring = false;
@@ -151,7 +152,8 @@ public sealed partial class PvCam
     private void ImageAcquisitionThread()
     {
         // Log debugging info.
-        GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) started", _pvDeviceInfo.ModelName, _pvDeviceInfo.UniqueID);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) started", _pvDeviceInfo.ModelName, _pvDeviceInfo.UniqueID);
 
         uint nBufferError = 0; // Counts the number of consecutive buffer errors.
         uint bufferErrorLimit = 10; // Number of consecutive buffer errors limit (before aborting).
@@ -183,7 +185,8 @@ public sealed partial class PvCam
             catch (PvException ex)
             {
                 // Log error.
-                GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                    GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
                 // Increment consecutive error count.
                 OnFailedBuffer();
@@ -199,7 +202,8 @@ public sealed partial class PvCam
         }
 
         // Log debugging info.
-        GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) stopped", _pvDeviceInfo.ModelName, _pvDeviceInfo.UniqueID);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) stopped", _pvDeviceInfo.ModelName, _pvDeviceInfo.UniqueID);
     }
 
     /// <summary>

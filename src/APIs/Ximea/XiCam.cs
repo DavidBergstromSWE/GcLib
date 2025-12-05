@@ -140,7 +140,8 @@ public sealed partial class XiCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
         catch (xiExc ex)
         {
             _checkConnectionTimer.Stop();
-            GcLibrary.Logger.LogError(ex, "Failed to detect {device} (ID: {ID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                GcLibrary.Logger.LogError(ex, "Failed to detect {device} (ID: {ID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
             isAvailable = false;
         }
         finally

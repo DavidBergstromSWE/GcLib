@@ -72,7 +72,8 @@ public abstract partial class GcDevice : IBufferProducer
             Name = _device.DeviceInfo.UniqueID;
 
             // Log debugging info.
-            GcLibrary.Logger.LogTrace("{ParameterCount} parameters successfully imported ({FailedParameterCount} failed) from {ModelName} ({ID})", parameters.Count, FailedParameters.Count, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+                GcLibrary.Logger.LogTrace("{ParameterCount} parameters successfully imported ({FailedParameterCount} failed) from {ModelName} ({ID})", parameters.Count, FailedParameters.Count, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
         }
 
         #endregion
@@ -121,12 +122,14 @@ public abstract partial class GcDevice : IBufferProducer
                 catch (Exception ex)
                 {
                     // Log debugging info.
-                    GcLibrary.Logger.LogError(ex, "Failed to update {ParameterName} in {ModelName} ({ID})", parameter.Name, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
+                    if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                        GcLibrary.Logger.LogError(ex, "Failed to update {ParameterName} in {ModelName} ({ID})", parameter.Name, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
                 }
             }
 
-            // Log debugging info.             
-            GcLibrary.Logger.LogTrace("Updated all parameters in {ModelName} ({ID}) in {ElapsedMilliseconds:000} milliseconds", _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID, Stopwatch.GetElapsedTime(startTime).Milliseconds);
+            // Log debugging info.
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+                GcLibrary.Logger.LogTrace("Updated all parameters in {ModelName} ({ID}) in {ElapsedMilliseconds:000} milliseconds", _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID, Stopwatch.GetElapsedTime(startTime).Milliseconds);
         }
 
         /// <inheritdoc/>
@@ -158,7 +161,8 @@ public abstract partial class GcDevice : IBufferProducer
             {
                 _device.SetParameterValue(parameterName, parameterValue);
 
-                GcLibrary.Logger.LogDebug("{ParameterName} set to {Value} in {ModelName} ({ID})", parameterName, GetParameterValue(parameterName), _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+                    GcLibrary.Logger.LogDebug("{ParameterName} set to {Value} in {ModelName} ({ID})", parameterName, GetParameterValue(parameterName), _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
 
                 // Raise invalidation event (as other parameters may be affected).
                 _device.OnParameterInvalidate(new ParameterInvalidateEventArgs(parameterName));
@@ -177,7 +181,8 @@ public abstract partial class GcDevice : IBufferProducer
                 {
                     _device.ExecuteParameterCommand(parameterName);
 
-                    GcLibrary.Logger.LogDebug("{ParameterName} executed in {ModelName} ({ID})", parameterName, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
+                    if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+                        GcLibrary.Logger.LogDebug("{ParameterName} executed in {ModelName} ({ID})", parameterName, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
 
                     // Raise invalidation event (as other parameters may be affected).
                     _device.OnParameterInvalidate(new ParameterInvalidateEventArgs(parameterName));
@@ -185,7 +190,8 @@ public abstract partial class GcDevice : IBufferProducer
             }
             catch (Exception ex)
             {
-                GcLibrary.Logger.LogError(ex, "Failed to execute {ParameterName} in {ModelName} ({ID})", parameterName, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                    GcLibrary.Logger.LogError(ex, "Failed to execute {ParameterName} in {ModelName} ({ID})", parameterName, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
                 throw;
             }
         }

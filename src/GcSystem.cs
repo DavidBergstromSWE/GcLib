@@ -153,7 +153,8 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         device = (GcDevice)Activator.CreateInstance(deviceInfo.DeviceClassInfo.DeviceType, uniqueID);
 
         // Log information.
-        GcLibrary.Logger.LogDebug("{deviceModel} (ID: {deviceID}) instantiated using {className} device class", deviceInfo.ModelName, deviceInfo.UniqueID, deviceInfo.DeviceClassInfo.DeviceType.Name);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+            GcLibrary.Logger.LogDebug("{deviceModel} (ID: {deviceID}) instantiated using {className} device class", deviceInfo.ModelName, deviceInfo.UniqueID, deviceInfo.DeviceClassInfo.DeviceType.Name);
 
         // Add device to list of connected devices.
         _connectedDevices.Add(device);

@@ -269,7 +269,8 @@ public partial class PcoCam
                 if (warningMessage != string.Empty)
                 {
                     // Log warning.
-                    GcLibrary.Logger.LogWarning("Camera warning: {Warning}", warningMessage);
+                    if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                        GcLibrary.Logger.LogWarning("Camera warning: {Warning}", warningMessage);
                     
                     // display warning? throw exception?
                 }
@@ -277,7 +278,8 @@ public partial class PcoCam
                 if (errorMessage != string.Empty)
                 {
                     // Log error.
-                    GcLibrary.Logger.LogError("Camera error: {Error}", errorMessage);
+                    if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                        GcLibrary.Logger.LogError("Camera error: {Error}", errorMessage);
 
                     // Close connection to camera.
                     LibWrapper.CloseCamera(_cameraHandle);

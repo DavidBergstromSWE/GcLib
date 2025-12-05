@@ -250,7 +250,8 @@ public partial class PcoCam
             uint bufferErrorLimit = 10; // number of consecutive buffer errors limit
 
             // Log debugging info.
-            GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) started", _imageAcquisitionThread.Name, _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+                GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) started", _imageAcquisitionThread.Name, _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
 
             // Main loop starts here.
             while (_threadIsRunning)
@@ -262,8 +263,16 @@ public partial class PcoCam
                 if ((waitstat == WAIT_TIMEOUT) || (waitstat == WAIT_FAILED))
                 {
                     if (waitstat == WAIT_FAILED)
-                        GcLibrary.Logger.LogError("Error: acquisition failed in Device: {ModelName} (ID: {ID})", _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
-                    else GcLibrary.Logger.LogError("Error: acquisition timed out in Device: {ModelName} (ID: {ID})", _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
+                    {
+                        if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                            GcLibrary.Logger.LogError("Error: acquisition failed in Device: {ModelName} (ID: {ID})", _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
+                    }
+                        
+                    else
+                    {
+                        if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                            GcLibrary.Logger.LogError("Error: acquisition timed out in Device: {ModelName} (ID: {ID})", _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
+                    }
 
                     // Increment consecutive error count.
                     _pcoCam.OnFailedBuffer();
@@ -307,7 +316,8 @@ public partial class PcoCam
                             // signal error here?
                             _pcoCam.OnFailedBuffer();
                             nBufferError++;
-                            GcLibrary.Logger.LogWarning("Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
+                            if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                                GcLibrary.Logger.LogWarning("Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
                             break;
                         }
 
@@ -338,7 +348,8 @@ public partial class PcoCam
             }
 
             // Log debugging info.
-            GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) stopped", _imageAcquisitionThread.Name, _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+                GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) stopped", _imageAcquisitionThread.Name, _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
         }
 
         /// <summary>

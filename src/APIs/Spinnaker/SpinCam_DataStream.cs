@@ -90,7 +90,8 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
     private void ImageAcquisitionThread()
     {
         // Log debugging info.
-        GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) started", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) started", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
 
         while (_threadIsRunning)
         {
@@ -110,12 +111,14 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
             catch (SpinnakerException ex)
             {
                 // Log debugging info.
-                GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                    GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
             }
         }
 
         // Log debugging info.
-        GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) stopped", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) stopped", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
     }
 
     /// <summary>

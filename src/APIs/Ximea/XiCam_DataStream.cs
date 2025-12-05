@@ -162,7 +162,8 @@ public sealed partial class XiCam
         catch (xiExc ex)
         {
             // Can be raised if acquisition is stopped when connection was lost.
-            GcLibrary.Logger.LogError(ex, "Failed to stop acquisition in {Device} (ID: {ID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                GcLibrary.Logger.LogError(ex, "Failed to stop acquisition in {Device} (ID: {ID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
         }
         finally
         {
@@ -176,7 +177,8 @@ public sealed partial class XiCam
     /// </summary>
     private void ImageAcquisitionThreadSAFE()
     {
-        GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) started", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) started", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
         // Using pre-allocated memory buffer and data copy.
         _xiCam.GetParam(PRM.IMAGE_PAYLOAD_SIZE, out int val);
@@ -195,7 +197,8 @@ public sealed partial class XiCam
             }
             catch (xiExc ex)
             {
-                GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                    GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
                 // Increment consecutive error count.
                 OnFailedBuffer();
@@ -210,7 +213,8 @@ public sealed partial class XiCam
             }                  
         }
 
-        GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) stopped", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) stopped", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
     }
 
     /// <summary>
@@ -221,7 +225,8 @@ public sealed partial class XiCam
         uint nBufferErrors = 0; // Number of consecutive buffer errors.
         uint bufferErrorLimit = 10; // Number of consecutive buffer errors limit.
 
-        GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) started", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) started", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
         while (_threadIsRunning)
         {
@@ -232,7 +237,8 @@ public sealed partial class XiCam
             }
             catch (xiExc ex)
             {
-                GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                    GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
                 // Increment consecutive error count.
                 OnFailedBuffer();
@@ -247,7 +253,8 @@ public sealed partial class XiCam
             }
         }
 
-        GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) stopped", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) stopped", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
     }
 
     /// <summary>
