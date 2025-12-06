@@ -514,10 +514,10 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <summary>
     /// Event-handling method to <see cref="INotifyPropertyChanged.PropertyChanged"/> events in device.
     /// </summary>
-    private void DeviceModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    private void DeviceModel_PropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
     {
         // Update commands at connection changes.
-        if (e.PropertyName == nameof(DeviceModel.IsConnected))
+        if (eventArgs.PropertyName == nameof(DeviceModel.IsConnected))
         {
             // Enable saving of configuration if any device is connected (disable if none is connected).
             CanSaveConfiguration = Device.IsConnected;
@@ -535,7 +535,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <summary>
     /// Event-handling method to <see cref="DeviceModel.ConnectionLost"/> events.
     /// </summary>
-    private async void DeviceModel_ConnectionLost(object sender, EventArgs e)
+    private async void DeviceModel_ConnectionLost(object sender, EventArgs eventArgs)
     {
         var deviceModel = sender as DeviceModel;
 
@@ -583,12 +583,12 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <summary>
     /// Event-handling method to a <see cref="DragDrop.DropEvent"/>, handling loading of configuration files dropped onto UI.
     /// </summary>
-    public async void OnDrop(object sender, DragEventArgs e)
+    public async void OnDrop(object sender, DragEventArgs eventArgs)
     {
-        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        if (eventArgs.Data.GetDataPresent(DataFormats.FileDrop))
         {
             // Note that you can drag more than one file...
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string[] files = (string[])eventArgs.Data.GetData(DataFormats.FileDrop);
 
             // ...but only single files are accepted.
             if (files.Length != 1)
@@ -633,9 +633,9 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <summary>
     /// Event-handling method to window closing events.
     /// </summary>
-    public async void OnMainWindowClosing(object sender, CancelEventArgs e)
+    public async void OnMainWindowClosing(object sender, CancelEventArgs eventArgs)
     {
-        if (e.Cancel == false)
+        if (eventArgs.Cancel == false)
         {
             // Disconnect device.
             if (Device.IsConnected)

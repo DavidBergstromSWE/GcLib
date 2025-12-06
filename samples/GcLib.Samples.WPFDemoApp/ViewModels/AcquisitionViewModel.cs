@@ -302,7 +302,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// <summary>
     /// Eventhandler to <see cref="AcquisitionModel.AcquisitionStopped"/> events, raised in the acquisition channel.
     /// </summary>
-    private async void Channel_AcquisitionStopped(object sender, EventArgs e)
+    private async void Channel_AcquisitionStopped(object sender, EventArgs eventArgs)
     {
         // Stop acquisition.
         await _dispatcherService.Invoke(StopAsync);
@@ -311,9 +311,9 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// <summary>
     /// Eventhandler to <see cref="AcquisitionModel.FrameDropped"/> events, raised in the acquisition channel.
     /// </summary>
-    private void Channel_FrameDropped(object sender, FrameDroppedEventArgs frameDroppedEventArgs)
+    private void Channel_FrameDropped(object sender, FrameDroppedEventArgs eventArgs)
     {
-        _ = Messenger.Send(new StatusBarLogMessage($"Frames have been lost (Total number: {frameDroppedEventArgs.LostFrameCount}).", LogEventLevel.Warning));
+        _ = Messenger.Send(new StatusBarLogMessage($"Frames have been lost (Total number: {eventArgs.LostFrameCount}).", LogEventLevel.Warning));
     }
 
     /// <summary>
@@ -341,15 +341,15 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// <summary>
     /// Eventhandler to PropertyChanged events in device.
     /// </summary>
-    private void DeviceModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void DeviceModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs eventArgs)
     {
-        if (e.PropertyName == nameof(DeviceModel.IsConnected))
+        if (eventArgs.PropertyName == nameof(DeviceModel.IsConnected))
         {
             // Enable view (acquisition buttons) if device is connected.
             IsEnabled = AcquisitionChannel.DeviceModel.IsConnected;
             NotifyAcquisitionCommands();
         }
-        if (e.PropertyName == nameof(DeviceModel.IsConnecting))
+        if (eventArgs.PropertyName == nameof(DeviceModel.IsConnecting))
         {
             // Disable view (acquisition buttons) while connecting to a new device.
             NotifyAcquisitionCommands();
@@ -359,7 +359,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// <summary>
     /// Eventhandler to <see cref="Window.Closing"/> events.
     /// </summary>
-    public void OnMainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+    public void OnMainWindowClosing(object sender, System.ComponentModel.CancelEventArgs eventArgs)
     {
         // Show dialog if acquisition is currently running.
         if (IsBusy)
@@ -371,7 +371,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
             }
             else
             {
-                e.Cancel = true;
+                eventArgs.Cancel = true;
                 return;
             }
         }

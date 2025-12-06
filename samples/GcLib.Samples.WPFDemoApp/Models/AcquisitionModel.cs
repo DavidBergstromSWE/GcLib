@@ -377,7 +377,6 @@ internal class AcquisitionModel : ObservableObject
     /// <summary>
     /// Event-invoking method, announcing that a frame has been dropped (lost) during acquisition.
     /// </summary>
-    /// <param name="droppedFramesCount">Total number of frames dropped during acquisition.</param>
     private void OnFrameDropped(object sender, FrameDroppedEventArgs frameDroppedEventArgs)
     {
         FrameDropped?.Invoke(this, frameDroppedEventArgs);
@@ -399,8 +398,6 @@ internal class AcquisitionModel : ObservableObject
     /// <summary>
     /// Eventhandler to <see cref="GcBufferWriter.WritingAborted"/> events.
     /// </summary>
-    /// <param name="sender">Event source.</param>
-    /// <param name="ex">Exception thrown.</param>
     protected void OnWritingAborted(object sender, WritingAbortedEventArgs eventArgs)
     {
         // Abort recording with error message.

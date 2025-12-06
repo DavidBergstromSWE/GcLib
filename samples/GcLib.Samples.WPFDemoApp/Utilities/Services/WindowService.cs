@@ -195,7 +195,7 @@ internal class WindowService : IWindowService
     /// <summary>
     /// Eventhandler executed when a window has been closed.
     /// </summary>
-    protected void Window_Closed(object sender, EventArgs e)
+    protected void Window_Closed(object sender, EventArgs eventArgs)
     {
         var window = (Window)sender;
         Log.Verbose("{Title} window closed", window.Title);
@@ -208,7 +208,7 @@ internal class WindowService : IWindowService
     /// <summary>
     /// Eventhandler executed when a window has been loaded.
     /// </summary>
-    protected void Window_Loaded(object sender, RoutedEventArgs e)
+    protected void Window_Loaded(object sender, RoutedEventArgs eventArgs)
     {
         var window = (Window)sender;
         Log.Verbose("{Title} window opened", window.Title);
