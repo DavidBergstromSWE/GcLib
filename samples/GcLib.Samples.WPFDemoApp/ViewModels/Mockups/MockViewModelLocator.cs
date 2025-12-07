@@ -98,7 +98,7 @@ internal sealed class MockHistogramViewModel
 {
     public static bool IsEnabled => true;
 
-    public static ImageHistogram Histogram => new(DataGen.SampleImageData(), 255, 1);
+    public static ImageHistogram Histogram => new(SampleData.MonaLisa(), 255, 0);
 
     public static bool ShowGrid => true;
 
