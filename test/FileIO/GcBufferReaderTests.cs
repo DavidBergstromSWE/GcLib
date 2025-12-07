@@ -10,6 +10,7 @@ using Moq;
 namespace GcLib.UnitTests
 {
     [TestClass]
+    [DoNotParallelize]
     public class GcBufferReaderTests
     {
         #region Fields

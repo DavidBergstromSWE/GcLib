@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace GcLib.UnitTests
 {
     [TestClass]
+    [DoNotParallelize]
     public class GcBufferWriterTests
     {
         #region Fields

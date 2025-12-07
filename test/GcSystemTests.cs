@@ -2,9 +2,12 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+[assembly: Parallelize(Workers = 0, Scope = ExecutionScope.MethodLevel)]
+
 namespace GcLib.UnitTests
 {
     [TestClass]
+    [DoNotParallelize]
     public class GcSystemTests
     {
         #region Fields
@@ -19,7 +22,8 @@ namespace GcLib.UnitTests
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
         {
-            GcLibrary.Init();
+            GcLibrary.Init(false);
+            GcLibrary.Register<VirtualCam>();
         }
 
         [ClassCleanup]

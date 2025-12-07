@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace GcLib.UnitTests
 {
     [TestClass]
+    [DoNotParallelize]
     public class GcLibraryTests
     {
         #region TestConfiguration
@@ -41,7 +42,7 @@ namespace GcLib.UnitTests
         public void Init_UnInitialized_IsInitializedIsTrue()
         {
             // Act
-            GcLibrary.Init();
+            GcLibrary.Init(false);
 
             // Assert
             Assert.IsTrue(GcLibrary.IsInitialized);
@@ -51,7 +52,7 @@ namespace GcLib.UnitTests
         public void Init_Initialized_ThrowsInvalidOperationException()
         {
             // Arrange
-            GcLibrary.Init();
+            GcLibrary.Init(false);
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() => GcLibrary.Init());
@@ -106,7 +107,8 @@ namespace GcLib.UnitTests
         public void Register_DeviceClassIsRegistered_ThrowsArgumentException()
         {
             // Arrange
-            GcLibrary.Init();
+            GcLibrary.Init(false);
+            GcLibrary.Register<VirtualCam>();
 
             // Act/Assert
             Assert.Throws<ArgumentException>(GcLibrary.Register<VirtualCam>);
@@ -116,7 +118,8 @@ namespace GcLib.UnitTests
         public void Unregister_DeviceClassIsRegistered_DeviceClassIsNotRegistered()
         {
             // Arrange
-            GcLibrary.Init();
+            GcLibrary.Init(false);
+            GcLibrary.Register<VirtualCam>();
 
             // Act
             GcLibrary.Unregister<VirtualCam>();
@@ -184,7 +187,7 @@ namespace GcLib.UnitTests
         public void Close_IsNotInitialized()
         {
             // Arrange
-            GcLibrary.Init();
+            GcLibrary.Init(false);
 
             // Act
             GcLibrary.Close();
