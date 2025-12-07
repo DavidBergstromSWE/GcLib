@@ -8,6 +8,12 @@ namespace GcLib.UnitTests;
 [TestClass]
 public class GcCommandTests
 {
+    #region Properties
+
+    public TestContext TestContext { get; set; }
+
+    #endregion
+
     [TestMethod]
     public void GcCommand_ValidInputs_PropertiesAreValid()
     {
@@ -87,14 +93,14 @@ public class GcCommandTests
         bool actionWasInvoked = false;
         var gcCommand = new GcCommand(name: "TestCommand",
                                       category: "Test",
-                                      new Action(() => { Task.Delay(100).Wait(); actionWasInvoked = true; }),
+                                      new Action(() => { Task.Delay(100, TestContext.CancellationToken).Wait(TestContext.CancellationToken); actionWasInvoked = true; }),
                                       isReadable: true,
                                       isWritable: true,
                                       visibility: GcVisibility.Beginner,
                                       description: "This is a unit test parameter.");
 
         // Act
-        Task task = Task.Run(() => gcCommand.Execute());
+        Task task = Task.Run(() => gcCommand.Execute(), TestContext.CancellationToken);
 
         // Assert
         Assert.IsFalse(gcCommand.IsDone());

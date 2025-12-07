@@ -20,6 +20,12 @@ namespace GcLib.UnitTests
 
         #endregion
 
+        #region Properties
+
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
         #region TestConfiguration
 
         [TestCleanup]
@@ -72,7 +78,7 @@ namespace GcLib.UnitTests
             _reader = new GcBufferReader(_pathToValidFile);
 
             // Act
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
 
             // Assert
             Assert.IsTrue(_reader.IsOpen);
@@ -123,7 +129,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             _reader = new GcBufferReader(_pathToValidFile);
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
 
             // Act
             var isRead = _reader.ReadImage(out GcBuffer buffer);
@@ -138,7 +144,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             _reader = new GcBufferReader(_pathToValidFile);
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
             int expectedFrameCount = (int)_reader.FrameCount;
             int actualFrameCount = 0;
 
@@ -158,7 +164,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             _reader = new GcBufferReader(_pathToValidFile);
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
             while (_reader.ReadImage(out _)) { }
 
             // Act
@@ -174,7 +180,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             _reader = new GcBufferReader(_pathToValidFile);
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
 
             // Act
             bool isRead = _reader.ReadImage(out GcBuffer buffer, 0);
@@ -189,7 +195,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             _reader = new GcBufferReader(_pathToValidFile);
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
 
             // Act
             bool isRead = _reader.ReadImage(out GcBuffer buffer, 5);
@@ -204,7 +210,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             _reader = new GcBufferReader(_pathToValidFile);
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
 
             // Act
             bool isRead = _reader.ReadImage(out GcBuffer buffer, _reader.FrameCount - 1);
@@ -219,7 +225,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             _reader = new GcBufferReader(_pathToValidFile);
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
 
             // Act
             bool isRead = _reader.ReadImage(out GcBuffer buffer, _reader.FrameCount);
@@ -261,7 +267,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             _reader = new GcBufferReader(_pathToValidFile);
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
             _reader.ReadImage(out GcBuffer buffer, 4);
             var expectedTime = buffer.TimeStamp;
 
@@ -277,7 +283,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             _reader = new GcBufferReader(_pathToValidFile);
-            await _reader.OpenAsync();
+            await _reader.OpenAsync(token: TestContext.CancellationToken);
 
             // Act/Assert
             Assert.Throws<IndexOutOfRangeException>(() => _reader.GetTimeStamp(_reader.FrameCount));

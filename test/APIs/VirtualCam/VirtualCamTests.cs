@@ -10,6 +10,8 @@ namespace GcLib.UnitTests
     {
         private VirtualCam _device;
 
+        public TestContext TestContext { get; set; }
+
         [TestInitialize]
         public void TestInitialize()
         {
@@ -101,7 +103,7 @@ namespace GcLib.UnitTests
 
             // Act
             _device.StartAcquisition();
-            await Task.Delay(100);
+            await Task.Delay(100, TestContext.CancellationToken);
 
             // Assert
             Assert.IsGreaterThan(0, eventCounter);
