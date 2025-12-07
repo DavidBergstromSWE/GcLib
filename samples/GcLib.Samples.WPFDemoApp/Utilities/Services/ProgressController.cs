@@ -33,17 +33,17 @@ internal sealed class ProgressController : IProgressController
     /// <summary>
     /// Eventhandler for user-canceled dialogs, invoking <see cref="Canceled"/> event.
     /// </summary>
-    private void Controller_Canceled(object sender, EventArgs e)
+    private void Controller_Canceled(object sender, EventArgs eventArgs)
     {
-        Canceled?.Invoke(this, e);
+        Canceled?.Invoke(this, eventArgs);
     }
 
     /// <summary>
     /// Eventhandler for programmically closed dialogs, invoking <see cref="Closed"/> event.
     /// </summary>
-    private void Controller_Closed(object sender, EventArgs e)
+    private void Controller_Closed(object sender, EventArgs eventArgs)
     {
-        Closed?.Invoke(this, e);
+        Closed?.Invoke(this, eventArgs);
     }
 
     /// <summary>

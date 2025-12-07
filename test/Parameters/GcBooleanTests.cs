@@ -33,21 +33,21 @@ public class GcBooleanTests
         // Assert
         Assert.IsNotNull(gcBoolean);
         Assert.IsTrue(gcBoolean.IsImplemented);
-        Assert.AreEqual(gcBoolean.Type, GcParameterType.Boolean);
-        Assert.IsTrue(gcBoolean.Name == "TestBoolean");
-        Assert.IsTrue(gcBoolean.Category == "Test");
-        Assert.IsTrue(gcBoolean.Value == true);
+        Assert.AreEqual(GcParameterType.Boolean, gcBoolean.Type);
+        Assert.AreEqual("TestBoolean", gcBoolean.Name);
+        Assert.AreEqual("Test", gcBoolean.Category);
+        Assert.IsTrue(gcBoolean.Value);
         Assert.IsTrue(gcBoolean.IsReadable);
         Assert.IsTrue(gcBoolean.IsWritable);
-        Assert.IsTrue(gcBoolean.Visibility == GcVisibility.Beginner);
-        Assert.IsTrue(gcBoolean.Description == "This is a unit test parameter.");
+        Assert.AreEqual(GcVisibility.Beginner, gcBoolean.Visibility);
+        Assert.AreEqual("This is a unit test parameter.", gcBoolean.Description);
     }
 
     [TestMethod]
     public void GcBoolean_InvalidName_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcBoolean(name: "Name containing white spaces", category: "Test", value: true));
+        Assert.Throws<ArgumentException>(() => new GcBoolean(name: "Name containing white spaces", category: "Test", value: true));
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class GcBooleanTests
         var gcBoolean = new GcBoolean("NonimplementedParameter");
 
         // Assert
-        Assert.IsTrue(gcBoolean.Name == "NonimplementedParameter");
+        Assert.AreEqual("NonimplementedParameter", gcBoolean.Name);
         Assert.IsFalse(gcBoolean.Value);
         Assert.IsFalse(gcBoolean.IsImplemented);
     }
@@ -79,7 +79,7 @@ public class GcBooleanTests
         bool actualValue = gcBoolean;
 
         // Assert
-        Assert.AreEqual(actualValue, expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class GcBooleanTests
         var actualValue = gcBoolean.ToString();
 
         // Assert
-        Assert.IsTrue(actualValue == expectedValue.ToString());
+        Assert.AreEqual(expectedValue.ToString(), actualValue);
     }
 
     [TestMethod]
@@ -108,7 +108,7 @@ public class GcBooleanTests
         var actualValue = gcBoolean.ToString();
 
         // Assert
-        Assert.IsTrue(actualValue == expectedValue);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -132,10 +132,10 @@ public class GcBooleanTests
         var gcBoolean = GetBoolean("TestBoolean");
 
         // Act/Assert
-        Assert.ThrowsException<FormatException>(() => gcBoolean.FromString("NotBoolean"));
-        Assert.ThrowsException<FormatException>(() => gcBoolean.FromString("42"));
-        Assert.ThrowsException<FormatException>(() => gcBoolean.FromString("3.14"));
-        Assert.ThrowsException<ArgumentNullException>(() => gcBoolean.FromString(null));
+        Assert.Throws<FormatException>(() => gcBoolean.FromString("NotBoolean"));
+        Assert.Throws<FormatException>(() => gcBoolean.FromString("42"));
+        Assert.Throws<FormatException>(() => gcBoolean.FromString("3.14"));
+        Assert.Throws<ArgumentNullException>(() => gcBoolean.FromString(null));
     }
 
     [TestMethod]
@@ -145,7 +145,7 @@ public class GcBooleanTests
         var gcBoolean = GetBoolean("TestBoolean");
 
         // Act/Assert
-        Assert.ThrowsException<ArgumentNullException>(() => gcBoolean.FromString(null));
+        Assert.Throws<ArgumentNullException>(() => gcBoolean.FromString(null));
     }
 
     [TestMethod]
@@ -155,7 +155,7 @@ public class GcBooleanTests
         var gcBoolean = new GcBoolean("NonimplementedParameter");
 
         // Assert
-        Assert.ThrowsException<InvalidOperationException>(() => gcBoolean.FromString("GoodbyeUniverse"));
+        Assert.Throws<InvalidOperationException>(() => gcBoolean.FromString("GoodbyeUniverse"));
     }
 
     [TestMethod]

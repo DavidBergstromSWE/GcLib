@@ -134,7 +134,7 @@ public sealed class GcBoolean : GcParameter
     /// <inheritdoc/>
     public override GcBoolean Copy()
     {
-        return new GcBoolean(Name, Category, Value, IsReadable, IsWritable, Visibility, Description, IsSelector, new List<string>(SelectingParameters), new List<string>(SelectedParameters));
+        return new GcBoolean(Name, Category, Value, IsReadable, IsWritable, Visibility, Description, IsSelector, [.. SelectingParameters], [.. SelectedParameters]);
     }
 
     #endregion

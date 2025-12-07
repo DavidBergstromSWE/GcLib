@@ -101,12 +101,11 @@ public partial class WinFormsDemoApp : Form
         // Begin with empty form.
         SetUIState(UIState.InitialState);
 
+        SaveImagesTextBox.Text = @"";
+        _defaultVisibility = GcVisibility.Beginner;
 #if DEBUG
         SaveImagesTextBox.Text = @"c:\testdata\testfile.bin";
         _defaultVisibility = GcVisibility.Guru;
-#else
-        SaveImagesTextBox.Text = @"";
-        _defaultVisibility = GcVisibility.Beginner;
 #endif
     }
 
@@ -212,11 +211,8 @@ public partial class WinFormsDemoApp : Form
     /// </summary>
     private void CloseDevice()
     {
-        if (_camera != null)
-        {
-            _camera.Close();
-            _camera = null;
-        }
+        _camera?.Close();
+        _camera = null;
     }
 
     /// <summary>

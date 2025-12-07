@@ -615,7 +615,7 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
     /// <summary>
     /// Eventhandler to <see cref="Timer.Elapsed"/> events, advancing current frame index or stopping if final frame has been reached.
     /// </summary>
-    private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+    private void OnTimerElapsed(object sender, ElapsedEventArgs eventArgs)
     {
         if (IsLoaded)
         {

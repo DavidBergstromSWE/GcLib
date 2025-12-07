@@ -274,7 +274,8 @@ public sealed class GcProcessingThread : IDisposable
     /// </summary>
     private void ThreadProc()
     {
-        GcLibrary.Logger.LogTrace("Processingthread started (ID: {ID})", _dataStream.StreamID);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Processingthread started (ID: {ID})", _dataStream.StreamID);
 
         while (IsRunning)
         {
@@ -309,7 +310,8 @@ public sealed class GcProcessingThread : IDisposable
             }
         }
 
-        GcLibrary.Logger.LogTrace("Processingthread stopped (ID: {ID})", _dataStream.StreamID);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Processingthread stopped (ID: {ID})", _dataStream.StreamID);
     }
 
     /// <summary>

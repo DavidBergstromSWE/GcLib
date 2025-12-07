@@ -22,13 +22,13 @@ public class GcCommandTests
 
         // Assert
         Assert.IsNotNull(gcCommand);
-        Assert.AreEqual(gcCommand.Name, "TestCommand");
-        Assert.AreEqual(gcCommand.Category, "Test");
-        Assert.AreEqual(gcCommand.Type, GcParameterType.Command);
+        Assert.AreEqual("TestCommand", gcCommand.Name);
+        Assert.AreEqual("Test", gcCommand.Category);
+        Assert.AreEqual(GcParameterType.Command, gcCommand.Type);
         Assert.IsTrue(gcCommand.IsReadable);
         Assert.IsTrue(gcCommand.IsWritable);
         Assert.IsTrue(gcCommand.IsImplemented);
-        Assert.AreEqual(gcCommand.Visibility, GcVisibility.Beginner);
+        Assert.AreEqual(GcVisibility.Beginner, gcCommand.Visibility);
         Assert.IsFalse(gcCommand.IsDone());
     }
 
@@ -36,7 +36,7 @@ public class GcCommandTests
     public void GcCommand_InvalidName_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.ThrowsException<ArgumentException>(() => new GcCommand(name: "Name containing white spaces", category: "Test", method: () => { }));
+        Assert.Throws<ArgumentException>(() => new GcCommand(name: "Name containing white spaces", category: "Test", method: () => { }));
     }
 
     [TestMethod]
@@ -46,7 +46,7 @@ public class GcCommandTests
         var gcCommand = new GcCommand("NonimplementedParameter");
 
         // Assert
-        Assert.IsTrue(gcCommand.Name == "NonimplementedParameter");
+        Assert.AreEqual("NonimplementedParameter", gcCommand.Name);
         Assert.IsFalse(gcCommand.IsImplemented);
     }
 
@@ -77,7 +77,7 @@ public class GcCommandTests
         var gcCommand = new GcCommand("NonimplementedParameter");
 
         // Assert
-        Assert.ThrowsException<InvalidOperationException>(gcCommand.Execute);
+        Assert.Throws<InvalidOperationException>(gcCommand.Execute);
     }
 
     [TestMethod]

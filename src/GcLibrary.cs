@@ -111,12 +111,14 @@ public static class GcLibrary
             // Add detected devices to list.
             _availableDeviceClasses.Add(_implementedDeviceClasses[typeof(TDevice)]);
 
-            Logger.LogDebug("{DeviceType} registered ({API} v{Version})", _implementedDeviceClasses[typeof(TDevice)].DeviceType.Name, _implementedDeviceClasses[typeof(TDevice)].Name, _implementedDeviceClasses[typeof(TDevice)].Version);
+            if (Logger.IsEnabled(LogLevel.Debug))
+                Logger.LogDebug("{DeviceType} registered ({API} v{Version})", _implementedDeviceClasses[typeof(TDevice)].DeviceType.Name, _implementedDeviceClasses[typeof(TDevice)].Name, _implementedDeviceClasses[typeof(TDevice)].Version);
         }
         catch (Exception ex)
         {
             // Log for debugging.
-            Logger.LogWarning(ex, "Unable to register device class of type {Name}", typeof(TDevice).Name);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                Logger.LogWarning(ex, "Unable to register device class of type {Name}", typeof(TDevice).Name);
         }
     }
 
@@ -137,7 +139,8 @@ public static class GcLibrary
             _availableDeviceClasses.Remove(_implementedDeviceClasses[typeof(TDevice)]);
         _implementedDeviceClasses.Remove(typeof(TDevice));
 
-        Logger.LogDebug("{DeviceType} unregistered", typeof(TDevice).Name);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+            Logger.LogDebug("{DeviceType} unregistered", typeof(TDevice).Name);
     }
 
     /// <summary>

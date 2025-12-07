@@ -148,7 +148,7 @@ public sealed class GcString : GcParameter
     /// <inheritdoc/>
     public override GcString Copy()
     {
-        return new GcString(Name, Category, Value, MaxLength, IsReadable, IsWritable, Visibility, Description, IsSelector, new List<string>(SelectingParameters), new List<string>(SelectedParameters));
+        return new GcString(Name, Category, Value, MaxLength, IsReadable, IsWritable, Visibility, Description, IsSelector, [.. SelectingParameters], [.. SelectedParameters]);
     }
 
     #endregion

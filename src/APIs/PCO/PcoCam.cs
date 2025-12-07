@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Timers;
 using GcLib.Utilities.IO;
-using PCO.SDK;
+using PCO.SDK.NET;
 
 namespace GcLib;
 
@@ -166,7 +167,7 @@ public sealed partial class PcoCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
     #region IDeviceClassDescriptor
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("pco.sdk", FileHelper.GetAssemblyFileVersion("SC2_Cam.dll"), typeof(PcoCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("pco.sdk.net", FileHelper.GetAssemblyFileVersion("SC2_Cam.dll"), typeof(PcoCam));
 
     #endregion
 }

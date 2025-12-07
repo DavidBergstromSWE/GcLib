@@ -51,12 +51,12 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsTrue(Enumerable.SequenceEqual(imageData, buffer.ImageData)); // checks element equality
-            Assert.IsTrue(buffer.Height == (uint)height);
-            Assert.IsTrue(buffer.Width == (uint)width);
-            Assert.IsTrue(buffer.PixelDynamicRangeMax == GenICamConverter.GetDynamicRangeMax(pixelFormat));
-            Assert.IsTrue(buffer.PixelDynamicRangeMin == 0);
-            Assert.IsTrue(buffer.FrameID == frameID);
-            Assert.IsTrue(buffer.TimeStamp == timeStamp);
+            Assert.AreEqual((uint)height, buffer.Height);
+            Assert.AreEqual((uint)width, buffer.Width);
+            Assert.AreEqual(GenICamConverter.GetDynamicRangeMax(pixelFormat), buffer.PixelDynamicRangeMax);
+            Assert.AreEqual<uint>(0, buffer.PixelDynamicRangeMin);
+            Assert.AreEqual(frameID, buffer.FrameID);
+            Assert.AreEqual(timeStamp, buffer.TimeStamp);
         }
 
         [TestMethod]
@@ -80,7 +80,7 @@ namespace GcLib.UnitTests
             var imageData = new byte[] { 1 };
 
             // Act/Assert
-            Assert.ThrowsException<ArgumentException>(() => new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks));
+            Assert.Throws<ArgumentException>(() => new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks));
         }
 
         [TestMethod]
@@ -114,12 +114,12 @@ namespace GcLib.UnitTests
             var buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(depthType), frameID, timeStamp);
 
             // Assert
-            Assert.IsTrue(mat.Width == buffer.Width);
-            Assert.IsTrue(mat.Height == buffer.Height);
-            Assert.IsTrue(mat.NumberOfChannels == buffer.NumChannels);
-            Assert.IsTrue(EmguConverter.GetBitDepth(mat.Depth) == buffer.BitDepth);
-            Assert.IsTrue(frameID == buffer.FrameID);
-            Assert.IsTrue(timeStamp == buffer.TimeStamp);
+            Assert.AreEqual(buffer.Width, (uint)mat.Width);
+            Assert.AreEqual(buffer.Height, (uint)mat.Height);
+            Assert.AreEqual(buffer.NumChannels, (uint)mat.NumberOfChannels);
+            Assert.AreEqual(buffer.BitDepth, (uint)EmguConverter.GetBitDepth(mat.Depth));
+            Assert.AreEqual(buffer.FrameID, frameID);
+            Assert.AreEqual(buffer.TimeStamp, timeStamp);
         }
 
         [TestMethod]
@@ -146,7 +146,7 @@ namespace GcLib.UnitTests
             var imageData = new Mat();
 
             // Act
-            Assert.ThrowsException<ArgumentException>(() => new GcBuffer(imageData, 255, 42, (ulong)DateTime.Now.Ticks));
+            Assert.Throws<ArgumentException>(() => new GcBuffer(imageData, 255, 42, (ulong)DateTime.Now.Ticks));
         }
 
         [TestMethod]
@@ -162,7 +162,7 @@ namespace GcLib.UnitTests
             var mat = Mat.Eye(3, 3, depthType, 1);
 
             // Act
-            Assert.ThrowsException<NotSupportedException>(() => new GcBuffer(mat, (uint)EmguConverter.GetMax(depthType), 42, (ulong)DateTime.Now.Ticks));
+            Assert.Throws<NotSupportedException>(() => new GcBuffer(mat, (uint)EmguConverter.GetMax(depthType), 42, (ulong)DateTime.Now.Ticks));
         }
 
         [TestMethod]
@@ -177,13 +177,13 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsTrue(Enumerable.SequenceEqual(copiedBuffer.ImageData, originalBuffer.ImageData)); // element are equal
-            Assert.IsTrue(copiedBuffer.Width == originalBuffer.Width);
-            Assert.IsTrue(copiedBuffer.Height == originalBuffer.Height);
-            Assert.IsTrue(copiedBuffer.PixelFormat == originalBuffer.PixelFormat);
-            Assert.IsTrue(copiedBuffer.PixelDynamicRangeMax == originalBuffer.PixelDynamicRangeMax);
-            Assert.IsTrue(copiedBuffer.PixelDynamicRangeMin == originalBuffer.PixelDynamicRangeMin);
-            Assert.IsTrue(copiedBuffer.FrameID == originalBuffer.FrameID);
-            Assert.IsTrue(copiedBuffer.TimeStamp == originalBuffer.TimeStamp);
+            Assert.AreEqual(originalBuffer.Width, copiedBuffer.Width);
+            Assert.AreEqual(originalBuffer.Height, copiedBuffer.Height);
+            Assert.AreEqual(originalBuffer.PixelFormat, copiedBuffer.PixelFormat);
+            Assert.AreEqual(originalBuffer.PixelDynamicRangeMax, copiedBuffer.PixelDynamicRangeMax);
+            Assert.AreEqual(originalBuffer.PixelDynamicRangeMin, copiedBuffer.PixelDynamicRangeMin);
+            Assert.AreEqual(originalBuffer.FrameID, copiedBuffer.FrameID);
+            Assert.AreEqual(originalBuffer.TimeStamp, copiedBuffer.TimeStamp);
 
             Assert.AreNotSame(notExpected: originalBuffer.ImageData, actual: copiedBuffer.ImageData); // does not share memory
         }
@@ -230,10 +230,10 @@ namespace GcLib.UnitTests
             var mat = buffer.ToMat();
 
             // Assert
-            Assert.IsTrue(mat.Width == width);
-            Assert.IsTrue(mat.Height == height);
-            Assert.IsTrue(mat.NumberOfChannels == buffer.NumChannels);
-            Assert.IsTrue(mat.Depth == EmguConverter.GetDepthType(pixelFormat));
+            Assert.AreEqual(width, mat.Width);
+            Assert.AreEqual(height, mat.Height);
+            Assert.AreEqual(buffer.NumChannels, (uint)mat.NumberOfChannels);
+            Assert.AreEqual(EmguConverter.GetDepthType(pixelFormat), mat.Depth);
         }
 
         [TestMethod]
@@ -272,7 +272,7 @@ namespace GcLib.UnitTests
             for (int col = 0; col < buffer.Width; col++)
                 for (int row = 0; row < buffer.Height; row++)
                     for (int ch = 0; ch < buffer.NumChannels; ch++)
-                        Assert.IsTrue(buffer.GetPixel((uint)row, (uint)col, (uint)ch) == GenICamConverter.GetDynamicRangeMax(pixelFormat));
+                        Assert.AreEqual(GenICamConverter.GetDynamicRangeMax(pixelFormat), buffer.GetPixel((uint)row, (uint)col, (uint)ch));
         }
 
         [TestMethod]
@@ -296,7 +296,7 @@ namespace GcLib.UnitTests
                     {
                         var pixelValues = buffer.GetPixel((uint)row, (uint)col);
                         foreach (var pixelValue in pixelValues)
-                            Assert.IsTrue(pixelValue == GenICamConverter.GetDynamicRangeMax(pixelFormat));
+                            Assert.AreEqual(GenICamConverter.GetDynamicRangeMax(pixelFormat), pixelValue);
                     }     
         }
 
@@ -308,10 +308,10 @@ namespace GcLib.UnitTests
             var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
-            var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.GetPixel(3, 2));
-            Assert.IsTrue(ex.ParamName == "row");
-            ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.GetPixel(3, 2, 0));
-            Assert.IsTrue(ex.ParamName == "row");
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.GetPixel(3, 2));
+            Assert.AreEqual("row", ex.ParamName);
+            ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.GetPixel(3, 2, 0));
+            Assert.AreEqual("row", ex.ParamName);
         }
 
         [TestMethod]
@@ -322,10 +322,10 @@ namespace GcLib.UnitTests
             var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
-            var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.GetPixel(2, 3));
-            Assert.IsTrue(ex.ParamName == "col");
-            ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.GetPixel(2, 3, 0));
-            Assert.IsTrue(ex.ParamName == "col");
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.GetPixel(2, 3));
+            Assert.AreEqual("col", ex.ParamName);
+            ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.GetPixel(2, 3, 0));
+            Assert.AreEqual("col", ex.ParamName);
         }
 
         [TestMethod]
@@ -336,8 +336,8 @@ namespace GcLib.UnitTests
             var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
-            var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.GetPixel(2, 2, 1));
-            Assert.IsTrue(ex.ParamName == "channel");
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.GetPixel(2, 2, 1));
+            Assert.AreEqual("channel", ex.ParamName);
         }
 
         [TestMethod]
@@ -414,10 +414,10 @@ namespace GcLib.UnitTests
             var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
-            var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.SetPixel(3, 2, 0, 33));
-            Assert.IsTrue(ex.ParamName == "row");
-            ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.SetPixel(3, 2, [33]));
-            Assert.IsTrue(ex.ParamName == "row");
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(3, 2, 0, 33));
+            Assert.AreEqual("row", ex.ParamName);
+            ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(3, 2, [33]));
+            Assert.AreEqual("row", ex.ParamName);
         }
 
         [TestMethod]
@@ -428,10 +428,10 @@ namespace GcLib.UnitTests
             var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
-            var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 3, 0, 33));
-            Assert.IsTrue(ex.ParamName == "col");
-            ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 3, [33]));
-            Assert.IsTrue(ex.ParamName == "col");
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 3, 0, 33));
+            Assert.AreEqual("col", ex.ParamName);
+            ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 3, [33]));
+            Assert.AreEqual("col", ex.ParamName);
         }
 
         [TestMethod]
@@ -442,10 +442,10 @@ namespace GcLib.UnitTests
             var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
-            var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, 1, 33));
-            Assert.IsTrue(ex.ParamName == "channel");
-            ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, [33, 33, 33]));
-            Assert.IsTrue(ex.ParamName == "pixelValues");
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, 1, 33));
+            Assert.AreEqual("channel", ex.ParamName);
+            ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, [33, 33, 33]));
+            Assert.AreEqual("pixelValues", ex.ParamName);
         }
 
         [TestMethod]
@@ -456,10 +456,10 @@ namespace GcLib.UnitTests
             var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
-            var ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, 0, 256));
-            Assert.IsTrue(ex.ParamName == "pixelValue");
-            ex = Assert.ThrowsException<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, [33, 2, -5]));
-            Assert.IsTrue(ex.ParamName == "pixelValues");
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, 0, 256));
+            Assert.AreEqual("pixelValue", ex.ParamName);
+            ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, [33, 2, -5]));
+            Assert.AreEqual("pixelValues", ex.ParamName);
         }
 
         [TestMethod]
@@ -478,8 +478,8 @@ namespace GcLib.UnitTests
             var size = buffer.GetSize();
 
             // Assert
-            Assert.IsTrue(size.Height == height);
-            Assert.IsTrue(size.Width == width);
+            Assert.AreEqual(height, size.Height);
+            Assert.AreEqual(width, size.Width);
         }
 
         #endregion

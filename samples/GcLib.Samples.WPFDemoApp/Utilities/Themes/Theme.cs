@@ -12,6 +12,8 @@ namespace ImagerViewer.Utilities.Themes;
 /// <param name="schemeColor">Scheme color for theme.</param>
 /// <param name="baseColor">Base color for theme.</param>
 /// <param name="brush">Brush to be used for showcasing theme.</param>
+/// <param name="backgroundBrush">Background brush of theme.</param>
+/// <param name="foregroundBrush">Foreground brush of theme.</param>
 public readonly struct Theme(string name, string schemeColor, string baseColor, Brush brush, Brush foregroundBrush, Brush backgroundBrush)
 {
     /// <summary>

@@ -21,16 +21,6 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
     /// </summary>
     private bool _threadIsRunning;
 
-    /// <summary>
-    /// PC time when acquisition is started (given in PC ticks, where a single tick represents one hundred nanoseconds or one ten-millionth of a second).
-    /// </summary>
-    private ulong _pcTime0;
-
-    /// <summary>
-    /// Camera timestamp when acquisition is started (in nanoseconds).
-    /// </summary>
-    private ulong _acquisitionStartTime = 0;
-
     #endregion
 
     #region Properties
@@ -57,13 +47,6 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
     {
         if (IsAcquiring)
             throw new InvalidOperationException($"Unable to start acquisition as Device {DeviceInfo.ModelName} is already acquiring!");
-
-        // PC time at acquisition start.
-        _pcTime0 = (ulong)DateTime.Now.Ticks;
-
-        // Timestamp of camera at acquisition start.
-        _camera.TimestampLatch.Execute();
-        _acquisitionStartTime = (ulong)_camera.TimestampLatchValue.Value;
 
         // Start image acquisition thread.
         _imageAcquisitionThread = new Thread(ImageAcquisitionThread) { Name = "ImageAcquisitionThread (SpinCam)" };
@@ -107,7 +90,8 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
     private void ImageAcquisitionThread()
     {
         // Log debugging info.
-        GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) started", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) started", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
 
         while (_threadIsRunning)
         {
@@ -127,12 +111,14 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
             catch (SpinnakerException ex)
             {
                 // Log debugging info.
-                GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                    GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
             }
         }
 
         // Log debugging info.
-        GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) stopped", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) stopped", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
     }
 
     /// <summary>
@@ -142,13 +128,10 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
     /// <returns>Converted <see cref="GcBuffer"/>.</returns>
     private GcBuffer ToGcBuffer(IManagedImage image)
     {
-        // Extract timestamp from image and convert to PC ticks.
-        ulong timeStamp = _pcTime0 + (ulong)Math.Round((image.TimeStamp - (double)_acquisitionStartTime) / 100);
-
         // Parse pixel format.
-        PixelFormat pixelFormat = (PixelFormat)Enum.Parse(typeof(PixelFormat), image.PixelFormat.ToString());
+        PixelFormat pixelFormat = Enum.Parse<PixelFormat>(image.PixelFormat.ToString());
 
-        return new GcBuffer(image.ManagedData, image.Width, image.Height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), (long)image.FrameID, timeStamp);
+        return new GcBuffer(image.ManagedData, image.Width, image.Height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), (long)image.FrameID, (ulong)DateTime.Now.Ticks);
     }
 
     #endregion

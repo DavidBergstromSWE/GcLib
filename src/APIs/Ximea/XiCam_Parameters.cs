@@ -137,7 +137,7 @@ public sealed partial class XiCam
 
                             parameterList.Add(new GcInteger(name: parameterName, category: category, description: description, unit: string.Empty,
                                                             value: integerValue, min: integerMin, max: integerMax, increment: integerIncrement, incrementMode: EIncMode.fixedIncrement, listOfValidValue: null,
-                                                            isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: (GcVisibility)Enum.Parse(typeof(GcVisibility), visibility),
+                                                            isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: Enum.Parse<GcVisibility>(visibility),
                                                             isSelector: isSelector, selectingParameters: null, selectedParameters: selectedParameters));
 
                             break;
@@ -169,7 +169,7 @@ public sealed partial class XiCam
                             parameterList.Add(new GcFloat(name: parameterName, category: category, description: description, unit: string.Empty,
                                                           value: Value, min: Min, max: Max, increment: Increment,
                                                           displayPrecision: Precision, // needs further testing!
-                                                          isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: (GcVisibility)Enum.Parse(typeof(GcVisibility), visibility),
+                                                          isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: Enum.Parse<GcVisibility>(visibility),
                                                           isSelector: isSelector, selectingParameters: null, selectedParameters: selectedParameters));
 
                             break;
@@ -213,7 +213,7 @@ public sealed partial class XiCam
 
                             parameterList.Add(new GcEnumeration(name: parameterName, category: category, description: description,
                                                                 gcEnumEntry: enumEntry, gcEnumEntries: enumEntries,
-                                                                isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: (GcVisibility)Enum.Parse(typeof(GcVisibility), visibility),
+                                                                isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: Enum.Parse<GcVisibility>(visibility),
                                                                 isSelector: isSelector, selectingParameters: null, selectedParameters: selectedParameters));
 
                             break;
@@ -234,7 +234,7 @@ public sealed partial class XiCam
 
                             parameterList.Add(new GcBoolean(name: parameterName, category: category, description: description,
                                                             value: booleanValue,
-                                                            isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: (GcVisibility)Enum.Parse(typeof(GcVisibility), visibility),
+                                                            isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: Enum.Parse<GcVisibility>(visibility),
                                                             isSelector: isSelector, selectingParameters: null, selectedParameters: selectedParameters));
 
                             break;
@@ -255,7 +255,7 @@ public sealed partial class XiCam
 
                             parameterList.Add(new GcString(name: parameterName, category: category, description: description,
                                                            value: stringValue, maxLength: 100000, // enough?
-                                                           isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: (GcVisibility)Enum.Parse(typeof(GcVisibility), visibility),
+                                                           isReadable: accessMode == "RO" || accessMode == "RW", isWritable: accessMode == "RW" || accessMode == "WO", visibility: Enum.Parse<GcVisibility>(visibility),
                                                            isSelector: isSelector, selectingParameters: null, selectedParameters: selectedParameters));
 
                             break;
@@ -280,7 +280,7 @@ public sealed partial class XiCam
                                                             method: () => _xiCam.SetParam(_xiApiParameterList[parameterName], intCommandValue),
                                                             isReadable: accessMode == "RO" || accessMode == "RW",
                                                             isWritable: accessMode == "RW" || accessMode == "WO",
-                                                            visibility: (GcVisibility)Enum.Parse(typeof(GcVisibility), visibility),
+                                                            visibility: Enum.Parse<GcVisibility>(visibility),
                                                             isSelector: isSelector,
                                                             selectingParameters: null,
                                                             selectedParameters: selectedParameters));

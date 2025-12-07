@@ -237,7 +237,8 @@ public sealed class GcBufferWriter : IDisposable
         }
         catch (IOException ex)
         {
-            GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
 
             // Raise event.
             OnWritingAborted(ex.Message, ex);
@@ -308,7 +309,8 @@ public sealed class GcBufferWriter : IDisposable
                 catch (IOException ex)
                 {
                     // Log error.
-                    GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
+                    if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                        GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
 
                     // Clear buffer.
                     _bufferQueue.Clear();
@@ -330,7 +332,8 @@ public sealed class GcBufferWriter : IDisposable
     {
         if (_bufferQueue.IsEmpty == false)
         {
-            GcLibrary.Logger.LogDebug("{bufferCount} buffers remaining. Finishing up...", _bufferQueue.Count);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+                GcLibrary.Logger.LogDebug("{bufferCount} buffers remaining. Finishing up...", _bufferQueue.Count);
             while (_bufferQueue.TryDequeue(out GcBuffer buffer))
             {
                 try
@@ -340,7 +343,8 @@ public sealed class GcBufferWriter : IDisposable
                 catch (IOException ex)
                 {
                     // Log error.
-                    GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
+                    if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                        GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
 
                     // Clear buffer.
                     _bufferQueue.Clear();
@@ -352,7 +356,8 @@ public sealed class GcBufferWriter : IDisposable
 
                 BuffersWritten++;
             }
-            GcLibrary.Logger.LogDebug("Writing complete. {bufferCount} buffers remaining.", _bufferQueue.Count);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+                GcLibrary.Logger.LogDebug("Writing complete. {bufferCount} buffers remaining.", _bufferQueue.Count);
         }
     }
 

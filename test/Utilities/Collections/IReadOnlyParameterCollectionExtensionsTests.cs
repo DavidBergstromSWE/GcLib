@@ -91,7 +91,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsInstanceOfType<bool>(value);
-            Assert.AreEqual(true, value);
+            Assert.IsTrue(value);
         }
 
         [TestMethod]
@@ -107,7 +107,7 @@ namespace GcLib.UnitTests
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => collection.GetBooleanValue(parameterName));
+            Assert.Throws<InvalidOperationException>(() => collection.GetBooleanValue(parameterName));
         }
 
         [TestMethod]
@@ -137,7 +137,7 @@ namespace GcLib.UnitTests
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => collection.SetBooleanValue(parameterName, false));
+            Assert.Throws<InvalidOperationException>(() => collection.SetBooleanValue(parameterName, false));
         }
 
         #endregion
@@ -204,7 +204,7 @@ namespace GcLib.UnitTests
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => collection.GetStringValue(parameterName));
+            Assert.Throws<InvalidOperationException>(() => collection.GetStringValue(parameterName));
         }
 
         [TestMethod]
@@ -285,7 +285,7 @@ namespace GcLib.UnitTests
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => collection.GetEnumValueAsInt(parameterName));
+            Assert.Throws<InvalidOperationException>(() => collection.GetEnumValueAsInt(parameterName));
         }
 
         [TestMethod]
@@ -315,7 +315,7 @@ namespace GcLib.UnitTests
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => collection.GetEnumValueAsString(parameterName));
+            Assert.Throws<InvalidOperationException>(() => collection.GetEnumValueAsString(parameterName));
         }
 
         [TestMethod]
@@ -410,7 +410,7 @@ namespace GcLib.UnitTests
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => collection.GetIntegerValue(parameterName));
+            Assert.Throws<InvalidOperationException>(() => collection.GetIntegerValue(parameterName));
         }
 
         [TestMethod]
@@ -440,7 +440,7 @@ namespace GcLib.UnitTests
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => collection.SetIntegerValue(parameterName, 7));
+            Assert.Throws<InvalidOperationException>(() => collection.SetIntegerValue(parameterName, 7));
         }
 
         #endregion
@@ -507,7 +507,7 @@ namespace GcLib.UnitTests
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => collection.GetFloatValue(parameterName));
+            Assert.Throws<InvalidOperationException>(() => collection.GetFloatValue(parameterName));
         }
 
         [TestMethod]
@@ -537,7 +537,7 @@ namespace GcLib.UnitTests
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 
             // Act/Assert
-            Assert.ThrowsException<InvalidOperationException>(() => collection.SetFloatValue(parameterName, 2.7));
+            Assert.Throws<InvalidOperationException>(() => collection.SetFloatValue(parameterName, 2.7));
         }
 
         #endregion

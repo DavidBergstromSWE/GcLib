@@ -7,6 +7,7 @@ using GcLib.Utilities.Collections;
 using System;
 using System.Drawing;
 using System.Linq;
+using System.ComponentModel;
 
 namespace WinFormsDemoApp.Controls;
 
@@ -57,26 +58,31 @@ public partial class GcDisplayControl : ImageBox
     /// <summary>
     /// Indicates whether frame ID will be shown as a text overlay in top left corner of displayed image.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool ShowFrameID { get; set; } = false;
 
     /// <summary>
     /// Indicates whether image timestamp will be shown as a text overlay in top right corner of displayed image. 
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool ShowTimeStamp { get; set; } = false;
 
     /// <summary>
     /// Indicates whether frame rate will be shown as a text overlay in bottom center of displayed image. 
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool ShowFPS { get; set; } = false;
 
     /// <summary>
     /// Color of text overlays.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color TextOverlayColor { get; set; } = Color.Black;
 
     /// <summary>
     /// Font size of text overlays.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public FontFace TextOverlayFont { get; set; } = FontFace.HersheyPlain;
 
     #endregion
@@ -255,7 +261,7 @@ public partial class GcDisplayControl : ImageBox
     /// <returns></returns>
     private static double CalcFPS(ulong[] timeStamps)
     {
-        ulong[] array = timeStamps.Where(x => x > 0).ToArray();
+        ulong[] array = [.. timeStamps.Where(x => x > 0)];
         return (double)TimeSpan.TicksPerSecond / (array.Max() - array.Min()) * (array.Length - 1);
     }
 

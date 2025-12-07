@@ -51,7 +51,7 @@ internal sealed class LogModel
         var logs = _logEvents.ToList();
 
         // Return logs with level equal to or higher than requested.
-        return new List<LogEvent>(logs.Where(l => l.Level >= logEventLevel));
+        return [.. logs.Where(l => l.Level >= logEventLevel)];
     }
 
     /// <summary>

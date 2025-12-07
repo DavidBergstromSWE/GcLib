@@ -129,7 +129,7 @@ public sealed class GcCommand : GcParameter
     /// <inheritdoc/>
     public override GcCommand Copy()
     {
-        return new GcCommand(Name, Category, _executeMethod, IsReadable, IsWritable, Visibility, Description, IsSelector, new List<string>(SelectingParameters), new List<string>(SelectedParameters));
+        return new GcCommand(Name, Category, _executeMethod, IsReadable, IsWritable, Visibility, Description, IsSelector, [.. SelectingParameters], [.. SelectedParameters]);
     }
 
     

@@ -30,7 +30,7 @@ namespace GcLib.UnitTests
             var devices = VirtualCam.EnumerateDevices();
 
             // Assert
-            Assert.IsTrue(devices.Count == 2);
+            Assert.HasCount(2, devices);
         }
 
         [TestMethod]
@@ -43,20 +43,19 @@ namespace GcLib.UnitTests
             _device = new VirtualCam(ID);
 
             // Assert
-            Assert.IsTrue(VirtualCam.DeviceConnectionDelay == 0);
-            Assert.IsTrue(_device.PayloadSize > 0);
-            Assert.IsTrue(_device.Parameters.Count > 0);
-            Assert.IsTrue(_device.BufferCapacity > 0);
+            Assert.IsGreaterThan<uint>(0, _device.PayloadSize);
+            Assert.IsNotEmpty(_device.Parameters);
+            Assert.IsGreaterThan<uint>(0, _device.BufferCapacity);
             Assert.IsFalse(_device.IsAcquiring);         
             Assert.IsNotNull(_device.DeviceInfo);
             Assert.IsTrue(_device.DeviceInfo.IsOpen);
             Assert.IsFalse(_device.DeviceInfo.IsAccessible);
-            Assert.IsTrue(_device.DeviceInfo.ModelName == nameof(VirtualCam));
+            Assert.AreEqual(nameof(VirtualCam), _device.DeviceInfo.ModelName);
             Assert.IsNotNull(_device.DeviceInfo.SerialNumber);
-            Assert.IsTrue(_device.DeviceInfo.UniqueID == ID);
-            Assert.IsTrue(_device.DeviceInfo.UserDefinedName == ID);
+            Assert.AreEqual(ID, _device.DeviceInfo.UniqueID);
+            Assert.AreEqual(ID, _device.DeviceInfo.UserDefinedName);
             Assert.IsTrue(_device.DeviceInfo.DeviceClassInfo.DeviceType == typeof(VirtualCam));
-            Assert.IsTrue(_device.GetNumDataStreams() == 0);
+            Assert.AreEqual<uint>(0, _device.GetNumDataStreams());
         }
 
         [TestMethod]
@@ -85,7 +84,7 @@ namespace GcLib.UnitTests
             _device.StartAcquisition();
 
             // Assert
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
 
             // Cleanup
             _device.AcquisitionStarted -= eventHandler;
@@ -105,7 +104,7 @@ namespace GcLib.UnitTests
             await Task.Delay(100);
 
             // Assert
-            Assert.IsTrue(eventCounter > 0);
+            Assert.IsGreaterThan(0, eventCounter);
 
             // Cleanup
             _device.NewBuffer -= eventHandler;
@@ -139,7 +138,7 @@ namespace GcLib.UnitTests
             _device.StopAcquisition();
 
             // Assert
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
 
             // Cleanup
             _device.AcquisitionStopped -= eventHandler;
@@ -172,7 +171,7 @@ namespace GcLib.UnitTests
             _device.StopAcquisition();
 
             // Assert
-            Assert.IsTrue(eventCounter == 0);
+            Assert.AreEqual(0, eventCounter);
 
             // Cleanup
             _device.AcquisitionStopped -= eventHandler;
@@ -224,7 +223,7 @@ namespace GcLib.UnitTests
 
             // Assert
             Assert.IsNotNull(parameter);
-            Assert.IsTrue(actualTypeName == expectedTypeName);
+            Assert.AreEqual(expectedTypeName, actualTypeName);
         }
 
         [TestMethod]
@@ -287,7 +286,7 @@ namespace GcLib.UnitTests
             var actualValue = _device.Parameters.GetParameterValue(parameterName);
 
             // Assert
-            Assert.IsTrue(actualValue == expectedValue);
+            Assert.AreEqual(expectedValue, actualValue);
         }
 
         [TestMethod]
@@ -333,7 +332,7 @@ namespace GcLib.UnitTests
             _device.Parameters.SetParameterValue("TestString", "GoodbyeUniverse");
 
             // Assert
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
 
             // Cleanup
             _device.ParameterInvalidate -= eventHandler;
@@ -352,7 +351,7 @@ namespace GcLib.UnitTests
             _device.Parameters.ExecuteParameterCommand("TestCommand");
 
             // Assert
-            Assert.IsTrue(eventCounter == 1);
+            Assert.AreEqual(1, eventCounter);
 
             // Cleanup
             _device.ParameterInvalidate -= eventHandler;
@@ -370,7 +369,7 @@ namespace GcLib.UnitTests
             GcInteger widthMax = _device.Parameters["WidthMax"] as GcInteger;
             GcInteger offsetX = _device.Parameters["OffsetX"] as GcInteger;
 
-            Assert.IsTrue(offsetX.Max == widthMax.Value - 400);
+            Assert.AreEqual(widthMax.Value - 400, offsetX.Max);
         }
 
         [TestMethod]
@@ -381,7 +380,7 @@ namespace GcLib.UnitTests
             GcInteger heightMax = _device.Parameters["HeightMax"] as GcInteger;
             GcInteger offsetY = _device.Parameters["OffsetY"] as GcInteger;
 
-            Assert.IsTrue(offsetY.Max == heightMax.Value - 300);
+            Assert.AreEqual(heightMax.Value - 300, offsetY.Max);
         }
 
         [TestMethod]
@@ -397,9 +396,9 @@ namespace GcLib.UnitTests
             GcInteger widthMax = _device.Parameters["WidthMax"] as GcInteger;
             GcInteger offsetX = _device.Parameters["OffsetX"] as GcInteger;
 
-            Assert.IsTrue(width == 320 / binningHorizontal);
-            Assert.IsTrue(widthMax == 640 / binningHorizontal);
-            Assert.IsTrue(offsetX.Max == widthMax - width);
+            Assert.AreEqual<long>(320 / binningHorizontal, width);
+            Assert.AreEqual<long>(640 / binningHorizontal, widthMax);
+            Assert.AreEqual(widthMax - width, offsetX.Max);
         }
 
         [TestMethod]
@@ -415,9 +414,9 @@ namespace GcLib.UnitTests
             GcInteger heightMax = _device.Parameters["HeightMax"] as GcInteger;
             GcInteger offsetY = _device.Parameters["OffsetY"] as GcInteger;
 
-            Assert.IsTrue(height == 240 / binningVertical);
-            Assert.IsTrue(heightMax == 480 / binningVertical);
-            Assert.IsTrue(offsetY.Max == heightMax - height);
+            Assert.AreEqual<long>(240 / binningVertical, height);
+            Assert.AreEqual<long>(480 / binningVertical, heightMax);
+            Assert.AreEqual(heightMax - height, offsetY.Max);
         }
 
         [TestMethod]
@@ -434,7 +433,7 @@ namespace GcLib.UnitTests
 
             GcEnumeration pixelSize = _device.Parameters["PixelSize"] as GcEnumeration;
 
-            Assert.IsTrue((PixelSize)pixelSize.IntValue == GenICamConverter.GetPixelSize(pixelFormat));
+            Assert.AreEqual(GenICamConverter.GetPixelSize(pixelFormat), (PixelSize)pixelSize.IntValue);
         }
     }
 }

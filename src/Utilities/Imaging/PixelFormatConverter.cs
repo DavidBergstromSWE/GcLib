@@ -5,6 +5,7 @@ namespace GcLib.Utilities.Imaging;
 /// <summary>
 /// Utility class for handling pixel formats conversions.
 /// </summary>
+[System.Runtime.Versioning.SupportedOSPlatform("windows")]
 public static class PixelFormatConverter
 {
     /// <summary>

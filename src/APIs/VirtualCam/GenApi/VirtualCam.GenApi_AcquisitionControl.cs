@@ -123,7 +123,8 @@ public sealed partial class VirtualCam
                     _virtualCam.IsAcquiring = true;
 
                     // Log debugging info.
-                    GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) started", _virtualCam.DeviceInfo.ModelName, _virtualCam.DeviceInfo.UniqueID);
+                    if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+                        GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) started", _virtualCam.DeviceInfo.ModelName, _virtualCam.DeviceInfo.UniqueID);
 
                     _virtualCam.OnAcquisitionStarted();
 
@@ -164,7 +165,8 @@ public sealed partial class VirtualCam
                     _virtualCam.IsAcquiring = false;
 
                     // Log debugging info.
-                    GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) stopped", _virtualCam.DeviceInfo.ModelName, _virtualCam.DeviceInfo.UniqueID);
+                    if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+                        GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) stopped", _virtualCam.DeviceInfo.ModelName, _virtualCam.DeviceInfo.UniqueID);
 
                     _virtualCam.OnAcquisitionStopped();
                 });

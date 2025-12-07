@@ -24,7 +24,7 @@ public class ImagePatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(image);
-        Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
         Assert.IsTrue(image.All(p => p == 0));
     }
 
@@ -42,7 +42,7 @@ public class ImagePatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(image);
-        Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public class ImagePatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(image);
-        Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
     }
 
     [TestMethod]
@@ -78,7 +78,7 @@ public class ImagePatternGeneratorTests
 
             // Assert
             Assert.IsNotNull(image);
-            Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
         }
     }
 
@@ -96,7 +96,7 @@ public class ImagePatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(image);
-        Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class ImagePatternGeneratorTests
 
             // Assert
             Assert.IsNotNull(image);
-            Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
         }
     }
 
@@ -135,7 +135,7 @@ public class ImagePatternGeneratorTests
 
             // Assert
             Assert.IsNotNull(image);
-            Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
         }
     }
 
@@ -155,7 +155,7 @@ public class ImagePatternGeneratorTests
 
             // Assert
             Assert.IsNotNull(image);
-            Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
         }
     }
 
@@ -175,7 +175,7 @@ public class ImagePatternGeneratorTests
 
             // Assert
             Assert.IsNotNull(image);
-            Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
         }
     }
 
@@ -193,6 +193,6 @@ public class ImagePatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(image);
-        Assert.IsTrue(image.Length == _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)image.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
     }
 }

@@ -95,18 +95,6 @@ internal static class GcBufferExtensions
     /// Calculates the stride (bytes per row) of an image.
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
-    /// <param name="bitsPerPixel">Number of bits per pixel (all channels included).</param>
-    /// <returns>Stride in bytes.</returns>
-    private static int CalculateStride(uint width, uint bitsPerPixel)
-    {
-        // Round to nearest 4 bytes.
-        return (int)(width * bitsPerPixel / 8 + (width % 4));
-    }
-
-    /// <summary>
-    /// Calculates the stride (bytes per row) of an image.
-    /// </summary>
-    /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="pixelFormat">Pixel format.</param>
     /// <returns>Stride in bytes.</returns>
     private static int CalculateStride(int width, System.Windows.Media.PixelFormat pixelFormat)

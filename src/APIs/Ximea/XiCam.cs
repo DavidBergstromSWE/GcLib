@@ -54,10 +54,12 @@ public sealed partial class XiCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
         // Update device info.
         _xiCam.GetParam(PRM.DEVICE_NAME, out string deviceName);
         _xiCam.GetParam(PRM.DEVICE_SN, out string serialNumber);
+        _xiCam.GetParam(PRM.DEVICE_ID, out string ID);
+
         DeviceInfo = new GcDeviceInfo(vendorName: "Ximea",
                                       modelName: deviceName,
                                       serialNumber: serialNumber,
-                                      uniqueID: serialNumber,
+                                      uniqueID: ID.Replace("\0", string.Empty), // remove null characters
                                       deviceClass: DeviceClassInfo,
                                       isAccessible: false,
                                       isOpen: true);
@@ -138,7 +140,8 @@ public sealed partial class XiCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
         catch (xiExc ex)
         {
             _checkConnectionTimer.Stop();
-            GcLibrary.Logger.LogError(ex, "Failed to detect {device} (ID: {ID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                GcLibrary.Logger.LogError(ex, "Failed to detect {device} (ID: {ID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
             isAvailable = false;
         }
         finally

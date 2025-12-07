@@ -340,7 +340,7 @@ public sealed class GcEnumeration : GcParameter
         foreach (var entry in Entries)
             entries.Add(entry.DeepCopy());
 
-        return new GcEnumeration(Name, Category, entries.Find(e => e.ValueInt == CurrentEntry.ValueInt), entries, IsReadable, IsWritable, Visibility, Description, IsSelector, new List<string>(SelectingParameters), new List<string>(SelectedParameters));
+        return new GcEnumeration(Name, Category, entries.Find(e => e.ValueInt == CurrentEntry.ValueInt), entries, IsReadable, IsWritable, Visibility, Description, IsSelector, [.. SelectingParameters], [.. SelectedParameters]);
     }
 
     #endregion

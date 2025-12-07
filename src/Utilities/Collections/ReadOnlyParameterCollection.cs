@@ -19,7 +19,7 @@ public sealed class ReadOnlyParameterCollection(string collectionName, IEnumerab
     /// <summary>
     /// List of parameters in the collection.
     /// </summary>
-    private readonly IReadOnlyList<GcParameter> _parameters = parameters.ToList();
+    private readonly IReadOnlyList<GcParameter> _parameters = [.. parameters];
 
     /// <inheritdoc/>
     public string Name { get; set; } = collectionName;
@@ -33,7 +33,7 @@ public sealed class ReadOnlyParameterCollection(string collectionName, IEnumerab
     /// <inheritdoc/>
     public IReadOnlyList<GcParameter> ToList(GcVisibility visibility = GcVisibility.Guru)
     {
-        return _parameters.Where(p => p.Visibility <= visibility).ToList();
+        return [.. _parameters.Where(p => p.Visibility <= visibility)];
     }
 
     /// <summary>
@@ -63,11 +63,13 @@ public sealed class ReadOnlyParameterCollection(string collectionName, IEnumerab
                 this[parameterName].FromString(parameterValue);
 
                 // Log debugging info.
-                GcLibrary.Logger.LogDebug("{parameterName} set to {getValue} in {container}", parameterName, GetParameterValue(parameterName), Name);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+                    GcLibrary.Logger.LogDebug("{parameterName} set to {getValue} in {container}", parameterName, GetParameterValue(parameterName), Name);
             }
             catch (Exception ex)
             {
-                GcLibrary.Logger.LogError(ex, "Failed to set {parameterName} in {container}", parameterName, Name);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                    GcLibrary.Logger.LogError(ex, "Failed to set {parameterName} in {container}", parameterName, Name);
                 throw;
             }
         }
@@ -85,12 +87,14 @@ public sealed class ReadOnlyParameterCollection(string collectionName, IEnumerab
                     parameter.Execute();
 
                     // Log debugging info.
-                    GcLibrary.Logger.LogDebug("{parameterName} executed in {container}", parameterName, Name);
+                    if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+                        GcLibrary.Logger.LogDebug("{parameterName} executed in {container}", parameterName, Name);
                 }
             }
             catch (Exception ex)
             {
-                GcLibrary.Logger.LogError(ex, "Failed to execute {parameterName} in {container}", parameterName, Name);
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                    GcLibrary.Logger.LogError(ex, "Failed to execute {parameterName} in {container}", parameterName, Name);
                 throw;
             }
         }

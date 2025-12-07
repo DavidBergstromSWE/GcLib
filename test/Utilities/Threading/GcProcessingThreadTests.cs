@@ -39,12 +39,12 @@ public class GcProcessingThreadTests
         string ID = Guid.NewGuid().ToString();
         _processingThread = new GcProcessingThread(bufferCapacity: bufferCapacity, limitFPS: limitFPS, ID: ID);
 
-        Assert.IsTrue(_processingThread != null);
-        Assert.IsTrue(_processingThread.QueuedCount == 0);
-        Assert.IsTrue(_processingThread.FPS == 0.0);
-        Assert.IsTrue(_processingThread.LimitFPS == limitFPS);
+        Assert.IsNotNull(_processingThread);
+        Assert.AreEqual(0, _processingThread.QueuedCount);
+        Assert.AreEqual(0.0, _processingThread.FPS);
+        Assert.AreEqual(limitFPS, _processingThread.LimitFPS);
         Assert.IsFalse(_processingThread.IsRunning);
-        Assert.IsTrue(_processingThread.ID == ID);
+        Assert.AreEqual(ID, _processingThread.ID);
     }
 
     [TestMethod]
@@ -141,7 +141,7 @@ public class GcProcessingThreadTests
             _mockStream.Raise(s => s.BufferTransferred += null, new BufferTransferredEventArgs(FakeBufferProvider.GetFakeBuffer(i)));
 
         // Assert
-        Assert.IsTrue(eventCounter > 0);
+        Assert.IsGreaterThan(0, eventCounter);
     }
 
     [TestMethod]
@@ -155,6 +155,6 @@ public class GcProcessingThreadTests
         _processingThread.Dispose();
 
         // Assert
-        Assert.IsTrue(_processingThread.QueuedCount == 0);
+        Assert.AreEqual(0, _processingThread.QueuedCount);
     }
 }

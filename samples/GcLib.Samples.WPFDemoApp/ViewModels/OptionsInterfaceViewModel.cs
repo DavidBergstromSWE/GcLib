@@ -83,7 +83,7 @@ internal sealed class OptionsInterfaceViewModel : ObservableObject, IOptionsSubV
         _initialTheme = _mainWindowViewModel.SelectedTheme;
 
         // Initialize settings.
-        Themes = _mainWindowViewModel.Themes.DistinctBy(t => t.SchemeColor).ToList();
+        Themes = [.. _mainWindowViewModel.Themes.DistinctBy(t => t.SchemeColor)];
         _selectedBaseColor = Enum.Parse<ThemeBaseColor>(_initialTheme.BaseColor);
         _selectedTheme = Themes.Find(t => t.SchemeColor == _initialTheme.SchemeColor);
         ChangeThemeBaseColorCommand = new RelayCommand<ThemeBaseColor>(ChangeThemeBaseColor, (t) => t.Equals(ThemeBaseColor.Light) || t.Equals(ThemeBaseColor.Dark));
