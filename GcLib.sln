@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35312.102
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11222.16 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcLib", "src\GcLib.csproj", "{4377734F-C31A-4424-8857-0EFB39812F46}"
 EndProject
@@ -12,11 +12,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcLib.Samples.WinFormsDemoApp", "samples\GcLib.Samples.WinFormsDemoApp\GcLib.Samples.WinFormsDemoApp.csproj", "{25A27A66-264C-49F5-AAA1-1195A2F5674A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcLib.Samples.WPFDemoApp", "samples\GcLib.Samples.WPFDemoApp\GcLib.Samples.WPFDemoApp.csproj", "{7BCB6494-CD0B-4934-81B1-CDBC6AC9D406}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
