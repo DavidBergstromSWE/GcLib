@@ -81,7 +81,7 @@
                 CommandParameter="{Binding}">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="SETTINGS"/>
-                <iconPacks:PackIconControl Kind="{x:Static iconPacks:PackIconPicolIconsKind.VideoInformation}" Margin="8 1 0 0"/>
+                <iconPacks:PackIconPicolIcons Kind="VideoInformation" Margin="8 1 0 0"/>
             </StackPanel>
         </Button>
         <mah:ProgressRing IsActive="{Binding Device.IsConnecting, Mode=OneWay}"/>
