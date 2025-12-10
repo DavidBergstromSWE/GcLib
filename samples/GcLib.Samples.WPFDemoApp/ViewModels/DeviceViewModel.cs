@@ -194,7 +194,10 @@ internal sealed class DeviceViewModel : ObservableRecipient
         _dispatcherService = dispatcherService;
         _deviceProvider = deviceProvider;
         _configurationService = configurationService;
-            
+
+        // Update device list in background.
+        Task.Run(() => _deviceProvider.UpdateDeviceList());
+
         // Hook eventhandlers to device events.
         Device = device;
         Device.ConnectionLost += DeviceModel_ConnectionLost;

@@ -85,7 +85,6 @@ internal sealed class OpenDeviceDialogWindowViewModel : ObservableObject, IDispo
         _deviceProvider = deviceProvider;
 
         // Get list of available camera devices.
-        _deviceProvider.UpdateDeviceList();
         DeviceList = _deviceProvider.GetDeviceList();
 
         // Default selection will be first device in list.
