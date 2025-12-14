@@ -142,8 +142,7 @@ public partial class ColorSlider : Control
                 _thumbSize = new Size(w, h);
             }
             else
-                throw new ArgumentOutOfRangeException(
-                    "TrackSize has to be greather than zero and lower than half of Slider width");
+                throw new ArgumentOutOfRangeException(nameof(ThumbSize), "Has to be greather than zero");
 
             Invalidate();
         }
@@ -370,7 +369,7 @@ public partial class ColorSlider : Control
                 ValueChanged?.Invoke(this, new EventArgs());
                 Invalidate();
             }
-            else throw new ArgumentOutOfRangeException("Value is outside appropriate range (min, max)");
+            else throw new ArgumentOutOfRangeException(nameof(Value), "Value is outside appropriate range (min, max)");
         }
     }
 
@@ -398,7 +397,7 @@ public partial class ColorSlider : Control
                 }
                 Invalidate();
             }
-            else throw new ArgumentOutOfRangeException("Minimal value is greather than maximal one");
+            else throw new ArgumentOutOfRangeException(nameof(Minimum), "Minimal value is greather than maximal one");
         }
     }
 
@@ -474,7 +473,7 @@ public partial class ColorSlider : Control
         {
             if (value > 0)
                 _mouseWheelBarPartitions = value;
-            else throw new ArgumentOutOfRangeException("MouseWheelBarPartitions has to be greather than zero");
+            else throw new ArgumentOutOfRangeException(nameof(MouseWheelBarPartitions), "Has to be greather than zero");
         }
     }
 

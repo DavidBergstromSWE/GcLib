@@ -164,11 +164,7 @@ public sealed partial class PvCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
     {
         base.Close();
 
-        if (_pvAcquisitionStateManager != null)
-        {
-            _pvAcquisitionStateManager.OnAcquisitionStateChanged -= OnAcquisitionStateChanged;
-            //_pvAcquisitionStateManager.Dispose();
-        }
+        _pvAcquisitionStateManager?.OnAcquisitionStateChanged -= OnAcquisitionStateChanged;
         
         if (_pvPipeline != null)
         {

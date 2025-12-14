@@ -117,7 +117,7 @@ public static class GcLibrary
         catch (Exception ex)
         {
             // Log for debugging.
-            if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+            if (Logger.IsEnabled(LogLevel.Warning))
                 Logger.LogWarning(ex, "Unable to register device class of type {Name}", typeof(TDevice).Name);
         }
     }
@@ -139,7 +139,7 @@ public static class GcLibrary
             _availableDeviceClasses.Remove(_implementedDeviceClasses[typeof(TDevice)]);
         _implementedDeviceClasses.Remove(typeof(TDevice));
 
-        if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+        if (Logger.IsEnabled(LogLevel.Debug))
             Logger.LogDebug("{DeviceType} unregistered", typeof(TDevice).Name);
     }
 

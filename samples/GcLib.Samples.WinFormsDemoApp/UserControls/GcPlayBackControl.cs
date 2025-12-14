@@ -53,10 +53,7 @@ public partial class GcPlayBackControl : UserControl
     /// <param name="imageReader">Image buffer source.</param>
     public void Open(GcBufferReader imageReader)
     {
-        _imageReader = imageReader;
-
-        if (_imageReader == null)
-            throw new ArgumentException("No image source found!");
+        _imageReader = imageReader ?? throw new ArgumentException("No image source found!");
 
         // Setup PlaybackPanel and slider.
         if (_imageReader.FrameCount == 0)

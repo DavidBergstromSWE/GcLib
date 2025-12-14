@@ -98,8 +98,7 @@ public partial class GcParameterGridView : UserControl
         VisibilityFilterComboBox.SelectedIndexChanged -= VisibilityFilterComboBox_SelectedIndexChanged;
 
         // Unregister from camera events.
-        if (_camera != null)
-            _camera.ParameterInvalidate -= OnParameterInvalidate;
+        _camera?.ParameterInvalidate -= OnParameterInvalidate;
 
         _camera = null;
         _parameterList = null;

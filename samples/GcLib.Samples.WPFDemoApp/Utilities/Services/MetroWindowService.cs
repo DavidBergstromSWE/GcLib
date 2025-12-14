@@ -110,8 +110,7 @@ internal sealed class MetroWindowService : WindowService, IMetroWindowService
             controller.Closed += (s, e) =>
             {
                 // Unsubscribe from progress changes.
-                if (progress != null)
-                    progress.ProgressChanged -= (s, p) => { controller.SetProgress(p); };
+                progress?.ProgressChanged -= (s, p) => { controller.SetProgress(p); };
             };
 
             return;
