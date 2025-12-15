@@ -177,6 +177,13 @@ internal sealed class DeviceViewModel : ObservableRecipient
 
     #endregion
 
+    /// <summary>
+    /// Represents the task that tracks the completion of the initial device update operation.
+    /// </summary>
+    /// <remarks>This task can be awaited to determine when the initial device update process has finished. It
+    /// is intended for internal use and should not be accessed directly by external callers.</remarks>
+    private readonly Task _initialDeviceUpdateTask;
+
     #region Constructors
 
     /// <summary>
@@ -196,7 +203,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
         _configurationService = configurationService;
 
         // Update device list in background.
-        Task.Run(() => _deviceProvider.UpdateDeviceList());
+        _initialDeviceUpdateTask = Task.Run(() => _deviceProvider.UpdateDeviceList());
 
         // Hook eventhandlers to device events.
         Device = device;
@@ -363,6 +370,9 @@ internal sealed class DeviceViewModel : ObservableRecipient
         }
         else
         {
+            // Wait for initial device update to complete.
+            await _initialDeviceUpdateTask;
+
             // Instantiate view model for dialog.
             using var dialogViewModel = new OpenDeviceDialogWindowViewModel(_windowService, _deviceProvider);
 
