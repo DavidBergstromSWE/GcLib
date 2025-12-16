@@ -59,6 +59,13 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// </summary>
     private CancellationTokenSource _cancellationTokenSource;
 
+    /// <summary>
+    /// Represents the task that tracks the completion of the initial device update operation.
+    /// </summary>
+    /// <remarks>This task can be awaited to determine when the initial device update process has finished. It
+    /// is intended for internal use and should not be accessed directly by external callers.</remarks>
+    private readonly Task _initialDeviceUpdateTask;
+
     #endregion
 
     #region Properties
@@ -176,13 +183,6 @@ internal sealed class DeviceViewModel : ObservableRecipient
     }
 
     #endregion
-
-    /// <summary>
-    /// Represents the task that tracks the completion of the initial device update operation.
-    /// </summary>
-    /// <remarks>This task can be awaited to determine when the initial device update process has finished. It
-    /// is intended for internal use and should not be accessed directly by external callers.</remarks>
-    private readonly Task _initialDeviceUpdateTask;
 
     #region Constructors
 
