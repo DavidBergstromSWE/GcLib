@@ -90,6 +90,13 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
+        public void Register_IsNotInitialized_ThrowsInvalidOperationException()
+        {
+            // Act/Assert
+            Assert.Throws<InvalidOperationException>(() => GcLibrary.Register<VirtualCam>());
+        }
+
+        [TestMethod]
         public void Register_DeviceClassIsNotRegistered_DeviceClassIsRegistered()
         {
             // Arrange
@@ -112,6 +119,13 @@ namespace GcLib.UnitTests
 
             // Act/Assert
             Assert.Throws<ArgumentException>(GcLibrary.Register<VirtualCam>);
+        }
+
+        [TestMethod]
+        public void Unregister_IsNotInitialized_ThrowsInvalidOperationException()
+        {
+            // Act/Assert
+            Assert.Throws<InvalidOperationException>(() => GcLibrary.Unregister<VirtualCam>());
         }
 
         [TestMethod]
@@ -176,11 +190,8 @@ namespace GcLib.UnitTests
         [TestMethod]
         public void GetRegisteredDeviceClasses_IsNotInitialized_ReturnsEmptyEnumerable()
         {
-            // Act
-            var types = GcLibrary.GetRegisteredDeviceClasses();
-
-            // Assert
-            Assert.IsEmpty(types);
+            // Act/Assert
+            Assert.Throws<InvalidOperationException>(GcLibrary.GetRegisteredDeviceClasses);
         }
 
         [TestMethod]
@@ -210,7 +221,7 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
-        public void Close_GetRegisteredDeviceClasses_CountIsZero()
+        public void Close_GetRegisteredDeviceClasses_ThrowsInvalidOperationException()
         {
             // Arrange
             GcLibrary.Init();
@@ -219,7 +230,7 @@ namespace GcLib.UnitTests
             GcLibrary.Close();
 
             // Assert
-            Assert.IsEmpty(GcLibrary.GetRegisteredDeviceClasses());
+            Assert.Throws<InvalidOperationException>(GcLibrary.GetRegisteredDeviceClasses);
         }
 
         #endregion

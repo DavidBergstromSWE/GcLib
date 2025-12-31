@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -90,8 +89,7 @@ public static class GcLibrary
     /// Registers a new device class to be used in the library.
     /// </summary>
     /// <typeparam name="TDevice">Device type.</typeparam>
-    /// <exception cref="NotSupportedException"></exception>
-    /// <exception cref="FileNotFoundException"></exception>
+    /// <exception cref="InvalidOperationException></exception>
     /// <exception cref="ArgumentException"></exception>
     public static void Register<TDevice>() where TDevice : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
     {
@@ -126,6 +124,7 @@ public static class GcLibrary
     /// Unregister a device class from being used in the library.
     /// </summary>
     /// <typeparam name="TDevice">Device type.</typeparam>
+    /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="ArgumentException"></exception>
     public static void Unregister<TDevice>() where TDevice : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
     {
@@ -158,10 +157,11 @@ public static class GcLibrary
     /// </summary>
     /// <remarks>Note: All of the returned classes may not be available on the current system, due to missing drivers, assemblies etc. To check available classes use <see cref="GetAvailableDeviceClasses"/>.</remarks>
     /// <returns>Device classes registered.</returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public static IReadOnlyCollection<GcDeviceClassInfo> GetRegisteredDeviceClasses()
     {
         // throw if not initialized?
-        return _implementedDeviceClasses.Values;
+        return IsInitialized ? _implementedDeviceClasses.Values : throw new InvalidOperationException("Library needs to be initialized before inquiring this info!");
     }
 
     /// <summary>
