@@ -40,7 +40,6 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     /// Note: Can only be instantiated once and throws an <see cref="InvalidOperationException"/> when attempted to instantiate a second time.
     /// </remarks>
     /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="TypeInitializationException"></exception>
     public GcSystem()
     {
         if (_isInstantiated)
@@ -149,7 +148,7 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         if (_connectedDevices.Any(device => device.DeviceInfo.UniqueID == deviceInfo.UniqueID))
             throw new InvalidOperationException($"Device {deviceInfo.ModelName} of ID {deviceInfo.UniqueID} is already open!");
 
-        // Instantiate new device.
+        // Instantiate new device (will throw TargetInvocatonException if constructor fails).
         device = (GcDevice)Activator.CreateInstance(deviceInfo.DeviceClassInfo.DeviceType, uniqueID);
 
         // Log information.

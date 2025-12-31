@@ -56,7 +56,7 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
-        public void InstantiateTwice_ThrowException()
+        public void GcSystem_SecondInstantiation_ThrowsInvalidOperationException()
         {
             // Arrange
             _system = new GcSystem();
@@ -83,7 +83,7 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
-        public void UpdateDeviceListX2_DeviceListIsNotChanged()
+        public void UpdateDeviceList_SecondTime_DeviceListIsNotChanged()
         {
             // Arrange
             _system = new GcSystem();
