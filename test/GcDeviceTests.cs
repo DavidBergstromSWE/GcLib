@@ -49,6 +49,46 @@ namespace GcLib.UnitTests
         #region MethodTests
 
         [TestMethod]
+        public void OpenDataStream_NoIDProvided_ReturnsNewStream()
+        {
+            // Arrange
+            _device = new Mock<GcDevice>();
+
+            // Act
+            var dataStream = _device.Object.OpenDataStream();
+
+            // Assert
+            Assert.IsNotNull(dataStream);
+        }
+
+        [TestMethod]
+        public void OpenDataStream_NonExistingIDProvided_ReturnsNewStream()
+        {
+            // Arrange
+            _device = new Mock<GcDevice>();
+
+            // Act
+            var dataStream = _device.Object.OpenDataStream("DataStream123");
+
+            // Assert
+            Assert.IsNotNull(dataStream);
+        }
+
+        [TestMethod]
+        public void OpenDataStream_ExistingIDProvided_ReturnsSameStream()
+        {
+            // Arrange
+            _device = new Mock<GcDevice>();
+            var firstStream = _device.Object.OpenDataStream("DataStream123");
+
+            // Act
+            var secondStream = _device.Object.OpenDataStream(firstStream.StreamID);
+
+            // Assert
+            Assert.AreSame(firstStream, secondStream);
+        }
+
+        [TestMethod]
         public void GetNumDataStreams_NoDataStreamOpened_CountIsZero()
         {
             // Arrange
@@ -61,69 +101,61 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
-        [DataRow(1u)]
-        [DataRow(2u)]
-        [DataRow(3u)]
-        public void GetNumDataStreams_MultipleDataStreamsOpened_ReturnsExpectedNumber(uint expectedCount)
+        public void GetNumDataStreams_MultipleDataStreamsOpened_ReturnsExpectedNumber()
         {
             // Arrange
             _device = new Mock<GcDevice>();
-            for (int i = 0; i < expectedCount; i++)
+            for (int i = 0; i < 3; i++)
                 _device.Object.OpenDataStream();
 
             // Act
             var actualCount = _device.Object.GetNumDataStreams();
 
             // Assert
-            Assert.AreEqual(expectedCount, actualCount);
+            Assert.AreEqual<uint>(3, actualCount);
         }
 
         [TestMethod]
-        public void GetDataStreamID_DataStreamOpenedWithID_ReturnsExpectedID()
+        public void GetDataStreamID_NoIDProvided_ReturnsValidGuidAsID()
         {
             // Arrange
             _device = new Mock<GcDevice>();
-            var expectedID = "Datastream42";
-            _device.Object.OpenDataStream(expectedID);
 
             // Act
-            var actualID = _device.Object.GetDataStreamID(0);
+            _device.Object.OpenDataStream();
+            var dataStreamID = _device.Object.GetDataStreamID(0);
 
             // Assert
+            Assert.IsTrue(Guid.TryParse(dataStreamID, out _));
+        }
+
+        [TestMethod]
+        public void GetDataStreamID_ValidID_ReturnsExpectedID()
+        {
+            // Arrange
+            _device = new Mock<GcDevice>();
+            var expectedID = "Stream1";
+            _device.Object.OpenDataStream(expectedID);
+
+            // Act/Assert
+            var actualID = _device.Object.GetDataStreamID(0);
             Assert.AreEqual(expectedID, actualID);
         }
 
         [TestMethod]
-        public void GetDataStreamID_DataStreamOpenedWithoutID_ReturnsValidGuid()
+        public void GetDataStreamID_IDOutofRange_ThrowsArgumentOutOfRangeException()
         {
             // Arrange
             _device = new Mock<GcDevice>();
-            _device.Object.OpenDataStream();
-
-            // Act
-            var ID = _device.Object.GetDataStreamID(0);
-
-            // Assert
-            Assert.IsTrue(Guid.TryParse(ID, out _));
-        }
-
-        [TestMethod]
-        [DataRow(1)]
-        [DataRow(2)]
-        [DataRow(3)]
-        public void GetDataStreamID_IDOutofRange_ThrowsArgumentOutOfRangeException(int count)
-        {
-            // Arrange
-            _device = new Mock<GcDevice>();
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < 3; i++)
                 _device.Object.OpenDataStream();
 
             // Act/Assert
-            Assert.Throws<ArgumentOutOfRangeException>(() => _device.Object.GetDataStreamID((uint)count));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _device.Object.GetDataStreamID(3));
         }
 
         [TestMethod]
-        public void Close_GetNumDataStreamsReturnsZero()
+        public void Close_GetNumDataStreams_ReturnsZero()
         {
             // Arrange
             _device = new Mock<GcDevice>();
@@ -138,7 +170,7 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
-        public void Close_ClosedEventIsRaised()
+        public void Close_ClosedEvent_IsRaised()
         {
             // Arrange
             _device = new Mock<GcDevice> { CallBase = true };
