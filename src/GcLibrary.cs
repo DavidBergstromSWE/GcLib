@@ -89,7 +89,7 @@ public static class GcLibrary
     /// Registers a new device class to be used in the library.
     /// </summary>
     /// <typeparam name="TDevice">Device type.</typeparam>
-    /// <exception cref="InvalidOperationException></exception>
+    /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="ArgumentException"></exception>
     public static void Register<TDevice>() where TDevice : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
     {
