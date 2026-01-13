@@ -30,22 +30,7 @@ public static class NumericHelper
     /// <returns>Minimum value of type <see cref="T"/>.</returns>
     public static T GetMinValue<T>() where T : INumber<T>
     {
-        return Type.GetTypeCode(typeof(T)) switch
-        {
-            TypeCode.SByte => (T)Convert.ChangeType(sbyte.MinValue, typeof(T)),
-            TypeCode.Byte => (T)Convert.ChangeType(byte.MinValue, typeof(T)),
-            TypeCode.Int16 => (T)Convert.ChangeType(short.MinValue, typeof(T)),
-            TypeCode.UInt16 => (T)Convert.ChangeType(ushort.MinValue, typeof(T)),
-            TypeCode.Int32 => (T)Convert.ChangeType(int.MinValue, typeof(T)),
-            TypeCode.UInt32 => (T)Convert.ChangeType(uint.MinValue, typeof(T)),
-            TypeCode.Int64 => (T)Convert.ChangeType(long.MinValue, typeof(T)),
-            TypeCode.UInt64 => (T)Convert.ChangeType(ulong.MinValue, typeof(T)),
-            TypeCode.Single => (T)Convert.ChangeType(float.MinValue, typeof(T)),
-            TypeCode.Double => (T)Convert.ChangeType(double.MinValue, typeof(T)),
-            TypeCode.Decimal => (T)Convert.ChangeType(decimal.MinValue, typeof(T)),
-            TypeCode.Char => (T)Convert.ChangeType(char.MinValue, typeof(T)),
-            _ => throw new InvalidOperationException("Type not supported."),
-        };
+        return GetMinValue(typeof(T));
     }
 
     /// <summary>
@@ -80,22 +65,7 @@ public static class NumericHelper
     /// <returns>Maximum value of type <see cref="T"/>.</returns>
     public static T GetMaxValue<T>() where T : INumber<T>
     {
-        return Type.GetTypeCode(typeof(T)) switch
-        {
-            TypeCode.SByte => (T)Convert.ChangeType(sbyte.MaxValue, typeof(T)),
-            TypeCode.Byte => (T)Convert.ChangeType(byte.MaxValue, typeof(T)),
-            TypeCode.Int16 => (T)Convert.ChangeType(short.MaxValue, typeof(T)),
-            TypeCode.UInt16 => (T)Convert.ChangeType(ushort.MaxValue, typeof(T)),
-            TypeCode.Int32 => (T)Convert.ChangeType(int.MaxValue, typeof(T)),
-            TypeCode.UInt32 => (T)Convert.ChangeType(uint.MaxValue, typeof(T)),
-            TypeCode.Int64 => (T)Convert.ChangeType(long.MaxValue, typeof(T)),
-            TypeCode.UInt64 => (T)Convert.ChangeType(ulong.MaxValue, typeof(T)),
-            TypeCode.Single => (T)Convert.ChangeType(float.MaxValue, typeof(T)),
-            TypeCode.Double => (T)Convert.ChangeType(double.MaxValue, typeof(T)),
-            TypeCode.Decimal => (T)Convert.ChangeType(decimal.MaxValue, typeof(T)),
-            TypeCode.Char => (T)Convert.ChangeType(char.MaxValue, typeof(T)),
-            _ => throw new InvalidOperationException("Type not supported."),
-        };
+        return GetMaxValue(typeof(T));
     }
 
     /// <summary>
