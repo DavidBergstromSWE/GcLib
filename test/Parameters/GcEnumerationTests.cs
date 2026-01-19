@@ -245,14 +245,14 @@ public class GcEnumerationTests
     }
 
     [TestMethod]
-    public void StringValue_InputIsInvalid_ThrowsInvalidOperationException()
+    public void StringValue_InputIsInvalid_ThrowsArgumentException()
     {
         // Arrange
         var entries = GetValidEnumEntries();
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.Throws<InvalidOperationException>(() => gcEnumeration.StringValue = "FakeEnum");
+        Assert.Throws<ArgumentException>(() => gcEnumeration.StringValue = "FakeEnum");
     }
 
     [TestMethod]
@@ -282,14 +282,14 @@ public class GcEnumerationTests
     }
 
     [TestMethod]
-    public void IntValue_InputIsInvalid_ThrowsInvalidOperationException()
+    public void IntValue_InputIsInvalid_ThrowsArgumentException()
     {
         // Arrange
         var entries = GetValidEnumEntries();
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.Throws<InvalidOperationException>(() => gcEnumeration.IntValue = 42);
+        Assert.Throws<ArgumentException>(() => gcEnumeration.IntValue = 42);
     }
 
     [TestMethod]
@@ -319,14 +319,14 @@ public class GcEnumerationTests
     }
 
     [TestMethod]
-    public void NumericValue_InputIsInvalid_ThrowsInvalidOperationException()
+    public void NumericValue_InputIsInvalid_ThrowsArgumentException()
     {
         // Arrange
         var entries = GetValidEnumEntries();
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.Throws<InvalidOperationException>(() => gcEnumeration.NumericValue = 3.14);
+        Assert.Throws<ArgumentException>(() => gcEnumeration.NumericValue = 3.14);
     }
 
     [TestMethod]
@@ -456,14 +456,14 @@ public class GcEnumerationTests
     }
 
     [TestMethod]
-    public void GetEntryByName_EntryDoesNotExist_ThrowsInvalidOperationException()
+    public void GetEntryByName_EntryDoesNotExist_ThrowsArgumentException()
     {
         // Arrange
         var entries = GetValidEnumEntries();
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.Throws<InvalidOperationException>(() => gcEnumeration.GetEntryByName("FakeEnum"));
+        Assert.Throws<ArgumentException>(() => gcEnumeration.GetEntryByName("FakeEnum"));
     }
 
     [TestMethod]
@@ -483,14 +483,14 @@ public class GcEnumerationTests
     }
 
     [TestMethod]
-    public void GetEntry_LongInput_EntryDoesNotExist_ThrowsInvalidOperationException()
+    public void GetEntry_LongInput_EntryDoesNotExist_ThrowsArgumentException()
     {
         // Arrange
         var entries = GetValidEnumEntries();
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.Throws<InvalidOperationException>(() => gcEnumeration.GetEntry(5));
+        Assert.Throws<ArgumentException>(() => gcEnumeration.GetEntry(5));
     }
 
     [TestMethod]
@@ -510,14 +510,14 @@ public class GcEnumerationTests
     }
 
     [TestMethod]
-    public void GetEntry_NumericInput_EntryDoesNotExist_ThrowsInvalidOperationException()
+    public void GetEntry_NumericInput_EntryDoesNotExist_ThrowsArgumentException()
     {
         // Arrange
         var entries = GetValidEnumEntries();
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration", category: "Test", gcEnumEntry: entries[0], gcEnumEntries: entries);
 
         // Act/Assert
-        Assert.Throws<InvalidOperationException>(() => gcEnumeration.GetEntry(3.14));
+        Assert.Throws<ArgumentException>(() => gcEnumeration.GetEntry(3.14));
     }
 
     [TestMethod]

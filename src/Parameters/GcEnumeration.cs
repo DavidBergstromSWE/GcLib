@@ -29,7 +29,7 @@ public sealed class GcEnumeration : GcParameter
     /// String value of parameter.
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="ArgumentException"></exception>
     [Browsable(false)]
     public string StringValue
     {
@@ -42,7 +42,7 @@ public sealed class GcEnumeration : GcParameter
                     throw new InvalidOperationException($"{Name} is not implemented!");
 
                 if (!IsDefined(value))
-                    throw new InvalidOperationException($"No entry with name {value} was found in the enumeration!");
+                    throw new ArgumentException($"No entry with name {value} was found in the enumeration!");
 
                 _stringValue = value;
                 _intValue = GetEntryByName(value).ValueInt;
@@ -56,7 +56,7 @@ public sealed class GcEnumeration : GcParameter
     /// Integer value of parameter.
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="ArgumentException"></exception>
     [Browsable(false)]
     public long IntValue
     {
@@ -69,7 +69,7 @@ public sealed class GcEnumeration : GcParameter
                     throw new InvalidOperationException($"{Name} is not implemented!");
 
                 if (!IsDefined(value))
-                    throw new InvalidOperationException($"No entry with value {value} was found in the enumeration!");
+                    throw new ArgumentException($"No entry with value {value} was found in the enumeration!");
 
                 _intValue = value;
                 _numericValue = GetEntry(_intValue).NumericValue;
@@ -83,7 +83,7 @@ public sealed class GcEnumeration : GcParameter
     /// Numeric value of parameter.
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="ArgumentException"></exception>
     [Browsable(false)]
     public double NumericValue
     {
@@ -96,7 +96,7 @@ public sealed class GcEnumeration : GcParameter
                     throw new InvalidOperationException($"{Name} is not implemented!");
 
                 if (!IsDefined(value))
-                    throw new InvalidOperationException($"No entry with numeric value {value} was found in the enumeration!");
+                    throw new ArgumentException($"No entry with numeric value {value} was found in the enumeration!");
 
                 _numericValue = value;
                 _intValue = GetEntry(value).ValueInt;
@@ -106,10 +106,14 @@ public sealed class GcEnumeration : GcParameter
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Current value of the enumeration.
+    /// </summary>
     public GcEnumEntry CurrentEntry => IsImplemented ? GetEntryByName(StringValue) : throw new InvalidOperationException($"{Name} is not implemented!");
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// List of possible enumeration values.
+    /// </summary>
     [Browsable(false)]
     public List<GcEnumEntry> Entries { get; }
 
@@ -285,7 +289,10 @@ public sealed class GcEnumeration : GcParameter
 
     #region Public methods
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Request a list of all symbolic names of the parameter.
+    /// </summary>
+    /// <returns>List of possible string values.</returns>
     public List<string> GetSymbolics()
     {
         var stringList = new List<string>(Entries.Count);
@@ -294,31 +301,43 @@ public sealed class GcEnumeration : GcParameter
         return stringList;
     }
 
-    /// <inheritdoc/>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <summary>
+    /// Request an enumeration entry associated with a specified symbolic name.
+    /// </summary>
+    /// <param name="stringValue">String value of enumeration entry.</param>
+    /// <returns>Enumeration entry with the specified string value.</returns>
+    /// <exception cref="ArgumentException"></exception>
     public GcEnumEntry GetEntryByName(string stringValue)
     {
         return IsDefined(stringValue)
             ? Entries.Find(enumEntry => enumEntry.ValueString == stringValue)
-            : throw new InvalidOperationException($"No entry with name {stringValue} was found in the enumeration!"); // return null?
+            : throw new ArgumentException($"No entry with name {stringValue} was found in the enumeration!"); // return null?
     }
 
-    /// <inheritdoc/>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <summary>
+    /// Request an enumeration entry associated with a specified integer value.
+    /// </summary>
+    /// <param name="intValue">Integer value of enumeration entry.</param>
+    /// <returns>Enumeration entry with the specified integer value.</returns>
+    /// <exception cref="ArgumentException"></exception>
     public GcEnumEntry GetEntry(long intValue)
     {
         return IsDefined(intValue)
             ? Entries.Find(enumEntry => enumEntry.ValueInt == intValue)
-            : throw new InvalidOperationException($"No entry with value {intValue} was found in the enumeration!"); // return null?
+            : throw new ArgumentException($"No entry with value {intValue} was found in the enumeration!"); // return null?
     }
 
-    /// <inheritdoc/>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <summary>
+    /// Request an enumeration entry associated with a specified numeric value.
+    /// </summary>
+    /// <param name="intValue">Numeric value of enumeration entry.</param>
+    /// <returns>Enumeration entry with the specified numeric value.</returns>
+    /// <exception cref="ArgumentException"></exception>
     public GcEnumEntry GetEntry(double numericValue)
     {
         return IsDefined(numericValue)
             ? Entries.Find(enumEntry => enumEntry.NumericValue == numericValue)
-            : throw new InvalidOperationException($"No entry with numeric value {numericValue} was found in the enumeration!"); // return null?
+            : throw new ArgumentException($"No entry with numeric value {numericValue} was found in the enumeration!"); // return null?
     }
 
     /// <inheritdoc/>
@@ -328,6 +347,7 @@ public sealed class GcEnumeration : GcParameter
     }
 
     /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException"></exception>"
     public override void FromString(string valueString)
     {
         StringValue = IsImplemented ? valueString : throw new InvalidOperationException($"{Name} is not implemented!");
