@@ -19,9 +19,7 @@ public sealed class GcInteger : GcParameter
 
     #region Properties
 
-    /// <summary>
-    /// Parameter name.
-    /// </summary>
+    /// <inheritdoc/> ///
     [Browsable(true)]
     public override string Name { get; }
 

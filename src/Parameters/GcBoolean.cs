@@ -19,9 +19,7 @@ public sealed class GcBoolean : GcParameter
 
     #region Properties
 
-    /// <summary>
-    /// Name of parameter.
-    /// </summary>
+    /// <inheritdoc/> ///
     [Browsable(true)]
     public override string Name { get; }
 

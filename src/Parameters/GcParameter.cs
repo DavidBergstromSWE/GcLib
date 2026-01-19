@@ -12,51 +12,75 @@ public abstract class GcParameter : INotifyPropertyChanged
 {
     #region Properties
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Parameter name.
+    /// </summary>
     [Browsable(false)]
     public virtual string Name { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Display friendly name of parameter.
+    /// </summary>
     [Browsable(true)]
     public string DisplayName => Name.Split('/', '\\').Last();
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Descriptive text associated with the parameter.
+    /// </summary>
     [Browsable(false)]
     public string Description { get; protected set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Category associated with the parameter.
+    /// </summary>
     [Browsable(false)]
     public string Category { get; protected set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// <see langword="true"></see> if the parameter is implemented.
+    /// </summary>
     [Browsable(false)]
     public bool IsImplemented { get; protected set; } = true;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// <see langword="true"></see> if the parameter is readable.
+    /// </summary>
     [Browsable(false)]
     public bool IsReadable { get; protected set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// <see langword="true"></see> if the parameter is writable.
+    /// </summary>
     [Browsable(false)]
     public bool IsWritable { get; protected set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Parameter type.
+    /// </summary>
     [Browsable(true)]
     public GcParameterType Type { get; protected set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Parameter visibility.
+    /// </summary>
     [Browsable(false)]
     public GcVisibility Visibility { get; protected set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// <see langword="true"></see> if changes to the parameter invokes changes in others.
+    /// </summary>
     [Browsable(false)]
     public bool IsSelector { get; protected set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the names of parameters that are changed by this parameter.
+    /// </summary>
     [Browsable(false)]
     public List<string> SelectedParameters { get; protected set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the names of parameters that changes this parameter.
+    /// </summary>
     [Browsable(false)]
     public List<string> SelectingParameters { get; protected set; }
 

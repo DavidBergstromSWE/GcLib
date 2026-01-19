@@ -26,9 +26,7 @@ public sealed class GcCommand : GcParameter
 
     #region Properties
 
-    /// <summary>
-    /// Name of parameter.
-    /// </summary>
+    /// <inheritdoc/> ///
     [Browsable(true)]
     public override string Name { get; }
 
