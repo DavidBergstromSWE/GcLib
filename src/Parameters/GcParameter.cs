@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -83,6 +84,24 @@ public abstract class GcParameter : INotifyPropertyChanged
     /// </summary>
     [Browsable(false)]
     public List<string> SelectingParameters { get; protected set; }
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new parameter with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the parameter. Cannot be null, empty, or contain any whitespace characters.</param>
+    /// <exception cref="ArgumentException"></exception>
+    protected GcParameter(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException("Parameter name cannot be empty!", name);
+
+        if (name.Any(char.IsWhiteSpace))
+            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", name);
+    }
 
     #endregion
 

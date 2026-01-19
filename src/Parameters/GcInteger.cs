@@ -143,11 +143,8 @@ public sealed class GcInteger : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcInteger(string name, string category, long value, long min, long max, long increment = 1, EIncMode incrementMode = EIncMode.fixedIncrement, List<long> listOfValidValue = null, string unit = "", bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null)
+    public GcInteger(string name, string category, long value, long min, long max, long increment = 1, EIncMode incrementMode = EIncMode.fixedIncrement, List<long> listOfValidValue = null, string unit = "", bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException($"Parameter name cannot contain any whitespace characters!", name);
-
         if (min > max)
             throw new ArgumentException($"Minimum ({min}) must be smaller or equal to maximum value ({max})!", name);
 
@@ -193,11 +190,8 @@ public sealed class GcInteger : GcParameter
     ///  Instantiates a non-implemented integer (<see cref="long"/>) type parameter.
     /// </summary>
     /// <exception cref="ArgumentException"></exception>
-    public GcInteger(string name)
+    public GcInteger(string name) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", nameof(name));
-
         Name = name;
         IsImplemented = false;
     }

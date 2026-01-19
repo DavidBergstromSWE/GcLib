@@ -130,11 +130,8 @@ public sealed class GcFloat : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcFloat(string name, string category, double value, double min, double max, double increment = 0, string unit = "", long displayPrecision = 3, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null)
+    public GcFloat(string name, string category, double value, double min, double max, double increment = 0, string unit = "", long displayPrecision = 3, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException($"Parameter name cannot contain any whitespace characters!", name);
-
         if (min > max)
             throw new ArgumentException($"Minimum value ({min}) must be smaller or equal to maximum value ({max})!", name);
 
@@ -169,11 +166,8 @@ public sealed class GcFloat : GcParameter
     /// Instantiates a non-implemented floating-point (<see cref="double"/>) type parameter.
     /// </summary>
     /// <exception cref="ArgumentException"></exception>
-    public GcFloat(string name)
+    public GcFloat(string name) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", nameof(name));
-
         Name = name;
         IsImplemented = false;
     }

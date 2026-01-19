@@ -136,11 +136,8 @@ public sealed class GcEnumeration : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcEnumeration(string name, string category, GcEnumEntry gcEnumEntry, List<GcEnumEntry> gcEnumEntries, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null)
+    public GcEnumeration(string name, string category, GcEnumEntry gcEnumEntry, List<GcEnumEntry> gcEnumEntries, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", name);
-
         if (gcEnumEntries.Any(entry => entry.ValueString == gcEnumEntry.ValueString) == false)
             throw new ArgumentException($"{nameof(gcEnumEntry)} is not an enumeration of {nameof(gcEnumEntries)}!", name);
 
@@ -178,11 +175,8 @@ public sealed class GcEnumeration : GcParameter
     /// <param name="selectingParameters"></param>
     /// <param name="selectedParameters"></param>
     /// <exception cref="ArgumentException"></exception>
-    public GcEnumeration(string name, string category, Enum enumEntry, Type enumType, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null)
+    public GcEnumeration(string name, string category, Enum enumEntry, Type enumType, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", name);
-
         if (enumType.IsEnum == false)
             throw new ArgumentException($"{enumType.Name} does not represent an enumeration type!", name);
 
@@ -223,11 +217,8 @@ public sealed class GcEnumeration : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcEnumeration(string name, string category, Enum enumEntry, Enum[] enumArray, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null)
+    public GcEnumeration(string name, string category, Enum enumEntry, Enum[] enumArray, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", name);
-
         if (enumArray.Contains(enumEntry) == false)
             throw new ArgumentException($"{enumEntry} is not an enumeration member of '{nameof(enumArray)}'!", name);
 
@@ -254,11 +245,8 @@ public sealed class GcEnumeration : GcParameter
     /// Instantiates a non-implemented <see cref="enum"/> type parameter.
     /// </summary>
     /// <exception cref="ArgumentException"></exception>
-    public GcEnumeration(string name)
+    public GcEnumeration(string name) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", nameof(name));
-
         Name = name;
         IsImplemented = false;
     }

@@ -62,11 +62,8 @@ public sealed class GcBoolean : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcBoolean(string name, string category, bool value, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null)
+    public GcBoolean(string name, string category, bool value, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", name);
-
         Name = name;
         Category = category;
         IsWritable = isWritable;
@@ -86,11 +83,8 @@ public sealed class GcBoolean : GcParameter
     /// Instantiates a non-implemented <see cref="bool"/> type parameter.
     /// </summary>
     /// <exception cref="ArgumentException"></exception>
-    public GcBoolean(string name)
+    public GcBoolean(string name) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", nameof(name));
-
         Name = name;
         IsImplemented = false;
     }

@@ -73,11 +73,8 @@ public sealed class GcString : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcString(string name, string category, string value, long maxLength, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null)
+    public GcString(string name, string category, string value, long maxLength, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", name);
-
         if (maxLength < 0)
             throw new ArgumentException($"Maximum string length ({maxLength}) must be larger than zero!", name);
 
@@ -100,11 +97,8 @@ public sealed class GcString : GcParameter
     /// Instantiates a non-implemented <see cref="string"/> type parameter.
     /// </summary>
     /// <exception cref="ArgumentException"></exception>
-    public GcString(string name)
+    public GcString(string name) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", nameof(name));
-
         Name = name;
         IsImplemented = false;
     }

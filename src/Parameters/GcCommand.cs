@@ -48,11 +48,8 @@ public sealed class GcCommand : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcCommand(string name, string category, Action method, bool isReadable = false, bool isWritable = false, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null)
+    public GcCommand(string name, string category, Action method, bool isReadable = false, bool isWritable = false, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", name);
-
         Name = name;
         Category = category;
         IsWritable = isWritable;
@@ -73,11 +70,8 @@ public sealed class GcCommand : GcParameter
     /// Instantiates a non-implemented command (<see cref="Action"/>) type parameter.
     /// </summary>
     /// <exception cref="ArgumentException"></exception>
-    public GcCommand(string name)
+    public GcCommand(string name) : base(name)
     {
-        if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", name);
-
         Name = name;
         IsImplemented = false;
     }
