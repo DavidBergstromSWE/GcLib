@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using xiApi.NET;
@@ -117,7 +120,7 @@ public sealed partial class XiCam
         // Check if pixel format selected is currently supported.
         PixelFormat pixelFormat = GetPixelFormat(_xiCam.GetParamInt(PRM.IMAGE_DATA_FORMAT));
         if (pixelFormat == PixelFormat.InvalidPixelFormat)
-            throw new FormatException($"Pixel format is not supported in device class {GetType().Name}!");
+            throw new FormatException($"Pixel format {FindConstantName(typeof(IMG_FORMAT), _xiCam.GetParamInt(PRM.IMAGE_DATA_FORMAT))} is not supported in device class {GetType().Name}!");
 
         // Check exposure time and frame rate and set appropriate timeout.
         _timeout = Convert.ToInt32(((float)_xiCam.GetParamInt(PRM.EXPOSURE) / 1000) + (1 / _xiCam.GetParamFloat(PRM.FRAMERATE) * 1000));
@@ -294,14 +297,31 @@ public sealed partial class XiCam
             IMG_FORMAT.MONO16 => PixelFormat.Mono16,
             IMG_FORMAT.RGB24 => PixelFormat.BGR8,
             IMG_FORMAT.RGB32 => PixelFormat.BGRa8,
-            //IMG_FORMAT.RGB48 => PixelFormat.BGR16,
-            //IMG_FORMAT.RGB64 => PixelFormat.BGRa16,
-            //IMG_FORMAT.RGBPLANAR => PixelFormat.RGB8_Planar,
-            //IMG_FORMAT.RGB16_PLANAR => PixelFormat.RGB16_Planar,
+            IMG_FORMAT.RGB48 => PixelFormat.BGR16,
+            IMG_FORMAT.RGB64 => PixelFormat.BGRa16,
+            IMG_FORMAT.RGBPLANAR => PixelFormat.RGB8_Planar,
+            IMG_FORMAT.RGB16_PLANAR => PixelFormat.RGB16_Planar,
             IMG_FORMAT.RAW8 => PixelFormat.BayerBG8,
             IMG_FORMAT.RAW16 => PixelFormat.BayerBG16,
             _ => PixelFormat.InvalidPixelFormat,
         };
+    }
+
+    /// <summary>
+    /// Returns the name of the constant in the specified type that has the specified value.
+    /// </summary>
+    /// <typeparam name="T">Type of constant.</typeparam>
+    /// <param name="containingType">Type containing the constant.</param>
+    /// <param name="value">Value of the constant.</param>
+    /// <returns>Name of constant.</returns>
+    private static string FindConstantName<T>(Type containingType, T value)
+    {
+        foreach (FieldInfo field in containingType.GetFields(BindingFlags.Static | BindingFlags.Public).Where(f => f.IsLiteral))
+        {
+            if (field.FieldType == typeof(T) && EqualityComparer<T>.Default.Equals(value, (T)field.GetValue(null)))
+                return field.Name;
+        }
+        return null; // Or throw an exception
     }
 
     #endregion
