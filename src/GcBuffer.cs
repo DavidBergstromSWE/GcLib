@@ -200,10 +200,11 @@ public sealed class GcBuffer
     #region Public methods
 
     /// <summary>
-    /// Converts image data in buffer to Emgu CV <see cref="Mat"/> format.
+    /// Converts image data in buffer to Emgu CV <see cref="Mat"/> format. 
+    /// Conversion allocates new memory to store the image data.
     /// </summary>
     /// <remarks>
-    /// Note: Conversion allocates new memory (to hold the image data).
+    /// Note: As Emgu CV assumes image data is stored in BGR(A) channel order, color conversion may be necessary after calling this method (e.g. using <see cref="CvInvoke.CvtColor(Mat, Mat, Emgu.CV.CvEnum.ColorConversion)"/>).
     /// </remarks>
     /// <returns><see cref="Mat"/> image.</returns>
     public Mat ToMat()
