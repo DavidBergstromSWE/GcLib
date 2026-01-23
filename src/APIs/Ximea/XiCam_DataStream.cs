@@ -295,12 +295,12 @@ public sealed partial class XiCam
         {
             IMG_FORMAT.MONO8 => PixelFormat.Mono8,
             IMG_FORMAT.MONO16 => PixelFormat.Mono16,
-            IMG_FORMAT.RGB24 => PixelFormat.BGR8,
-            IMG_FORMAT.RGB32 => PixelFormat.BGRa8,
-            IMG_FORMAT.RGB48 => PixelFormat.BGR16,
-            IMG_FORMAT.RGB64 => PixelFormat.BGRa16,
-            IMG_FORMAT.RGBPLANAR => PixelFormat.RGB8_Planar,
-            IMG_FORMAT.RGB16_PLANAR => PixelFormat.RGB16_Planar,
+            IMG_FORMAT.RGB24 => PixelFormat.RGB8,
+            IMG_FORMAT.RGB32 => PixelFormat.RGBa8,
+            //IMG_FORMAT.RGB48 => PixelFormat.RGB16, // 16 bits per channel RGB (little endian)
+            //IMG_FORMAT.RGB64 => PixelFormat.RGBa16, // 16 bits per channel RGBA (little endian)
+            //IMG_FORMAT.RGBPLANAR => PixelFormat.RGB8_Planar,
+            //IMG_FORMAT.RGB16_PLANAR => PixelFormat.RGB16_Planar,
             IMG_FORMAT.RAW8 => PixelFormat.BayerBG8,
             IMG_FORMAT.RAW16 => PixelFormat.BayerBG16,
             _ => PixelFormat.InvalidPixelFormat,
