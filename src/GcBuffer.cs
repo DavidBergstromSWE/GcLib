@@ -204,7 +204,7 @@ public sealed class GcBuffer
     /// Conversion allocates new memory to store the image data.
     /// </summary>
     /// <remarks>
-    /// Note: As Emgu CV assumes image data is stored in BGR(A) channel order, color conversion may be necessary after calling this method (e.g. using <see cref="CvInvoke.CvtColor(Mat, Mat, Emgu.CV.CvEnum.ColorConversion)"/>).
+    /// Note: As Emgu CV assumes image data is stored in BGR(A) channel order, color conversion may be necessary (e.g. using <see cref="CvInvoke.CvtColor(Mat, Mat, Emgu.CV.CvEnum.ColorConversion)"/>).
     /// </remarks>
     /// <returns><see cref="Mat"/> image.</returns>
     public Mat ToMat()
