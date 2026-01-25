@@ -29,7 +29,8 @@ public static class ImagePatternGenerator
         PixelFormat.Mono12,
         PixelFormat.Mono14,
         PixelFormat.Mono16,
-        PixelFormat.RGB8
+        PixelFormat.RGB8,
+        PixelFormat.BGR8
     ];
 
     /// <summary>
@@ -46,7 +47,10 @@ public static class ImagePatternGenerator
         TestPattern.VerticalLineMoving,
         TestPattern.HorizontalLineMoving,
         TestPattern.FrameCounter,
-        TestPattern.WhiteNoise
+        TestPattern.WhiteNoise,
+        TestPattern.Red,
+        TestPattern.Green,
+        TestPattern.Blue
     ];
 
     #region Public methods
@@ -86,9 +90,9 @@ public static class ImagePatternGenerator
                 return image;
             }
         }
-        else if (numChannels == 3 && pixelFormat == PixelFormat.RGB8)
+        else if (numChannels == 3)
         {
-            image = CreateRGB(width, height, pixelFormat, testPattern, frameNumber);
+            image = CreateColor(width, height, pixelFormat, testPattern, frameNumber);
             return image;
         }
         
@@ -142,20 +146,23 @@ public static class ImagePatternGenerator
     /// <param name="testPattern">Test pattern.</param>
     /// <param name="frameNumber">(optional) Frame number index, can be used to create dynamic test patterns which changes from frame to frame.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] CreateRGB(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0)
+    private static byte[] CreateColor(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0)
     {
         byte[] image = testPattern switch
         {
-            TestPattern.Black => UniformRGB(width, height, Color.Black),
-            TestPattern.White => UniformRGB(width, height, Color.White),
-            TestPattern.GrayVerticalRamp => VerticalBarsRGB(width, height),
-            TestPattern.GrayHorizontalRamp => HorizontalBarsRGB(width, height),
-            TestPattern.GrayHorizontalRampMoving => HorizontalRainbowRGB(width, height, frameNumber),
-            TestPattern.GrayVerticalRampMoving => VerticalRainbowRGB(width, height, frameNumber),
-            TestPattern.VerticalLineMoving => VerticalLineMovingRGB(width, height, frameNumber),
-            TestPattern.HorizontalLineMoving => HorizontalLineMovingRGB(width, height, frameNumber),
-            TestPattern.FrameCounter => DrawCenteredText(CycleUniformRGB(width, height, frameNumber), width, height, pixelFormat, frameNumber.ToString()),
+            TestPattern.Black => UniformColor(width, height, pixelFormat, Color.Black),
+            TestPattern.White => UniformColor(width, height, pixelFormat, Color.White),
+            TestPattern.GrayVerticalRamp => VerticalBarsColor(width, height, pixelFormat),
+            TestPattern.GrayHorizontalRamp => HorizontalBarsColor(width, height, pixelFormat),
+            TestPattern.GrayHorizontalRampMoving => HorizontalRainbowColor(width, height, pixelFormat, frameNumber),
+            TestPattern.GrayVerticalRampMoving => VerticalRainbowColor(width, height, pixelFormat, frameNumber),
+            TestPattern.VerticalLineMoving => VerticalLineMovingColor(width, height, frameNumber),
+            TestPattern.HorizontalLineMoving => HorizontalLineMovingColor(width, height, frameNumber),
+            TestPattern.FrameCounter => DrawCenteredText(CycleUniformColor(width, height, pixelFormat, frameNumber), width, height, pixelFormat, frameNumber.ToString()),
             TestPattern.WhiteNoise => RandomWhiteNoise<byte>(width, height, 255, 3),
+            TestPattern.Red => UniformColor(width, height, pixelFormat, Color.FromArgb(255, 0, 0)),
+            TestPattern.Green => UniformColor(width, height, pixelFormat, Color.FromArgb(0, 255, 0)),
+            TestPattern.Blue => UniformColor(width, height, pixelFormat, Color.FromArgb(0, 0, 255)),
             _ => throw new NotImplementedException()
         };
 
@@ -164,7 +171,7 @@ public static class ImagePatternGenerator
 
     #endregion
 
-    #region Image generation methods
+    #region Monochrome methods
 
     /// <summary>
     /// Creates a uniform monochrome image.
@@ -203,43 +210,6 @@ public static class ImagePatternGenerator
     private static T[] CycleUniformGray<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
     {
         return UniformGray(width, height, (T)Convert.ChangeType(frameNumber % Convert.ToUInt64(max), typeof(T)));
-    }
-
-    /// <summary>
-    /// Creates a uniform 8-bit color image.
-    /// </summary>
-    /// <param name="width">Width of image (number of pixels).</param>
-    /// <param name="height">Height of image (number of pixels).</param>
-    /// <param name="color">Color of image.</param>
-    /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] UniformRGB(uint width, uint height, Color color)
-    {
-        byte[] image = new byte[width * height * 3];
-
-        byte red = color.R;
-        byte green = color.G;
-        byte blue = color.B;
-
-        for (int i = 0; i < image.Length; i += 3)
-        {
-            image[i] = red;
-            image[i + 1] = green;
-            image[i + 2] = blue;
-        }
-        return image;
-    }
-
-    /// <summary>
-    /// Creates a uniform image that cycles in color.
-    /// </summary>
-    /// <param name="width">Width of image (number of pixels).</param>
-    /// <param name="height">Height of image (number of pixels).</param>
-    /// <param name="frameNumber">Frame number index.</param>
-    /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] CycleUniformRGB(uint width, uint height, ulong frameNumber)
-    {
-        Color[] colors = GetRainbowColorRange(256);
-        return UniformRGB(width, height, colors[(byte)Math.Round((255 + (double)frameNumber) % (255 + 1))]);
     }
 
     /// <summary>
@@ -297,12 +267,123 @@ public static class ImagePatternGenerator
     }
 
     /// <summary>
+    /// Creates a black image with a horizontal white line moving from top to bottom.
+    /// </summary>
+    /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
+    /// <param name="width">Width of image (number of pixels).</param>
+    /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum gray level.</param>
+    /// <param name="frameNumber">Frame number index.</param>
+    /// <returns>Test image as numeric array (of size <paramref name="width"/> x <paramref name="height"/>).</returns>
+    private static T[] HorizontalLineMoving<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
+    {
+        var image = new T[width * height];
+
+        int lineRow = (int)Math.Round((height + (double)frameNumber) % height);
+
+        // build image array
+        for (int j = 0; j < width; j++)
+        {
+            image[lineRow * width + j] = max;
+        }
+
+        return image;
+    }
+
+    /// <summary>
+    /// Creates a black image with a vertical white line moving from left to right.
+    /// </summary>
+    /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
+    /// <param name="width">Width of image (number of pixels).</param>
+    /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum gray level.</param>
+    /// <param name="frameNumber">Frame number index.</param>
+    /// <returns>Test image as numeric array (of size <paramref name="width"/> x <paramref name="height"/>).</returns>
+    private static T[] VerticalLineMoving<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
+    {
+        var image = new T[width * height];
+
+        int lineColumn = (int)Math.Round((width + (double)frameNumber) % width);
+
+        // build image array
+        for (int i = 0; i < height; i++)
+        {
+            image[i * width + lineColumn] = max;
+        }
+
+        return image;
+    }
+
+    /// <summary>
+    /// Creates an image of random white noise.
+    /// </summary>
+    /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
+    /// <param name="width">Width of image (number of pixels).</param>
+    /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum gray level.</param>
+    /// <param name="numChannel">Number of image channels.</param>
+    /// <returns>Test image of type <typeparamref name="T"/> and of size <paramref name="width"/> x <paramref name="height"/> in <paramref name="numChannel"/> channels.</returns>
+    private static T[] RandomWhiteNoise<T>(uint width, uint height, T max, uint numChannel = 1) where T : INumber<T>
+    {
+        T[] img = new T[height * width * numChannel];
+
+        for (int i = 0; i < img.Length; i++)
+            img[i] = _random.Next(max);
+
+        return img;
+    }
+
+    #endregion
+
+    #region Color methods
+
+    /// <summary>
+    /// Creates a uniform 8-bit color image.
+    /// </summary>
+    /// <param name="width">Width of image (number of pixels).</param>
+    /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="pixelFormat">Pixel format.</param>
+    /// <param name="color">Color of image.</param>
+    /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
+    private static byte[] UniformColor(uint width, uint height, PixelFormat pixelFormat, Color color)
+    {
+        byte[] image = new byte[width * height * 3];
+
+        byte color1 = pixelFormat.ToString().Contains("RGB")? color.R : color.B;
+        byte color2 = color.G;
+        byte color3 = pixelFormat.ToString().Contains("RGB") ? color.B : color.R;
+
+        for (int i = 0; i < image.Length; i += 3)
+        {
+            image[i] = color1;
+            image[i + 1] = color2;
+            image[i + 2] = color3;
+        }
+        return image;
+    }
+
+    /// <summary>
+    /// Creates a uniform image that cycles in color.
+    /// </summary>
+    /// <param name="width">Width of image (number of pixels).</param>
+    /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="pixelFormat">Pixel format.</param>
+    /// <param name="frameNumber">Frame number index.</param>
+    /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
+    private static byte[] CycleUniformColor(uint width, uint height, PixelFormat pixelFormat, ulong frameNumber)
+    {
+        Color[] colors = GetRainbowColorRange(256);
+        return UniformColor(width, height, pixelFormat, colors[(byte)Math.Round((255 + (double)frameNumber) % (255 + 1))]);
+    }
+
+    /// <summary>
     /// Creates an RGB image filled vertically with (horizontal) stripes of color including White, Black, Red, Green, Blue, Cyan, Magenta and Yellow.
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="pixelFormat">Pixel format.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] VerticalBarsRGB(uint width, uint height)
+    private static byte[] VerticalBarsColor(uint width, uint height, PixelFormat pixelFormat)
     {
         byte[] image = new byte[width * height * 3];
 
@@ -346,9 +427,9 @@ public static class ImagePatternGenerator
                     color = Color.Yellow;
                 }
 
-                image[(i * width * 3) + j] = color.R;
+                image[(i * width * 3) + j] = pixelFormat.ToString().Contains("RGB") ? color.R : color.B;
                 image[(i * width * 3) + j + 1] = color.G;
-                image[(i * width * 3) + j + 2] = color.B;
+                image[(i * width * 3) + j + 2] = pixelFormat.ToString().Contains("RGB") ? color.B : color.R;
             }
 
         }
@@ -360,8 +441,9 @@ public static class ImagePatternGenerator
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="pixelFormat">Pixel format.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] HorizontalBarsRGB(uint width, uint height)
+    private static byte[] HorizontalBarsColor(uint width, uint height, PixelFormat pixelFormat)
     {
         byte[] image = new byte[width * height * 3];
 
@@ -405,9 +487,9 @@ public static class ImagePatternGenerator
                     color = Color.Yellow;
                 }
 
-                image[(i * width * 3) + j] = color.R;
+                image[(i * width * 3) + j] = pixelFormat.ToString().Contains("RGB") ? color.R : color.B;
                 image[(i * width * 3) + j + 1] = color.G;
-                image[(i * width * 3) + j + 2] = color.B;
+                image[(i * width * 3) + j + 2] = pixelFormat.ToString().Contains("RGB") ? color.B : color.R;
             }
 
         }
@@ -419,9 +501,10 @@ public static class ImagePatternGenerator
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="pixelFormat">Pixel format.</param>
     /// <param name="frameNumber">(optional) Frame number index, can be used to make the pattern move horizontally (frame-by-frame) from left to right.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] HorizontalRainbowRGB(uint width, uint height, ulong frameNumber = 0)
+    private static byte[] HorizontalRainbowColor(uint width, uint height, PixelFormat pixelFormat, ulong frameNumber = 0)
     {
         byte[] image = new byte[width * height * 3];
 
@@ -434,9 +517,9 @@ public static class ImagePatternGenerator
 
             for (int i = 0; i < height; i++)
             {
-                image[(i * width * 3) + j] = colors[((a % width) + width) % width].R;
+                image[(i * width * 3) + j] = pixelFormat.ToString().Contains("RGB") ? colors[((a % width) + width) % width].R : colors[((a % width) + width) % width].B;
                 image[(i * width * 3) + j + 1] = colors[((a % width) + width) % width].G;
-                image[(i * width * 3) + j + 2] = colors[((a % width) + width) % width].B;
+                image[(i * width * 3) + j + 2] = pixelFormat.ToString().Contains("RGB") ? colors[((a % width) + width) % width].B : colors[((a % width) + width) % width].R;
             }
         }
 
@@ -448,9 +531,10 @@ public static class ImagePatternGenerator
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="pixelFormat">Pixel format.</param>
     /// <param name="frameNumber">(optional) Frame number index, can be used to make the pattern move vertically (frame-by-frame) from top to bottom.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] VerticalRainbowRGB(uint width, uint height, ulong frameNumber = 0)
+    private static byte[] VerticalRainbowColor(uint width, uint height, PixelFormat pixelFormat, ulong frameNumber = 0)
     {
         byte[] image = new byte[width * height * 3];
 
@@ -463,34 +547,10 @@ public static class ImagePatternGenerator
 
             for (int j = 0; j < width * 3; j += 3)
             {
-                image[(i * width * 3) + j] = colors[((a % height) + height) % height].R;
+                image[(i * width * 3) + j] = pixelFormat.ToString().Contains("RGB") ? colors[((a % height) + height) % height].R : colors[((a % height) + height) % height].B;
                 image[(i * width * 3) + j + 1] = colors[((a % height) + height) % height].G;
-                image[(i * width * 3) + j + 2] = colors[((a % height) + height) % height].B;
+                image[(i * width * 3) + j + 2] = pixelFormat.ToString().Contains("RGB") ? colors[((a % height) + height) % height].B : colors[((a % height) + height) % height].R;
             }
-        }
-
-        return image;
-    }
-
-    /// <summary>
-    /// Creates a black image with a horizontal white line moving from top to bottom.
-    /// </summary>
-    /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
-    /// <param name="width">Width of image (number of pixels).</param>
-    /// <param name="height">Height of image (number of pixels).</param>
-    /// <param name="max">Maximum gray level.</param>
-    /// <param name="frameNumber">Frame number index.</param>
-    /// <returns>Test image as numeric array (of size <paramref name="width"/> x <paramref name="height"/>).</returns>
-    private static T[] HorizontalLineMoving<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
-    {
-        var image = new T[width * height];
-
-        int lineRow = (int)Math.Round((height + (double)frameNumber) % height);
-
-        // build image array
-        for (int j = 0; j < width; j++)
-        {
-            image[lineRow * width + j] = max;
         }
 
         return image;
@@ -503,7 +563,7 @@ public static class ImagePatternGenerator
     /// <param name="height">Height of image (number of pixels).</param>
     /// <param name="frameNumber">Frame number index.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] HorizontalLineMovingRGB(uint width, uint height, ulong frameNumber)
+    private static byte[] HorizontalLineMovingColor(uint width, uint height, ulong frameNumber)
     {
         var image = new byte[width * height * 3];
 
@@ -524,35 +584,11 @@ public static class ImagePatternGenerator
     /// <summary>
     /// Creates a black image with a vertical white line moving from left to right.
     /// </summary>
-    /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
-    /// <param name="width">Width of image (number of pixels).</param>
-    /// <param name="height">Height of image (number of pixels).</param>
-    /// <param name="max">Maximum gray level.</param>
-    /// <param name="frameNumber">Frame number index.</param>
-    /// <returns>Test image as numeric array (of size <paramref name="width"/> x <paramref name="height"/>).</returns>
-    private static T[] VerticalLineMoving<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
-    {
-        var image = new T[width * height];
-
-        int lineColumn = (int)Math.Round((width + (double)frameNumber) % width);
-
-        // build image array
-        for (int i = 0; i < height; i++)
-        {
-            image[i * width + lineColumn] = max;
-        }
-
-        return image;
-    }
-
-    /// <summary>
-    /// Creates a black image with a vertical white line moving from left to right.
-    /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
     /// <param name="frameNumber">Frame number index.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] VerticalLineMovingRGB(uint width, uint height, ulong frameNumber)
+    private static byte[] VerticalLineMovingColor(uint width, uint height, ulong frameNumber)
     {
         var image = new byte[width * height * 3];
 
@@ -567,25 +603,6 @@ public static class ImagePatternGenerator
         }
 
         return image;
-    }
-
-    /// <summary>
-    /// Creates an image of random white noise.
-    /// </summary>
-    /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
-    /// <param name="width">Width of image (number of pixels).</param>
-    /// <param name="height">Height of image (number of pixels).</param>
-    /// <param name="max">Maximum gray level.</param>
-    /// <param name="numChannel">Number of image channels.</param>
-    /// <returns>Test image of type <typeparamref name="T"/> and of size <paramref name="width"/> x <paramref name="height"/> in <paramref name="numChannel"/> channels.</returns>
-    private static T[] RandomWhiteNoise<T>(uint width, uint height, T max, uint numChannel = 1) where T : INumber<T>
-    {
-        T[] img = new T[height * width * numChannel];
-
-        for (int i = 0; i < img.Length; i++)
-            img[i] = _random.Next(max);
-
-        return img;
     }
 
     #endregion

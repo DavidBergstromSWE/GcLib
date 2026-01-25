@@ -239,7 +239,19 @@ public enum TestPattern
     /// <summary>
     /// Image with white noise.
     /// </summary>
-    WhiteNoise
+    WhiteNoise,
+    /// <summary>
+    /// Image with uniform red color.
+    /// </summary>
+    Red,
+    /// <summary>
+    /// Image with uniform green color.
+    /// </summary>
+    Green,
+    /// <summary>
+    /// Image with uniform blue color.
+    /// </summary>
+    Blue
 }
 
 /// <summary>

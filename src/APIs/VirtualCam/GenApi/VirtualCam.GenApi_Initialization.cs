@@ -271,7 +271,7 @@ public sealed partial class VirtualCam
                 category: GetCategory(nameof(PixelFormat)),
                 description: "Format of the pixels provided by the device",
                 enumEntry: GcLib.PixelFormat.Mono8,
-                enumArray: [GcLib.PixelFormat.Mono8, GcLib.PixelFormat.Mono10, GcLib.PixelFormat.Mono12, GcLib.PixelFormat.Mono14, GcLib.PixelFormat.Mono16, GcLib.PixelFormat.RGB8],
+                enumArray: [GcLib.PixelFormat.Mono8, GcLib.PixelFormat.Mono10, GcLib.PixelFormat.Mono12, GcLib.PixelFormat.Mono14, GcLib.PixelFormat.Mono16, GcLib.PixelFormat.RGB8, GcLib.PixelFormat.BGR8],
                 isWritable: true,
                 isSelector: true,
                 selectedParameters: [nameof(PixelSize)]);
