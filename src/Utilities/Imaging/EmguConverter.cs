@@ -155,17 +155,17 @@ public static class EmguConverter
         else if (channels == 3)
         {
             if (depthType == DepthType.Cv8U)
-                return PixelFormat.RGB8;
+                return PixelFormat.BGR8; // OpenCV uses BGR by default
             else if (depthType == DepthType.Cv16U)
-                return PixelFormat.RGB16;
+                return PixelFormat.BGR16; // OpenCV uses BGR by default
             else return PixelFormat.InvalidPixelFormat;
         }
         else if (channels == 4)
         {
             if (depthType == DepthType.Cv8U)
-                return PixelFormat.RGBa8;
+                return PixelFormat.BGRa8;
             else if (depthType == DepthType.Cv16U)
-                return PixelFormat.RGBa16;
+                return PixelFormat.BGRa16;
             else return PixelFormat.InvalidPixelFormat;
         }
         else return PixelFormat.InvalidPixelFormat;

@@ -132,6 +132,23 @@ public static partial class GenICamConverter
 #pragma warning restore IDE0066 // Convert switch statement to expression
     }
 
+    /// <summary>
+    /// Converts a <see cref="PixelFormat"/> to match the specified number of channels and bits per channel, based on the
+    /// provided base format.
+    /// </summary>
+    /// <remarks>If the specified number of channels is less than the number of channels in the base 
+    /// format, the resulting <see cref="PixelFormat"/> will have the alpha channel removed.</remarks>
+    /// <param name="pixelFormat">The base format from which to derive the new pixel format.</param>
+    /// <param name="numChannels">The desired number of color channels for the resulting pixel format.</param>
+    /// <param name="nBits">The number of bits per channel to use in the resulting pixel format.</param>
+    /// <returns>Converted <see cref="PixelFormat"/>.</returns>
+    public static PixelFormat ConvertPixelFormat(PixelFormat pixelFormat, int numChannels, int nBits)
+    {
+        if (numChannels < GetNumChannels(pixelFormat))
+            return Enum.Parse<PixelFormat>(pixelFormat.ToString().Replace("a", string.Empty).Replace(IntegerGeneratedRegex().Match(pixelFormat.ToString()).Value, nBits.ToString()));
+        else return Enum.Parse<PixelFormat>(pixelFormat.ToString().Replace(IntegerGeneratedRegex().Match(pixelFormat.ToString()).Value, nBits.ToString()));
+    }
+
     [GeneratedRegex("\\d+")]
     private static partial Regex IntegerGeneratedRegex();
 }

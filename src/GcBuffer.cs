@@ -134,7 +134,48 @@ public sealed class GcBuffer
     }
 
     /// <summary>
-    /// Creates a new data container for the storage of an image buffer.
+    /// Creates a new data container for the storage of an image buffer. The image data is copied from the provided EmguCV <see cref="Mat"/> object.
+    /// </summary>
+    /// <remarks>
+    /// Note: Allocates new memory (to which image data is copied).
+    /// </remarks>
+    /// <param name="imageMat">Image in (EmguCV) Mat format.</param>
+    /// <param name="pixelFormat">Pixel format.</param>
+    /// <param name="pixelDynamicRangeMax">Maximum possible (saturation) pixel value.</param>
+    /// <param name="frameID">Frame ID.</param>
+    /// <param name="timeStamp">Image timestamp in DateTime ticks.</param>
+    /// <exception cref="ArgumentException"></exception>
+    public GcBuffer(Mat imageMat, PixelFormat pixelFormat, uint pixelDynamicRangeMax, long frameID, ulong timeStamp)
+    {
+        if (imageMat.IsEmpty)
+            throw new ArgumentException($"Image data is empty!");
+
+        if (imageMat.NumberOfChannels != GenICamConverter.GetNumChannels(pixelFormat))
+            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {GenICamConverter.GetNumChannels(pixelFormat)}!");
+
+        if (EmguConverter.GetBitDepth(imageMat.Depth) > (int)GenICamConverter.GetBitsPerPixelPerChannel(pixelFormat))
+            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Bit depth of image is {EmguConverter.GetBitDepth(imageMat.Depth)} (bits), while pixel format uses {GenICamConverter.GetBitsPerPixelPerChannel(pixelFormat)}!");
+
+        // Allocate new memory for image data.
+        ImageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
+
+        // Copy image data.
+        imageMat.CopyTo(ImageData);
+
+        Width = (uint)imageMat.Width;
+        Height = (uint)imageMat.Height;
+        NumChannels = (uint)imageMat.NumberOfChannels;
+        BitDepth = (uint)EmguConverter.GetBitDepth(imageMat.Depth);
+        PixelFormat = pixelFormat;
+        PixelDynamicRangeMax = pixelDynamicRangeMax;
+        FrameID = frameID;
+        TimeStamp = timeStamp;
+    }
+
+    /// <summary>
+    /// Creates a new data container for the storage of an image buffer. The image data is copied from the provided EmguCV <see cref="Mat"/> object.
+    /// Pixel format and bit depth are inferred from the <see cref="Mat"/> properties, with e.g. BGR color ordering for color images. 
+    /// To preserve a specific pixel format (e.g. RGB8), please use the overload that accepts a <see cref="PixelFormat"/> parameter.
     /// </summary>
     /// <remarks>
     /// Note: Allocates new memory (to which image data is copied).
