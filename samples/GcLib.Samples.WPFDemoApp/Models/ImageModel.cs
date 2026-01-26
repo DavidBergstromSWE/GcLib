@@ -256,6 +256,8 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();
 
+        // Convert to BGR/BGRa?
+
         // Convert 4-channel image to 3. 
         if (mat.NumberOfChannels == 4)
             CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);
@@ -272,6 +274,8 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
             CvInvoke.Flip(mat, mat, FlipType.Horizontal);
         if (FlipVertical)
             CvInvoke.Flip(mat, mat, FlipType.Vertical);
+
+        // Convert back color order or use as is?
 
         // Instantiate new output buffer (allocates new memory!).
         var output = new GcBuffer(mat, (uint)EmguConverter.GetMax(mat.Depth), buffer.FrameID, buffer.TimeStamp);

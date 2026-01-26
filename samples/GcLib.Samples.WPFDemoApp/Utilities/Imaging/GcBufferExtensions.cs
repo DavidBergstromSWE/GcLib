@@ -31,7 +31,7 @@ internal static class GcBufferExtensions
                                    pixelFormat: pixelFormat,
                                    palette: null,
                                    pixels: buffer.ImageData,
-                                   stride: stride); // CalculateStride(buffer.Width, buffer.NumChannels * buffer.BitDepth)
+                                   stride: stride);
     }
 
     /// <summary>
@@ -83,10 +83,13 @@ internal static class GcBufferExtensions
         {
             PixelFormat.Mono8 => System.Windows.Media.PixelFormats.Gray8,
             PixelFormat.Mono10 or PixelFormat.Mono12 or PixelFormat.Mono14 or PixelFormat.Mono16 => System.Windows.Media.PixelFormats.Gray16,
-            PixelFormat.RGB8 or PixelFormat.BGR8 => System.Windows.Media.PixelFormats.Bgr24, // Note: WPF uses BGR byte order for 24bpp RGB images
-            PixelFormat.BGRa8 or PixelFormat.RGBa8 => System.Windows.Media.PixelFormats.Bgra32, // Note: WPF uses BGRA byte order for 32bpp RGBA images
-            PixelFormat.RGB16 or PixelFormat.BGR16 => System.Windows.Media.PixelFormats.Rgb48,
-            PixelFormat.RGBa16 or PixelFormat.BGRa16 => System.Windows.Media.PixelFormats.Prgba64,
+            PixelFormat.RGB8 => System.Windows.Media.PixelFormats.Rgb24,
+            PixelFormat.BGR8 => System.Windows.Media.PixelFormats.Bgr24,
+            //PixelFormat.RGBa8 => System.Windows.Media.PixelFormats.Rgba32,
+            PixelFormat.BGRa8 => System.Windows.Media.PixelFormats.Bgra32,
+            PixelFormat.RGB16 => System.Windows.Media.PixelFormats.Rgb48,
+            //PixelFormat.BGR16 => System.Windows.Media.PixelFormats.Bgr48,
+            //PixelFormat.RGBa16 or PixelFormat.BGRa16 => System.Windows.Media.PixelFormats.Prgba64,
             _ => throw new NotSupportedException("Pixelformat is not supported!"),
         };
     }
