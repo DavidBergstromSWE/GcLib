@@ -256,11 +256,19 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();
 
-        // Convert to BGR/BGRa?
+        // Convert to BGR.
+        if (mat.NumberOfChannels == 3 && buffer.PixelFormat.ToString()[..3].Equals("RGB", StringComparison.CurrentCultureIgnoreCase))
+            CvInvoke.CvtColor(mat, mat, ColorConversion.Rgb2Bgr);
 
-        // Convert 4-channel image to 3. 
+        // Convert 4-channel image to 3.
         if (mat.NumberOfChannels == 4)
-            CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);
+        {
+            if (buffer.PixelFormat.ToString()[..4].Equals("BGRA", StringComparison.CurrentCultureIgnoreCase))
+                CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);
+            else if (buffer.PixelFormat.ToString()[..4].Equals("RGBA", StringComparison.CurrentCultureIgnoreCase))
+                CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Bgr);
+            else throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");
+        }
 
         // Normalize (to 8 bits).
         if (EmguConverter.GetBitDepth(mat.Depth) > 8)
@@ -278,7 +286,7 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         // Convert back color order or use as is?
 
         // Instantiate new output buffer (allocates new memory!).
-        var output = new GcBuffer(mat, (uint)EmguConverter.GetMax(mat.Depth), buffer.FrameID, buffer.TimeStamp);
+        var output = new GcBuffer(mat, mat.NumberOfChannels == 3? PixelFormat.BGR8 : PixelFormat.Mono8, (uint)EmguConverter.GetMax(mat.Depth), buffer.FrameID, buffer.TimeStamp);
 
         // Dipose mat.
         mat.Dispose();

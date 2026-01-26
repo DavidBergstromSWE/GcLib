@@ -18,7 +18,7 @@ internal sealed class PixelValueConverter : IValueConverter
             return null;
 
         // Update pixel value (format according to number of channels).
-        return pixelValues.Length == 1 ? $"I: {pixelValues[0]}" : $"R: {pixelValues[2]}, G: {pixelValues[1]}, B: {pixelValues[0]}";
+        return pixelValues.Length == 1 ? $"I: {pixelValues[0]}" : $"R: {pixelValues[2]}, G: {pixelValues[1]}, B: {pixelValues[0]}"; // Note: Assuming BGR order.
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

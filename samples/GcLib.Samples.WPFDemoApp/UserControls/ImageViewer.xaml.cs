@@ -220,7 +220,7 @@ public partial class ImageViewer : UserControl, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Gray or RGB level value of inspected pixel.
+    /// Gray or BGR value of inspected pixel.
     /// </summary>
     public double[] PixelValue
     {
@@ -886,7 +886,9 @@ public partial class ImageViewer : UserControl, INotifyPropertyChanged
         if (PixelCoordinateX >= 0 && PixelCoordinateX < ImageSource.Width && PixelCoordinateY >= 0 && PixelCoordinateY < ImageSource.Height)
         {
             // Update displayed pixel value from coordinates.
-            PixelValue = ImageSource[PixelCoordinateY, PixelCoordinateX];
+            if (ImageSource.PixelFormat.ToString()[..3].Equals("RGB", StringComparison.CurrentCultureIgnoreCase)) // RGB
+                PixelValue = [ImageSource[PixelCoordinateY, PixelCoordinateX][2], ImageSource[PixelCoordinateY, PixelCoordinateX][1], ImageSource[PixelCoordinateY, PixelCoordinateX][0]];
+            else PixelValue = ImageSource[PixelCoordinateY, PixelCoordinateX]; // Grayscale or BGR
         }
     }
 

@@ -74,26 +74,18 @@ public static partial class GenICamConverter
             case PixelFormat.Mono14p:
             case PixelFormat.Mono16:
             case PixelFormat.Mono32:
-            case PixelFormat.BayerBG8:
-            case PixelFormat.BayerBG10:
-            case PixelFormat.BayerBG12:
-            case PixelFormat.BayerBG14:
-            case PixelFormat.BayerBG16:
-            case PixelFormat.BayerGB8:
-            case PixelFormat.BayerGB10:
-            case PixelFormat.BayerGB12:
-            case PixelFormat.BayerGB14:
-            case PixelFormat.BayerGB16:
-            case PixelFormat.BayerGR8:
-            case PixelFormat.BayerGR10:
-            case PixelFormat.BayerGR12:
-            case PixelFormat.BayerGR14:
-            case PixelFormat.BayerGR16:
-            case PixelFormat.BayerRG8:
-            case PixelFormat.BayerRG10:
-            case PixelFormat.BayerRG12:
-            case PixelFormat.BayerRG14:
-            case PixelFormat.BayerRG16:
+            case PixelFormat.B8:
+            case PixelFormat.B10:
+            case PixelFormat.B12:
+            case PixelFormat.B16:
+            case PixelFormat.G8:
+            case PixelFormat.G10:
+            case PixelFormat.G12:
+            case PixelFormat.G16:
+            case PixelFormat.R8:
+            case PixelFormat.R10:
+            case PixelFormat.R12:
+            case PixelFormat.R16:
                 return 1;
             case PixelFormat.RGB8:
             case PixelFormat.RGB10:
@@ -114,6 +106,44 @@ public static partial class GenICamConverter
             case PixelFormat.RGB10_Planar:
             case PixelFormat.RGB12_Planar:
             case PixelFormat.RGB16_Planar:
+            case PixelFormat.BayerBG8:
+            case PixelFormat.BayerBG10:
+            case PixelFormat.BayerBG12:
+            case PixelFormat.BayerBG14:
+            case PixelFormat.BayerBG16:
+            case PixelFormat.BayerGB8:
+            case PixelFormat.BayerGB10:
+            case PixelFormat.BayerGB12:
+            case PixelFormat.BayerGB14:
+            case PixelFormat.BayerGB16:
+            case PixelFormat.BayerGR8:
+            case PixelFormat.BayerGR10:
+            case PixelFormat.BayerGR12:
+            case PixelFormat.BayerGR14:
+            case PixelFormat.BayerGR16:
+            case PixelFormat.BayerRG8:
+            case PixelFormat.BayerRG10:
+            case PixelFormat.BayerRG12:
+            case PixelFormat.BayerRG14:
+            case PixelFormat.BayerRG16:
+            case PixelFormat.BayerBG4p:
+            case PixelFormat.BayerBG10p:
+            case PixelFormat.BayerBG12p:
+            case PixelFormat.BayerBG14p:
+            case PixelFormat.BayerGB4p:
+            case PixelFormat.BayerGB10p:
+            case PixelFormat.BayerGB12p:
+            case PixelFormat.BayerGB14p:
+            case PixelFormat.BayerGR4p:
+            case PixelFormat.BayerGR10p:
+            case PixelFormat.BayerGR12p:
+            case PixelFormat.BayerGR14p:
+            case PixelFormat.BayerRG4p:
+            case PixelFormat.BayerRG10p:
+            case PixelFormat.BayerRG12p:
+            case PixelFormat.BayerRG14p:
+            case PixelFormat.RGB565p:
+            case PixelFormat.BGR565p:
                 return 3;
             case PixelFormat.RGBa8:
             case PixelFormat.RGBa10:
@@ -125,6 +155,10 @@ public static partial class GenICamConverter
             case PixelFormat.BGRa12:
             case PixelFormat.BGRa14:
             case PixelFormat.BGRa16:
+            case PixelFormat.RGBa10p:
+            case PixelFormat.RGBa12p:
+            case PixelFormat.BGRa10p:
+            case PixelFormat.BGRa12p:
                 return 4;
             default:
                 throw new NotSupportedException("Pixel format is not supported!");
