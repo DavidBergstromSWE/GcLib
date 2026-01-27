@@ -2200,7 +2200,7 @@
         </member>
         <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF12sg24AmB">
              <summary>
-            Pixel format 12bit ToF A - B (signed)
+            Pixel format 12bit signed ToF A - B
              </summary>
         </member>
         <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF12g24ApB">
@@ -2210,7 +2210,7 @@
         </member>
         <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF12sAmB">
              <summary>
-            Pixel format 12bit ToF A - B (A-B in 2 bytes) ( (signed)
+            Pixel format 12bit signed ToF A - B (A-B in 2 bytes)
              </summary>
         </member>
         <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF12g24Aon">
@@ -2270,7 +2270,7 @@
         </member>
         <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF16sAmB">
              <summary>
-            Pixel format 16bit ToF A - B (A-B in 2 bytes) ( (signed)
+            Pixel format 16bit signed ToF A - B (A-B in 2 bytes)
              </summary>
         </member>
         <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono12g24MS61">
@@ -2942,6 +2942,91 @@
              <summary>
             Pixel format 8bit
              </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono14MS71">
+             <summary>
+            Pixel format 14bit TOF (A+B+C)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiMono14pMS71">
+             <summary>
+            Pixel format 14bit packed TOF (A+B+C)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF10AnB">
+             <summary>
+            Pixel format 10bit ToF A and B (A in 2 bytes, B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF14AnB">
+             <summary>
+            Pixel format 14bit ToF A and B (A in 2 bytes, B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF16AnB">
+             <summary>
+            Pixel format 16bit ToF A and B (A in 2 bytes, B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF10Aon">
+             <summary>
+            Pixel format 10bit ToF A only (A in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF10ApB">
+             <summary>
+            Pixel format 10bit ToF A + B (A+B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF10Bon">
+             <summary>
+            Pixel format 10bit ToF B only (B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF10sAmB">
+             <summary>
+            Pixel format 10bit signed ToF A - B (A-B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF14Aon">
+             <summary>
+            Pixel format 14bit ToF A only (A in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF14ApB">
+             <summary>
+            Pixel format 14bit ToF A + B (A+B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF14Bon">
+             <summary>
+            Pixel format 14bit ToF B only (B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF14sAmB">
+             <summary>
+            Pixel format 14bit signed ToF A - B (A-B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF16Aon">
+             <summary>
+            Pixel format 16bit ToF A only (A in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF16ApB">
+             <summary>
+            Pixel format 16bit ToF A + B (A+B in 2 bytes)
+             </summary>
+        </member>
+        <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_xiToF16Bon">
+             <summary>
+            Pixel format 16bit ToF B only (B in 2 bytes)
+             </summary>
+        </member>
+        <member name="T:xiApi.NET.ErrorCodesEnum">
+            <summary>
+            Enum error codes returned by xiAPI.NET.
+            </summary>
         </member>
         <member name="T:xiApi.NET.xiExc">
             <summary> 
@@ -5099,7 +5184,7 @@
         </member>
         <member name="F:xiApi.NET.SENSOR_FEATURE_SELECTOR.SENSOR_FEATURE_MULTIPLE_ADC">
             <summary>
-            Multiple ADC
+            Multiple ADC feature performs multiple ADC conversions of the same analog pixel signal and averages the results. It reduces random noise and improves the overall signal-to-noise ratio. For camera model: MX2457 (1=Off, 2=2ADC, 4=4ADC)
             </summary>
         </member>
         <member name="F:xiApi.NET.SENSOR_FEATURE_SELECTOR.SENSOR_FEATURE_FAST_TRIGGER_MODE_ENABLE">
@@ -5580,6 +5665,26 @@
         <member name="F:xiApi.NET.ACQUISITION_STATUS_SELECTOR.ACQUISITION_STATUS_ACQ_ACTIVE">
             <summary>
              Device is currently doing an acquisition of one or many frames.
+            </summary>
+        </member>
+        <member name="T:xiApi.NET.REGIONS_GEOMETRY">
+            <summary>
+            Regions Geometry
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.REGIONS_GEOMETRY.REGIONS_GEOMETRY_SINGLE_REGION_ONLY">
+            <summary>
+            Single region
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.REGIONS_GEOMETRY.REGIONS_GEOMETRY_MULTIPLE_REGIONS_IN_SINGLE_COLUMN">
+            <summary>
+            Multiple regions in single column
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.REGIONS_GEOMETRY.REGIONS_GEOMETRY_MULTIPLE_REGIONS_IN_MULTIPLE_COLUMNS">
+            <summary>
+            Multiple regions in multiple columns
             </summary>
         </member>
         <member name="T:xiApi.NET.DP_UNIT_SELECTOR">
@@ -6274,6 +6379,12 @@
             <summary>
              Activates/deactivates Region selected by Region Selector
             By default -. Type	 Integer
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.PRM.REGIONS_GEOMETRY">
+            <summary>
+             Type of multiple regions geometry.
+            By default -. Type	 Enum
             </summary>
         </member>
         <member name="F:xiApi.NET.PRM.HORIZONTAL_FLIP">
