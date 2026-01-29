@@ -34,17 +34,20 @@ public class DeBayerTests
     public void Transform2BGR_MatInputWithSupportedFormat_ReturnsTransformedMat(PixelFormat pixelFormat)
     {
         // Arrange
-        var rawMat = GetBayerPatternedMat(pixelFormat);
+        var rawMat = GetBayerPatternedMat();
 
         // Act
-        var rgbMat = DeBayer.Transform2BGR(rawMat, pixelFormat);
+        var outputMat = DeBayer.Transform2BGR(rawMat, pixelFormat);
 
         // Assert
-        Assert.IsNotNull(rgbMat);
-        Assert.AreEqual(rawMat.Width, rgbMat.Width);
-        Assert.AreEqual(rawMat.Height, rgbMat.Height);
-        Assert.AreEqual(rawMat.Depth, rgbMat.Depth);
-        Assert.AreEqual(3, rgbMat.NumberOfChannels);
+        Assert.IsNotNull(outputMat);
+        Assert.AreEqual(rawMat.Width, outputMat.Width);
+        Assert.AreEqual(rawMat.Height, outputMat.Height);
+        Assert.AreEqual(rawMat.Depth, outputMat.Depth);
+        Assert.AreEqual(3, outputMat.NumberOfChannels);
+        Assert.AreNotEqual(rawMat, outputMat.Split()[0]);
+        Assert.AreNotEqual(rawMat, outputMat.Split()[1]);
+        Assert.AreNotEqual(rawMat, outputMat.Split()[2]);
     }
 
     [TestMethod]
@@ -82,17 +85,20 @@ public class DeBayerTests
     public void Transform2RGB_MatInputWithSupportedFormat_ReturnsTransformedMat(PixelFormat pixelFormat)
     {
         // Arrange
-        var rawMat = GetBayerPatternedMat(pixelFormat);
+        var rawMat = GetBayerPatternedMat();
 
         // Act
-        var rgbMat = DeBayer.Transform2RGB(rawMat, pixelFormat);
+        var outputMat = DeBayer.Transform2RGB(rawMat, pixelFormat);
 
         // Assert
-        Assert.IsNotNull(rgbMat);
-        Assert.AreEqual(rawMat.Width, rgbMat.Width);
-        Assert.AreEqual(rawMat.Height, rgbMat.Height);
-        Assert.AreEqual(rawMat.Depth, rgbMat.Depth);
-        Assert.AreEqual(3, rgbMat.NumberOfChannels);
+        Assert.IsNotNull(outputMat);
+        Assert.AreEqual(rawMat.Width, outputMat.Width);
+        Assert.AreEqual(rawMat.Height, outputMat.Height);
+        Assert.AreEqual(rawMat.Depth, outputMat.Depth);
+        Assert.AreEqual(3, outputMat.NumberOfChannels);
+        Assert.AreNotEqual(rawMat, outputMat.Split()[0]);
+        Assert.AreNotEqual(rawMat, outputMat.Split()[1]);
+        Assert.AreNotEqual(rawMat, outputMat.Split()[2]);
     }
 
     [TestMethod]
@@ -133,15 +139,18 @@ public class DeBayerTests
         var rawBuffer = GetBayerPatternedBuffer(pixelFormat);
 
         // Act
-        var bgrBuffer = DeBayer.Transform2BGR(rawBuffer);
+        var outputBuffer = DeBayer.Transform2BGR(rawBuffer);
 
         // Assert
-        Assert.IsNotNull(bgrBuffer);
-        Assert.AreEqual(rawBuffer.Width, bgrBuffer.Width);
-        Assert.AreEqual(rawBuffer.Height, bgrBuffer.Height);
-        Assert.AreEqual(rawBuffer.BitDepth, bgrBuffer.BitDepth);
-        Assert.AreEqual(rawBuffer.PixelDynamicRangeMax, bgrBuffer.PixelDynamicRangeMax);
-        Assert.AreEqual(3, (int)bgrBuffer.NumChannels);
+        Assert.IsNotNull(outputBuffer);
+        Assert.AreEqual(rawBuffer.Width, outputBuffer.Width);
+        Assert.AreEqual(rawBuffer.Height, outputBuffer.Height);
+        Assert.AreEqual(rawBuffer.BitDepth, outputBuffer.BitDepth);
+        Assert.AreEqual(rawBuffer.PixelDynamicRangeMax, outputBuffer.PixelDynamicRangeMax);
+        Assert.AreEqual(3, (int)outputBuffer.NumChannels);
+        Assert.Contains(outputBuffer.PixelFormat, [PixelFormat.BGR8, PixelFormat.BGR10, PixelFormat.BGR12, PixelFormat.BGR14, PixelFormat.BGR16]);
+        Assert.AreEqual(rawBuffer.FrameID, outputBuffer.FrameID);
+        Assert.AreEqual(rawBuffer.TimeStamp, outputBuffer.TimeStamp);
     }
 
     [TestMethod]
@@ -181,15 +190,18 @@ public class DeBayerTests
         var rawBuffer = GetBayerPatternedBuffer(pixelFormat);
 
         // Act
-        var rgbBuffer = DeBayer.Transform2RGB(rawBuffer);
+        var outputBuffer = DeBayer.Transform2RGB(rawBuffer);
 
         // Assert
-        Assert.IsNotNull(rgbBuffer);
-        Assert.AreEqual(rawBuffer.Width, rgbBuffer.Width);
-        Assert.AreEqual(rawBuffer.Height, rgbBuffer.Height);
-        Assert.AreEqual(rawBuffer.BitDepth, rgbBuffer.BitDepth);
-        Assert.AreEqual(rawBuffer.PixelDynamicRangeMax, rgbBuffer.PixelDynamicRangeMax);
-        Assert.AreEqual(3, (int)rgbBuffer.NumChannels);
+        Assert.IsNotNull(outputBuffer);
+        Assert.AreEqual(rawBuffer.Width, outputBuffer.Width);
+        Assert.AreEqual(rawBuffer.Height, outputBuffer.Height);
+        Assert.AreEqual(rawBuffer.BitDepth, outputBuffer.BitDepth);
+        Assert.AreEqual(rawBuffer.PixelDynamicRangeMax, outputBuffer.PixelDynamicRangeMax);
+        Assert.AreEqual(3, (int)outputBuffer.NumChannels);
+        Assert.Contains(outputBuffer.PixelFormat, [PixelFormat.RGB8, PixelFormat.RGB10, PixelFormat.RGB12, PixelFormat.RGB14, PixelFormat.RGB16]);
+        Assert.AreEqual(rawBuffer.FrameID, outputBuffer.FrameID);
+        Assert.AreEqual(rawBuffer.TimeStamp, outputBuffer.TimeStamp);
     }
 
     [TestMethod]
@@ -210,20 +222,19 @@ public class DeBayerTests
             0,  1,  2 ,  3,
             4,  5,  6,  7,
             8,  9, 10, 11,
-           12, 13, 14, 15
-        ];
+           12, 13, 14, 15 ];
 
-        return new GcBuffer(imageData: NumericHelper.ToBytes(imageData), width: 4, height: 4, pixelFormat: bayerFormat, pixelDynamicRangeMax: GenICamConverter.GetDynamicRangeMax(bayerFormat), frameID: 0, timeStamp: 0);
+        return new GcBuffer(imageData: NumericHelper.ToBytes(imageData), width: 4, height: 4, pixelFormat: bayerFormat, pixelDynamicRangeMax: GenICamConverter.GetDynamicRangeMax(bayerFormat), frameID: 42, timeStamp: (ulong)DateTime.Now.Ticks);
     }
 
-    private static Mat GetBayerPatternedMat(PixelFormat bayerFormat)
+    private static Mat GetBayerPatternedMat()
     {
         byte[] imageData = [
             0,  1,  2 ,  3,
             4,  5,  6,  7,
             8,  9, 10, 11,
-           12, 13, 14, 15
-        ];
+           12, 13, 14, 15 ];
+
         var mat = new Mat(4, 4, Emgu.CV.CvEnum.DepthType.Cv8U, 1);
         mat.SetTo(imageData);
         return mat;
