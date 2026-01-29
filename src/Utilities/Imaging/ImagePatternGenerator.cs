@@ -349,9 +349,11 @@ public static class ImagePatternGenerator
     {
         byte[] image = new byte[width * height * 3];
 
-        byte color1 = pixelFormat.ToString().Contains("RGB")? color.R : color.B;
+        var colorOrder = pixelFormat.ToString()[..3];
+
+        byte color1 = colorOrder.Equals("RGB")? color.R : color.B;
         byte color2 = color.G;
-        byte color3 = pixelFormat.ToString().Contains("RGB") ? color.B : color.R;
+        byte color3 = colorOrder.Equals("RGB") ? color.B : color.R;
 
         for (int i = 0; i < image.Length; i += 3)
         {
@@ -386,6 +388,8 @@ public static class ImagePatternGenerator
     private static byte[] VerticalBarsColor(uint width, uint height, PixelFormat pixelFormat)
     {
         byte[] image = new byte[width * height * 3];
+
+        var colorOrder = pixelFormat.ToString()[..3];
 
         Color color;
 
@@ -427,9 +431,9 @@ public static class ImagePatternGenerator
                     color = Color.Yellow;
                 }
 
-                image[(i * width * 3) + j] = pixelFormat.ToString().Contains("RGB") ? color.R : color.B;
+                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? color.R : color.B;
                 image[(i * width * 3) + j + 1] = color.G;
-                image[(i * width * 3) + j + 2] = pixelFormat.ToString().Contains("RGB") ? color.B : color.R;
+                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? color.B : color.R;
             }
 
         }
@@ -446,6 +450,8 @@ public static class ImagePatternGenerator
     private static byte[] HorizontalBarsColor(uint width, uint height, PixelFormat pixelFormat)
     {
         byte[] image = new byte[width * height * 3];
+
+        var colorOrder = pixelFormat.ToString()[..3];
 
         Color color;
 
@@ -487,9 +493,9 @@ public static class ImagePatternGenerator
                     color = Color.Yellow;
                 }
 
-                image[(i * width * 3) + j] = pixelFormat.ToString().Contains("RGB") ? color.R : color.B;
+                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? color.R : color.B;
                 image[(i * width * 3) + j + 1] = color.G;
-                image[(i * width * 3) + j + 2] = pixelFormat.ToString().Contains("RGB") ? color.B : color.R;
+                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? color.B : color.R;
             }
 
         }
@@ -510,6 +516,8 @@ public static class ImagePatternGenerator
 
         Color[] colors = GetRainbowColorRange(width);
 
+        var colorOrder = pixelFormat.ToString()[..3];
+
         // build image array
         for (int j = 0; j < width * 3; j += 3)
         {
@@ -517,9 +525,9 @@ public static class ImagePatternGenerator
 
             for (int i = 0; i < height; i++)
             {
-                image[(i * width * 3) + j] = pixelFormat.ToString().Contains("RGB") ? colors[((a % width) + width) % width].R : colors[((a % width) + width) % width].B;
+                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? colors[((a % width) + width) % width].R : colors[((a % width) + width) % width].B;
                 image[(i * width * 3) + j + 1] = colors[((a % width) + width) % width].G;
-                image[(i * width * 3) + j + 2] = pixelFormat.ToString().Contains("RGB") ? colors[((a % width) + width) % width].B : colors[((a % width) + width) % width].R;
+                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? colors[((a % width) + width) % width].B : colors[((a % width) + width) % width].R;
             }
         }
 
@@ -538,6 +546,8 @@ public static class ImagePatternGenerator
     {
         byte[] image = new byte[width * height * 3];
 
+        var colorOrder = pixelFormat.ToString()[..3];
+
         Color[] colors = GetRainbowColorRange(height);
 
         // build image array
@@ -547,9 +557,9 @@ public static class ImagePatternGenerator
 
             for (int j = 0; j < width * 3; j += 3)
             {
-                image[(i * width * 3) + j] = pixelFormat.ToString().Contains("RGB") ? colors[((a % height) + height) % height].R : colors[((a % height) + height) % height].B;
+                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? colors[((a % height) + height) % height].R : colors[((a % height) + height) % height].B;
                 image[(i * width * 3) + j + 1] = colors[((a % height) + height) % height].G;
-                image[(i * width * 3) + j + 2] = pixelFormat.ToString().Contains("RGB") ? colors[((a % height) + height) % height].B : colors[((a % height) + height) % height].R;
+                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? colors[((a % height) + height) % height].B : colors[((a % height) + height) % height].R;
             }
         }
 
