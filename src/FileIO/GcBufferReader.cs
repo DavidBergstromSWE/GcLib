@@ -150,7 +150,15 @@ public sealed class GcBufferReader : IDisposable
         _ = _fileStream.Read(imageHeader, 0, imageHeader.Length);
 
         // Retrieve expected buffer and image sizes.
-        _imageBufferSize = GetWidth(imageHeader) * GetHeight(imageHeader) * GenICamConverter.GetBitsPerPixel(GetPixelFormat(imageHeader)) / 8;
+        try
+        {
+            _imageBufferSize = GetWidth(imageHeader) * GetHeight(imageHeader) * GenICamConverter.GetBitsPerPixel(GetPixelFormat(imageHeader)) / 8;
+        }
+        catch (Exception)
+        {
+            throw new IOException("File corrupt?");
+        }
+
         _imageSize = _imageBufferSize + _imageHeaderSize;
 
         if ((_fileStream.Length - _fileHeaderSize) % _imageSize != 0)

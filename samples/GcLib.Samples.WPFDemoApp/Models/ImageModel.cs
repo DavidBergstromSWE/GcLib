@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -24,6 +25,40 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
     private bool _flipHorizontal;
     private bool _flipVertical;
     private double _brightness;
+
+    /// <summary>
+    /// List of pixel formats supported.
+    /// </summary>
+    /// <remarks>This list defines the pixel formats that can be processed or produced. Derived classes may
+    /// use this collection to determine format compatibility or to advertise supported formats to consumers.</remarks>
+    protected List<PixelFormat> SupportedPixelFormats =
+    [
+        PixelFormat.Mono8,
+        PixelFormat.Mono10,
+        PixelFormat.Mono12,
+        PixelFormat.Mono14,
+        PixelFormat.Mono16,
+        PixelFormat.BGR8,
+        PixelFormat.BGR10,
+        PixelFormat.BGR12,
+        PixelFormat.BGR14,
+        PixelFormat.BGR16,
+        PixelFormat.RGB8,
+        PixelFormat.RGB10,
+        PixelFormat.RGB12,
+        PixelFormat.RGB14,
+        PixelFormat.RGB16,
+        PixelFormat.BGRa8,
+        PixelFormat.BGRa10,
+        PixelFormat.BGRa12,
+        PixelFormat.BGRa14,
+        PixelFormat.BGRa16,
+        PixelFormat.RGBa8,
+        PixelFormat.RGBa10,
+        PixelFormat.RGBa12,
+        PixelFormat.RGBa14,
+        PixelFormat.RGBa16
+    ];
 
     #endregion
 
@@ -253,6 +288,9 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
     /// <returns>Processed output image.</returns>
     protected virtual GcBuffer ProcessImage(GcBuffer buffer)
     {
+        if (!SupportedPixelFormats.Contains(buffer.PixelFormat))
+            throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported! For a complete list of supported formats, see {nameof(SupportedPixelFormats)}.");    
+
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();
 
@@ -260,7 +298,7 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         if (mat.NumberOfChannels == 3 && buffer.PixelFormat.ToString()[..3].Equals("RGB", StringComparison.CurrentCultureIgnoreCase))
             CvInvoke.CvtColor(mat, mat, ColorConversion.Rgb2Bgr);
 
-        // Convert 4-channel image to 3.
+        // Convert 4-channel image to 3 (by removing alpha channel).
         if (mat.NumberOfChannels == 4)
         {
             if (buffer.PixelFormat.ToString()[..4].Equals("BGRA", StringComparison.CurrentCultureIgnoreCase))
@@ -282,8 +320,6 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
             CvInvoke.Flip(mat, mat, FlipType.Horizontal);
         if (FlipVertical)
             CvInvoke.Flip(mat, mat, FlipType.Vertical);
-
-        // Convert back color order or use as is?
 
         // Instantiate new output buffer (allocates new memory!).
         var output = new GcBuffer(mat, mat.NumberOfChannels == 3? PixelFormat.BGR8 : PixelFormat.Mono8, (uint)EmguConverter.GetMax(mat.Depth), buffer.FrameID, buffer.TimeStamp);

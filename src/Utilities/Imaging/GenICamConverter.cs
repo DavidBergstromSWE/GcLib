@@ -13,9 +13,10 @@ public static partial class GenICamConverter
     /// </summary>
     /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
     /// <returns>Bits per pixel.</returns>
+    /// <exception cref="NotSupportedException">Thrown if the pixel format is not supported.</exception>"
     public static uint GetBitsPerPixel(PixelFormat pixelFormat)
     {
-        return (uint)pixelFormat >> 16 & 0xff;
+        return GetBitsPerPixelPerChannel(pixelFormat) * GetNumChannels(pixelFormat);
     }
 
     /// <summary>
@@ -25,7 +26,10 @@ public static partial class GenICamConverter
     /// <returns>Bits per pixel per channel.</returns>
     public static uint GetBitsPerPixelPerChannel(PixelFormat pixelFormat)
     {
-        return GetBitsPerPixel(pixelFormat) / GetNumChannels(pixelFormat);
+        var nBits = byte.Parse(IntegerGeneratedRegex().Match(pixelFormat.ToString()).Value);
+        if (pixelFormat.ToString().Contains('p')) // packed format (without byte alignment)
+            return nBits;
+        else return (uint)((nBits + 7) / 8 * 8); // unpacked formats are aligned to next byte
     }
 
     /// <summary>
@@ -35,9 +39,7 @@ public static partial class GenICamConverter
     /// <returns>Pixel size.</returns>
     public static PixelSize GetPixelSize(PixelFormat pixelFormat)
     {
-        // Number of bits.
-        byte nBits = byte.Parse(IntegerGeneratedRegex().Match(pixelFormat.ToString()).Value);
-        return (PixelSize)nBits;
+        return (PixelSize)byte.Parse(IntegerGeneratedRegex().Match(pixelFormat.ToString()).Value);
     }
 
     /// <summary>
@@ -56,6 +58,7 @@ public static partial class GenICamConverter
     /// </summary>
     /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
     /// <returns>Number of channels.</returns>
+    /// <exception cref="NotSupportedException">Thrown if the pixel format is not supported.</exception>"
     public static uint GetNumChannels(PixelFormat pixelFormat)
     {
 #pragma warning disable IDE0066 // Convert switch statement to expression
@@ -86,26 +89,6 @@ public static partial class GenICamConverter
             case PixelFormat.R10:
             case PixelFormat.R12:
             case PixelFormat.R16:
-                return 1;
-            case PixelFormat.RGB8:
-            case PixelFormat.RGB10:
-            case PixelFormat.RGB10p:
-            case PixelFormat.RGB10p32:
-            case PixelFormat.RGB12:
-            case PixelFormat.RGB12p:
-            case PixelFormat.RGB14:
-            case PixelFormat.RGB16:
-            case PixelFormat.BGR8:
-            case PixelFormat.BGR10:
-            case PixelFormat.BGR10p:
-            case PixelFormat.BGR12:
-            case PixelFormat.BGR12p:
-            case PixelFormat.BGR14:
-            case PixelFormat.BGR16:
-            case PixelFormat.RGB8_Planar:
-            case PixelFormat.RGB10_Planar:
-            case PixelFormat.RGB12_Planar:
-            case PixelFormat.RGB16_Planar:
             case PixelFormat.BayerBG8:
             case PixelFormat.BayerBG10:
             case PixelFormat.BayerBG12:
@@ -142,6 +125,26 @@ public static partial class GenICamConverter
             case PixelFormat.BayerRG10p:
             case PixelFormat.BayerRG12p:
             case PixelFormat.BayerRG14p:
+                return 1;
+            case PixelFormat.RGB8:
+            case PixelFormat.RGB10:
+            case PixelFormat.RGB10p:
+            case PixelFormat.RGB10p32:
+            case PixelFormat.RGB12:
+            case PixelFormat.RGB12p:
+            case PixelFormat.RGB14:
+            case PixelFormat.RGB16:
+            case PixelFormat.BGR8:
+            case PixelFormat.BGR10:
+            case PixelFormat.BGR10p:
+            case PixelFormat.BGR12:
+            case PixelFormat.BGR12p:
+            case PixelFormat.BGR14:
+            case PixelFormat.BGR16:
+            case PixelFormat.RGB8_Planar:
+            case PixelFormat.RGB10_Planar:
+            case PixelFormat.RGB12_Planar:
+            case PixelFormat.RGB16_Planar:           
             case PixelFormat.RGB565p:
             case PixelFormat.BGR565p:
                 return 3;
