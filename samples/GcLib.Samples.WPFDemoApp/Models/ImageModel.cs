@@ -294,16 +294,18 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();
 
-        // Convert to BGR.
-        if (mat.NumberOfChannels == 3 && buffer.PixelFormat.ToString()[..3].Equals("RGB", StringComparison.CurrentCultureIgnoreCase))
+        var colorOrder = buffer.PixelFormat.ToString()[..3];
+
+        // Convert 3-channel to BGR.
+        if (mat.NumberOfChannels == 3 && colorOrder.Equals("RGB", StringComparison.OrdinalIgnoreCase))
             CvInvoke.CvtColor(mat, mat, ColorConversion.Rgb2Bgr);
 
-        // Convert 4-channel image to 3 (by removing alpha channel).
+        // Convert 4-channel image to 3.
         if (mat.NumberOfChannels == 4)
         {
-            if (buffer.PixelFormat.ToString()[..4].Equals("BGRA", StringComparison.CurrentCultureIgnoreCase))
+            if (colorOrder.Equals("BGR", StringComparison.OrdinalIgnoreCase))
                 CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);
-            else if (buffer.PixelFormat.ToString()[..4].Equals("RGBA", StringComparison.CurrentCultureIgnoreCase))
+            else if (colorOrder.Equals("RGB", StringComparison.OrdinalIgnoreCase))
                 CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Bgr);
             else throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");
         }
