@@ -289,7 +289,7 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
     protected virtual GcBuffer ProcessImage(GcBuffer buffer)
     {
         if (!SupportedPixelFormats.Contains(buffer.PixelFormat))
-            throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");    
+            throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");
 
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();
@@ -304,10 +304,8 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
         if (mat.NumberOfChannels == 4)
         {
             if (colorOrder.Equals("BGR", StringComparison.OrdinalIgnoreCase))
-                CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);
-            else if (colorOrder.Equals("RGB", StringComparison.OrdinalIgnoreCase))
-                CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Bgr);
-            else throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");
+                CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);  // BGRa
+            else CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Bgr); // RGBa
         }
 
         // Normalize (to 8 bits).

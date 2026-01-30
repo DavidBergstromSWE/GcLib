@@ -120,7 +120,7 @@ public sealed partial class XiCam
         // Check if pixel format selected is currently supported.
         PixelFormat pixelFormat = GetPixelFormat(_xiCam.GetParamInt(PRM.IMAGE_DATA_FORMAT));
         if (pixelFormat == PixelFormat.InvalidPixelFormat)
-            throw new FormatException($"Pixel format {FindConstantName(typeof(IMG_FORMAT), _xiCam.GetParamInt(PRM.IMAGE_DATA_FORMAT))} is not supported in device class {GetType().Name}!");
+            throw new FormatException($"Pixel format {FindConstantName(typeof(IMG_FORMAT), _xiCam.GetParamInt(PRM.IMAGE_DATA_FORMAT))} is not recognized or supported!");
 
         // Check exposure time and frame rate and set appropriate timeout.
         _timeout = Convert.ToInt32(((float)_xiCam.GetParamInt(PRM.EXPOSURE) / 1000) + (1 / _xiCam.GetParamFloat(PRM.FRAMERATE) * 1000));
