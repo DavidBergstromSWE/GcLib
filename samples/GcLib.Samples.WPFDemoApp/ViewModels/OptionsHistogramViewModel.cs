@@ -6,7 +6,7 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// View model for handling histogram-related options.
 /// </summary>
-internal sealed class OptionsHistogramViewModel : ObservableObject, IOptionsSubViewModel
+internal sealed class OptionsHistogramViewModel : IOptionsSubViewModel
 {
     #region Fields
 

@@ -5,7 +5,7 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// View model for handling image processing related options.
 /// </summary>
-internal sealed class OptionsImageProcessingViewModel : ObservableObject, IOptionsSubViewModel
+internal sealed class OptionsImageProcessingViewModel : IOptionsSubViewModel
 {
     #region Fields
 

@@ -16,7 +16,7 @@ namespace ImagerViewer.Models;
 /// <summary>
 /// Models a camera device.
 /// </summary>
-internal sealed class DeviceModel : ObservableValidator, IXmlSerializable
+internal sealed class DeviceModel : ObservableObject, IXmlSerializable
 {
     #region Fields
 

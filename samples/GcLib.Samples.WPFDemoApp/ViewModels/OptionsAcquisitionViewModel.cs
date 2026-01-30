@@ -8,7 +8,7 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// View model for handling recording-related options.
 /// </summary>
-internal sealed class OptionsAcquisitionViewModel : ObservableObject, IOptionsSubViewModel
+internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
 {
     #region Fields
 

@@ -6,7 +6,7 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// View model for handling display-related options.
 /// </summary>
-internal sealed class OptionsDisplayViewModel : ObservableObject, IOptionsSubViewModel
+internal sealed class OptionsDisplayViewModel : IOptionsSubViewModel
 {
     #region Fields
 

@@ -15,7 +15,7 @@ namespace ImagerViewer.Models;
 /// <summary>
 /// Processes and stores acquired image data.
 /// </summary>
-internal class ImageModel : ObservableRecipient, IXmlSerializable
+internal class ImageModel : ObservableObject, IXmlSerializable
 {
     #region Fields
 
