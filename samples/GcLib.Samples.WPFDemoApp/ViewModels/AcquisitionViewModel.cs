@@ -126,9 +126,11 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         AcquisitionChannel.AcquisitionAborted += Channel_AcquisitionAborted;
         AcquisitionChannel.RecordingAborted += Channel_RecordingAborted;
 
-
         // Register eventhandler to input device.
         device.PropertyChanged += DeviceModel_PropertyChanged;
+
+        // Register eventhandler to image processing exceptions.
+        imageChannel.ProcessingException += ImageModel_ProcessingException;
 
         // Instantiate commands.
         PlayCommand = new AsyncRelayCommand(PlayAsync, CanAcquire);
@@ -353,6 +355,36 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         {
             // Disable view (acquisition buttons) while connecting to a new device.
             NotifyAcquisitionCommands();
+        }
+    }
+
+    /// <summary>
+    /// Handles exceptions that occur during image processing by aborting the operation, logging the error, and
+    /// displaying an error message to the user.
+    /// </summary>
+    /// <remarks>This method ensures that exception handling is thread-safe and prevents multiple concurrent
+    /// abort operations. It logs the exception and notifies the user with a dialog message.</remarks>
+    /// <param name="sender">The source of the event that triggered the exception handler.</param>
+    /// <param name="ex">The exception that was thrown during image processing.</param>
+    private void ImageModel_ProcessingException(object sender, Exception ex)
+    {
+        // Adds thread safety (avoids multiple thread calls).
+        if (_isAborting == false)
+        {
+            _isAborting = true;
+
+            Log.Error(ex, "Exception thrown while processing image");
+
+            _dispatcherService.Invoke(() =>
+            {
+                // Stop acquisition.
+                StopCommand.Execute(null);
+
+                // Show error message.
+                _ = _windowService.ShowMessageDialog(this, "Image Processing Error!", $"Exception thrown while processing image: {ex.Message}", MessageDialogStyle.Affirmative, MetroDialogHelper.MessageDialogSettings);
+            });
+
+            _isAborting = false;
         }
     }
 

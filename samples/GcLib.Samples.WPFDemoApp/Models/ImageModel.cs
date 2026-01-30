@@ -289,7 +289,7 @@ internal class ImageModel : ObservableRecipient, IXmlSerializable
     protected virtual GcBuffer ProcessImage(GcBuffer buffer)
     {
         if (!SupportedPixelFormats.Contains(buffer.PixelFormat))
-            throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported! For a complete list of supported formats, see {nameof(SupportedPixelFormats)}.");    
+            throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");    
 
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();

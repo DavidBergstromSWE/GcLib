@@ -297,10 +297,10 @@ public sealed partial class XiCam
             IMG_FORMAT.MONO16 => PixelFormat.Mono16, // 16 bits per channel grayscale (little endian)
             IMG_FORMAT.RGB24 => PixelFormat.BGR8, // xiApi.NET uses BGR byte order for RGB24
             IMG_FORMAT.RGB32 => PixelFormat.BGRa8,
-            //IMG_FORMAT.RGB48 => PixelFormat.BGR16, // 16 bits per channel in BGR byte order
-            //IMG_FORMAT.RGB64 => PixelFormat.BGRa16, // 16 bits per channel in BGRA byte order
-            //IMG_FORMAT.RGBPLANAR => PixelFormat.RGB8_Planar,
-            //IMG_FORMAT.RGB16_PLANAR => PixelFormat.RGB16_Planar,
+            IMG_FORMAT.RGB48 => PixelFormat.BGR16, // 16 bits per channel in BGR byte order
+            IMG_FORMAT.RGB64 => PixelFormat.BGRa16, // 16 bits per channel in BGRA byte order
+            IMG_FORMAT.RGBPLANAR => PixelFormat.RGB8_Planar,
+            IMG_FORMAT.RGB16_PLANAR => PixelFormat.RGB16_Planar,
             IMG_FORMAT.RAW8 => PixelFormat.BayerBG8,
             IMG_FORMAT.RAW16 => PixelFormat.BayerBG16,
             _ => PixelFormat.InvalidPixelFormat,
