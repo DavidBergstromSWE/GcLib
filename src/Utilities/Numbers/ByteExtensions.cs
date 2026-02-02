@@ -67,13 +67,13 @@ public static class ByteExtensions
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the source byte array.</exception>
     public static byte[] GetBitRange(this byte[] source, int start, int length, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
     {
-        // Calculate the length of the input byte array in bits.
+        // Calculate the length of the source byte array in bits.
         int maxLength = source.Length * BitsPerByte;
 
         // Calculate the end index of the bit range.
         int end = start + length;
 
-        // Range validations.
+        // Perform range validations.
         if (start >= maxLength || start < 0)
             throw new ArgumentOutOfRangeException(nameof(start), start, $"Start must non-negative and lesser than {maxLength}");
         if (length < 0)
@@ -85,7 +85,7 @@ public static class ByteExtensions
         var (byteLength, remainderLength) = Math.DivRem(length, BitsPerByte);
 
         // Allocate new result array.
-        byte[] result = new byte[byteLength + (remainderLength == 0 ? 0 : 1)];
+        byte[] result = new byte[byteLength + (remainderLength == 0 ? 0 : 1)]; // Add extra byte if there are remaining bits.
 
         // Iterate through each byte in the result array.
         for (int i = 0; i < result.Length; i++)
@@ -100,18 +100,19 @@ public static class ByteExtensions
                 // Current bit index in the result byte.
                 int resultBitIndex = j;
 
-                // Adjust for MSB 0.
+                // Adjust for bit numbering.
                 if (bitNumbering is BitNumbering.Msb0)
                 {
                     resultBitIndex = 7 - resultBitIndex; // Adjust result bit index
                     sourceBitIndex = 7 - sourceBitIndex; // Adjust source bit index
                 }
-                // Adjust source byte index for little-endian.
+
+                // Adjust for byte ordering.
                 if (endianness is Endianness.LittleEndian)
                     sourceByteIndex = source.Length - 1 - sourceByteIndex; // Adjust byte index of source
 
                 // Set the current bit in the result byte.
-                result[i] |= (byte)(((source[sourceByteIndex] >> sourceBitIndex) & 1) << resultBitIndex);
+                result[i] |= (byte)(((source[sourceByteIndex] >> sourceBitIndex) & 1) << resultBitIndex); // By right shifting (>>) desired bit to position zero and masking (& 1), we can extract the bit value (0 or 1) and then left shift (<<) it to the correct position in the result byte.
             }
         }
 
@@ -134,13 +135,13 @@ public static class ByteExtensions
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the target byte array.</exception>
     public static void SetBitRange(this byte[] target, int start, int length, Span<byte> value, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
     {
-        // Calculate the length of the input byte array in bits.
+        // Calculate the length of the target byte array in bits.
         int maxLength = target.Length * BitsPerByte;
 
         // Calculate the end index of the bit range.
         int end = start + length;
 
-        // Range validations.
+        // Perform range validations.
         if (start >= maxLength || start < 0)
             throw new ArgumentOutOfRangeException(nameof(start), start, $"Start must non-negative and lesser than {maxLength}");
         if (length < 0)
@@ -161,21 +162,21 @@ public static class ByteExtensions
                 // Current bit index in the source byte.
                 int sourceBitIndex = j;
 
-                // Adjust for MSB 0.
+                // Adjust for bit numbering.
                 if (bitNumbering is BitNumbering.Msb0)
                 {
                     sourceBitIndex = 7 - sourceBitIndex; // Adjust source bit index
                     targetBitIndex = 7 - targetBitIndex; // Adjust target bit index
                 }
 
-                // Adjust target byte index for little-endian.
+                // Adjust for byte ordering.
                 if (endianness is Endianness.LittleEndian)
                     targetByteIndex = target.Length - 1 - targetByteIndex;
 
                 // Set the current bit in the target byte.
-                int mask = 1 << targetBitIndex; // Mask to clear the target bit
-                int bit = (value[i] >> sourceBitIndex) & 1; // Extract the source bit
-                target[targetByteIndex] = (byte)((target[targetByteIndex] & ~mask) | (bit << targetBitIndex)); // Set the target bit accordingly
+                int mask = 1 << targetBitIndex; // Create a mask for the target bit position
+                int bit = (value[i] >> sourceBitIndex) & 1; // Extract the bit from the source byte
+                target[targetByteIndex] = (byte)((target[targetByteIndex] & ~mask) | (bit << targetBitIndex)); // Clear the target bit and set it to the new value
             }
         }
     }
