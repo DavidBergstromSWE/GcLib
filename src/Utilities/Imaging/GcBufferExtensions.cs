@@ -5,7 +5,7 @@ using GcLib.Utilities.Numbers;
 namespace GcLib.Utilities.Imaging;
 
 /// <summary>
-/// Contains methods for converting buffers between unpacked and packed pixel formats.
+/// Provides extension methods for converting buffers between unpacked and packed pixel formats.
 /// </summary>
 public static class GcBufferExtensions
 {
@@ -38,16 +38,15 @@ public static class GcBufferExtensions
     ];
 
     /// <summary>
-    /// Unpacks a packed image buffer into its original pixel format and image data.
+    /// Unpacks an image buffer where the image data is stored in a packed pixel format into an unpacked format with image data byte aligned.
     /// </summary>
     /// <remarks>This method converts packed image data into an unpacked format based on the specified pixel
-    /// format and bit depth. Ensure that the packedBuffer's pixel format is valid and supported before calling this
-    /// method.</remarks>
-    /// <param name="packedBuffer">The packed buffer containing image data, dimensions, pixel format, and associated metadata to be unpacked. The
-    /// buffer must use a supported pixel format.</param>
+    /// format and bit depth. Ensure that the <paramref name="packedBuffer"/>'s pixel format is valid and supported before calling this
+    /// method. The method allocates a new buffer to store the unpacked image data.</remarks>
+    /// <param name="packedBuffer">The buffer containing the packed image data.</param>
     /// <returns>A new <see cref="GcBuffer"/> instance containing the unpacked image data.</returns>
-    /// <exception cref="ArgumentException">Thrown when the pixel format of the packedBuffer is not supported for unpacking.</exception>
-    public static GcBuffer UnpackBuffer(GcBuffer packedBuffer)
+    /// <exception cref="ArgumentException">Thrown when the pixel format of the <paramref name="packedBuffer"/> is not supported for unpacking.</exception>
+    public static GcBuffer Unpack(this GcBuffer packedBuffer)
     {
         // Validate that the pixel format is supported.
         if (!SupportedPixelFormats.Contains(packedBuffer.PixelFormat))
@@ -67,7 +66,7 @@ public static class GcBufferExtensions
         for (int bitNumber = 0; bitNumber < packedBuffer.Width * packedBuffer.Height * packedBuffer.NumChannels * packedBuffer.BitDepth; bitNumber += (int)packedBuffer.BitDepth)
         {
             // Extract bits for each packed pixel.
-            var bits = ByteExtensions.GetBitRange(bytes: packedBuffer.ImageData,
+            var bits = ByteExtensions.GetBitRange(source: packedBuffer.ImageData,
                                                   start: bitNumber,
                                                   length: (int)packedBuffer.BitDepth);
             
@@ -84,14 +83,15 @@ public static class GcBufferExtensions
     }
 
     /// <summary>
-    /// Packs the specified unpacked image buffer into a compressed format suitable for storage or transmission.
+    /// Packs an image buffer where the image data is stored in an unpacked pixel format into a compressed format suitable for storage or transmission.
     /// </summary>
-    /// <remarks>The method converts the unpacked image data into a packed format based on the specified pixel
-    /// format. Ensure that the pixel format of the input buffer is supported before calling this method.</remarks>
-    /// <param name="unpackedBuffer">The buffer containing unpacked image data, including pixel format, dimensions, and image data to be packed.</param>
+    /// <remarks>This method converts unpacked image data into a packed format based on the specified pixel
+    /// format and bit depth. Ensure that the pixel format of the input data can be converted into a supported packed pixel format before calling this method.
+    /// The method allocates a new buffer to store the packed image data.</remarks>
+    /// <param name="unpackedBuffer">The buffer containing the unpacked image data.</param>
     /// <returns>A new <see cref="GcBuffer"/> instance containing the packed image data.</returns>
-    /// <exception cref="ArgumentException">Thrown if the pixel format of the provided buffer is not supported for packing.</exception>
-    public static GcBuffer PackBuffer(GcBuffer unpackedBuffer)
+    /// <exception cref="ArgumentException">Thrown if the pixel format of the provided buffer can not be converted into a supported packed pixel format.</exception>
+    public static GcBuffer Pack(this GcBuffer unpackedBuffer)
     {
         // Determine the corresponding packed pixel format.
         var packedPixelFormat = Enum.Parse<PixelFormat>(unpackedBuffer.PixelFormat.ToString() + "p");
@@ -116,7 +116,7 @@ public static class GcBufferExtensions
             int bitStartIndex = pixel * packedPixelBitCount;
 
             // Set bits in the packed image data.
-            ByteExtensions.SetBitRange(bytes: packedImageData,
+            ByteExtensions.SetBitRange(target: packedImageData,
                                        start: bitStartIndex,
                                        length: packedPixelBitCount,
                                        value: bytes);

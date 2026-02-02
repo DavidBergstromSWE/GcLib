@@ -45,7 +45,7 @@ public class GcBufferExtensionsTests
         var expectedUnpackedLength = (int)(width * height * numChannels * ((bitDepth + 7) / 8));
 
         // Act
-        var unpackedBuffer = GcBufferExtensions.UnpackBuffer(packedBuffer);
+        var unpackedBuffer = GcBufferExtensions.Unpack(packedBuffer);
 
         // Assert
         Assert.IsNotNull(unpackedBuffer);
@@ -79,7 +79,7 @@ public class GcBufferExtensionsTests
         var packedBuffer = new GcBuffer(packedImageData, width, height, packedFormat, pixelDynamicRangeMax, frameId, timeStamp);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => GcBufferExtensions.UnpackBuffer(packedBuffer));
+        Assert.Throws<ArgumentException>(() => GcBufferExtensions.Unpack(packedBuffer));
     }
 
     [TestMethod]
@@ -113,7 +113,7 @@ public class GcBufferExtensionsTests
         var expectedPackedLength = (int)(width * height * numChannels * (int)GenICamConverter.GetPixelSize(expectedPackedPixelFormat) + 7) / 8;
 
         // Act
-        var packedBuffer = GcBufferExtensions.PackBuffer(unpackedBuffer);
+        var packedBuffer = GcBufferExtensions.Pack(unpackedBuffer);
 
         // Assert
         Assert.IsNotNull(packedBuffer, "Returned GcBuffer should not be null.");
@@ -147,7 +147,7 @@ public class GcBufferExtensionsTests
         var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, unpackedFormat, pixelDynamicRangeMax, frameId, timeStamp);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => GcBufferExtensions.PackBuffer(unpackedBuffer));
+        Assert.Throws<ArgumentException>(() => GcBufferExtensions.Pack(unpackedBuffer));
     }
 
     [TestMethod]
@@ -158,10 +158,10 @@ public class GcBufferExtensionsTests
     {
         // Arrange
         var originalBuffer = new GcBuffer(ImagePatternGenerator.CreateImage(10, 10, unpackedFormat, TestPattern.FrameCounter), 10, 10, unpackedFormat, GenICamConverter.GetDynamicRangeMax(unpackedFormat), 42, (ulong)DateTime.Now.Ticks);
-        var packedBuffer = GcBufferExtensions.PackBuffer(originalBuffer);
+        var packedBuffer = GcBufferExtensions.Pack(originalBuffer);
 
         // Act
-        var unpackedBuffer = GcBufferExtensions.UnpackBuffer(packedBuffer);
+        var unpackedBuffer = GcBufferExtensions.Unpack(packedBuffer);
 
         // Assert
         Assert.AreEqual(originalBuffer.PixelFormat, unpackedBuffer.PixelFormat);

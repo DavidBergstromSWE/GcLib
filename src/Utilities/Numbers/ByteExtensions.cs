@@ -37,11 +37,11 @@ public static class ByteExtensions
     public enum BitNumbering 
     { 
         /// <summary>
-        /// Represents the least significant bit (LSB) position in a binary value, where the rightmost bit is considered bit zero.
+        /// Represents the least significant bit (lsb) position in a binary value, where the rightmost bit is considered bit zero.
         /// </summary>
         Lsb0,
         /// <summary>
-        /// Represents the most significant bit (MSB) position in a binary value, where the leftmost bit is considered bit zero.
+        /// Represents the most significant bit (msb) position in a binary value, where the leftmost bit is considered bit zero.
         /// </summary>
         Msb0
     }
@@ -52,26 +52,23 @@ public static class ByteExtensions
     public const int BitsPerByte = 8;
 
     /// <summary>
-    /// Extracts a specified range of bits from the input byte array and returns them as a new byte array.
+    /// Extracts a specified range of bits from a source byte array and returns them as a new byte array.
     /// </summary>
-    /// <remarks>The extracted bits are packed into the result array according to the specified endianness and
-    /// bit numbering scheme. The method does not modify the input array.</remarks>
-    /// <param name="bytes">The source byte array from which bits are to be extracted. Cannot be null.</param>
-    /// <param name="start">The zero-based index, in bits, at which to begin extraction. Must be non-negative and less than the total number
-    /// of bits in the input array.</param>
-    /// <param name="length">The number of bits to extract. Must be non-negative and the range defined by start and length must not exceed
-    /// the total number of bits in the input array.</param>
-    /// <param name="endianness">Specifies the byte order to use when extracting bits from the input array.</param>
+    /// <remarks>The extracted bits are packed into the resulting array according to the specified endianness and
+    /// bit numbering scheme. The method does not modify the source array.</remarks>
+    /// <param name="source">The source byte array from which bits are to be extracted.</param>
+    /// <param name="start">The zero-based index, in bits, at which to begin extraction.</param>
+    /// <param name="length">The number of bits to extract.</param>
+    /// <param name="endianness">Specifies the byte order to use when extracting bits from the source array.</param>
     /// <param name="bitNumbering">Specifies the bit numbering scheme to use when extracting bits (most significant bit first or least significant
     /// bit first).</param>
     /// <returns>A new byte array containing the extracted bits, packed into bytes. If the number of bits is not a multiple of 8,
     /// the last byte will be partially filled.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when start is negative or not less than the total number of bits in the input array, when length is
-    /// negative, or when the range defined by start and length exceeds the total number of bits in the input array.</exception>
-    public static byte[] GetBitRange(this byte[] bytes, int start, int length, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the source byte array.</exception>
+    public static byte[] GetBitRange(this byte[] source, int start, int length, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
     {
         // Calculate the length of the input byte array in bits.
-        int maxLength = bytes.Length * BitsPerByte;
+        int maxLength = source.Length * BitsPerByte;
 
         // Calculate the end index of the bit range.
         int end = start + length;
@@ -111,10 +108,10 @@ public static class ByteExtensions
                 }
                 // Adjust source byte index for little-endian.
                 if (endianness is Endianness.LittleEndian)
-                    sourceByteIndex = bytes.Length - 1 - sourceByteIndex; // Adjust byte index of source
+                    sourceByteIndex = source.Length - 1 - sourceByteIndex; // Adjust byte index of source
 
                 // Set the current bit in the result byte.
-                result[i] |= (byte)(((bytes[sourceByteIndex] >> sourceBitIndex) & 1) << resultBitIndex);
+                result[i] |= (byte)(((source[sourceByteIndex] >> sourceBitIndex) & 1) << resultBitIndex);
             }
         }
 
@@ -122,25 +119,23 @@ public static class ByteExtensions
     }
 
     /// <summary>
-    /// Inserts a specified range of bits in the target byte array to values from another byte array, using the given
-    /// endianness and bit numbering scheme.
+    /// Inserts a specified range of bits into a target byte array, using the given endianness and bit numbering scheme.
     /// </summary>
     /// <remarks>This method modifies the contents of the target byte array in place. The bit range is set
     /// according to the specified endianness and bit numbering scheme, which affects how bits are mapped between the
     /// source and target arrays.</remarks>
-    /// <param name="bytes">The byte array in which the bits will be set.</param>
+    /// <param name="target">The target byte array in which the bits will be set.</param>
     /// <param name="start">The zero-based index of the first bit to set within the target byte array.</param>
     /// <param name="length">The number of bits to set, starting from the specified start index.</param>
     /// <param name="value">The bytes containing the bit values to set in the specified range.</param>
     /// <param name="endianness">Specifies the endianness to use when interpreting the target byte array.</param>
     /// <param name="bitNumbering">Specifies the bit numbering scheme to use, such as most significant bit first (Msb0) or least significant bit
     /// first.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the target
-    /// byte array.</exception>
-    public static void SetBitRange(this byte[] bytes, int start, int length, Span<byte> value, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the target byte array.</exception>
+    public static void SetBitRange(this byte[] target, int start, int length, Span<byte> value, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
     {
         // Calculate the length of the input byte array in bits.
-        int maxLength = bytes.Length * BitsPerByte;
+        int maxLength = target.Length * BitsPerByte;
 
         // Calculate the end index of the bit range.
         int end = start + length;
@@ -175,12 +170,12 @@ public static class ByteExtensions
 
                 // Adjust target byte index for little-endian.
                 if (endianness is Endianness.LittleEndian)
-                    targetByteIndex = bytes.Length - 1 - targetByteIndex;
+                    targetByteIndex = target.Length - 1 - targetByteIndex;
 
                 // Set the current bit in the target byte.
                 int mask = 1 << targetBitIndex; // Mask to clear the target bit
                 int bit = (value[i] >> sourceBitIndex) & 1; // Extract the source bit
-                bytes[targetByteIndex] = (byte)((bytes[targetByteIndex] & ~mask) | (bit << targetBitIndex)); // Set the target bit accordingly
+                target[targetByteIndex] = (byte)((target[targetByteIndex] & ~mask) | (bit << targetBitIndex)); // Set the target bit accordingly
             }
         }
     }
