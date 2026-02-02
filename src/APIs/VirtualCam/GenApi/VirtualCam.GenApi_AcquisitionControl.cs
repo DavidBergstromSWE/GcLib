@@ -209,7 +209,11 @@ public sealed partial class VirtualCam
                 }
                 else
                 {
-                    AcquisitionStop.Execute();
+                    // Rewind and start from beginning if in continuous mode.
+                    if (AcquisitionMode.StringValue == GcLib.AcquisitionMode.Continuous.ToString())
+                        _frameCounter = 0;
+                    else AcquisitionStop.Execute(); // No more images to read, stop acquisition.
+
                     return;
                 }
             }
