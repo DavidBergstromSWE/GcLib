@@ -33,9 +33,9 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
-        [DataRow(PixelFormat.Mono8, 1, 3)]
+        [DataRow(PixelFormat.Mono8, 2, 3)]
         [DataRow(PixelFormat.Mono10, 2, 2)]
-        [DataRow(PixelFormat.Mono12, 3, 1)]
+        [DataRow(PixelFormat.Mono12, 3, 2)]
         [DataRow(PixelFormat.Mono14, 2, 3)]
         [DataRow(PixelFormat.Mono16, 3, 2)]
         [DataRow(PixelFormat.RGB8, 3, 3)]
@@ -215,9 +215,9 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
-        [DataRow(PixelFormat.Mono8, 1, 3)]
+        [DataRow(PixelFormat.Mono8, 2, 3)]
         [DataRow(PixelFormat.Mono10, 2, 2)]
-        [DataRow(PixelFormat.Mono12, 3, 1)]
+        [DataRow(PixelFormat.Mono12, 3, 2)]
         [DataRow(PixelFormat.Mono14, 2, 3)]
         [DataRow(PixelFormat.Mono16, 3, 2)]
         [DataRow(PixelFormat.RGB8, 3, 3)]
@@ -242,8 +242,8 @@ namespace GcLib.UnitTests
         public void ToMat_AreNotSame()
         {
             // Arrange
-            var imageData = ImagePatternGenerator.CreateImage(1, 1, PixelFormat.Mono8, TestPattern.GrayHorizontalRamp);
-            var buffer = new GcBuffer(imageData, 1, 1, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 0, 0);
+            var imageData = ImagePatternGenerator.CreateImage(2, 2, PixelFormat.Mono8, TestPattern.GrayHorizontalRamp);
+            var buffer = new GcBuffer(imageData, 2, 2, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 0, 0);
 
             // Act
             var mat = buffer.ToMat();
@@ -550,8 +550,8 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
-        [DataRow(2, 1)]
-        [DataRow(1, 2)]
+        [DataRow(2, 2)]
+        [DataRow(2, 2)]
         [DataRow(3, 2)]
         [DataRow(2, 3)]
         [DataRow(3, 3)]

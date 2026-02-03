@@ -120,7 +120,7 @@ public static class MatExtension
     /// </summary>
     /// <param name="mat">Image.</param>
     /// <param name="text">Text to be drawn.</param>
-    public static void DrawCenteredText(this Mat mat, string text)
+    public static void DrawCenteredText(this Mat mat, string text, int grayLevel)
     {
         // Get text size.
         int baseLine = 0;
@@ -130,9 +130,13 @@ public static class MatExtension
         int x = (int)Math.Round((mat.Width - size.Width) / 2.0);
         int y = (int)Math.Round(mat.Height / 2.0);
 
+        // Get white and black levels based on image depth.
+        var white = grayLevel;
+        var black = EmguConverter.GetMin(mat.Depth);
+
         // Draw white background rectangle with black border.
-        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x, y: y - size.Height - 2, width: size.Width, height: size.Height + 5), color: new Emgu.CV.Structure.Bgr(Color.White).MCvScalar, thickness: -1);
-        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x, y: y - size.Height - 2, width: size.Width, height: size.Height + 5), color: new Emgu.CV.Structure.Bgr(Color.Black).MCvScalar);
+        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x, y: y - size.Height - 2, width: size.Width, height: size.Height + 5), color: new Emgu.CV.Structure.Bgr(white, white, white).MCvScalar, thickness: -1); // White background
+        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x, y: y - size.Height - 2, width: size.Width, height: size.Height + 5), color: new Emgu.CV.Structure.Bgr(black, black, black).MCvScalar); // Black border
 
         // Draw text in rectangle.
         CvInvoke.PutText(img: mat,
@@ -140,7 +144,7 @@ public static class MatExtension
                          org: new Point(x, y),
                          fontFace: FontFace.HersheyDuplex,
                          fontScale: 1,
-                         color: new Emgu.CV.Structure.Bgr(Color.Black).MCvScalar,
+                         color: new Emgu.CV.Structure.Bgr(black, black, black).MCvScalar, // Black text
                          thickness: 1,
                          lineType: LineType.AntiAlias,
                          bottomLeftOrigin: false);

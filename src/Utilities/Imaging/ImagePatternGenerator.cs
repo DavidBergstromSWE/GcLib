@@ -30,7 +30,15 @@ public static class ImagePatternGenerator
         PixelFormat.Mono14,
         PixelFormat.Mono16,
         PixelFormat.RGB8,
-        PixelFormat.BGR8
+        PixelFormat.RGB10,
+        PixelFormat.RGB12,
+        PixelFormat.RGB14,
+        PixelFormat.RGB16,
+        PixelFormat.BGR8,
+        PixelFormat.BGR10,
+        PixelFormat.BGR12,
+        PixelFormat.BGR14,
+        PixelFormat.BGR16,
     ];
 
     /// <summary>
@@ -50,7 +58,7 @@ public static class ImagePatternGenerator
         TestPattern.WhiteNoise,
         TestPattern.Red,
         TestPattern.Green,
-        TestPattern.Blue
+        TestPattern.Blue,
     ];
 
     #region Public methods
@@ -58,8 +66,8 @@ public static class ImagePatternGenerator
     /// <summary>
     /// Creates image using specified size, pixel format and test pattern.
     /// </summary>
-    /// <param name="width">Width of image (number of pixels).</param>
-    /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="width">Width of image (number of pixels). Needs to larger than 1.</param>
+    /// <param name="height">Height of image (number of pixels). Needs to larger than 1.</param>
     /// <param name="pixelFormat">Pixel format (according to GenICam PFNC).</param>
     /// <param name="testPattern">Test pattern.</param>
     /// <param name="frameNumber">(optional) Frame number index, can be used to create dynamic test patterns which changes from frame to frame.</param>
@@ -71,6 +79,10 @@ public static class ImagePatternGenerator
 
         if (SupportedTestPatterns.Contains(testPattern) == false)
             throw new NotSupportedException("Testpattern is not supported!");
+
+        // Width and Height needs to be larger than one.
+        if (width <= 1 || height <= 1)
+            throw new ArgumentException("Image width and height needs to larger than 1!");
 
         byte[] image;
 
@@ -92,8 +104,16 @@ public static class ImagePatternGenerator
         }
         else if (numChannels == 3)
         {
-            image = CreateColor(width, height, pixelFormat, testPattern, frameNumber);
-            return image;
+            if (bitDepth <= 8)
+            {
+                image = CreateColor<byte>(width, height, pixelFormat, testPattern, frameNumber);
+                return image;
+            }
+            if (bitDepth <= 16)
+            {
+                image = NumericHelper.ToBytes(CreateColor<ushort>(width, height, pixelFormat, testPattern, frameNumber));
+                return image;
+            }
         }
         
         throw new NotImplementedException("PixelFormat not implemented!");
@@ -115,7 +135,7 @@ public static class ImagePatternGenerator
     /// <returns>Test image as numeric array (of size <paramref name="width"/> x <paramref name="height"/>).</returns>
     private static T[] CreateMono<T>(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0) where T : INumber<T>
     {
-        // Minimum and maximum values of PixelSize
+        // Minimum and maximum pixel values for the specified pixel format.
         var min = T.Zero;
         var max = (T)Convert.ChangeType(GenICamConverter.GetDynamicRangeMax(pixelFormat), typeof(T));
 
@@ -129,7 +149,7 @@ public static class ImagePatternGenerator
             TestPattern.GrayHorizontalRampMoving => GrayHorizontalRamp(width, height, max, frameNumber),
             TestPattern.VerticalLineMoving => VerticalLineMoving(width, height, max, frameNumber),
             TestPattern.HorizontalLineMoving => HorizontalLineMoving(width, height, max, frameNumber),
-            TestPattern.FrameCounter => DrawCenteredText(CycleUniformGray(width, height, max, frameNumber), width, height, pixelFormat, frameNumber.ToString()),
+            TestPattern.FrameCounter => DrawCenteredText(CycleUniformGray(width, height, max, frameNumber), width, height, max, pixelFormat, frameNumber.ToString()),
             TestPattern.WhiteNoise => RandomWhiteNoise(width, height, max),
             _ => throw new NotImplementedException()
         };
@@ -146,23 +166,27 @@ public static class ImagePatternGenerator
     /// <param name="testPattern">Test pattern.</param>
     /// <param name="frameNumber">(optional) Frame number index, can be used to create dynamic test patterns which changes from frame to frame.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] CreateColor(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0)
+    private static T[] CreateColor<T>(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0) where T : INumber<T>
     {
-        byte[] image = testPattern switch
+        // Minimum and maximum pixel values for the specified pixel format.
+        var min = T.Zero;
+        var max = (T)Convert.ChangeType(GenICamConverter.GetDynamicRangeMax(pixelFormat), typeof(T));
+
+        T[] image = testPattern switch
         {
-            TestPattern.Black => UniformColor(width, height, pixelFormat, Color.Black),
-            TestPattern.White => UniformColor(width, height, pixelFormat, Color.White),
-            TestPattern.GrayVerticalRamp => VerticalBarsColor(width, height, pixelFormat),
-            TestPattern.GrayHorizontalRamp => HorizontalBarsColor(width, height, pixelFormat),
-            TestPattern.GrayHorizontalRampMoving => HorizontalRainbowColor(width, height, pixelFormat, frameNumber),
-            TestPattern.GrayVerticalRampMoving => VerticalRainbowColor(width, height, pixelFormat, frameNumber),
-            TestPattern.VerticalLineMoving => VerticalLineMovingColor(width, height, frameNumber),
-            TestPattern.HorizontalLineMoving => HorizontalLineMovingColor(width, height, frameNumber),
-            TestPattern.FrameCounter => DrawCenteredText(CycleUniformColor(width, height, pixelFormat, frameNumber), width, height, pixelFormat, frameNumber.ToString()),
-            TestPattern.WhiteNoise => RandomWhiteNoise<byte>(width, height, 255, 3),
-            TestPattern.Red => UniformColor(width, height, pixelFormat, Color.FromArgb(255, 0, 0)),
-            TestPattern.Green => UniformColor(width, height, pixelFormat, Color.FromArgb(0, 255, 0)),
-            TestPattern.Blue => UniformColor(width, height, pixelFormat, Color.FromArgb(0, 0, 255)),
+            TestPattern.Black => UniformColor(width, height, max, pixelFormat, Color.Black),
+            TestPattern.White => UniformColor(width, height, max, pixelFormat, Color.White),
+            TestPattern.GrayVerticalRamp => VerticalBarsColor(width, height, max, pixelFormat),
+            TestPattern.GrayHorizontalRamp => HorizontalBarsColor(width, height, max, pixelFormat),
+            TestPattern.GrayHorizontalRampMoving => HorizontalRainbowColor(width, height, max, pixelFormat, frameNumber),
+            TestPattern.GrayVerticalRampMoving => VerticalRainbowColor(width, height, max, pixelFormat, frameNumber),
+            TestPattern.VerticalLineMoving => VerticalLineMovingColor(width, height, max, frameNumber),
+            TestPattern.HorizontalLineMoving => HorizontalLineMovingColor(width, height, max, frameNumber),
+            TestPattern.FrameCounter => DrawCenteredText(CycleUniformColor(width, height, max, pixelFormat, frameNumber), width, height, max, pixelFormat, frameNumber.ToString()),
+            TestPattern.WhiteNoise => RandomWhiteNoise<T>(width, height, max, 3),
+            TestPattern.Red => UniformColor(width, height, max, pixelFormat, Color.FromArgb(255, 0, 0)),
+            TestPattern.Green => UniformColor(width, height, max, pixelFormat, Color.FromArgb(0, 255, 0)),
+            TestPattern.Blue => UniformColor(width, height, max, pixelFormat, Color.FromArgb(0, 0, 255)),
             _ => throw new NotImplementedException()
         };
 
@@ -204,12 +228,12 @@ public static class ImagePatternGenerator
     /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
-    /// <param name="max">Maximum gray level.</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="frameNumber">Frame number index.</param>
     /// <returns>Test image as numeric array (of size <paramref name="width"/> x <paramref name="height"/>).</returns>
     private static T[] CycleUniformGray<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
     {
-        return UniformGray(width, height, (T)Convert.ChangeType(frameNumber % Convert.ToUInt64(max), typeof(T)));
+        return UniformGray(width, height, (T)Convert.ChangeType(frameNumber % Convert.ToUInt64(max - T.One), typeof(T)));
     }
 
     /// <summary>
@@ -229,7 +253,7 @@ public static class ImagePatternGenerator
 
         for (int i = 0; i < height; i++)
         {
-            T level = (T)Convert.ChangeType(Math.Round(maxValue - ((double)i - frameNumber) * maxValue / height) % (maxValue + 1), typeof(T));
+            T level = (T)Convert.ChangeType(Math.Round(maxValue - ((double)i - frameNumber) * maxValue / (height - 1)) % (maxValue + 1), typeof(T));
             for (int j = 0; j < width; j++)
             {
                 image[i * width + j] = level;
@@ -256,7 +280,7 @@ public static class ImagePatternGenerator
 
         for (int j = 0; j < width; j++)
         {
-            T level = (T)Convert.ChangeType(Math.Round(maxValue - ((double)j - frameNumber) * maxValue / width) % (maxValue + 1), typeof(T));
+            T level = (T)Convert.ChangeType(Math.Round(maxValue - ((double)j - frameNumber) * maxValue / (width - 1)) % (maxValue + 1), typeof(T));
             for (int i = 0; i < height; i++)
             {
                 image[i * width + j] = level;
@@ -272,7 +296,7 @@ public static class ImagePatternGenerator
     /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
-    /// <param name="max">Maximum gray level.</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="frameNumber">Frame number index.</param>
     /// <returns>Test image as numeric array (of size <paramref name="width"/> x <paramref name="height"/>).</returns>
     private static T[] HorizontalLineMoving<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
@@ -296,7 +320,7 @@ public static class ImagePatternGenerator
     /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
-    /// <param name="max">Maximum gray level.</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="frameNumber">Frame number index.</param>
     /// <returns>Test image as numeric array (of size <paramref name="width"/> x <paramref name="height"/>).</returns>
     private static T[] VerticalLineMoving<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
@@ -314,13 +338,17 @@ public static class ImagePatternGenerator
         return image;
     }
 
+    #endregion
+
+    #region Color methods
+
     /// <summary>
     /// Creates an image of random white noise.
     /// </summary>
     /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
-    /// <param name="max">Maximum gray level.</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="numChannel">Number of image channels.</param>
     /// <returns>Test image of type <typeparamref name="T"/> and of size <paramref name="width"/> x <paramref name="height"/> in <paramref name="numChannel"/> channels.</returns>
     private static T[] RandomWhiteNoise<T>(uint width, uint height, T max, uint numChannel = 1) where T : INumber<T>
@@ -333,27 +361,24 @@ public static class ImagePatternGenerator
         return img;
     }
 
-    #endregion
-
-    #region Color methods
-
     /// <summary>
     /// Creates a uniform 8-bit color image.
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="pixelFormat">Pixel format.</param>
     /// <param name="color">Color of image.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] UniformColor(uint width, uint height, PixelFormat pixelFormat, Color color)
+    private static T[] UniformColor<T>(uint width, uint height, T max, PixelFormat pixelFormat, Color color) where T : INumber<T>
     {
-        byte[] image = new byte[width * height * 3];
+        T[] image = new T[width * height * 3];
 
         var colorOrder = pixelFormat.ToString()[..3];
 
-        byte color1 = colorOrder.Equals("RGB")? color.R : color.B;
-        byte color2 = color.G;
-        byte color3 = colorOrder.Equals("RGB") ? color.B : color.R;
+        T color1 = colorOrder.Equals("RGB")? (T)Convert.ChangeType(color.R / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T)) : (T)Convert.ChangeType(color.B / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
+        T color2 = (T)Convert.ChangeType(color.G / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
+        T color3 = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.B / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T)) : (T)Convert.ChangeType(color.R / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
 
         for (int i = 0; i < image.Length; i += 3)
         {
@@ -369,13 +394,14 @@ public static class ImagePatternGenerator
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="pixelFormat">Pixel format.</param>
     /// <param name="frameNumber">Frame number index.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] CycleUniformColor(uint width, uint height, PixelFormat pixelFormat, ulong frameNumber)
+    private static T[] CycleUniformColor<T>(uint width, uint height, T max, PixelFormat pixelFormat, ulong frameNumber) where T : INumber<T>
     {
-        Color[] colors = GetRainbowColorRange(256);
-        return UniformColor(width, height, pixelFormat, colors[(byte)Math.Round((255 + (double)frameNumber) % (255 + 1))]);
+        Color[] colors = GetRainbowColorRange(256); // GetRainbowColorRange(256);
+        return UniformColor(width, height, max, pixelFormat, colors[(byte)Math.Round((255 + (double)frameNumber) % (255 + 1))]);
     }
 
     /// <summary>
@@ -383,11 +409,12 @@ public static class ImagePatternGenerator
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="pixelFormat">Pixel format.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] VerticalBarsColor(uint width, uint height, PixelFormat pixelFormat)
+    private static T[] VerticalBarsColor<T>(uint width, uint height, T max, PixelFormat pixelFormat) where T : INumber<T>
     {
-        byte[] image = new byte[width * height * 3];
+        T[] image = new T[width * height * 3];
 
         var colorOrder = pixelFormat.ToString()[..3];
 
@@ -412,7 +439,7 @@ public static class ImagePatternGenerator
                 }
                 else if (i < height * 4 / 8)
                 {
-                    color = Color.Green;
+                    color = Color.FromArgb(0, 255, 0); // Green
                 }
                 else if (i < height * 5 / 8)
                 {
@@ -431,9 +458,9 @@ public static class ImagePatternGenerator
                     color = Color.Yellow;
                 }
 
-                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? color.R : color.B;
-                image[(i * width * 3) + j + 1] = color.G;
-                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? color.B : color.R;
+                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.R / byte.MaxValue, typeof(T)) * max : (T)Convert.ChangeType(color.B / byte.MaxValue, typeof(T)) * max;
+                image[(i * width * 3) + j + 1] = (T)Convert.ChangeType(color.G / byte.MaxValue, typeof(T)) * max;
+                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.B / byte.MaxValue, typeof(T)) * max : (T)Convert.ChangeType(color.R / byte.MaxValue, typeof(T)) * max;
             }
 
         }
@@ -445,11 +472,12 @@ public static class ImagePatternGenerator
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="pixelFormat">Pixel format.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] HorizontalBarsColor(uint width, uint height, PixelFormat pixelFormat)
+    private static T[] HorizontalBarsColor<T>(uint width, uint height, T max, PixelFormat pixelFormat) where T : INumber<T>
     {
-        byte[] image = new byte[width * height * 3];
+        T[] image = new T[width * height * 3];
 
         var colorOrder = pixelFormat.ToString()[..3];
 
@@ -474,7 +502,7 @@ public static class ImagePatternGenerator
                 }
                 else if (j < width * 3 * 4 / 8)
                 {
-                    color = Color.Green;
+                    color = Color.FromArgb(0, 255, 0); // Green
                 }
                 else if (j < width * 3 * 5 / 8)
                 {
@@ -493,9 +521,9 @@ public static class ImagePatternGenerator
                     color = Color.Yellow;
                 }
 
-                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? color.R : color.B;
-                image[(i * width * 3) + j + 1] = color.G;
-                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? color.B : color.R;
+                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.R / byte.MaxValue, typeof(T)) * max : (T)Convert.ChangeType(color.B / byte.MaxValue, typeof(T)) * max;
+                image[(i * width * 3) + j + 1] = (T)Convert.ChangeType(color.G / byte.MaxValue, typeof(T)) * max;
+                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.B / byte.MaxValue, typeof(T)) * max : (T)Convert.ChangeType(color.R / byte.MaxValue, typeof(T)) * max;
             }
 
         }
@@ -507,12 +535,13 @@ public static class ImagePatternGenerator
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="pixelFormat">Pixel format.</param>
     /// <param name="frameNumber">(optional) Frame number index, can be used to make the pattern move horizontally (frame-by-frame) from left to right.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] HorizontalRainbowColor(uint width, uint height, PixelFormat pixelFormat, ulong frameNumber = 0)
+    private static T[] HorizontalRainbowColor<T>(uint width, uint height, T max, PixelFormat pixelFormat, ulong frameNumber = 0) where T : INumber<T>
     {
-        byte[] image = new byte[width * height * 3];
+        T[] image = new T[width * height * 3];
 
         Color[] colors = GetRainbowColorRange(width);
 
@@ -525,9 +554,9 @@ public static class ImagePatternGenerator
 
             for (int i = 0; i < height; i++)
             {
-                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? colors[((a % width) + width) % width].R : colors[((a % width) + width) % width].B;
-                image[(i * width * 3) + j + 1] = colors[((a % width) + width) % width].G;
-                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? colors[((a % width) + width) % width].B : colors[((a % width) + width) % width].R;
+                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(colors[((a % width) + width) % width].R / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T)) : (T)Convert.ChangeType(colors[((a % width) + width) % width].B / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
+                image[(i * width * 3) + j + 1] = (T)Convert.ChangeType(colors[((a % width) + width) % width].G / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
+                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(colors[((a % width) + width) % width].B / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T)) : (T)Convert.ChangeType(colors[((a % width) + width) % width].R / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
             }
         }
 
@@ -539,12 +568,13 @@ public static class ImagePatternGenerator
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="pixelFormat">Pixel format.</param>
     /// <param name="frameNumber">(optional) Frame number index, can be used to make the pattern move vertically (frame-by-frame) from top to bottom.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] VerticalRainbowColor(uint width, uint height, PixelFormat pixelFormat, ulong frameNumber = 0)
+    private static T[] VerticalRainbowColor<T>(uint width, uint height, T max, PixelFormat pixelFormat, ulong frameNumber = 0) where T : INumber<T>
     {
-        byte[] image = new byte[width * height * 3];
+        T[] image = new T[width * height * 3];
 
         var colorOrder = pixelFormat.ToString()[..3];
 
@@ -557,9 +587,9 @@ public static class ImagePatternGenerator
 
             for (int j = 0; j < width * 3; j += 3)
             {
-                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? colors[((a % height) + height) % height].R : colors[((a % height) + height) % height].B;
-                image[(i * width * 3) + j + 1] = colors[((a % height) + height) % height].G;
-                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? colors[((a % height) + height) % height].B : colors[((a % height) + height) % height].R;
+                image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(colors[((a % height) + height) % height].R / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T)) : (T)Convert.ChangeType(colors[((a % height) + height) % height].B / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
+                image[(i * width * 3) + j + 1] = (T)Convert.ChangeType(colors[((a % height) + height) % height].G / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
+                image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(colors[((a % height) + height) % height].B / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T)) : (T)Convert.ChangeType(colors[((a % height) + height) % height].R / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
             }
         }
 
@@ -570,12 +600,13 @@ public static class ImagePatternGenerator
     /// Creates a black image with a horizontal white line moving from top to bottom.
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="height">Height of image (number of pixels).</param>
     /// <param name="frameNumber">Frame number index.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] HorizontalLineMovingColor(uint width, uint height, ulong frameNumber)
+    private static T[] HorizontalLineMovingColor<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
     {
-        var image = new byte[width * height * 3];
+        var image = new T[width * height * 3];
 
         int lineRow = (int)Math.Round((height + (double)frameNumber) % height);
 
@@ -583,9 +614,9 @@ public static class ImagePatternGenerator
         for (int j = 0; j < width * 3; j += 3)
         {
             // white line
-            image[(lineRow * width * 3) + j] = 255;
-            image[(lineRow * width * 3) + j + 1] = 255;
-            image[(lineRow * width * 3) + j + 2] = 255;
+            image[(lineRow * width * 3) + j] = max;
+            image[(lineRow * width * 3) + j + 1] = max;
+            image[(lineRow * width * 3) + j + 2] = max;
         }
 
         return image;
@@ -596,20 +627,21 @@ public static class ImagePatternGenerator
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
+    /// <param name="max">Maximum pixel value.</param>
     /// <param name="frameNumber">Frame number index.</param>
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
-    private static byte[] VerticalLineMovingColor(uint width, uint height, ulong frameNumber)
+    private static T[] VerticalLineMovingColor<T>(uint width, uint height, T max, ulong frameNumber) where T : INumber<T>
     {
-        var image = new byte[width * height * 3];
+        var image = new T[width * height * 3];
 
         int lineColumn = (int)Math.Round((width + (double)frameNumber) % width);
 
         // build image array
         for (int i = 0; i < height; i++)
         {
-            image[(i * width * 3) + lineColumn * 3] = 255;
-            image[(i * width * 3) + lineColumn * 3 + 1] = 255;
-            image[(i * width * 3) + lineColumn * 3 + 2] = 255;
+            image[(i * width * 3) + lineColumn * 3] = max;
+            image[(i * width * 3) + lineColumn * 3 + 1] = max;
+            image[(i * width * 3) + lineColumn * 3 + 2] = max;
         }
 
         return image;
@@ -649,12 +681,12 @@ public static class ImagePatternGenerator
     /// <param name="pixelFormat">Pixel format (according to GenICam PFNC).</param>
     /// <param name="text">Text to be written.</param>
     /// <returns>Input image with centered text.</returns>
-    private static T[] DrawCenteredText<T>(T[] image, uint width, uint height, PixelFormat pixelFormat, string text)
+    private static T[] DrawCenteredText<T>(T[] image, uint width, uint height, T max, PixelFormat pixelFormat, string text) where T : INumber<T>
     {
         var mat = new Emgu.CV.Mat((int)height, (int)width, EmguConverter.GetDepthType(pixelFormat), (int)GenICamConverter.GetNumChannels(pixelFormat));
         mat.SetTo(image);
 
-        mat.DrawCenteredText(text);
+        mat.DrawCenteredText(text, (int)Convert.ChangeType(max, typeof(int)));
 
         mat.CopyTo(image);
         return image;
