@@ -89,7 +89,7 @@ public static class ImagePatternGenerator
         uint numChannels = GenICamConverter.GetNumChannels(pixelFormat);
         uint bitDepth = GenICamConverter.GetBitsPerPixelPerChannel(pixelFormat);
 
-        if (numChannels == 1)
+        if (numChannels == 1) // Monochrome images
         {
             if (bitDepth <= 8)
             {
@@ -102,7 +102,7 @@ public static class ImagePatternGenerator
                 return image;
             }
         }
-        else if (numChannels == 3)
+        else if (numChannels == 3) // Color images
         {
             if (bitDepth <= 8)
             {
@@ -135,13 +135,12 @@ public static class ImagePatternGenerator
     /// <returns>Test image as numeric array (of size <paramref name="width"/> x <paramref name="height"/>).</returns>
     private static T[] CreateMono<T>(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0) where T : INumber<T>
     {
-        // Minimum and maximum pixel values for the specified pixel format.
-        var min = T.Zero;
+        // Maximum pixel value for the specified pixel format.
         var max = (T)Convert.ChangeType(GenICamConverter.GetDynamicRangeMax(pixelFormat), typeof(T));
 
         T[] image = testPattern switch
         {
-            TestPattern.Black => UniformGray(width, height, min),
+            TestPattern.Black => UniformGray(width, height, T.Zero),
             TestPattern.White => UniformGray(width, height, max),
             TestPattern.GrayVerticalRamp => GrayVerticalRamp(width, height, max),
             TestPattern.GrayVerticalRampMoving => GrayVerticalRamp(width, height, max, frameNumber),
@@ -168,8 +167,7 @@ public static class ImagePatternGenerator
     /// <returns>Test image as byte array (of size <paramref name="width"/> x <paramref name="height"/> x 3).</returns>
     private static T[] CreateColor<T>(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0) where T : INumber<T>
     {
-        // Minimum and maximum pixel values for the specified pixel format.
-        var min = T.Zero;
+        // Maximum pixel value for the specified pixel format.
         var max = (T)Convert.ChangeType(GenICamConverter.GetDynamicRangeMax(pixelFormat), typeof(T));
 
         T[] image = testPattern switch
@@ -307,9 +305,7 @@ public static class ImagePatternGenerator
 
         // build image array
         for (int j = 0; j < width; j++)
-        {
             image[lineRow * width + j] = max;
-        }
 
         return image;
     }
@@ -331,9 +327,7 @@ public static class ImagePatternGenerator
 
         // build image array
         for (int i = 0; i < height; i++)
-        {
             image[i * width + lineColumn] = max;
-        }
 
         return image;
     }
@@ -405,7 +399,7 @@ public static class ImagePatternGenerator
     }
 
     /// <summary>
-    /// Creates an RGB image filled vertically with (horizontal) stripes of color including White, Black, Red, Green, Blue, Cyan, Magenta and Yellow.
+    /// Creates an RGB image filled vertically with horizontal bars of color in the order White, Black, Red, Green, Blue, Cyan, Magenta and Yellow.
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
@@ -425,50 +419,33 @@ public static class ImagePatternGenerator
         {
             for (int j = 0; j < width * 3; j += 3)
             {
-                if (i < height / 8)
-                {
+                if (i < height / 8)             // 1st bar
                     color = Color.White;
-                }
-                else if (i < height * 2 / 8)
-                {
+                else if (i < height * 2 / 8)    // 2nd
                     color = Color.Black;
-                }
-                else if (i < height * 3 / 8)
-                {
+                else if (i < height * 3 / 8)    // 3rd
                     color = Color.Red;
-                }
-                else if (i < height * 4 / 8)
-                {
-                    color = Color.FromArgb(0, 255, 0); // Green
-                }
-                else if (i < height * 5 / 8)
-                {
+                else if (i < height * 4 / 8)    // 4th
+                    color = Color.FromArgb(0, 255, 0); // (green)
+                else if (i < height * 5 / 8)    // 5th
                     color = Color.Blue;
-                }
-                else if (i < height * 6 / 8)
-                {
+                else if (i < height * 6 / 8)    // 6th
                     color = Color.Cyan;
-                }
-                else if (i < height * 7 / 8)
-                {
+                else if (i < height * 7 / 8)    // 7th
                     color = Color.Magenta;
-                }
-                else
-                {
-                    color = Color.Yellow;
-                }
+                else color = Color.Yellow;      // 8th
 
                 image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.R / byte.MaxValue, typeof(T)) * max : (T)Convert.ChangeType(color.B / byte.MaxValue, typeof(T)) * max;
                 image[(i * width * 3) + j + 1] = (T)Convert.ChangeType(color.G / byte.MaxValue, typeof(T)) * max;
                 image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.B / byte.MaxValue, typeof(T)) * max : (T)Convert.ChangeType(color.R / byte.MaxValue, typeof(T)) * max;
             }
-
         }
+
         return image;
     }
 
     /// <summary>
-    /// Creates an RGB image filled horizontally with (vertical) stripes of color including White, Black, Red, Green, Blue, Cyan, Magenta and Yellow.
+    /// Creates an RGB image filled horizontally with vertical bars of color in the order White, Black, Red, Green, Blue, Cyan, Magenta and Yellow.
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="height">Height of image (number of pixels).</param>
@@ -488,45 +465,28 @@ public static class ImagePatternGenerator
         {
             for (int j = 0; j < width * 3; j += 3)
             {
-                if (j < width * 3 * 1 / 8)
-                {
+                if (j < width * 3 * 1 / 8)          // 1st bar
                     color = Color.White;
-                }
-                else if (j < width * 3 * 2 / 8)
-                {
+                else if (j < width * 3 * 2 / 8)     // 2nd
                     color = Color.Black;
-                }
-                else if (j < width * 3 * 3 / 8)
-                {
+                else if (j < width * 3 * 3 / 8)     // 3rd
                     color = Color.Red;
-                }
-                else if (j < width * 3 * 4 / 8)
-                {
-                    color = Color.FromArgb(0, 255, 0); // Green
-                }
-                else if (j < width * 3 * 5 / 8)
-                {
+                else if (j < width * 3 * 4 / 8)     // 4th
+                    color = Color.FromArgb(0, 255, 0); // (green)
+                else if (j < width * 3 * 5 / 8)     // 5th
                     color = Color.Blue;
-                }
-                else if (j < width * 3 * 6 / 8)
-                {
+                else if (j < width * 3 * 6 / 8)     // 6th
                     color = Color.Cyan;
-                }
-                else if (j < width * 3 * 7 / 8)
-                {
+                else if (j < width * 3 * 7 / 8)     // 7th
                     color = Color.Magenta;
-                }
-                else
-                {
-                    color = Color.Yellow;
-                }
+                else color = Color.Yellow;          // 8th
 
                 image[(i * width * 3) + j] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.R / byte.MaxValue, typeof(T)) * max : (T)Convert.ChangeType(color.B / byte.MaxValue, typeof(T)) * max;
                 image[(i * width * 3) + j + 1] = (T)Convert.ChangeType(color.G / byte.MaxValue, typeof(T)) * max;
                 image[(i * width * 3) + j + 2] = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.B / byte.MaxValue, typeof(T)) * max : (T)Convert.ChangeType(color.R / byte.MaxValue, typeof(T)) * max;
             }
-
         }
+
         return image;
     }
 
@@ -597,7 +557,7 @@ public static class ImagePatternGenerator
     }
 
     /// <summary>
-    /// Creates a black image with a horizontal white line moving from top to bottom.
+    /// Creates a black image with a horizontal white line moving from top to bottom with every frame.
     /// </summary>
     /// <param name="width">Width of image (number of pixels).</param>
     /// <param name="max">Maximum pixel value.</param>
@@ -608,7 +568,7 @@ public static class ImagePatternGenerator
     {
         var image = new T[width * height * 3];
 
-        int lineRow = (int)Math.Round((height + (double)frameNumber) % height);
+        int lineRow = (int)Math.Round((height + (double)frameNumber) % height); 
 
         // build image array
         for (int j = 0; j < width * 3; j += 3)
