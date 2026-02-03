@@ -664,7 +664,7 @@ public static class ImagePatternGenerator
         double i = 0;
         for (int j = 0; j < pixels; j++)
         {
-            colors[j] = ColorConverter.HSL2RGB(i, 0.5, 0.5);
+            colors[j] = ColorConverter.HSL2RGB(i, 1, 0.5);
             i += 1.0 / pixels;
         }
 
