@@ -27,9 +27,9 @@ public sealed partial class VirtualCam
         private readonly Stopwatch _cameraClock;
 
         /// <summary>
-        /// Timer object (event generator) for ImagePatternGenerator.
+        /// Timer object (event generator) for the image test pattern generator.
         /// </summary>
-        private Timer _imagePatternGeneratorTimer;
+        private Timer _testPatternGeneratorTimer;
 
         /// <summary>
         /// DateTime object for translating camera clock to PC time.
@@ -69,7 +69,7 @@ public sealed partial class VirtualCam
             // Initialize GenApi parameters/features.
             InitializeParameters();
 
-            // Warm-up ImagePatternGenerator.
+            // Warm-up image test pattern generator.
             _ = TestPatternGenerator.CreateImage((uint)Width, (uint)Height, (PixelFormat)PixelFormat.IntValue, (TestPattern)TestPattern.IntValue);
 
             // Subscribe to device events.
@@ -88,8 +88,8 @@ public sealed partial class VirtualCam
                 _cameraClock.Stop();
 
             // Stop image generator timer.
-            _imagePatternGeneratorTimer?.Stop();
-            _imagePatternGeneratorTimer?.Dispose();
+            _testPatternGeneratorTimer?.Stop();
+            _testPatternGeneratorTimer?.Dispose();
 
             // Unsubscribe from device events.
             _virtualCam.ParameterInvalidate -= OnParameterChanged;

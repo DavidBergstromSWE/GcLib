@@ -116,9 +116,9 @@ public sealed partial class VirtualCam
                             throw new FileNotFoundException($"No image files of type bmp or png found in '{ImageDirectory}'!");
                     }
 
-                    _imagePatternGeneratorTimer = new Timer(1 / AcquisitionFrameRate * 1000) { AutoReset = true };
-                    _imagePatternGeneratorTimer.Elapsed += OnTimerElapsed; // register to event using eventhandler OnTimerElapsed
-                    _imagePatternGeneratorTimer.Start(); // start image generation
+                    _testPatternGeneratorTimer = new Timer(1 / AcquisitionFrameRate * 1000) { AutoReset = true };
+                    _testPatternGeneratorTimer.Elapsed += OnTimerElapsed; // register to event using eventhandler OnTimerElapsed
+                    _testPatternGeneratorTimer.Start(); // start image generation
 
                     _virtualCam.IsAcquiring = true;
 
@@ -158,9 +158,9 @@ public sealed partial class VirtualCam
                     if (_virtualCam.IsAcquiring == false)
                         return;
 
-                    _imagePatternGeneratorTimer.Elapsed -= OnTimerElapsed; // unregister from event
-                    _imagePatternGeneratorTimer.Stop();
-                    _imagePatternGeneratorTimer.Dispose();
+                    _testPatternGeneratorTimer.Elapsed -= OnTimerElapsed; // unregister from event
+                    _testPatternGeneratorTimer.Stop();
+                    _testPatternGeneratorTimer.Dispose();
 
                     _virtualCam.IsAcquiring = false;
 
