@@ -11,7 +11,7 @@ namespace GcLib.Utilities.Imaging;
 /// <summary>
 /// Collection of extension methods for the <see cref="Mat"/> class. 
 /// </summary>
-public static class MatExtension
+public static class MatExtensions
 {
     #region Public methods
 

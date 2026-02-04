@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace GcLib.UnitTests;
 
 [TestClass]
-public class MatExtensionTests
+public class MatExtensionsTests
 {
     [TestMethod]
     [DataRow(DepthType.Cv8U)]
