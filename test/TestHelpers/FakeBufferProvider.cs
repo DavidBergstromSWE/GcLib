@@ -54,7 +54,7 @@ namespace GcLib.UnitTests.Utilities
         /// <returns>Fake buffer.</returns>
         public static GcBuffer GetFakeBuffer(uint width, uint height, PixelFormat pixelFormat, long frameID)
         {
-            return new(imageData: ImagePatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.FrameCounter, (ulong)frameID),
+            return new(imageData: TestPatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.FrameCounter, (ulong)frameID),
                        width: width,
                        height: height,
                        pixelFormat: pixelFormat,
@@ -74,7 +74,7 @@ namespace GcLib.UnitTests.Utilities
         /// <returns>Fake buffer.</returns>
         public static GcBuffer GetFakeBuffer(uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timeStamp)
         {
-            return new(imageData: ImagePatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.FrameCounter, (ulong)frameID),
+            return new(imageData: TestPatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.FrameCounter, (ulong)frameID),
                        width: width,
                        height: height,
                        pixelFormat: pixelFormat,

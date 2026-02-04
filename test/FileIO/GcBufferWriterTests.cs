@@ -321,7 +321,7 @@ namespace GcLib.UnitTests
 
         private static GcBuffer GetBuffer(int n = 42)
         {
-            byte[] data = ImagePatternGenerator.CreateImage(width: 3,
+            byte[] data = TestPatternGenerator.CreateImage(width: 3,
                                                             height: 3,
                                                             pixelFormat: PixelFormat.Mono8,
                                                             testPattern: TestPattern.GrayHorizontalRamp,

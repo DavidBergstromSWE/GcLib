@@ -7,12 +7,13 @@ using GcLib.Utilities.Numbers;
 namespace GcLib.Utilities.Imaging;
 
 /// <summary>
-/// Image test pattern generator. 
-/// Supported pixel formats are listed in the <see cref="SupportedPixelFormats"/> property.
-/// Supported test patterns are listed in the <see cref="SupportedTestPatterns"/> property.
+/// Image test pattern generator, supporting a list of common test patterns and pixel formats used and defined in the GenICam standard.
+/// Images are created as byte arrays, using Little-Endian byte ordering.
 /// </summary>
-/// ToDo: Add support for more pixel formats in the image test pattern generator.
-public static class ImagePatternGenerator
+/// <remarks>
+/// For a list of supported test patterns and pixel formats, see <see cref="TestPatterns"/> and  <see cref="PixelFormats"/> properties.
+/// </remarks>
+public static class TestPatternGenerator
 {
     /// <summary>
     /// Random number generator.
@@ -22,7 +23,7 @@ public static class ImagePatternGenerator
     /// <summary>
     /// Lists the currently supported pixel formats of the class.
     /// </summary>
-    public static List<PixelFormat> SupportedPixelFormats =>
+    public static List<PixelFormat> PixelFormats =>
     [
         PixelFormat.Mono8,
         PixelFormat.Mono10,
@@ -44,7 +45,7 @@ public static class ImagePatternGenerator
     /// <summary>
     /// Lists the currently supported test patterns of the class.
     /// </summary>
-    public static List<TestPattern> SupportedTestPatterns =>
+    public static List<TestPattern> TestPatterns =>
     [
         TestPattern.Black,
         TestPattern.White,
@@ -64,23 +65,26 @@ public static class ImagePatternGenerator
     #region Public methods
 
     /// <summary>
-    /// Creates image using specified size, pixel format and test pattern.
+    /// Creates an image using specified size, pixel format and test pattern.
     /// </summary>
+    /// <remarks>
+    /// For a list of supported test patterns and pixel formats, see <see cref="TestPatterns"/> and  <see cref="PixelFormats"/> properties.
+    /// </remarks>
     /// <param name="width">Width of image (number of pixels). Needs to larger than 1.</param>
     /// <param name="height">Height of image (number of pixels). Needs to larger than 1.</param>
     /// <param name="pixelFormat">Pixel format (according to GenICam PFNC).</param>
     /// <param name="testPattern">Test pattern.</param>
-    /// <param name="frameNumber">(optional) Frame number index, can be used to create dynamic test patterns which changes from frame to frame.</param>
+    /// <param name="frameNumber">(optional) Running index which can be used to create dynamic test patterns which changes from frame to frame.</param>
     /// <returns>Image test pattern as byte array.</returns>
     public static byte[] CreateImage(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0)
     {
-        if (SupportedPixelFormats.Contains(pixelFormat) == false)
+        if (PixelFormats.Contains(pixelFormat) == false)
             throw new NotSupportedException("PixelFormat is not supported!");
 
-        if (SupportedTestPatterns.Contains(testPattern) == false)
+        if (TestPatterns.Contains(testPattern) == false)
             throw new NotSupportedException("Testpattern is not supported!");
 
-        // Width and Height needs to be larger than one.
+        // Width and height needs to be larger than one.
         if (width <= 1 || height <= 1)
             throw new ArgumentException("Image width and height needs to larger than 1!");
 

@@ -220,7 +220,7 @@ public sealed partial class VirtualCam
             else
             {
                 // Generate image with width, height, pixel format and test pattern according to set properties.
-                buffer = ToGcBuffer(ImagePatternGenerator.CreateImage(width: (uint)Width,
+                buffer = ToGcBuffer(TestPatternGenerator.CreateImage(width: (uint)Width,
                                                                       height: (uint)Height,
                                                                       pixelFormat: (PixelFormat)PixelFormat.IntValue,
                                                                       testPattern: (TestPattern)TestPattern.IntValue,

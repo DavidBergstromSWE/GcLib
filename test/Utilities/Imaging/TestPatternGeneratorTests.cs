@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace GcLib.UnitTests;
 
 [TestClass]
-public class ImagePatternGeneratorTests
+public class TestPatternGeneratorTests
 {
     private readonly uint _width = 10;
     private readonly uint _height = 10;
@@ -20,7 +20,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_SizeIsTooSmall_ThrowsArgumentException(int width, int height)
     {
         // Act/Assert
-        Assert.Throws<ArgumentException>(() => _ = ImagePatternGenerator.CreateImage((uint)width, (uint)height, PixelFormat.Mono8, TestPattern.Black));
+        Assert.Throws<ArgumentException>(() => _ = TestPatternGenerator.CreateImage((uint)width, (uint)height, PixelFormat.Mono8, TestPattern.Black));
     }
 
 
@@ -43,7 +43,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_Black_ReturnedImageIsMinimum(PixelFormat pixelFormat)
     {
         // Act
-        var bytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Black);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Black);
 
         // Assert
         Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
@@ -70,7 +70,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_White_ReturnedImageIsMaximum(PixelFormat pixelFormat)
     {
         // Act
-        var bytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.White);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.White);
 
         // Assert
         Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
@@ -106,7 +106,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_GrayVerticalRamp_ReturnedImageIsNotNull(PixelFormat pixelFormat)
     {
         // Act
-        var bytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayVerticalRamp);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayVerticalRamp);
 
         // Assert
         Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
@@ -143,12 +143,12 @@ public class ImagePatternGeneratorTests
     [DataRow(PixelFormat.BGR16)]
     public void CreateImage_GrayVerticalRampMoving_ReturnedImagesChangeWithFrameNumber(PixelFormat pixelFormat)
     {
-        var oldBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayVerticalRampMoving);
+        var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayVerticalRampMoving);
 
         for (ulong i = 1; i < _height + 10; i++)
         {
             // Act
-            var newBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayVerticalRampMoving, i);
+            var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayVerticalRampMoving, i);
 
             // Assert
             Assert.IsNotNull(newBytes);
@@ -178,7 +178,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_GrayHorizontalRamp_ReturnedImageIsNotNull(PixelFormat pixelFormat)
     {
         // Act
-        var bytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayHorizontalRamp);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayHorizontalRamp);
 
         // Assert
         Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamConverter.GetBitsPerPixel(pixelFormat) / 8);
@@ -215,12 +215,12 @@ public class ImagePatternGeneratorTests
     [DataRow(PixelFormat.BGR16)]
     public void CreateImage_GrayHorizontalRampMoving_ReturnedImagesChangeWithFrameNumber(PixelFormat pixelFormat)
     {
-        var oldBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayHorizontalRampMoving);
+        var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayHorizontalRampMoving);
 
         for (ulong i = 1; i < _width + 10; i++)
         {
             // Act
-            var newBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayHorizontalRampMoving, i);
+            var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayHorizontalRampMoving, i);
 
             // Assert
             Assert.IsNotNull(newBytes);
@@ -249,12 +249,12 @@ public class ImagePatternGeneratorTests
     [DataRow(PixelFormat.BGR16)]
     public void CreateImage_VerticalLineMoving_ReturnedImagesChangeWithFrameNumber(PixelFormat pixelFormat)
     {
-        var oldBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.VerticalLineMoving);
+        var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.VerticalLineMoving);
 
         for (ulong i = 1; i < _width + 10; i++)
         {
             // Act
-            var newBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.VerticalLineMoving, i);
+            var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.VerticalLineMoving, i);
 
             // Assert
             Assert.IsNotNull(newBytes);
@@ -296,12 +296,12 @@ public class ImagePatternGeneratorTests
     [DataRow(PixelFormat.BGR16)]
     public void CreateImage_HorizontalLineMoving_ReturnedImagesChangeWithFrameNumber(PixelFormat pixelFormat)
     {
-        var oldBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.HorizontalLineMoving);
+        var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.HorizontalLineMoving);
 
         for (ulong i = 1; i < _width + 10; i++)
         {
             // Act
-            var newBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.HorizontalLineMoving, i);
+            var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.HorizontalLineMoving, i);
 
             // Assert
             Assert.IsNotNull(newBytes);
@@ -343,12 +343,12 @@ public class ImagePatternGeneratorTests
     [DataRow(PixelFormat.BGR16)]
     public void CreateImage_FrameCounter_ReturnedImagesChangeWithFrameNumber(PixelFormat pixelFormat)
     {
-        var oldBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.FrameCounter);
+        var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.FrameCounter);
 
         for (ulong i = 1; i < GenICamConverter.GetDynamicRangeMax(pixelFormat) + 1; i++) 
         {
             // Act
-            var newBytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.FrameCounter, i);
+            var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.FrameCounter, i);
 
             // Assert
             Assert.IsNotNull(newBytes);
@@ -391,7 +391,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_WhiteNoise_ReturnedImageIsRandom(PixelFormat pixelFormat)
     {
         // Act
-        var bytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.WhiteNoise);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.WhiteNoise);
 
         // Assert
         Assert.IsNotNull(bytes);
@@ -408,7 +408,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_Red_RGB_ColorOrderIsRGB(PixelFormat pixelFormat) 
     {
         // Act
-        var bytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Red);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Red);
 
         // Assert
         Assert.IsNotNull(bytes);
@@ -439,7 +439,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_Red_BGR_ColorOrderIsBGR(PixelFormat pixelFormat)
     {
         // Act
-        var bytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Red);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Red);
 
         // Assert
         Assert.IsNotNull(bytes);
@@ -475,7 +475,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_Green_ColorOrderIsCorrect(PixelFormat pixelFormat)
     {
         // Act
-        var bytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Green);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Green);
 
         // Assert
         Assert.IsNotNull(bytes);
@@ -506,7 +506,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_Blue_RGB_ColorOrderIsRGB(PixelFormat pixelFormat)
     {
         // Act
-        var bytes= ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Blue);
+        var bytes= TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Blue);
 
         // Assert
         Assert.IsNotNull(bytes);
@@ -537,7 +537,7 @@ public class ImagePatternGeneratorTests
     public void CreateImage_Blue_BGR_ColorOrderIsBGR(PixelFormat pixelFormat)
     {
         // Act
-        var bytes = ImagePatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Blue);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Blue);
 
         // Assert
         Assert.IsNotNull(bytes);
