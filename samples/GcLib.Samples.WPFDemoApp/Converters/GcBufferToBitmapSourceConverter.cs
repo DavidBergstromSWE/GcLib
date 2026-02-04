@@ -16,7 +16,7 @@ internal sealed class GcBufferToBitmapSourceConverter : IValueConverter, IMultiV
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is GcBuffer buffer)
-            return GcBufferExtensions.ToBitmapSource(buffer);
+            return BitmapSourceExtensions.ToBitmapSource(buffer);
         
         return null;
     }
@@ -24,7 +24,7 @@ internal sealed class GcBufferToBitmapSourceConverter : IValueConverter, IMultiV
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
         if (values[0] is GcBuffer buffer && values[1] is bool isEnabled && isEnabled)
-            return GcBufferExtensions.ToBitmapSource(buffer);
+            return BitmapSourceExtensions.ToBitmapSource(buffer);
 
         return null;
     }

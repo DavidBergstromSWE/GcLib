@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Windows.Media.Imaging;
-using Emgu.CV;
-using Emgu.CV.Util;
 using GcLib;
 using PixelFormat = GcLib.PixelFormat;
 
@@ -10,7 +8,7 @@ namespace ImagerViewer.Utilities.Imaging;
 /// <summary>
 /// Provides extension methods for the <see cref="GcBuffer"/> class in <see cref="GcLib"/> library to support WPF applications.
 /// </summary>
-internal static class GcBufferExtensions
+internal static class BitmapSourceExtensions
 {
     /// <summary>
     /// Converts image to <see cref="BitmapSource"/> format.
@@ -32,43 +30,6 @@ internal static class GcBufferExtensions
                                    palette: null,
                                    pixels: buffer.ImageData,
                                    stride: stride);
-    }
-
-    /// <summary>
-    /// Calculates histogram from image buffer. 
-    /// </summary>
-    /// <param name="buffer">Image buffer.</param>
-    /// <param name="bins">Number of bins (histogram size).</param>
-    /// <param name="mask">Optional mask.</param>
-    public static double[,] GetHistogram(this GcBuffer buffer, int bins, Mat mask = null)
-    {
-        var histogramData = new double[buffer.NumChannels, bins];
-
-        // Convert to Mat.
-        using var mat = buffer.ToMat();
-
-        // Store metadata.
-        var histogramMaxValue = buffer.PixelDynamicRangeMax;
-        var numChannels = (int)buffer.NumChannels;
-
-        // Split image into array of single-channel (grayscale) images.
-        Mat[] matChannels = mat.Split();
-
-        // Calculate histogram for each image channel.
-        for (int i = 0; i < Math.Min(numChannels, 3); i++)
-        {
-            using var histogram = new Mat();
-
-            // Calculate histogram using EmguCV.
-            using var vMat = new VectorOfMat(matChannels[i]);
-            CvInvoke.CalcHist(images: vMat, channels: [0], mask: mask, hist: histogram, histSize: [bins], ranges: [0, histogramMaxValue + 1], accumulate: false);
-
-            // Update histogram data via Span copy.
-            ReadOnlySpan<float> floatSpan = new((float[])histogram.GetData(false));
-            for (int j = 0; j < floatSpan.Length; j++)
-                histogramData[i, j] = floatSpan[j];
-        }
-        return histogramData;
     }
 
     /// <summary>
