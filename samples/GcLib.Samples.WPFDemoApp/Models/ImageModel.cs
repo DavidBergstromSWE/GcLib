@@ -24,7 +24,8 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     private GcBuffer _processedImage;
     private bool _flipHorizontal;
     private bool _flipVertical;
-    private double _brightness;
+    private int _brightness;
+    private int _contrast;
 
     /// <summary>
     /// List of pixel formats supported.
@@ -128,12 +129,21 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     }
 
     /// <summary>
-    /// Image brightness.
+    /// Image brightness (0 - 100).
     /// </summary>
-    public double Brightness
+    public int Brightness
     {
         get => _brightness;
         set => SetProperty(ref _brightness, value);
+    }
+
+    /// <summary>
+    /// Image contrast (0 - 100).
+    /// </summary>
+    public int Contrast
+    {
+        get => _contrast;
+        set => SetProperty(ref _contrast, value);
     }
 
     #endregion
@@ -234,7 +244,8 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         FlipHorizontal = false;
         FlipVertical = false;
 
-        Brightness = 0;
+        Brightness = 50;
+        Contrast = 50;
 
         // Re-enable logging.
         App.IsLoggingEnabled = true;
@@ -263,7 +274,10 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         FlipVertical = reader.Name == nameof(FlipVertical) && bool.Parse(reader.ReadElementContentAsString());
 
         // Read brightness setting.
-        Brightness = reader.Name == nameof(Brightness) ? reader.ReadElementContentAsDouble() : 0;
+        Brightness = reader.Name == nameof(Brightness) ? reader.ReadElementContentAsInt() : 50;
+
+        // Read contrast setting.
+        Contrast = reader.Name == nameof(Contrast) ? reader.ReadElementContentAsInt() : 50;
     }
 
     /// <inheritdoc/>
@@ -275,6 +289,9 @@ internal class ImageModel : ObservableObject, IXmlSerializable
 
         // Write brightness setting.
         writer.WriteElementString(nameof(Brightness), Brightness.ToString());
+
+        // Write contrast setting.
+        writer.WriteElementString(nameof(Contrast), Contrast.ToString());
     }
 
     #endregion
@@ -313,7 +330,8 @@ internal class ImageModel : ObservableObject, IXmlSerializable
             CvInvoke.Normalize(src: mat, dst: mat, alpha: 0, beta: 255, normType: NormType.MinMax, dType: DepthType.Cv8U);
 
         // Adjust brightness.
-        mat += Brightness;
+        mat += 5.1 * Brightness - 255;
+        mat *= Contrast / 50d;
 
         // Flip (if requested).
         if (FlipHorizontal)

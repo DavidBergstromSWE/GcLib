@@ -14,25 +14,49 @@
              d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}">
     <Grid>
 
-        <!--Brightness-->
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Brightness" FontSize="12" Width="60" VerticalAlignment="Center"/>
-            <Slider Name="brightnessSlider" Style="{StaticResource MahApps.Styles.Slider}" VerticalAlignment="Center" Margin="10 0 0 0" 
-                    FontSize="11" Width="85"
-                    Value="{Binding ImageChannel.Brightness, Mode=TwoWay, FallbackValue=0}" 
-                    Minimum="-255" Maximum="255" 
-                    TickFrequency="5" IsSnapToTickEnabled="True"
-                    SmallChange="1" LargeChange="10"
-                    AutoToolTipPlacement="BottomRight" AutoToolTipPrecision="0"
-                    ToolTip="Drag to adjust (right-click to reset)"
-                    PreviewMouseRightButtonUp="Slider_PreviewMouseRightButtonUp"/>
-            <mah:NumericUpDown Margin="10 0 0 0" Width="70" Padding="0" VerticalAlignment="Center" FontSize="11"
-                               Value="{Binding ElementName=brightnessSlider, Path=Value, Mode=TwoWay}" d:Value="{Binding SelectedImageChannel.Brightness}"
-                               Minimum="{Binding ElementName=brightnessSlider, Path=Minimum}"
-                               Maximum="{Binding ElementName=brightnessSlider, Path=Maximum}"
-                               Interval="{Binding ElementName=brightnessSlider, Path=TickFrequency}"                              
-                               ToolTip="Current brightness level"/>
+        <StackPanel Orientation="Vertical">
+            
+            <!--Brightness-->
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Brightness" FontSize="12" Width="60" VerticalAlignment="Center"/>
+                <Slider Name="brightnessSlider" Style="{StaticResource MahApps.Styles.Slider}" VerticalAlignment="Center" Margin="10 0 0 0" 
+                        FontSize="11" Width="85"
+                        Value="{Binding ImageChannel.Brightness, Mode=TwoWay, FallbackValue=50}" 
+                        Minimum="0" Maximum="100" 
+                        TickFrequency="5" IsSnapToTickEnabled="True"
+                        SmallChange="1" LargeChange="10"
+                        AutoToolTipPlacement="BottomRight" AutoToolTipPrecision="0"
+                        ToolTip="Drag to adjust (right-click to reset)"
+                        PreviewMouseRightButtonUp="Slider_PreviewMouseRightButtonUp"/>
+                <mah:NumericUpDown Margin="10 0 0 0" Width="70" Padding="0" VerticalAlignment="Center" FontSize="11"
+                                   Value="{Binding ElementName=brightnessSlider, Path=Value, Mode=TwoWay}" d:Value="{Binding SelectedImageChannel.Brightness}"
+                                   Minimum="{Binding ElementName=brightnessSlider, Path=Minimum}"
+                                   Maximum="{Binding ElementName=brightnessSlider, Path=Maximum}"
+                                   Interval="{Binding ElementName=brightnessSlider, Path=TickFrequency}"                              
+                                   ToolTip="Current brightness"/>
 
+            </StackPanel>
+
+            <!--Contrast-->
+            <StackPanel Orientation="Horizontal" Margin="0 2 0 0">
+                <TextBlock Text="Contrast" FontSize="12" Width="60" VerticalAlignment="Center"/>
+                <Slider Name="contrastSlider" Style="{StaticResource MahApps.Styles.Slider}" VerticalAlignment="Center" Margin="10 0 0 0" 
+                        FontSize="11" Width="85"
+                        Value="{Binding ImageChannel.Contrast, Mode=TwoWay, FallbackValue=50}" 
+                        Minimum="0" Maximum="100" 
+                        TickFrequency="5" IsSnapToTickEnabled="True"
+                        SmallChange="1" LargeChange="10"
+                        AutoToolTipPlacement="BottomRight" AutoToolTipPrecision="0"
+                        ToolTip="Drag to adjust (right-click to reset)"
+                        PreviewMouseRightButtonUp="Slider_PreviewMouseRightButtonUp"/>  
+                <mah:NumericUpDown Margin="10 0 0 0" Width="70" Padding="0" VerticalAlignment="Center" FontSize="11"
+                   Value="{Binding ElementName=contrastSlider, Path=Value, Mode=TwoWay}" d:Value="{Binding SelectedImageChannel.Contrast}"
+                   Minimum="{Binding ElementName=contrastSlider, Path=Minimum}"
+                   Maximum="{Binding ElementName=contrastSlider, Path=Maximum}"
+                   Interval="{Binding ElementName=contrastSlider, Path=TickFrequency}"                              
+                   ToolTip="Current contrast"/>
+            </StackPanel>
+            
         </StackPanel>
 
     </Grid>

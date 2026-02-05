@@ -162,7 +162,7 @@
         <!--Device control (connection, selection and parameter viewing)-->
         <Expander Grid.Row="1" Grid.Column="0"
                   BorderThickness="0"
-                  Margin="5 60 5 0"
+                  Margin="5 80 5 0"
                   ExpandDirection="Right" IsExpanded="True"
                   mah:HeaderedControlHelper.HeaderBackground="Transparent" mah:HeaderedControlHelper.HeaderForeground="{DynamicResource MahApps.Brushes.ThemeForeground}">
             <Expander.Style>
@@ -197,19 +197,19 @@
         <!--Image display-->
         <views:ImageDisplayView x:Name="imageDisplayView" 
                                 Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
-                                Margin="0 20 0 0"/>
+                                Margin="0 60 0 0"/>
 
         <!--Image processing-->
         <views:ImageProcessingView x:Name="imageProcessingView"
                                    Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
-                                   Margin="0 20 0 0" 
+                                   Margin="0 10 0 0" 
                                    HorizontalAlignment="Center" VerticalAlignment="Top"
                                    d:DataContext="{Binding Source={StaticResource MockViewModelLocator}, Path=ImageProcessingViewModel}"/>
 
         <!--Image histogram-->
         <Expander Grid.Row="1" Grid.Column="5"             
                   BorderThickness="0" 
-                  Margin="5 60 5 0"
+                  Margin="5 80 5 0"
                   ExpandDirection="Left" IsExpanded="{Binding Source={StaticResource ViewModelLocator}, Path=HistogramViewModel.ShowLiveHistogram, Mode=TwoWay}"
                   mah:HeaderedControlHelper.HeaderBackground="Transparent" mah:HeaderedControlHelper.HeaderForeground="{DynamicResource MahApps.Brushes.ThemeForeground}">
             <Expander.Style>

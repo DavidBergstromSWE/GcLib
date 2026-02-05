@@ -59,7 +59,7 @@ internal sealed class MockDeviceViewModel
 /// </summary>
 internal sealed class MockImageProcessingViewModel
 {
-    public static ImageModel SelectedImageChannel { get; set; } = new() { Brightness = 100.0 };
+    public static ImageModel SelectedImageChannel { get; set; } = new() { Brightness = 50, Contrast = 50 };
     public static ICommand OpenParameterDialogWindowCommand { get; }
 }
 

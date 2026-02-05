@@ -32,7 +32,7 @@ public partial class ImageProcessingView : UserControl
     private void Slider_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
     {
         var slider = (Slider)sender;
-        slider.Value = 0;
+        slider.Value = 50;
         e.Handled = true;
     }
 }
