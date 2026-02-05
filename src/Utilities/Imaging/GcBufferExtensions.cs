@@ -12,7 +12,7 @@ public static class GcBufferExtensions
     /// <summary>
     /// Supported packed pixel formats.
     /// </summary>
-    public static readonly List<PixelFormat> SupportedPixelFormats =
+    public static readonly List<PixelFormat> SupportedPackedPixelFormats =
     [
         PixelFormat.Mono10p,
         PixelFormat.Mono12p,
@@ -49,7 +49,7 @@ public static class GcBufferExtensions
     public static GcBuffer Unpack(this GcBuffer packedBuffer)
     {
         // Validate that the pixel format is supported.
-        if (!SupportedPixelFormats.Contains(packedBuffer.PixelFormat))
+        if (!SupportedPackedPixelFormats.Contains(packedBuffer.PixelFormat))
             throw new ArgumentException($"Pixel format {packedBuffer.PixelFormat} is not supported for unpacking.");
 
         // Determine the corresponding unpacked pixel format.
@@ -97,7 +97,7 @@ public static class GcBufferExtensions
         var packedPixelFormat = Enum.Parse<PixelFormat>(unpackedBuffer.PixelFormat.ToString() + "p");
 
         // Validate that the packed pixel format is supported.
-        if (!SupportedPixelFormats.Contains(packedPixelFormat))
+        if (!SupportedPackedPixelFormats.Contains(packedPixelFormat))
             throw new ArgumentException($"Pixel format {unpackedBuffer.PixelFormat} is not supported for packing.");
 
         // Bit count per pixel per channel for packed pixel format.
