@@ -331,7 +331,8 @@ internal class ImageModel : ObservableObject, IXmlSerializable
 
         // Adjust brightness.
         mat += 5.1 * Brightness - 255;
-        mat *= Contrast / 50d;
+        //mat *= Contrast / 50d;
+        mat *= Contrast * Contrast * 4d / 10000;
 
         // Flip (if requested).
         if (FlipHorizontal)
