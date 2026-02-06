@@ -11,6 +11,11 @@ public static partial class GenICamConverter
     /// <summary>
     /// Retrieves the total number of bits of storage needed for a pixel format (for all channels).
     /// </summary>
+    /// <remarks>
+    /// The number of bits returned by this method reflects how pixel data is structured and stored in computer memory. 
+    /// Packed formats minimize memory usage by tightly grouping pixel bits, 
+    /// while unpacked (aligned) formats prioritize performance by aligning data with byte boundaries (often leaving unused padding bits).
+    /// </remarks>
     /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
     /// <returns>Bits per pixel.</returns>
     /// <exception cref="NotSupportedException">Thrown if the pixel format is not supported.</exception>"
@@ -22,6 +27,11 @@ public static partial class GenICamConverter
     /// <summary>
     /// Retrieves the number of bits of storage needed per channel for a pixel format.
     /// </summary>
+    /// <remarks>
+    /// The number of bits returned by this method reflects how pixel data is structured and stored in computer memory. 
+    /// Packed formats minimize memory usage by tightly grouping pixel bits, 
+    /// while unpacked (aligned) formats prioritize performance by aligning data with byte boundaries (often leaving unused padding bits).
+    /// </remarks>
     /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
     /// <returns>Bits per pixel per channel.</returns>
     public static uint GetBitsPerPixelPerChannel(PixelFormat pixelFormat)
@@ -29,12 +39,15 @@ public static partial class GenICamConverter
         var nBits = byte.Parse(IntegerGeneratedRegex().Match(pixelFormat.ToString()).Value);
         if (pixelFormat.ToString().Contains('p')) // packed format (without byte alignment)
             return nBits;
-        else return (uint)((nBits + 7) / 8 * 8); // unpacked formats are aligned to next byte
+        else return (uint)((nBits + 7) / 8 * 8); // unpacked formats (with byte-alignment)
     }
 
     /// <summary>
-    /// Retrieves the pixel size corresponding to a pixel format.
+    /// Retrieves the pixel size (bit depth) corresponding to a pixel format.
     /// </summary>
+    /// <remarks>
+    /// The pixel size returned by this method reflects how many bits are needed to represent the pixel data and not how it is structured and stored in memory. 
+    /// </remarks>
     /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
     /// <returns>Pixel size.</returns>
     public static PixelSize GetPixelSize(PixelFormat pixelFormat)
