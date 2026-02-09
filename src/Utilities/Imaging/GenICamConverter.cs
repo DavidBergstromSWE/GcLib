@@ -4,20 +4,21 @@ using System.Text.RegularExpressions;
 namespace GcLib.Utilities.Imaging;
 
 /// <summary>
-/// Utility class for handling GenICam pixel formats.
+/// Utility class for handling the pixel formats defined in GenICam Pixel Format Naming Convention (PFNC).
 /// </summary>
-public static partial class GenICamConverter
+public static partial class GenICamPixelFormatHelper
 {
     /// <summary>
-    /// Retrieves the total number of bits of storage needed for a pixel format (for all channels).
+    /// Retrieves the total number of bits of storage needed for a pixel in a specified <paramref name="pixelFormat"/>, summed over all of its channels.
     /// </summary>
     /// <remarks>
-    /// The number of bits returned by this method reflects how pixel data is structured and stored in computer memory. 
-    /// Packed formats minimize memory usage by tightly grouping pixel bits, 
-    /// while unpacked (aligned) formats prioritize performance by aligning data with byte boundaries (often leaving unused padding bits).
+    /// The number of bits returned by this method reflects how pixel data is structured and stored in computer memory, 
+    /// where unpacked pixel formats aligns data with byte boundaries (using padding zeros if necessary) 
+    /// while packed formats minimize memory usage by tightly grouping the bits.
+    /// To retrieve the number of bits represented by the pixel data (e.g. bit depth), see <see cref="GetPixelSize(PixelFormat)"/>.
     /// </remarks>
-    /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
-    /// <returns>Bits per pixel.</returns>
+    /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>
+    /// <returns>Bits per pixel (summed over all channels).</returns>
     /// <exception cref="NotSupportedException">Thrown if the pixel format is not supported.</exception>"
     public static uint GetBitsPerPixel(PixelFormat pixelFormat)
     {
@@ -25,14 +26,15 @@ public static partial class GenICamConverter
     }
 
     /// <summary>
-    /// Retrieves the number of bits of storage needed per channel for a pixel format.
+    /// Retrieves the number of bits of storage needed per channel for a specified <paramref name="pixelFormat"/>.
     /// </summary>
     /// <remarks>
-    /// The number of bits returned by this method reflects how pixel data is structured and stored in computer memory. 
-    /// Packed formats minimize memory usage by tightly grouping pixel bits, 
-    /// while unpacked (aligned) formats prioritize performance by aligning data with byte boundaries (often leaving unused padding bits).
+    /// The number of bits returned by this method reflects how pixel data is structured and stored in computer memory, 
+    /// where unpacked pixel formats aligns data with byte boundaries (using padding zeros if necessary) 
+    /// while packed formats minimize memory usage by tightly grouping the bits.
+    /// To retrieve the number of bits represented by the pixel data (e.g. bit depth), see <see cref="GetPixelSize(PixelFormat)"/>.
     /// </remarks>
-    /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
+    /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>
     /// <returns>Bits per pixel per channel.</returns>
     public static uint GetBitsPerPixelPerChannel(PixelFormat pixelFormat)
     {
@@ -43,12 +45,13 @@ public static partial class GenICamConverter
     }
 
     /// <summary>
-    /// Retrieves the pixel size (bit depth) corresponding to a pixel format.
+    /// Retrieves the pixel size corresponding to a specified <paramref name="pixelFormat"/>.
     /// </summary>
     /// <remarks>
-    /// The pixel size returned by this method reflects how many bits are needed to represent the pixel data and not how it is structured and stored in memory. 
+    /// The pixel size returned by this method reflects how many bits are needed to represent the pixel data (e.g. bit depth).
+    /// To retrieve the number of bits needed to store the pixel data in memory, see <see cref="GetBitsPerPixel(PixelFormat)"/> and <see cref="GetBitsPerPixelPerChannel(PixelFormat)"/> methods.
     /// </remarks>
-    /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
+    /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>
     /// <returns>Pixel size.</returns>
     public static PixelSize GetPixelSize(PixelFormat pixelFormat)
     {
@@ -56,20 +59,24 @@ public static partial class GenICamConverter
     }
 
     /// <summary>
-    /// Retrieves the maximum possible pixel value in the dynamic range of a pixel format.
+    /// Retrieves the maximum possible pixel value of a specified <paramref name="pixelFormat"/>.
     /// </summary>
-    /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
+    /// <remarks>
+    /// The maximum pixel value returned by this method is calculated from the pixel size (e.g. bit depth) of the pixel format. 
+    /// This is not the same as the true dynamic range of a pixel, which is determined by the saturation value and noise floor of the detector.
+    /// </remarks>
+    /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>
     /// <returns>Maximum pixel value.</returns>
-    public static uint GetDynamicRangeMax(PixelFormat pixelFormat)
+    public static uint GetPixelDynamicRangeMax(PixelFormat pixelFormat)
     {
         var pixelSize = GetPixelSize(pixelFormat);
         return (uint)Math.Pow(2, (int)pixelSize) - 1;
     }
 
     /// <summary>
-    /// Retrieves the number of channels contained in a pixel format.
+    /// Retrieves the number of channels contained in a specified <paramref name="pixelFormat"/>.
     /// </summary>
-    /// <param name="pixelFormat">Pixel format in GenICam PFNC.</param>
+    /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>
     /// <returns>Number of channels.</returns>
     /// <exception cref="NotSupportedException">Thrown if the pixel format is not supported.</exception>"
     public static uint GetNumChannels(PixelFormat pixelFormat)
@@ -180,6 +187,60 @@ public static partial class GenICamConverter
                 throw new NotSupportedException("Pixel format is not supported!");
         }
 #pragma warning restore IDE0066 // Convert switch statement to expression
+    }
+
+    /// <summary>
+    /// Retrieves the pixel color filter applied in a specified <paramref name="pixelFormat"/>.
+    /// </summary>
+    /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>
+    /// <returns>Pixel color filter.</returns>
+    public static PixelColorFilter GetPixelColorFilter(PixelFormat pixelFormat)
+    {
+        switch (pixelFormat)
+        {
+            case PixelFormat.BayerBG8:
+            case PixelFormat.BayerBG10:
+            case PixelFormat.BayerBG12:
+            case PixelFormat.BayerBG14:
+            case PixelFormat.BayerBG16:
+            case PixelFormat.BayerBG4p:
+            case PixelFormat.BayerBG10p:
+            case PixelFormat.BayerBG12p:
+            case PixelFormat.BayerBG14p:
+                return PixelColorFilter.BayerBG;
+            case PixelFormat.BayerGB8:
+            case PixelFormat.BayerGB10:
+            case PixelFormat.BayerGB12:
+            case PixelFormat.BayerGB14:
+            case PixelFormat.BayerGB16:
+            case PixelFormat.BayerGB4p:
+            case PixelFormat.BayerGB10p:
+            case PixelFormat.BayerGB12p:
+            case PixelFormat.BayerGB14p:
+                return PixelColorFilter.BayerGB;
+            case PixelFormat.BayerGR8:
+            case PixelFormat.BayerGR10:
+            case PixelFormat.BayerGR12:
+            case PixelFormat.BayerGR14:
+            case PixelFormat.BayerGR16:
+            case PixelFormat.BayerGR4p:
+            case PixelFormat.BayerGR10p:
+            case PixelFormat.BayerGR12p:
+            case PixelFormat.BayerGR14p:
+                return PixelColorFilter.BayerGR;
+            case PixelFormat.BayerRG8:
+            case PixelFormat.BayerRG10:
+            case PixelFormat.BayerRG12:
+            case PixelFormat.BayerRG14:
+            case PixelFormat.BayerRG16:
+            case PixelFormat.BayerRG4p:
+            case PixelFormat.BayerRG10p:
+            case PixelFormat.BayerRG12p:
+            case PixelFormat.BayerRG14p:
+                return PixelColorFilter.BayerRG;
+            default:
+                return PixelColorFilter.None;
+        }
     }
 
     [GeneratedRegex("\\d+")]

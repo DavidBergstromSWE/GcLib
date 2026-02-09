@@ -131,7 +131,7 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
         // Parse pixel format.
         PixelFormat pixelFormat = Enum.Parse<PixelFormat>(image.PixelFormat.ToString());
 
-        return new GcBuffer(image.ManagedData, image.Width, image.Height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), (long)image.FrameID, (ulong)DateTime.Now.Ticks);
+        return new GcBuffer(image.ManagedData, image.Width, image.Height, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), (long)image.FrameID, (ulong)DateTime.Now.Ticks);
     }
 
     #endregion

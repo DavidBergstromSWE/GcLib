@@ -224,7 +224,7 @@ public class DeBayerTests
             8,  9, 10, 11,
            12, 13, 14, 15 ];
 
-        return new GcBuffer(imageData: NumericHelper.ToBytes(imageData), width: 4, height: 4, pixelFormat: bayerFormat, pixelDynamicRangeMax: GenICamConverter.GetDynamicRangeMax(bayerFormat), frameID: 42, timeStamp: (ulong)DateTime.Now.Ticks);
+        return new GcBuffer(imageData: NumericHelper.ToBytes(imageData), width: 4, height: 4, pixelFormat: bayerFormat, pixelDynamicRangeMax: GenICamPixelFormatHelper.GetPixelDynamicRangeMax(bayerFormat), frameID: 42, timeStamp: (ulong)DateTime.Now.Ticks);
     }
 
     private static Mat GetBayerPatternedMat()

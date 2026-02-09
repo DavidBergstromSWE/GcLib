@@ -282,7 +282,7 @@ public sealed partial class VirtualCam
                 name: nameof(PixelSize),
                 category: GetCategory(nameof(PixelSize)),
                 description: "Total size in bits of a pixel of the image",
-                enumEntry: GenICamConverter.GetPixelSize((PixelFormat)PixelFormat.IntValue),
+                enumEntry: GenICamPixelFormatHelper.GetPixelSize((PixelFormat)PixelFormat.IntValue),
                 enumArray: [GcLib.PixelSize.Bpp8, GcLib.PixelSize.Bpp10, GcLib.PixelSize.Bpp12, GcLib.PixelSize.Bpp14, GcLib.PixelSize.Bpp16],
                 isWritable: false,
                 visibility: GcVisibility.Expert,

@@ -26,7 +26,7 @@ namespace GcLib.UnitTests
             var imageData = TestPatternGenerator.CreateImage(3, 3, pixelFormat, TestPattern.GrayHorizontalRamp);
 
             // Act
-            var buffer = new GcBuffer(imageData, 3, 3, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
 
             // Assert
             Assert.IsNotNull(buffer);
@@ -47,13 +47,13 @@ namespace GcLib.UnitTests
             var timeStamp = (ulong)DateTime.Now.Ticks;
 
             // Act
-            var buffer = new GcBuffer(imageData, (uint)width, (uint)height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), frameID, timeStamp);
+            var buffer = new GcBuffer(imageData, (uint)width, (uint)height, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), frameID, timeStamp);
 
             // Assert
             Assert.IsTrue(Enumerable.SequenceEqual(imageData, buffer.ImageData)); // checks element equality
             Assert.AreEqual((uint)height, buffer.Height);
             Assert.AreEqual((uint)width, buffer.Width);
-            Assert.AreEqual(GenICamConverter.GetDynamicRangeMax(pixelFormat), buffer.PixelDynamicRangeMax);
+            Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), buffer.PixelDynamicRangeMax);
             Assert.AreEqual<uint>(0, buffer.PixelDynamicRangeMin);
             Assert.AreEqual(frameID, buffer.FrameID);
             Assert.AreEqual(timeStamp, buffer.TimeStamp);
@@ -66,7 +66,7 @@ namespace GcLib.UnitTests
             var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.GrayHorizontalRamp);
 
             // Act
-            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Assert
             Assert.AreSame(expected: imageData, actual: buffer.ImageData); // checks reference equality (share same memory)
@@ -80,7 +80,7 @@ namespace GcLib.UnitTests
             var imageData = new byte[] { 1 };
 
             // Act/Assert
-            Assert.Throws<ArgumentException>(() => new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks));
+            Assert.Throws<ArgumentException>(() => new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks));
         }
 
         [TestMethod]
@@ -170,7 +170,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.GrayHorizontalRamp);
-            var originalBuffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var originalBuffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act
             var copiedBuffer = new GcBuffer(originalBuffer);
@@ -204,7 +204,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, pixelFormat, TestPattern.GrayHorizontalRamp);
-            var buffer = new GcBuffer(imageData, 3, 3, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
 
             // Act
             var mat = buffer.ToMat();
@@ -226,7 +226,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage((uint)width, (uint)height, pixelFormat, TestPattern.GrayHorizontalRamp);
-            var buffer = new GcBuffer(imageData, (uint)width, (uint)height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, (uint)width, (uint)height, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
 
             // Act
             var mat = buffer.ToMat();
@@ -243,7 +243,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(2, 2, PixelFormat.Mono8, TestPattern.GrayHorizontalRamp);
-            var buffer = new GcBuffer(imageData, 2, 2, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 0, 0);
+            var buffer = new GcBuffer(imageData, 2, 2, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 0, 0);
 
             // Act
             var mat = buffer.ToMat();
@@ -264,7 +264,7 @@ namespace GcLib.UnitTests
             // Arrange
             uint width = 3; uint height = 3;
             var imageData = TestPatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.Red);
-            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
             var mat = buffer.ToMat();
 
             // Act/Assert
@@ -294,7 +294,7 @@ namespace GcLib.UnitTests
             // Arrange
             uint width = 3; uint height = 3;
             var imageData = TestPatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.Green);
-            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
             var mat = buffer.ToMat();
 
             // Act/Assert
@@ -315,7 +315,7 @@ namespace GcLib.UnitTests
             // Arrange
             uint width = 3; uint height = 3;
             var imageData = TestPatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.Blue);
-            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
             var mat = buffer.ToMat();
 
             // Act/Assert
@@ -350,13 +350,13 @@ namespace GcLib.UnitTests
             // Arrange
             uint width = 3; uint height = 3;
             var imageData = TestPatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.White);
-            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
             for (int col = 0; col < buffer.Width; col++)
                 for (int row = 0; row < buffer.Height; row++)
                     for (int ch = 0; ch < buffer.NumChannels; ch++)
-                        Assert.AreEqual(GenICamConverter.GetDynamicRangeMax(pixelFormat), buffer.GetPixel((uint)row, (uint)col, (uint)ch));
+                        Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), buffer.GetPixel((uint)row, (uint)col, (uint)ch));
         }
 
         [TestMethod]
@@ -372,7 +372,7 @@ namespace GcLib.UnitTests
             // Arrange
             uint width = 3; uint height = 3;
             var imageData = TestPatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.White);
-            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, width, height, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
             for (int col = 0; col < buffer.Width; col++)
@@ -381,7 +381,7 @@ namespace GcLib.UnitTests
                     {
                         var pixelValues = buffer.GetPixel((uint)row, (uint)col);
                         foreach (var pixelValue in pixelValues)
-                            Assert.AreEqual(GenICamConverter.GetDynamicRangeMax(pixelFormat), pixelValue);
+                            Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), pixelValue);
                     }     
         }
 
@@ -390,7 +390,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
-            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.GetPixel(3, 2));
@@ -404,7 +404,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
-            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.GetPixel(2, 3));
@@ -418,7 +418,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
-            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.GetPixel(2, 2, 1));
@@ -437,7 +437,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, pixelFormat, TestPattern.GrayHorizontalRamp);
-            var buffer = new GcBuffer(imageData, 3, 3, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
 
             // Act
             int counter = 0;
@@ -470,7 +470,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, pixelFormat, TestPattern.GrayHorizontalRamp);
-            var buffer = new GcBuffer(imageData, 3, 3, pixelFormat, GenICamConverter.GetDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, pixelFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
 
             // Act
             for (int col = 0; col < buffer.Width; col++)
@@ -479,7 +479,7 @@ namespace GcLib.UnitTests
                     {
                         var pixelValues = new double[buffer.NumChannels];
                         for (int i = 0; i < buffer.NumChannels; i++)
-                            pixelValues[i] = GenICamConverter.GetDynamicRangeMax(pixelFormat);
+                            pixelValues[i] = GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat);
     
                         buffer.SetPixel((uint)row, (uint)col, pixelValues);
                     }
@@ -489,7 +489,7 @@ namespace GcLib.UnitTests
                 for (int row = 0; row < buffer.Height; row++)
                     for (int ch = 0; ch < buffer.NumChannels; ch++)
                     {
-                        Assert.AreEqual(buffer.GetPixel((uint)row, (uint)col, (uint)ch), GenICamConverter.GetDynamicRangeMax(pixelFormat));
+                        Assert.AreEqual(buffer.GetPixel((uint)row, (uint)col, (uint)ch), GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat));
                     }
         }
 
@@ -498,7 +498,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
-            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(3, 2, 0, 33));
@@ -512,7 +512,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
-            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 3, 0, 33));
@@ -526,7 +526,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
-            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, 1, 33));
@@ -540,7 +540,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
-            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, 0, 256));
@@ -559,7 +559,7 @@ namespace GcLib.UnitTests
         {
             // Arrange
             var imageData = TestPatternGenerator.CreateImage((uint)width, (uint)height, PixelFormat.Mono8, TestPattern.GrayHorizontalRamp);
-            var buffer = new GcBuffer(imageData, (uint)width, (uint)height, PixelFormat.Mono8, GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+            var buffer = new GcBuffer(imageData, (uint)width, (uint)height, PixelFormat.Mono8, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
 
             // Act
             var size = buffer.GetSize();

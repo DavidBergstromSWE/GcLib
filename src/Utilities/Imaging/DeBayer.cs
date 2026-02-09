@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 
 namespace GcLib.Utilities.Imaging;
 
@@ -62,14 +63,14 @@ public static class DeBayer
 
         var bgrMat = new Mat(rawMat.Cols, rawMat.Rows, rawMat.Depth, 3);
 
-        if (inputFormat == PixelFormat.BayerBG8 || inputFormat == PixelFormat.BayerBG10 || inputFormat == PixelFormat.BayerBG12 || inputFormat == PixelFormat.BayerBG14 || inputFormat == PixelFormat.BayerBG16)
-            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerBg2Bgr);
-        else if (inputFormat == PixelFormat.BayerGB8 || inputFormat == PixelFormat.BayerGB10 || inputFormat == PixelFormat.BayerGB12 || inputFormat == PixelFormat.BayerGB14 || inputFormat == PixelFormat.BayerGB16)
-            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGb2Bgr);
-        else if (inputFormat == PixelFormat.BayerRG8 || inputFormat == PixelFormat.BayerRG10 || inputFormat == PixelFormat.BayerRG12 || inputFormat == PixelFormat.BayerRG14 || inputFormat == PixelFormat.BayerRG16)
-            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerRg2Bgr);
-        else if (PixelFormat.BayerGR8 == inputFormat || inputFormat == PixelFormat.BayerGR10 || inputFormat == PixelFormat.BayerGR12 || inputFormat == PixelFormat.BayerGR14 || inputFormat == PixelFormat.BayerGR16)
-            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGr2Bgr);
+        if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBG)
+            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerBg2Rgb);
+        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGB)
+            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGb2Rgb);
+        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRG)
+            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerRg2Rgb);
+        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGR)
+            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGr2Rgb);
 
         return bgrMat;
     }
@@ -95,13 +96,13 @@ public static class DeBayer
 
         var rgbMat = new Mat(rawMat.Cols, rawMat.Rows, rawMat.Depth, 3);
 
-        if (inputFormat == PixelFormat.BayerBG8 || inputFormat == PixelFormat.BayerBG10 || inputFormat == PixelFormat.BayerBG12 || inputFormat == PixelFormat.BayerBG14 || inputFormat == PixelFormat.BayerBG16)
+        if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBG)
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerBg2Rgb);
-        else if (inputFormat == PixelFormat.BayerGB8 || inputFormat == PixelFormat.BayerGB10 || inputFormat == PixelFormat.BayerGB12 || inputFormat == PixelFormat.BayerGB14 || inputFormat == PixelFormat.BayerGB16)
+        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGB)
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGb2Rgb);
-        else if (inputFormat == PixelFormat.BayerRG8 || inputFormat == PixelFormat.BayerRG10 || inputFormat == PixelFormat.BayerRG12 || inputFormat == PixelFormat.BayerRG14 || inputFormat == PixelFormat.BayerRG16)
+        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRG)
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerRg2Rgb);
-        else if (PixelFormat.BayerGR8 == inputFormat || inputFormat == PixelFormat.BayerGR10 || inputFormat == PixelFormat.BayerGR12 || inputFormat == PixelFormat.BayerGR14 || inputFormat == PixelFormat.BayerGR16)
+        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGR)
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGr2Rgb);
         
         return rgbMat;
@@ -127,7 +128,7 @@ public static class DeBayer
 
         var outputMat = Transform2BGR(rawMat, rawBuffer.PixelFormat);
         var outputFormat = Enum.Parse<PixelFormat>("BGR" + Regex.Match(rawBuffer.PixelFormat.ToString(), @"\d+").Value);
-        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamConverter.GetDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
+        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
 
         return outputBuffer;
     }
@@ -152,7 +153,7 @@ public static class DeBayer
 
         var outputMat = Transform2RGB(rawMat, rawBuffer.PixelFormat);
         var outputFormat = Enum.Parse<PixelFormat>("RGB" + Regex.Match(rawBuffer.PixelFormat.ToString(), @"\d+").Value);
-        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamConverter.GetDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
+        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
 
         return outputBuffer;
     }

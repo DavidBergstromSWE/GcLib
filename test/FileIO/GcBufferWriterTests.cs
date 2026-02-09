@@ -327,7 +327,7 @@ namespace GcLib.UnitTests
                                                             testPattern: TestPattern.GrayHorizontalRamp,
                                                             frameNumber: 42);
 
-            return new GcBuffer(imageData: data, width: 3, height: 3, pixelFormat: PixelFormat.Mono8, pixelDynamicRangeMax: GenICamConverter.GetDynamicRangeMax(PixelFormat.Mono8), frameID: n, timeStamp: (ulong)DateTime.Now.Ticks);
+            return new GcBuffer(imageData: data, width: 3, height: 3, pixelFormat: PixelFormat.Mono8, pixelDynamicRangeMax: GenICamPixelFormatHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), frameID: n, timeStamp: (ulong)DateTime.Now.Ticks);
         }
 
         #endregion

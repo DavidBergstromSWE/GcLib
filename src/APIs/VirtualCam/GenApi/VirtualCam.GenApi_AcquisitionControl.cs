@@ -187,7 +187,7 @@ public sealed partial class VirtualCam
                                 width: (uint)Width,
                                 height: (uint)Height,
                                 pixelFormat: (PixelFormat)PixelFormat.IntValue,
-                                pixelDynamicRangeMax: GenICamConverter.GetDynamicRangeMax((PixelFormat)PixelFormat.IntValue),
+                                pixelDynamicRangeMax: GenICamPixelFormatHelper.GetPixelDynamicRangeMax((PixelFormat)PixelFormat.IntValue),
                                 frameID: _frameCounter,
                                 timeStamp: (ulong)TimeStamp.Value);
         }

@@ -184,7 +184,11 @@ public enum PixelSize
     /// <summary>
     /// 64 bits per pixel.
     /// </summary>
-    Bpp64 = 64
+    Bpp64 = 64,
+    /// <summary>
+    /// 96 bits per pixel.
+    /// </summary>
+    Bpp96 = 96
 }
 
 /// <summary>
@@ -355,6 +359,18 @@ public enum BalanceWhiteAuto
     /// White balancing is constantly adjusted by the device.
     /// </summary>
     Continuous
+}
+
+/// <summary>
+/// Type of Bayer color filter applied to an image.
+/// </summary>
+public enum PixelColorFilter
+{
+    None = 0,
+    BayerRG,
+    BayerGB,
+    BayerGR,
+    BayerBG
 }
 
 /// <summary>

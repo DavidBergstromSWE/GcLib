@@ -435,7 +435,7 @@ namespace GcLib.UnitTests
 
             GcEnumeration pixelSize = _device.Parameters["PixelSize"] as GcEnumeration;
 
-            Assert.AreEqual(GenICamConverter.GetPixelSize(pixelFormat), (PixelSize)pixelSize.IntValue);
+            Assert.AreEqual(GenICamPixelFormatHelper.GetPixelSize(pixelFormat), (PixelSize)pixelSize.IntValue);
         }
     }
 }

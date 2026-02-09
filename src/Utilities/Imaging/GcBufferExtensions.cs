@@ -57,7 +57,7 @@ public static class GcBufferExtensions
         var unpackedPixelFormat = Enum.Parse<PixelFormat>(packedBuffer.PixelFormat.ToString().Replace("p", string.Empty));
 
         // Bit count per pixel per channel for unpacked pixel format.
-        int unpackedPixelBitCount = (int)GenICamConverter.GetBitsPerPixelPerChannel(unpackedPixelFormat);
+        int unpackedPixelBitCount = (int)GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(unpackedPixelFormat);
 
         // Allocate array for unpacked image data.
         var unpackedImageData = new byte[packedBuffer.Width * packedBuffer.Height * packedBuffer.NumChannels * unpackedPixelBitCount / ByteExtensions.BitsPerByte];
@@ -104,7 +104,7 @@ public static class GcBufferExtensions
             throw new ArgumentException($"Pixel format {unpackedBuffer.PixelFormat} is not supported for packing.");
 
         // Bit count per pixel per channel for packed pixel format.
-        int packedPixelBitCount = (int)GenICamConverter.GetBitsPerPixelPerChannel(packedPixelFormat);
+        int packedPixelBitCount = (int)GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(packedPixelFormat);
 
         // Allocate array for packed image data.
         var packedImageData = new byte[(unpackedBuffer.Width * unpackedBuffer.Height * unpackedBuffer.NumChannels * packedPixelBitCount + 7) / ByteExtensions.BitsPerByte];

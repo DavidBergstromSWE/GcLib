@@ -184,7 +184,7 @@ public sealed partial class VirtualCam
 
             if (parameterName == nameof(PixelFormat))
             {
-                PixelSize.IntValue = (int)GenICamConverter.GetPixelSize((PixelFormat)PixelFormat.IntValue);
+                PixelSize.IntValue = (int)GenICamPixelFormatHelper.GetPixelSize((PixelFormat)PixelFormat.IntValue);
             }
 
             if (parameterName == nameof(DeviceTemperatureSelector))
