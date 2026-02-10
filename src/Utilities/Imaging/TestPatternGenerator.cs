@@ -90,8 +90,8 @@ public static class TestPatternGenerator
 
         byte[] image;
 
-        uint numChannels = GenICamPixelFormatHelper.GetNumChannels(pixelFormat);
-        uint bitDepth = GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat);
+        uint numChannels = GenICamHelper.GetNumChannels(pixelFormat);
+        uint bitDepth = GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat);
 
         if (numChannels == 1) // Monochrome images
         {
@@ -140,7 +140,7 @@ public static class TestPatternGenerator
     private static T[] CreateMono<T>(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0) where T : INumber<T>
     {
         // Maximum pixel value for the specified pixel format.
-        var max = (T)Convert.ChangeType(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), typeof(T));
+        var max = (T)Convert.ChangeType(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), typeof(T));
 
         T[] image = testPattern switch
         {
@@ -172,7 +172,7 @@ public static class TestPatternGenerator
     private static T[] CreateColor<T>(uint width, uint height, PixelFormat pixelFormat, TestPattern testPattern, ulong frameNumber = 0) where T : INumber<T>
     {
         // Maximum pixel value for the specified pixel format.
-        var max = (T)Convert.ChangeType(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), typeof(T));
+        var max = (T)Convert.ChangeType(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), typeof(T));
 
         T[] image = testPattern switch
         {
@@ -647,7 +647,7 @@ public static class TestPatternGenerator
     /// <returns>Input image with centered text.</returns>
     private static T[] DrawCenteredText<T>(T[] image, uint width, uint height, T max, PixelFormat pixelFormat, string text) where T : INumber<T>
     {
-        var mat = new Emgu.CV.Mat((int)height, (int)width, EmguConverter.GetDepthType(pixelFormat), (int)GenICamPixelFormatHelper.GetNumChannels(pixelFormat));
+        var mat = new Emgu.CV.Mat((int)height, (int)width, EmguConverter.GetDepthType(pixelFormat), (int)GenICamHelper.GetNumChannels(pixelFormat));
         mat.SetTo(image);
 
         mat.DrawCenteredText(text, (int)Convert.ChangeType(max, typeof(int)));

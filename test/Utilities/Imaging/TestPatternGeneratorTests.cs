@@ -46,7 +46,7 @@ public class TestPatternGeneratorTests
         var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Black);
 
         // Assert
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
         Assert.IsTrue(bytes.All(b => b == 0));
     }
 
@@ -73,17 +73,17 @@ public class TestPatternGeneratorTests
         var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.White);
 
         // Assert
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
 
-        if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+        if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
         {
             var image = NumericHelper.ToArray<byte>(bytes);
-            Assert.IsTrue(image.All(p => p == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat)));
+            Assert.IsTrue(image.All(p => p == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat)));
         }
         else
         {
             var image = NumericHelper.ToArray<ushort>(bytes);
-            Assert.IsTrue(image.All(p => p == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat)));
+            Assert.IsTrue(image.All(p => p == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat)));
         }
     }
 
@@ -109,18 +109,18 @@ public class TestPatternGeneratorTests
         var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayVerticalRamp);
 
         // Assert
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
 
-        if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+        if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
         {
             var image = NumericHelper.ToArray<byte>(bytes);
-            Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
+            Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
             Assert.AreEqual(0, image.Min());
         }
         else
         {
             var image = NumericHelper.ToArray<ushort>(bytes);
-            Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
+            Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
             Assert.AreEqual(0, image.Min());
         }
     }
@@ -152,7 +152,7 @@ public class TestPatternGeneratorTests
 
             // Assert
             Assert.IsNotNull(newBytes);
-            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
             Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
             oldBytes = newBytes;
@@ -181,18 +181,18 @@ public class TestPatternGeneratorTests
         var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayHorizontalRamp);
 
         // Assert
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
 
-        if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+        if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
         {
             var image = NumericHelper.ToArray<byte>(bytes);
-            Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
+            Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
             Assert.AreEqual(0, image.Min());
         }
         else
         {
             var image = NumericHelper.ToArray<ushort>(bytes);
-            Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
+            Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
             Assert.AreEqual(0, image.Min());
         }
     }
@@ -224,7 +224,7 @@ public class TestPatternGeneratorTests
 
             // Assert
             Assert.IsNotNull(newBytes);
-            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
             Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
             oldBytes = newBytes;
@@ -258,19 +258,19 @@ public class TestPatternGeneratorTests
 
             // Assert
             Assert.IsNotNull(newBytes);
-            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
             Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
-            if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+            if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
             {
                 var image = NumericHelper.ToArray<byte>(newBytes);
-                Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
+                Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
                 Assert.AreEqual(0, image.Min());
             }
             else
             {
                 var image = NumericHelper.ToArray<ushort>(newBytes);
-                Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
+                Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
                 Assert.AreEqual(0, image.Min());
             }
 
@@ -305,19 +305,19 @@ public class TestPatternGeneratorTests
 
             // Assert
             Assert.IsNotNull(newBytes);
-            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
             Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
-            if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+            if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
             {
                 var image = NumericHelper.ToArray<byte>(newBytes);
-                Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
+                Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
                 Assert.AreEqual(0, image.Min());
             }
             else
             {
                 var image = NumericHelper.ToArray<ushort>(newBytes);
-                Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
+                Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max());
                 Assert.AreEqual(0, image.Min());
             }
 
@@ -345,26 +345,26 @@ public class TestPatternGeneratorTests
     {
         var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.FrameCounter);
 
-        for (ulong i = 1; i < GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat) + 1; i++) 
+        for (ulong i = 1; i < GenICamHelper.GetPixelDynamicRangeMax(pixelFormat) + 1; i++) 
         {
             // Act
             var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.FrameCounter, i);
 
             // Assert
             Assert.IsNotNull(newBytes);
-            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+            Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
             Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
-            if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+            if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
             {
                 var image = NumericHelper.ToArray<byte>(newBytes);
-                Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max()); // Frame counter should be white
+                Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max()); // Frame counter should be white
                 Assert.AreEqual(0, image.Min()); // Frame counter background should be black
             }
             else
             {
                 var image = NumericHelper.ToArray<ushort>(newBytes);
-                Assert.AreEqual(GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max()); // Frame counter should be white
+                Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), image.Max()); // Frame counter should be white
                 Assert.AreEqual(0, image.Min()); // Frame counter background should be black
             }
 
@@ -395,7 +395,7 @@ public class TestPatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(bytes);
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
         Assert.IsFalse(bytes.All(p => p == p + 1));
     }
 
@@ -412,19 +412,19 @@ public class TestPatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(bytes);
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
 
-        if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+        if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
         {
             var image = NumericHelper.ToArray<byte>(bytes);
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat))); // R
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat))); // R
             Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == 0));   // G
             Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == 0));   // B
         }
         else
         {
             var image = NumericHelper.ToArray<ushort>(bytes);
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat))); // R
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat))); // R
             Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == 0));   // G
             Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == 0));   // B
         }
@@ -443,21 +443,21 @@ public class TestPatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(bytes);
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
 
-        if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+        if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
         {
             var image = NumericHelper.ToArray<byte>(bytes);
             Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == 0)); // B
             Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == 0));   // G
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat)));   // R
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat)));   // R
         }
         else
         {
             var image = NumericHelper.ToArray<ushort>(bytes);
             Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == 0)); // B
             Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == 0));   // G
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat)));   // R
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat)));   // R
         }
     }
 
@@ -479,20 +479,20 @@ public class TestPatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(bytes);
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
 
-        if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+        if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
         {
             var image = NumericHelper.ToArray<byte>(bytes);
             Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == 0)); // R
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat)));   // G
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat)));   // G
             Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == 0));   // B
         }
         else
         {
             var image = NumericHelper.ToArray<ushort>(bytes);
             Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == 0)); // R
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat)));   // G
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat)));   // G
             Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == 0));   // B
         }
     }
@@ -510,21 +510,21 @@ public class TestPatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(bytes);
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
 
-        if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+        if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
         {
             var image = NumericHelper.ToArray<byte>(bytes);
             Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == 0)); // R
             Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == 0));   // G
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat)));   // B
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat)));   // B
         }
         else
         {
             var image = NumericHelper.ToArray<ushort>(bytes);
             Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == 0)); // R
             Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == 0));   // G
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat)));   // B
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat)));   // B
         }
     }
 
@@ -541,19 +541,19 @@ public class TestPatternGeneratorTests
 
         // Assert
         Assert.IsNotNull(bytes);
-        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8);
+        Assert.AreEqual((uint)bytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
 
-        if (GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
+        if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
         {
             var image = NumericHelper.ToArray<byte>(bytes);
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat))); // B
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat))); // B
             Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == 0));   // G
             Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == 0));   // R
         }
         else
         {
             var image = NumericHelper.ToArray<ushort>(bytes);
-            Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat))); // B
+            Assert.IsTrue(image.Where((b, i) => i % 3 == 0).All(b => b == GenICamHelper.GetPixelDynamicRangeMax(pixelFormat))); // B
             Assert.IsTrue(image.Where((b, i) => i % 3 == 1).All(b => b == 0));   // G
             Assert.IsTrue(image.Where((b, i) => i % 3 == 2).All(b => b == 0));   // R
         }

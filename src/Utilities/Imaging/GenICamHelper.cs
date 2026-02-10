@@ -6,7 +6,7 @@ namespace GcLib.Utilities.Imaging;
 /// <summary>
 /// Utility class for handling the pixel formats defined in GenICam Pixel Format Naming Convention (PFNC).
 /// </summary>
-public static partial class GenICamPixelFormatHelper
+public static partial class GenICamHelper
 {
     /// <summary>
     /// Retrieves the total number of bits of storage needed for a pixel in a specified <paramref name="pixelFormat"/>, summed over all of its channels.

@@ -53,7 +53,7 @@ namespace GcLib.UnitTests
 
             Assert.AreEqual(_pathToValidFile, _reader.FilePath);
             Assert.AreEqual<ulong>(10, _reader.FrameCount);
-            Assert.AreEqual(320 * 240 * GenICamPixelFormatHelper.GetBitsPerPixel(PixelFormat.Mono8) / 8, _reader.PayloadSize);
+            Assert.AreEqual(320 * 240 * GenICamHelper.GetBitsPerPixel(PixelFormat.Mono8) / 8, _reader.PayloadSize);
             Assert.AreEqual<ulong>(768320, _reader.FileSize);
             Assert.AreEqual<ulong>(0, _reader.FrameIndex);
             Assert.AreEqual<double>(0, _reader.FrameRate);

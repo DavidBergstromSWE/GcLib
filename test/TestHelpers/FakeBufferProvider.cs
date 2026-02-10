@@ -58,7 +58,7 @@ namespace GcLib.UnitTests.Utilities
                        width: width,
                        height: height,
                        pixelFormat: pixelFormat,
-                       pixelDynamicRangeMax: GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat),
+                       pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(pixelFormat),
                        frameID: frameID,
                        timeStamp: (ulong)DateTime.Now.Ticks);
         }
@@ -78,7 +78,7 @@ namespace GcLib.UnitTests.Utilities
                        width: width,
                        height: height,
                        pixelFormat: pixelFormat,
-                       pixelDynamicRangeMax: GenICamPixelFormatHelper.GetPixelDynamicRangeMax(pixelFormat),
+                       pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(pixelFormat),
                        frameID: frameID,
                        timeStamp: timeStamp);
         }

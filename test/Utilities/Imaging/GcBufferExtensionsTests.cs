@@ -29,9 +29,9 @@ public class GcBufferExtensionsTests
         // Arrange
         var width = (uint)10;
         var height = (uint)10;
-        var numChannels = GenICamPixelFormatHelper.GetNumChannels(packedFormat);
-        var bitDepth = GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(packedFormat);
-        var pixelDynamicRangeMax = GenICamPixelFormatHelper.GetPixelDynamicRangeMax(packedFormat);
+        var numChannels = GenICamHelper.GetNumChannels(packedFormat);
+        var bitDepth = GenICamHelper.GetBitsPerPixelPerChannel(packedFormat);
+        var pixelDynamicRangeMax = GenICamHelper.GetPixelDynamicRangeMax(packedFormat);
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
 
@@ -72,7 +72,7 @@ public class GcBufferExtensionsTests
         var width = (uint)10;
         var height = (uint)10;
         var packedFormat = PixelFormat.Mono8; // Unsupported packed format
-        var pixelDynamicRangeMax = GenICamPixelFormatHelper.GetPixelDynamicRangeMax(packedFormat);
+        var pixelDynamicRangeMax = GenICamHelper.GetPixelDynamicRangeMax(packedFormat);
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
         var packedImageData = new byte[width * height]; // arbitrary data
@@ -99,18 +99,18 @@ public class GcBufferExtensionsTests
         // Arrange
         var width = (uint)10;
         var height = (uint)10;
-        var numChannels = GenICamPixelFormatHelper.GetNumChannels(unpackedFormat);
-        var pixelDynamicRangeMax = GenICamPixelFormatHelper.GetPixelDynamicRangeMax(unpackedFormat);
+        var numChannels = GenICamHelper.GetNumChannels(unpackedFormat);
+        var pixelDynamicRangeMax = GenICamHelper.GetPixelDynamicRangeMax(unpackedFormat);
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
 
         // Provide a few bytes of unpacked data (zeros). Length is intentionally larger than minima to avoid constructor size checks.
-        var unpackedImageData = new byte[width * height * GenICamPixelFormatHelper.GetBitsPerPixel(unpackedFormat) / 8]; // all zeros
+        var unpackedImageData = new byte[width * height * GenICamHelper.GetBitsPerPixel(unpackedFormat) / 8]; // all zeros
         var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, unpackedFormat, pixelDynamicRangeMax, frameId, timeStamp);
 
         // Pre-compute expected values based on the input unpacked buffer.
         var expectedPackedPixelFormat = Enum.Parse<PixelFormat>(unpackedBuffer.PixelFormat.ToString() + "p");
-        var expectedPackedLength = (int)(width * height * numChannels * (int)GenICamPixelFormatHelper.GetPixelSize(expectedPackedPixelFormat) + 7) / 8;
+        var expectedPackedLength = (int)(width * height * numChannels * (int)GenICamHelper.GetPixelSize(expectedPackedPixelFormat) + 7) / 8;
 
         // Act
         var packedBuffer = GcBufferExtensions.Pack(unpackedBuffer);
@@ -140,7 +140,7 @@ public class GcBufferExtensionsTests
         var width = (uint)10;
         var height = (uint)10;
         var unpackedFormat = PixelFormat.Mono8; // Unsupported unpacked format
-        var pixelDynamicRangeMax = GenICamPixelFormatHelper.GetPixelDynamicRangeMax(unpackedFormat);
+        var pixelDynamicRangeMax = GenICamHelper.GetPixelDynamicRangeMax(unpackedFormat);
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
         var unpackedImageData = new byte[width * height]; // arbitrary data
@@ -157,7 +157,7 @@ public class GcBufferExtensionsTests
     public void UnpackBuffer_PackedBuffer_ReturnsOriginalBuffer(PixelFormat unpackedFormat)
     {
         // Arrange
-        var originalBuffer = new GcBuffer(TestPatternGenerator.CreateImage(10, 10, unpackedFormat, TestPattern.FrameCounter), 10, 10, unpackedFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(unpackedFormat), 42, (ulong)DateTime.Now.Ticks);
+        var originalBuffer = new GcBuffer(TestPatternGenerator.CreateImage(10, 10, unpackedFormat, TestPattern.FrameCounter), 10, 10, unpackedFormat, GenICamHelper.GetPixelDynamicRangeMax(unpackedFormat), 42, (ulong)DateTime.Now.Ticks);
         var packedBuffer = GcBufferExtensions.Pack(originalBuffer);
 
         // Act

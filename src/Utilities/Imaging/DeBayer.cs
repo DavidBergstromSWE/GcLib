@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 
 namespace GcLib.Utilities.Imaging;
 
@@ -51,7 +50,7 @@ public static class DeBayer
     /// <returns>Image containing the image data converted to BGR format.</returns>
     /// <exception cref="ArgumentNullException"></exception>"
     /// <exception cref="ArgumentException">Thrown if <paramref name="inputFormat"/> does not correspond to a recognized Bayer pattern.</exception>
-    public static Mat Transform2BGR(Mat rawMat, PixelFormat inputFormat)
+    public static Mat ToBGR(Mat rawMat, PixelFormat inputFormat)
     {
         ArgumentNullException.ThrowIfNull(rawMat);
 
@@ -63,13 +62,13 @@ public static class DeBayer
 
         var bgrMat = new Mat(rawMat.Cols, rawMat.Rows, rawMat.Depth, 3);
 
-        if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBG)
+        if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBG)
             CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerBg2Rgb);
-        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGB)
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGB)
             CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGb2Rgb);
-        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRG)
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRG)
             CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerRg2Rgb);
-        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGR)
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGR)
             CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGr2Rgb);
 
         return bgrMat;
@@ -84,7 +83,7 @@ public static class DeBayer
     /// <returns>Image containing the image data converted to RGB format.</returns>
     /// <exception cref="ArgumentNullException"></exception>"
     /// <exception cref="ArgumentException">Thrown if <paramref name="inputFormat"/> does not correspond to a recognized Bayer pattern.</exception>
-    public static Mat Transform2RGB(Mat rawMat, PixelFormat inputFormat)
+    public static Mat ToRGB(Mat rawMat, PixelFormat inputFormat)
     {
         ArgumentNullException.ThrowIfNull(rawMat);
 
@@ -96,13 +95,13 @@ public static class DeBayer
 
         var rgbMat = new Mat(rawMat.Cols, rawMat.Rows, rawMat.Depth, 3);
 
-        if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBG)
+        if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBG)
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerBg2Rgb);
-        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGB)
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGB)
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGb2Rgb);
-        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRG)
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRG)
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerRg2Rgb);
-        else if (GenICamPixelFormatHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGR)
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGR)
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGr2Rgb);
         
         return rgbMat;
@@ -116,7 +115,7 @@ public static class DeBayer
     /// <returns>Buffer with image data converted to BGR format.</returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException">Thrown if the pixel format of <paramref name="rawBuffer"/> is not a recognized Bayer pattern.</exception>
-    public static GcBuffer Transform2BGR(GcBuffer rawBuffer)
+    public static GcBuffer ToBGR(GcBuffer rawBuffer)
     {
         ArgumentNullException.ThrowIfNull(rawBuffer);
 
@@ -126,9 +125,9 @@ public static class DeBayer
         var rawMat = new Mat(rows: (int)rawBuffer.Height, cols: (int)rawBuffer.Width, EmguConverter.GetDepthType(rawBuffer.PixelFormat), 1);
         rawMat.SetTo(rawBuffer.ImageData);
 
-        var outputMat = Transform2BGR(rawMat, rawBuffer.PixelFormat);
+        var outputMat = ToBGR(rawMat, rawBuffer.PixelFormat);
         var outputFormat = Enum.Parse<PixelFormat>("BGR" + Regex.Match(rawBuffer.PixelFormat.ToString(), @"\d+").Value);
-        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
+        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamHelper.GetPixelDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
 
         return outputBuffer;
     }
@@ -141,7 +140,7 @@ public static class DeBayer
     /// <returns>Buffer with image data converted to RGB format.</returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException">Thrown if the pixel format of <paramref name="rawBuffer"/> is not a recognized Bayer pattern.</exception>
-    public static GcBuffer Transform2RGB(GcBuffer rawBuffer)
+    public static GcBuffer ToRGB(GcBuffer rawBuffer)
     {
         ArgumentNullException.ThrowIfNull(rawBuffer);
 
@@ -151,9 +150,9 @@ public static class DeBayer
         var rawMat = new Mat(rows: (int)rawBuffer.Height, cols: (int)rawBuffer.Width, EmguConverter.GetDepthType(rawBuffer.PixelFormat), 1);
         rawMat.SetTo(rawBuffer.ImageData);
 
-        var outputMat = Transform2RGB(rawMat, rawBuffer.PixelFormat);
+        var outputMat = ToRGB(rawMat, rawBuffer.PixelFormat);
         var outputFormat = Enum.Parse<PixelFormat>("RGB" + Regex.Match(rawBuffer.PixelFormat.ToString(), @"\d+").Value);
-        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamPixelFormatHelper.GetPixelDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
+        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamHelper.GetPixelDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
 
         return outputBuffer;
     }

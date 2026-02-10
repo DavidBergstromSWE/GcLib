@@ -34,7 +34,7 @@ public static class EmguConverter
     /// <returns>EmguCV depth type.</returns>
     public static DepthType GetDepthType(PixelFormat pixelFormat)
     {
-        return GetDepthType(GenICamPixelFormatHelper.GetPixelSize(pixelFormat));
+        return GetDepthType(GenICamHelper.GetPixelSize(pixelFormat));
     }
 
     /// <summary>

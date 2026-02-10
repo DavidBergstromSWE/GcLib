@@ -37,7 +37,7 @@ public class DeBayerTests
         var rawMat = GetBayerPatternedMat();
 
         // Act
-        var outputMat = DeBayer.Transform2BGR(rawMat, pixelFormat);
+        var outputMat = DeBayer.ToBGR(rawMat, pixelFormat);
 
         // Assert
         Assert.IsNotNull(outputMat);
@@ -58,7 +58,7 @@ public class DeBayerTests
         var unsupportedFormat = PixelFormat.Mono8;
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => DeBayer.Transform2BGR(rawMat, unsupportedFormat));
+        Assert.Throws<ArgumentException>(() => DeBayer.ToBGR(rawMat, unsupportedFormat));
     }
 
     [TestMethod]
@@ -88,7 +88,7 @@ public class DeBayerTests
         var rawMat = GetBayerPatternedMat();
 
         // Act
-        var outputMat = DeBayer.Transform2RGB(rawMat, pixelFormat);
+        var outputMat = DeBayer.ToRGB(rawMat, pixelFormat);
 
         // Assert
         Assert.IsNotNull(outputMat);
@@ -109,7 +109,7 @@ public class DeBayerTests
         var unsupportedFormat = PixelFormat.Mono8;
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => DeBayer.Transform2RGB(rawMat, unsupportedFormat));
+        Assert.Throws<ArgumentException>(() => DeBayer.ToRGB(rawMat, unsupportedFormat));
     }
 
     [TestMethod]
@@ -139,7 +139,7 @@ public class DeBayerTests
         var rawBuffer = GetBayerPatternedBuffer(pixelFormat);
 
         // Act
-        var outputBuffer = DeBayer.Transform2BGR(rawBuffer);
+        var outputBuffer = DeBayer.ToBGR(rawBuffer);
 
         // Assert
         Assert.IsNotNull(outputBuffer);
@@ -160,7 +160,7 @@ public class DeBayerTests
         var buffer = FakeBufferProvider.GetFakeBuffer(10, 10, PixelFormat.Mono8);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => DeBayer.Transform2BGR(buffer));
+        Assert.Throws<ArgumentException>(() => DeBayer.ToBGR(buffer));
     }
 
     [TestMethod]
@@ -190,7 +190,7 @@ public class DeBayerTests
         var rawBuffer = GetBayerPatternedBuffer(pixelFormat);
 
         // Act
-        var outputBuffer = DeBayer.Transform2RGB(rawBuffer);
+        var outputBuffer = DeBayer.ToRGB(rawBuffer);
 
         // Assert
         Assert.IsNotNull(outputBuffer);
@@ -211,7 +211,7 @@ public class DeBayerTests
         var buffer = FakeBufferProvider.GetFakeBuffer(10, 10, PixelFormat.Mono8);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => DeBayer.Transform2RGB(buffer));
+        Assert.Throws<ArgumentException>(() => DeBayer.ToRGB(buffer));
     }
 
     #region Private Methods
@@ -224,7 +224,7 @@ public class DeBayerTests
             8,  9, 10, 11,
            12, 13, 14, 15 ];
 
-        return new GcBuffer(imageData: NumericHelper.ToBytes(imageData), width: 4, height: 4, pixelFormat: bayerFormat, pixelDynamicRangeMax: GenICamPixelFormatHelper.GetPixelDynamicRangeMax(bayerFormat), frameID: 42, timeStamp: (ulong)DateTime.Now.Ticks);
+        return new GcBuffer(imageData: NumericHelper.ToBytes(imageData), width: 4, height: 4, pixelFormat: bayerFormat, pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(bayerFormat), frameID: 42, timeStamp: (ulong)DateTime.Now.Ticks);
     }
 
     private static Mat GetBayerPatternedMat()

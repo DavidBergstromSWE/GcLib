@@ -152,7 +152,7 @@ public sealed class GcBufferReader : IDisposable
         // Retrieve expected buffer and image sizes.
         try
         {
-            _imageBufferSize = GetWidth(imageHeader) * GetHeight(imageHeader) * GenICamPixelFormatHelper.GetBitsPerPixel(GetPixelFormat(imageHeader)) / 8;
+            _imageBufferSize = GetWidth(imageHeader) * GetHeight(imageHeader) * GenICamHelper.GetBitsPerPixel(GetPixelFormat(imageHeader)) / 8;
         }
         catch (Exception)
         {

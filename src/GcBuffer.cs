@@ -119,14 +119,14 @@ public sealed class GcBuffer
         // ToDo: Add check of valid pixel formats? Which ones are supported?
 
         // Validate array size.
-        if (imageData.LongLength < width * height * GenICamPixelFormatHelper.GetBitsPerPixel(pixelFormat) / 8)
+        if (imageData.LongLength < width * height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8)
             throw new ArgumentException($"Allocated image data ({imageData.LongLength} bytes) is too small to fit specified {nameof(width)} ({width}), {nameof(height)} ({height}) and {nameof(pixelFormat)} ({pixelFormat})!");
 
         ImageData = imageData;
         Width = width;
         Height = height;
-        NumChannels = GenICamPixelFormatHelper.GetNumChannels(pixelFormat);
-        BitDepth = GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat);
+        NumChannels = GenICamHelper.GetNumChannels(pixelFormat);
+        BitDepth = GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat);
         PixelFormat = pixelFormat;
         PixelDynamicRangeMax = pixelDynamicRangeMax;
         FrameID = frameID;
@@ -150,11 +150,11 @@ public sealed class GcBuffer
         if (imageMat.IsEmpty)
             throw new ArgumentException($"Image data is empty!");
 
-        if (imageMat.NumberOfChannels != GenICamPixelFormatHelper.GetNumChannels(pixelFormat))
-            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {GenICamPixelFormatHelper.GetNumChannels(pixelFormat)}!");
+        if (imageMat.NumberOfChannels != GenICamHelper.GetNumChannels(pixelFormat))
+            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {GenICamHelper.GetNumChannels(pixelFormat)}!");
 
-        if (EmguConverter.GetBitDepth(imageMat.Depth) > (int)GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat))
-            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Bit depth of image is {EmguConverter.GetBitDepth(imageMat.Depth)} (bits), while pixel format uses {GenICamPixelFormatHelper.GetBitsPerPixelPerChannel(pixelFormat)}!");
+        if (EmguConverter.GetBitDepth(imageMat.Depth) > (int)GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat))
+            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Bit depth of image is {EmguConverter.GetBitDepth(imageMat.Depth)} (bits), while pixel format uses {GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat)}!");
 
         // Allocate new memory for image data.
         ImageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
