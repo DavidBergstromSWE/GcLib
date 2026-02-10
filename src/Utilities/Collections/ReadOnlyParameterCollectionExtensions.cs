@@ -5,7 +5,7 @@ namespace GcLib.Utilities.Collections;
 /// <summary>
 /// Extension/helper methods to <see cref="IReadOnlyParameterCollection"/> interface.
 /// </summary>
-public static class IReadOnlyParameterCollectionExtensions
+public static class ReadOnlyParameterCollectionExtensions
 {
     /// <summary>
     /// Retrieves parameter casted as a <see cref="GcInteger"/> parameter.
