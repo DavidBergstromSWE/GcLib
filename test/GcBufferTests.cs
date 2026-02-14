@@ -551,10 +551,11 @@ namespace GcLib.UnitTests
 
         [TestMethod]
         [DataRow(2, 2)]
-        [DataRow(2, 2)]
         [DataRow(3, 2)]
         [DataRow(2, 3)]
         [DataRow(3, 3)]
+        [DataRow(4, 4)]
+        [DataRow(100, 100)]
         public void GetSize_SizeIsValid(int width, int height)
         {
             // Arrange

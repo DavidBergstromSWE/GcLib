@@ -20,9 +20,7 @@ public sealed partial class VirtualCam
         private GcInteger _height;
         private GcInteger _offsetX;
         private GcInteger _offsetY;
-        private GcEnumeration _binningHorizontalMode;
         private GcInteger _binningHorizontal;
-        private GcEnumeration _binningVerticalMode;
         private GcInteger _binningVertical;
         private GcBoolean _reverseX;
         private GcBoolean _reverseY;
