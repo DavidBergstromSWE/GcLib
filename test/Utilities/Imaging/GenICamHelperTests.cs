@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace GcLib.UnitTests;
 
 [TestClass]
-public class GenICamConverterTests
+public class GenICamHelperTests
 {
     [TestMethod]
     public void GetBitsPerPixel_ReturnsCorrectValues()
