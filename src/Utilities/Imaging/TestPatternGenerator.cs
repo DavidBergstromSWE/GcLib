@@ -647,7 +647,7 @@ public static class TestPatternGenerator
     /// <returns>Input image with centered text.</returns>
     private static T[] DrawCenteredText<T>(T[] image, uint width, uint height, T max, PixelFormat pixelFormat, string text) where T : INumber<T>
     {
-        var mat = new Emgu.CV.Mat((int)height, (int)width, EmguConverter.GetDepthType(pixelFormat), (int)GenICamHelper.GetNumChannels(pixelFormat));
+        var mat = new Emgu.CV.Mat((int)height, (int)width, EmguHelper.GetDepthType(pixelFormat), (int)GenICamHelper.GetNumChannels(pixelFormat));
         mat.SetTo(image);
 
         mat.DrawCenteredText(text, (int)Convert.ChangeType(max, typeof(int)));

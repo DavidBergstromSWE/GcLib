@@ -193,7 +193,7 @@ public sealed partial class VirtualCam
                 {
                     // Load image from directory.
                     var mat = new Mat(_framePaths[(int)_frameCounter], Emgu.CV.CvEnum.ImreadModes.Unchanged);
-                    buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(mat.Depth), _frameCounter++, (ulong)TimeStamp.Value);
+                    buffer = new GcBuffer(mat, (uint)EmguHelper.GetMax(mat.Depth), _frameCounter++, (ulong)TimeStamp.Value);
                 }
                 else
                 {
@@ -217,9 +217,9 @@ public sealed partial class VirtualCam
                 // Apply binning (if selected).
                 if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
                 {
-                    var mat = new Mat((int)Height.Value, (int)Width.Value, EmguConverter.GetDepthType((PixelFormat)PixelFormat.IntValue), (int)GenICamHelper.GetNumChannels((PixelFormat)PixelFormat.IntValue));
+                    var mat = new Mat((int)Height.Value, (int)Width.Value, EmguHelper.GetDepthType((PixelFormat)PixelFormat.IntValue), (int)GenICamHelper.GetNumChannels((PixelFormat)PixelFormat.IntValue));
                     mat.SetTo(imageData);
-                    CvInvoke.BoxFilter(mat, mat, EmguConverter.GetDepthType((PixelFormat)PixelFormat.IntValue), new Size((int)BinningHorizontal.Value, (int)BinningVertical.Value), new Point(-1, -1));
+                    CvInvoke.BoxFilter(mat, mat, EmguHelper.GetDepthType((PixelFormat)PixelFormat.IntValue), new Size((int)BinningHorizontal.Value, (int)BinningVertical.Value), new Point(-1, -1));
                     CvInvoke.Resize(mat, mat, new Size((int)Width.Value / (int)BinningHorizontal.Value, (int)Height.Value / (int)BinningVertical.Value));
                     buffer = new GcBuffer(imageMat: mat,
                                           pixelFormat: (PixelFormat)PixelFormat.IntValue,

@@ -132,7 +132,7 @@ public static class MatExtensions
 
         // Get white and black levels based on image depth.
         var white = grayLevel;
-        var black = EmguConverter.GetMin(mat.Depth);
+        var black = EmguHelper.GetMin(mat.Depth);
 
         // Draw white background rectangle with black border.
         CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x, y: y - size.Height - 2, width: size.Width, height: size.Height + 5), color: new Emgu.CV.Structure.Bgr(white, white, white).MCvScalar, thickness: -1); // White background

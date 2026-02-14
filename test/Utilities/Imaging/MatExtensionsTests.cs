@@ -16,7 +16,7 @@ public class MatExtensionsTests
     public void GetPixel_ForSpecificChannel_ValidatePixelValues(DepthType depthType)
     {
         // Arrange
-        double expected = EmguConverter.GetMax(depthType);
+        double expected = EmguHelper.GetMax(depthType);
         var mat = Mat.Zeros(3, 3, depthType, 3) + expected;
 
         // Act/Assert
@@ -55,7 +55,7 @@ public class MatExtensionsTests
     public void GetPixel_ForAllChannels_ValidatePixelValues(DepthType depthType)
     {
         // Arrange
-        double[] expected = [EmguConverter.GetMax(depthType), EmguConverter.GetMax(depthType), EmguConverter.GetMax(depthType)];
+        double[] expected = [EmguHelper.GetMax(depthType), EmguHelper.GetMax(depthType), EmguHelper.GetMax(depthType)];
         var mat = Mat.Zeros(3, 3, depthType, 3) + expected[0];
 
         // Act/Assert
@@ -116,14 +116,14 @@ public class MatExtensionsTests
         var mat = Mat.Zeros(3, 3, depthType, 3);
 
         // Act
-        mat.SetPixel(0, 0, 0, EmguConverter.GetMax(depthType));
-        mat.SetPixel(1, 2, 1, EmguConverter.GetMax(depthType) - 33);
-        mat.SetPixel(2, 0, 2, EmguConverter.GetMax(depthType) - 42);
+        mat.SetPixel(0, 0, 0, EmguHelper.GetMax(depthType));
+        mat.SetPixel(1, 2, 1, EmguHelper.GetMax(depthType) - 33);
+        mat.SetPixel(2, 0, 2, EmguHelper.GetMax(depthType) - 42);
 
         // Assert
-        Assert.AreEqual(mat.GetPixel(0, 0, 0), EmguConverter.GetMax(depthType));
-        Assert.AreEqual(mat.GetPixel(1, 2, 1), EmguConverter.GetMax(depthType) - 33);
-        Assert.AreEqual(mat.GetPixel(2, 0, 2), EmguConverter.GetMax(depthType) - 42);
+        Assert.AreEqual(mat.GetPixel(0, 0, 0), EmguHelper.GetMax(depthType));
+        Assert.AreEqual(mat.GetPixel(1, 2, 1), EmguHelper.GetMax(depthType) - 33);
+        Assert.AreEqual(mat.GetPixel(2, 0, 2), EmguHelper.GetMax(depthType) - 42);
     }
 
     [TestMethod]
@@ -135,14 +135,14 @@ public class MatExtensionsTests
         var mat = Mat.Zeros(3, 3, depthType, 3);
 
         // Act
-        mat.SetPixel(0, 0, [EmguConverter.GetMax(depthType), EmguConverter.GetMax(depthType) - 1, EmguConverter.GetMax(depthType) - 4]);
-        mat.SetPixel(1, 2, [EmguConverter.GetMax(depthType) - 33, EmguConverter.GetMax(depthType) - 11, EmguConverter.GetMax(depthType) - 67]);
-        mat.SetPixel(2, 0, [EmguConverter.GetMax(depthType) - 42, EmguConverter.GetMax(depthType) - 111, EmguConverter.GetMax(depthType) - 74]);
+        mat.SetPixel(0, 0, [EmguHelper.GetMax(depthType), EmguHelper.GetMax(depthType) - 1, EmguHelper.GetMax(depthType) - 4]);
+        mat.SetPixel(1, 2, [EmguHelper.GetMax(depthType) - 33, EmguHelper.GetMax(depthType) - 11, EmguHelper.GetMax(depthType) - 67]);
+        mat.SetPixel(2, 0, [EmguHelper.GetMax(depthType) - 42, EmguHelper.GetMax(depthType) - 111, EmguHelper.GetMax(depthType) - 74]);
 
         // Assert
-        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(0, 0), [EmguConverter.GetMax(depthType), EmguConverter.GetMax(depthType) - 1, EmguConverter.GetMax(depthType) - 4]));
-        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(1, 2), [EmguConverter.GetMax(depthType) - 33, EmguConverter.GetMax(depthType) - 11, EmguConverter.GetMax(depthType) - 67]));
-        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(2, 0), [EmguConverter.GetMax(depthType) - 42, EmguConverter.GetMax(depthType) - 111, EmguConverter.GetMax(depthType) - 74]));
+        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(0, 0), [EmguHelper.GetMax(depthType), EmguHelper.GetMax(depthType) - 1, EmguHelper.GetMax(depthType) - 4]));
+        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(1, 2), [EmguHelper.GetMax(depthType) - 33, EmguHelper.GetMax(depthType) - 11, EmguHelper.GetMax(depthType) - 67]));
+        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(2, 0), [EmguHelper.GetMax(depthType) - 42, EmguHelper.GetMax(depthType) - 111, EmguHelper.GetMax(depthType) - 74]));
     }
 
     [TestMethod]
@@ -222,7 +222,7 @@ public class MatExtensionsTests
         var newMat = originalMat.Clone();
 
         // Act
-        newMat.DrawCenteredText("Test", (int)EmguConverter.GetMax(depthType));
+        newMat.DrawCenteredText("Test", (int)EmguHelper.GetMax(depthType));
 
         // Assert
         Assert.IsFalse(newMat.Equals(originalMat));

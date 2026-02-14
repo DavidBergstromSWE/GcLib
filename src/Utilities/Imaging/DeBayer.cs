@@ -122,7 +122,7 @@ public static class DeBayer
         if (SupportedBayerFormats.Contains(rawBuffer.PixelFormat) == false)
             throw new ArgumentException($"Pixel format '{rawBuffer.PixelFormat}' is not a recognized Bayer pattern.");
 
-        var rawMat = new Mat(rows: (int)rawBuffer.Height, cols: (int)rawBuffer.Width, EmguConverter.GetDepthType(rawBuffer.PixelFormat), 1);
+        var rawMat = new Mat(rows: (int)rawBuffer.Height, cols: (int)rawBuffer.Width, EmguHelper.GetDepthType(rawBuffer.PixelFormat), 1);
         rawMat.SetTo(rawBuffer.ImageData);
 
         var outputMat = ToBGR(rawMat, rawBuffer.PixelFormat);
@@ -147,7 +147,7 @@ public static class DeBayer
         if (SupportedBayerFormats.Contains(rawBuffer.PixelFormat) == false)
             throw new ArgumentException($"Pixel format '{rawBuffer.PixelFormat}' is not a recognized Bayer pattern.");
 
-        var rawMat = new Mat(rows: (int)rawBuffer.Height, cols: (int)rawBuffer.Width, EmguConverter.GetDepthType(rawBuffer.PixelFormat), 1);
+        var rawMat = new Mat(rows: (int)rawBuffer.Height, cols: (int)rawBuffer.Width, EmguHelper.GetDepthType(rawBuffer.PixelFormat), 1);
         rawMat.SetTo(rawBuffer.ImageData);
 
         var outputMat = ToRGB(rawMat, rawBuffer.PixelFormat);

@@ -93,7 +93,7 @@ namespace GcLib.UnitTests
             var mat = Mat.Eye(3, 3, depthType, channels);
 
             // Act
-            var buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(depthType), 0, 0);
+            var buffer = new GcBuffer(mat, (uint)EmguHelper.GetMax(depthType), 0, 0);
 
             // Assert
             Assert.IsNotNull(buffer);
@@ -111,13 +111,13 @@ namespace GcLib.UnitTests
             var timeStamp = (ulong)DateTime.Now.Ticks;
 
             // Act
-            var buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(depthType), frameID, timeStamp);
+            var buffer = new GcBuffer(mat, (uint)EmguHelper.GetMax(depthType), frameID, timeStamp);
 
             // Assert
             Assert.AreEqual(buffer.Width, (uint)mat.Width);
             Assert.AreEqual(buffer.Height, (uint)mat.Height);
             Assert.AreEqual(buffer.NumChannels, (uint)mat.NumberOfChannels);
-            Assert.AreEqual(buffer.BitDepth, (uint)EmguConverter.GetBitDepth(mat.Depth));
+            Assert.AreEqual(buffer.BitDepth, (uint)EmguHelper.GetBitDepth(mat.Depth));
             Assert.AreEqual(buffer.FrameID, frameID);
             Assert.AreEqual(buffer.TimeStamp, timeStamp);
         }
@@ -131,7 +131,7 @@ namespace GcLib.UnitTests
             mat.CopyTo(matData);
 
             // Act
-            var buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(DepthType.Cv8U), 0, 0);
+            var buffer = new GcBuffer(mat, (uint)EmguHelper.GetMax(DepthType.Cv8U), 0, 0);
             mat.SetTo(new MCvScalar(42));
 
             // Assert
@@ -162,7 +162,7 @@ namespace GcLib.UnitTests
             var mat = Mat.Eye(3, 3, depthType, 1);
 
             // Act
-            Assert.Throws<NotSupportedException>(() => new GcBuffer(mat, (uint)EmguConverter.GetMax(depthType), 42, (ulong)DateTime.Now.Ticks));
+            Assert.Throws<NotSupportedException>(() => new GcBuffer(mat, (uint)EmguHelper.GetMax(depthType), 42, (ulong)DateTime.Now.Ticks));
         }
 
         [TestMethod]
@@ -235,7 +235,7 @@ namespace GcLib.UnitTests
             Assert.AreEqual(width, mat.Width);
             Assert.AreEqual(height, mat.Height);
             Assert.AreEqual(buffer.NumChannels, (uint)mat.NumberOfChannels);
-            Assert.AreEqual(EmguConverter.GetDepthType(pixelFormat), mat.Depth);
+            Assert.AreEqual(EmguHelper.GetDepthType(pixelFormat), mat.Depth);
         }
 
         [TestMethod]

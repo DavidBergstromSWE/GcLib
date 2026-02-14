@@ -326,7 +326,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         }
 
         // Normalize (to 8 bits).
-        if (EmguConverter.GetBitDepth(mat.Depth) > 8)
+        if (EmguHelper.GetBitDepth(mat.Depth) > 8)
             CvInvoke.Normalize(src: mat, dst: mat, alpha: 0, beta: 255, normType: NormType.MinMax, dType: DepthType.Cv8U);
 
         // Adjust brightness.
@@ -341,7 +341,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
             CvInvoke.Flip(mat, mat, FlipType.Vertical);
 
         // Instantiate new output buffer (allocates new memory!).
-        var output = new GcBuffer(mat, mat.NumberOfChannels == 3? PixelFormat.BGR8 : PixelFormat.Mono8, (uint)EmguConverter.GetMax(mat.Depth), buffer.FrameID, buffer.TimeStamp);
+        var output = new GcBuffer(mat, mat.NumberOfChannels == 3? PixelFormat.BGR8 : PixelFormat.Mono8, (uint)EmguHelper.GetMax(mat.Depth), buffer.FrameID, buffer.TimeStamp);
 
         // Dipose mat.
         mat.Dispose();

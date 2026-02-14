@@ -153,8 +153,8 @@ public sealed class GcBuffer
         if (imageMat.NumberOfChannels != GenICamHelper.GetNumChannels(pixelFormat))
             throw new ArgumentException($"Mat image is incompatible with requested pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {GenICamHelper.GetNumChannels(pixelFormat)}!");
 
-        if (EmguConverter.GetBitDepth(imageMat.Depth) > (int)GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat))
-            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Bit depth of image is {EmguConverter.GetBitDepth(imageMat.Depth)} (bits), while pixel format uses {GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat)}!");
+        if (EmguHelper.GetBitDepth(imageMat.Depth) > (int)GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat))
+            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Bit depth of image is {EmguHelper.GetBitDepth(imageMat.Depth)} (bits), while pixel format uses {GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat)}!");
 
         // Allocate new memory for image data.
         ImageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
@@ -165,7 +165,7 @@ public sealed class GcBuffer
         Width = (uint)imageMat.Width;
         Height = (uint)imageMat.Height;
         NumChannels = (uint)imageMat.NumberOfChannels;
-        BitDepth = (uint)EmguConverter.GetBitDepth(imageMat.Depth);
+        BitDepth = (uint)EmguHelper.GetBitDepth(imageMat.Depth);
         PixelFormat = pixelFormat;
         PixelDynamicRangeMax = pixelDynamicRangeMax;
         FrameID = frameID;
@@ -188,7 +188,7 @@ public sealed class GcBuffer
     /// <exception cref="ArgumentException"></exception>
     public GcBuffer(Mat imageMat, uint pixelDynamicRangeMax, long frameID, ulong timeStamp)
     {
-        if (EmguConverter.GetPixelFormat(imageMat.Depth, imageMat.NumberOfChannels) == PixelFormat.InvalidPixelFormat)
+        if (EmguHelper.GetPixelFormat(imageMat.Depth, imageMat.NumberOfChannels) == PixelFormat.InvalidPixelFormat)
             throw new NotSupportedException($"Pixel format is not supported!");
 
         if (imageMat.IsEmpty)
@@ -203,8 +203,8 @@ public sealed class GcBuffer
         Width = (uint)imageMat.Width;
         Height = (uint)imageMat.Height;
         NumChannels = (uint)imageMat.NumberOfChannels;
-        BitDepth = (uint)EmguConverter.GetBitDepth(imageMat.Depth);
-        PixelFormat = EmguConverter.GetPixelFormat(imageMat.Depth, imageMat.NumberOfChannels);
+        BitDepth = (uint)EmguHelper.GetBitDepth(imageMat.Depth);
+        PixelFormat = EmguHelper.GetPixelFormat(imageMat.Depth, imageMat.NumberOfChannels);
         PixelDynamicRangeMax = pixelDynamicRangeMax;
         FrameID = frameID;
         TimeStamp = timeStamp;
@@ -250,7 +250,7 @@ public sealed class GcBuffer
     /// <returns><see cref="Mat"/> image.</returns>
     public Mat ToMat()
     {
-        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguConverter.GetDepthType((PixelSize)BitDepth), (int)NumChannels);
+        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType((PixelSize)BitDepth), (int)NumChannels);
         mat.SetTo(ImageData);
         return mat;
 

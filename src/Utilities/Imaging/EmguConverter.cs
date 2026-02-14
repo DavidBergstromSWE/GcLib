@@ -5,9 +5,9 @@ using GcLib.Utilities.Numbers;
 namespace GcLib.Utilities.Imaging;
 
 /// <summary>
-/// Utility class for converting between EmguCV depth types and GenICam pixel sizes and formats.
+/// Utility class for <see cref="Emgu.CV"/> library (.NET wrapper for OpenCV).
 /// </summary>
-public static class EmguConverter
+public static class EmguHelper
 {
     /// <summary>
     /// Converts GenICam pixel size to EmguCV depth type.
