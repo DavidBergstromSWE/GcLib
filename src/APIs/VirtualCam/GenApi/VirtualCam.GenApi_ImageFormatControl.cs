@@ -90,25 +90,11 @@ public sealed partial class VirtualCam
         public GcInteger OffsetY => _offsetY;
 
         /// <summary>
-        /// Mode to use to combine horizontal pixels when <see cref="BinningHorizontal"/> is used.
-        /// </summary>
-        [Category("ImageFormatControl")]
-        [DefaultValue(GcLib.BinningHorizontalMode.Average)]
-        public GcEnumeration BinningHorizontalMode => _binningHorizontalMode;
-
-        /// <summary>
         /// Number of horizontal pixels to combine together.
         /// </summary>
         [Category("ImageFormatControl")]
         [DefaultValue(1)]
         public GcInteger BinningHorizontal => _binningHorizontal;
-
-        /// <summary>
-        /// Mode to use to combine vertical pixels when <see cref="BinningVertical"/> is used.
-        /// </summary>
-        [Category("ImageFormatControl")]
-        [DefaultValue(GcLib.BinningVerticalMode.Average)]
-        public GcEnumeration BinningVerticalMode => _binningVerticalMode;
 
         /// <summary>
         /// Number of vertical pixels to combine together.

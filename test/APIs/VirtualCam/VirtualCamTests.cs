@@ -386,42 +386,6 @@ namespace GcLib.UnitTests
         }
 
         [TestMethod]
-        [DataRow(1)]
-        [DataRow(2)]
-        [DataRow(4)]
-        public void SetBinningHorizontal_ValidateDependentParameters(int binningHorizontal)
-        {
-            _device = new VirtualCam();
-            _device.Parameters.SetParameterValue("BinningHorizontal", binningHorizontal.ToString());
-
-            GcInteger width = _device.Parameters["Width"] as GcInteger;
-            GcInteger widthMax = _device.Parameters["WidthMax"] as GcInteger;
-            GcInteger offsetX = _device.Parameters["OffsetX"] as GcInteger;
-
-            Assert.AreEqual<long>(320 / binningHorizontal, width);
-            Assert.AreEqual<long>(640 / binningHorizontal, widthMax);
-            Assert.AreEqual(widthMax - width, offsetX.Max);
-        }
-
-        [TestMethod]
-        [DataRow(1)]
-        [DataRow(2)]
-        [DataRow(4)]
-        public void SetBinningVertical_ValidateDependentParameters(int binningVertical)
-        {
-            _device = new VirtualCam();
-            _device.Parameters.SetParameterValue("BinningVertical", binningVertical.ToString());
-
-            GcInteger height = _device.Parameters["Height"] as GcInteger;
-            GcInteger heightMax = _device.Parameters["HeightMax"] as GcInteger;
-            GcInteger offsetY = _device.Parameters["OffsetY"] as GcInteger;
-
-            Assert.AreEqual<long>(240 / binningVertical, height);
-            Assert.AreEqual<long>(480 / binningVertical, heightMax);
-            Assert.AreEqual(heightMax - height, offsetY.Max);
-        }
-
-        [TestMethod]
         [DataRow(PixelFormat.Mono8)]
         [DataRow(PixelFormat.Mono10)]
         [DataRow(PixelFormat.Mono12)]

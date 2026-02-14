@@ -216,14 +216,6 @@ public sealed partial class VirtualCam
                 unit: "",
                 selectingParameters: [nameof(Height)]);
 
-            _binningHorizontalMode = new GcEnumeration(
-                name: nameof(BinningHorizontalMode),
-                category: GetCategory(nameof(BinningHorizontalMode)),
-                description: $"Sets the mode to use to combine horizontal photo-sensitive cells together when {nameof(BinningHorizontal)} is used",
-                enumEntry: GcLib.BinningHorizontalMode.Average,
-                enumType: typeof(BinningHorizontalMode),
-                visibility: GcVisibility.Expert);
-
             _binningHorizontal = new GcInteger(
                 name: nameof(BinningHorizontal),
                 category: GetCategory(nameof(BinningHorizontal)),
@@ -236,16 +228,7 @@ public sealed partial class VirtualCam
                 unit: "",
                 listOfValidValue: [1, 2, 4],
                 visibility: GcVisibility.Expert,
-                isSelector: true,
-                selectedParameters: [nameof(WidthMax), nameof(Width), nameof(OffsetX)]);
-
-            _binningVerticalMode = new GcEnumeration(
-                name: nameof(BinningVerticalMode),
-                category: GetCategory(nameof(BinningVerticalMode)),
-                description: $"Sets the mode to use to combine vertical photo-sensitive cells together when {nameof(BinningVertical)} is used",
-                enumEntry: GcLib.BinningVerticalMode.Average,
-                enumType: typeof(BinningVerticalMode),
-                visibility: GcVisibility.Expert);
+                isSelector: true);
 
             _binningVertical = new GcInteger(
                 name: nameof(BinningVertical),
@@ -259,8 +242,7 @@ public sealed partial class VirtualCam
                 unit: "",
                 listOfValidValue: [1, 2, 4],
                 visibility: GcVisibility.Expert,
-                isSelector: true,
-                selectedParameters: [nameof(HeightMax), nameof(Height), nameof(OffsetY)]);
+                isSelector: true);
 
             _reverseX = new GcBoolean(nameof(ReverseX)); // not implemented
 

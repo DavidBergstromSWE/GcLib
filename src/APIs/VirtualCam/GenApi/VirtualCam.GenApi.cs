@@ -136,52 +136,6 @@ public sealed partial class VirtualCam
                 OffsetY.ImposeMax(HeightMax - Height);
             }
 
-            if (parameterName == nameof(BinningHorizontal))
-            {
-                var previousBinning = SensorWidth / WidthMax;
-                var previousWidth = Width;
-                var previousOffsetX = OffsetX;
-
-                WidthMax.Value = SensorWidth / BinningHorizontal;
-                if (previousBinning / BinningHorizontal < 1) // binning down
-                {
-                    Width.Value = previousWidth * previousBinning / BinningHorizontal;
-                    Width.ImposeMax(WidthMax);
-                    OffsetX.Value = previousOffsetX * previousBinning / BinningHorizontal;
-                    OffsetX.ImposeMax(WidthMax - Width);
-                }
-                else // binning up
-                {
-                    Width.ImposeMax(WidthMax);
-                    Width.Value = previousWidth * previousBinning / BinningHorizontal;
-                    OffsetX.ImposeMax(WidthMax - Width);
-                    OffsetX.Value = previousOffsetX * previousBinning / BinningHorizontal;
-                }
-            }
-
-            if (parameterName == nameof(BinningVertical))
-            {
-                var previousBinning = SensorHeight / HeightMax;
-                var previousHeight = Height;
-                var previousOffsetY = OffsetY;
-
-                HeightMax.Value = SensorHeight / BinningVertical;
-                if (previousBinning / BinningVertical < 1) // binning down
-                {
-                    Height.Value = previousHeight * previousBinning / BinningVertical;
-                    Height.ImposeMax(HeightMax);
-                    OffsetY.Value = previousOffsetY * previousBinning / BinningVertical;
-                    OffsetY.ImposeMax(HeightMax - Height);
-                }
-                else // binning up
-                {
-                    Height.ImposeMax(HeightMax);
-                    Height.Value = previousHeight * previousBinning / BinningVertical;
-                    OffsetY.ImposeMax(HeightMax - Height);
-                    OffsetY.Value = previousOffsetY * previousBinning / BinningVertical;
-                }
-            }
-
             if (parameterName == nameof(PixelFormat))
             {
                 PixelSize.IntValue = (int)GenICamHelper.GetPixelSize((PixelFormat)PixelFormat.IntValue);

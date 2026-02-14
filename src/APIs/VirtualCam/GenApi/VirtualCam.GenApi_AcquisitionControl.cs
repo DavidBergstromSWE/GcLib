@@ -1,8 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Timers;
+using Emgu.CV;
+using Emgu.CV.Stitching;
 using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 
@@ -133,7 +137,7 @@ public sealed partial class VirtualCam
                     {
                         System.Threading.Tasks.Task.Run(async () =>
                         {
-                            await System.Threading.Tasks.Task.Delay((int)AcquisitionTimeToFailure);
+                            await System.Threading.Tasks.Task.Delay((int)AcquisitionTimeToFailure.Value);
                             if (AcquisitionFailureEvent.IntValue == (int)AcquisitionFailureEventType.ConnectionLost)
                                 _virtualCam.OnConnectionLost();
                             else
@@ -177,22 +181,6 @@ public sealed partial class VirtualCam
         #region Private methods
 
         /// <summary>
-        /// Converts image byte array to <see cref="GcBuffer"/>.
-        /// </summary>
-        /// <param name="buffer">Image buffer as byte array.</param>
-        /// <returns><see cref="GcBuffer"/> with image and chunkdata.</returns>
-        private GcBuffer ToGcBuffer(byte[] buffer)
-        {
-            return new GcBuffer(imageData: buffer,
-                                width: (uint)Width,
-                                height: (uint)Height,
-                                pixelFormat: (PixelFormat)PixelFormat.IntValue,
-                                pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax((PixelFormat)PixelFormat.IntValue),
-                                frameID: _frameCounter,
-                                timeStamp: (ulong)TimeStamp.Value);
-        }
-
-        /// <summary>
         /// Event-handling method to Elapsed events in Timer object. Generates images and signals new buffer events.
         /// </summary>
         private void OnTimerElapsed(object sender, ElapsedEventArgs e)
@@ -204,7 +192,7 @@ public sealed partial class VirtualCam
                 if (_frameCounter <= _framePaths.Count - 1)
                 {
                     // Load image from directory.
-                    var mat = new Emgu.CV.Mat(_framePaths[(int)_frameCounter], Emgu.CV.CvEnum.ImreadModes.Unchanged);
+                    var mat = new Mat(_framePaths[(int)_frameCounter], Emgu.CV.CvEnum.ImreadModes.Unchanged);
                     buffer = new GcBuffer(mat, (uint)EmguConverter.GetMax(mat.Depth), _frameCounter++, (ulong)TimeStamp.Value);
                 }
                 else
@@ -219,12 +207,33 @@ public sealed partial class VirtualCam
             }
             else
             {
-                // Generate image with width, height, pixel format and test pattern according to set properties.
-                buffer = ToGcBuffer(TestPatternGenerator.CreateImage(width: (uint)Width,
-                                                                      height: (uint)Height,
-                                                                      pixelFormat: (PixelFormat)PixelFormat.IntValue,
-                                                                      testPattern: (TestPattern)TestPattern.IntValue,
-                                                                      frameNumber: _frameCounter++));
+                // Create image data using test pattern generator.
+                var imageData = TestPatternGenerator.CreateImage(width: (uint)Width.Value,
+                                                                 height: (uint)Height.Value,
+                                                                 pixelFormat: (PixelFormat)PixelFormat.IntValue,
+                                                                 testPattern: (TestPattern)TestPattern.IntValue,
+                                                                 frameNumber: _frameCounter++);
+
+                // Apply binning (if selected).
+                if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
+                {
+                    var mat = new Mat((int)Height.Value, (int)Width.Value, EmguConverter.GetDepthType((PixelFormat)PixelFormat.IntValue), (int)GenICamHelper.GetNumChannels((PixelFormat)PixelFormat.IntValue));
+                    mat.SetTo(imageData);
+                    CvInvoke.BoxFilter(mat, mat, EmguConverter.GetDepthType((PixelFormat)PixelFormat.IntValue), new Size((int)BinningHorizontal.Value, (int)BinningVertical.Value), new Point(-1, -1));
+                    CvInvoke.Resize(mat, mat, new Size((int)Width.Value / (int)BinningHorizontal.Value, (int)Height.Value / (int)BinningVertical.Value));
+                    buffer = new GcBuffer(imageMat: mat,
+                                          pixelFormat: (PixelFormat)PixelFormat.IntValue,
+                                          pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax((PixelFormat)PixelFormat.IntValue),
+                                          frameID: _frameCounter,
+                                          timeStamp: (ulong)TimeStamp.Value);
+                }
+                else buffer = new GcBuffer(imageData: imageData,
+                                           width: (uint)Width.Value,
+                                           height: (uint)Height.Value,
+                                           pixelFormat: (PixelFormat)PixelFormat.IntValue,
+                                           pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax((PixelFormat)PixelFormat.IntValue),
+                                           frameID: _frameCounter,
+                                           timeStamp: (ulong)TimeStamp.Value);
             }
 
             // Raise new buffer event.
