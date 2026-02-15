@@ -4,11 +4,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GcLib.UnitTests;
 
-
-/// <summary>
-/// Tests for BufferConverter.UnpackBuffer.
-/// Focuses on supported/unsupported pixel format handling and basic unpacking behavior for packed buffers.
-/// </summary>
 [TestClass]
 public class GcBufferExtensionsTests
 {
@@ -45,7 +40,7 @@ public class GcBufferExtensionsTests
         var expectedUnpackedLength = (int)(width * height * numChannels * ((bitDepth + 7) / 8));
 
         // Act
-        var unpackedBuffer = GcBufferExtensions.Unpack(packedBuffer);
+        var unpackedBuffer = packedBuffer.Unpack();
 
         // Assert
         Assert.IsNotNull(unpackedBuffer);
@@ -79,7 +74,7 @@ public class GcBufferExtensionsTests
         var packedBuffer = new GcBuffer(packedImageData, width, height, packedFormat, pixelDynamicRangeMax, frameId, timeStamp);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => GcBufferExtensions.Unpack(packedBuffer));
+        Assert.Throws<ArgumentException>(() => packedBuffer.Unpack());
     }
 
     [TestMethod]
@@ -113,7 +108,7 @@ public class GcBufferExtensionsTests
         var expectedPackedLength = (int)(width * height * numChannels * (int)GenICamHelper.GetPixelSize(expectedPackedPixelFormat) + 7) / 8;
 
         // Act
-        var packedBuffer = GcBufferExtensions.Pack(unpackedBuffer);
+        var packedBuffer = unpackedBuffer.Pack();
 
         // Assert
         Assert.IsNotNull(packedBuffer, "Returned GcBuffer should not be null.");
@@ -147,7 +142,7 @@ public class GcBufferExtensionsTests
         var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, unpackedFormat, pixelDynamicRangeMax, frameId, timeStamp);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => GcBufferExtensions.Pack(unpackedBuffer));
+        Assert.Throws<ArgumentException>(() => unpackedBuffer.Pack());
     }
 
     [TestMethod]
@@ -158,10 +153,10 @@ public class GcBufferExtensionsTests
     {
         // Arrange
         var originalBuffer = new GcBuffer(TestPatternGenerator.CreateImage(10, 10, unpackedFormat, TestPattern.FrameCounter), 10, 10, unpackedFormat, GenICamHelper.GetPixelDynamicRangeMax(unpackedFormat), 42, (ulong)DateTime.Now.Ticks);
-        var packedBuffer = GcBufferExtensions.Pack(originalBuffer);
+        var packedBuffer = originalBuffer.Pack();
 
         // Act
-        var unpackedBuffer = GcBufferExtensions.Unpack(packedBuffer);
+        var unpackedBuffer = packedBuffer.Unpack();
 
         // Assert
         Assert.AreEqual(originalBuffer.PixelFormat, unpackedBuffer.PixelFormat);

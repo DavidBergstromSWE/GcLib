@@ -6,25 +6,24 @@ namespace GcLib.Utilities.Imaging;
 /// <summary>
 /// Color converter class, containing methods for converting between different color representations.
 /// </summary>
-public static class ColorConverter
+public static partial class ColorConverter
 {
     /// <summary>
-    /// Converts HSL color representation to RGB color representation (based on <see href="https://geekymonkey.com/Programming/CSharp/RGB2HSL_HSL2RGB.htm"/>).
+    /// Converts <see cref="HSL"/> color representation to RGB color representation (based on <see href="https://geekymonkey.com/Programming/CSharp/RGB2HSL_HSL2RGB.htm"/>).
     /// </summary>
-    /// <param name="hue">Hue (0-1).</param>
-    /// <param name="sat">Saturation (0-1).</param>
-    /// <param name="lum">Luminosity (0-1).</param>
+    /// <param name="color">Color representation with hue, saturation and lightness components.</param>
     /// <returns>Color (RGB struct) in range of 0-255.</returns>
-    public static Color HSL2RGB(double hue, double sat, double lum)
+    public static Color HSL2RGB(HSL color)
     {
         double v;
-        double r, g, b;
+        double r, g, b; // RGB components
+        double h = color.H;
 
-        r = lum;   // default to gray
-        g = lum;
-        b = lum;
+        r = color.L;   // default to gray
+        g = color.L;
+        b = color.L;
 
-        v = (lum <= 0.5) ? (lum * (1.0 + sat)) : (lum + sat - lum * sat);
+        v = (color.L <= 0.5) ? (color.L * (1.0 + color.S)) : (color.L + color.S - color.L * color.S);
         if (v > 0)
         {
             double m;
@@ -32,11 +31,11 @@ public static class ColorConverter
             int sextant;
             double fract, vsf, mid1, mid2;
 
-            m = lum + lum - v;
+            m = color.L + color.L - v;
             sv = (v - m) / v;
-            hue *= 6.0;
-            sextant = (int)hue;
-            fract = hue - sextant;
+            h *= 6.0;
+            sextant = (int)h;
+            fract = h - sextant;
             vsf = v * sv * fract;
             mid1 = m + vsf;
             mid2 = v - vsf;
@@ -85,14 +84,17 @@ public static class ColorConverter
     }
 
     /// <summary>
-    /// Converts RGB color representation to HSL color representation (based on <see href="https://geekymonkey.com/Programming/CSharp/RGB2HSL_HSL2RGB.htm"/>).
+    /// Converts RGB color representation to <see cref="HSL"/> color representation (based on <see href="https://geekymonkey.com/Programming/CSharp/RGB2HSL_HSL2RGB.htm"/>).
     /// </summary>
     /// <param name="rgb">Color (RGB Struct) in range of 0-255.</param>
-    /// <param name="hue">Hue (0-1).</param>
-    /// <param name="sat">Saturation (0-1).</param>
-    /// <param name="lum">Luminosity (0-1).</param>
-    public static void RGB2HSL(Color rgb, out double hue, out double sat, out double lum)
+    /// <returns>Color representation with hue, saturation and lightness components.</returns>
+    public static HSL RGB2HSL(Color rgb)
     {
+        // HSL components.
+        double h = 0;
+        double s = 0;
+        double l = 0;
+
         double r = rgb.R / 255.0;
         double g = rgb.G / 255.0;
         double b = rgb.B / 255.0;
@@ -101,33 +103,32 @@ public static class ColorConverter
         double vm;
         double r2, g2, b2;
 
-        hue = 0; // default to black
-        sat = 0;
-
         v = Math.Max(r, g);
         v = Math.Max(v, b);
         m = Math.Min(r, g);
         m = Math.Min(m, b);
-        lum = (m + v) / 2.0;
+        l = (m + v) / 2.0;
 
-        if (lum <= 0.0)
-            return;
+        if (l <= 0.0)
+            return new HSL(h,s,l);
 
         vm = v - m;
-        sat = vm;
-        if (sat > 0.0)
-            sat /= (lum <= 0.5) ? (v + m) : (2.0 - v - m);
+        s = vm;
+        if (s > 0.0)
+            s /= (l <= 0.5) ? (v + m) : (2.0 - v - m);
         else
-            return;
+            return new HSL(h,s,l);
 
         r2 = (v - r) / vm;
         g2 = (v - g) / vm;
         b2 = (v - b) / vm;
         if (r == v)
-            hue = (g == m ? 5.0 + b2 : 1.0 - g2);
+            h = (g == m ? 5.0 + b2 : 1.0 - g2);
         else if (g == v)
-            hue = (b == m ? 1.0 + r2 : 3.0 - b2);
-        else hue = (r == m ? 3.0 + g2 : 5.0 - r2);
-        hue /= 6.0;
+            h = (b == m ? 1.0 + r2 : 3.0 - b2);
+        else h = (r == m ? 3.0 + g2 : 5.0 - r2);
+        h /= 6.0;
+
+        return new HSL(h, s, l);
     }
 }

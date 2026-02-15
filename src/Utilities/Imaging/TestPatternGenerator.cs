@@ -622,17 +622,20 @@ public static class TestPatternGenerator
     /// <returns>Array of colors (of size <paramref name="pixels"/>).</returns>
     private static Color[] GetRainbowColorRange(uint pixels)
     {
-        Color[] colors = new Color[pixels];
+        Color[] colorRGBs = new Color[pixels];
 
-        //build range of rainbow colors
-        double i = 0;
+        double h = 0;
+        double s = 1;
+        double l = 0.5;
+
+        // Build range of rainbow colors.
         for (int j = 0; j < pixels; j++)
         {
-            colors[j] = ColorConverter.HSL2RGB(i, 1, 0.5);
-            i += 1.0 / pixels;
+            colorRGBs[j] = ColorConverter.HSL2RGB(new HSL(h,s,l));
+            h += 1.0 / pixels;
         }
 
-        return colors;
+        return colorRGBs;
     }
 
     /// <summary>
