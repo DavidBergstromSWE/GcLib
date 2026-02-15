@@ -207,7 +207,7 @@ public static partial class GenICamHelper
             case PixelFormat.BayerBG10p:
             case PixelFormat.BayerBG12p:
             case PixelFormat.BayerBG14p:
-                return PixelColorFilter.BayerBG;
+                return PixelColorFilter.BayerBGGR;
             case PixelFormat.BayerGB8:
             case PixelFormat.BayerGB10:
             case PixelFormat.BayerGB12:
@@ -217,7 +217,7 @@ public static partial class GenICamHelper
             case PixelFormat.BayerGB10p:
             case PixelFormat.BayerGB12p:
             case PixelFormat.BayerGB14p:
-                return PixelColorFilter.BayerGB;
+                return PixelColorFilter.BayerGBRG;
             case PixelFormat.BayerGR8:
             case PixelFormat.BayerGR10:
             case PixelFormat.BayerGR12:
@@ -227,7 +227,7 @@ public static partial class GenICamHelper
             case PixelFormat.BayerGR10p:
             case PixelFormat.BayerGR12p:
             case PixelFormat.BayerGR14p:
-                return PixelColorFilter.BayerGR;
+                return PixelColorFilter.BayerGRBG;
             case PixelFormat.BayerRG8:
             case PixelFormat.BayerRG10:
             case PixelFormat.BayerRG12:
@@ -237,7 +237,7 @@ public static partial class GenICamHelper
             case PixelFormat.BayerRG10p:
             case PixelFormat.BayerRG12p:
             case PixelFormat.BayerRG14p:
-                return PixelColorFilter.BayerRG;
+                return PixelColorFilter.BayerRGGB;
             default:
                 return PixelColorFilter.None;
         }

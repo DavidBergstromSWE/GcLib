@@ -367,10 +367,10 @@ public enum BalanceWhiteAuto
 public enum PixelColorFilter
 {
     None = 0,
-    BayerRG,
-    BayerGB,
-    BayerGR,
-    BayerBG
+    BayerRGGB,
+    BayerGBRG,
+    BayerGRBG,
+    BayerBGGR
 }
 
 /// <summary>

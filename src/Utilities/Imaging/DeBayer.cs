@@ -62,14 +62,14 @@ public static class DeBayer
 
         var bgrMat = new Mat(rawMat.Cols, rawMat.Rows, rawMat.Depth, 3);
 
-        if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBG)
-            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerBg2Rgb);
-        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGB)
-            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGb2Rgb);
-        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRG)
-            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerRg2Rgb);
-        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGR)
-            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGr2Rgb);
+        if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBGGR)
+            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerBggr2Bgr);
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGBRG)
+            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGbrg2Bgr);
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRGGB)
+            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerRggb2Bgr);
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGRBG)
+            CvInvoke.CvtColor(src: rawMat, dst: bgrMat, code: ColorConversion.BayerGrbg2Bgr);
 
         return bgrMat;
     }
@@ -95,14 +95,14 @@ public static class DeBayer
 
         var rgbMat = new Mat(rawMat.Cols, rawMat.Rows, rawMat.Depth, 3);
 
-        if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBG)
-            CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerBg2Rgb);
-        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGB)
-            CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGb2Rgb);
-        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRG)
-            CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerRg2Rgb);
-        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGR)
-            CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGr2Rgb);
+        if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerBGGR)
+            CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerBggr2Rgb);
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGBRG)
+            CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGbrg2Rgb);
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerRGGB)
+            CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerRggb2Rgb);
+        else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGRBG)
+            CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGrbg2Rgb);
         
         return rgbMat;
     }
