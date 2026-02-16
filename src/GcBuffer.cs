@@ -253,13 +253,6 @@ public sealed class GcBuffer
         var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType((PixelSize)BitDepth), (int)NumChannels);
         mat.SetTo(ImageData);
         return mat;
-
-        // Alternative (probably same as above):
-        //System.Runtime.InteropServices.GCHandle pinnedArray = System.Runtime.InteropServices.GCHandle.Alloc(ImageData, System.Runtime.InteropServices.GCHandleType.Pinned);
-        //nint pointer = pinnedArray.AddrOfPinnedObject();
-        //Mat mat = new Mat(rows: (int)Height, cols: (int)Width, EmguConverter.GetDepthType((PixelSize)BitDepth), (int)NumChannels, data: pointer, step: (int)Width * (int)BitDepth * (int)NumChannels / 8);
-        //pinnedArray.Free();
-        //return mat;
     }
 
     /// <summary>
