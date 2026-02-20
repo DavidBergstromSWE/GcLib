@@ -8,12 +8,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using GcLib;
 using ImagerViewer.Models;
 using ImagerViewer.Utilities.Dialogs;
 using ImagerViewer.Utilities.IO;
 using ImagerViewer.Utilities.Messages;
 using ImagerViewer.Utilities.Services;
-using GcLib;
 using MahApps.Metro.Controls.Dialogs;
 using Serilog;
 
@@ -120,7 +120,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// </summary>
     public string ConfigurationFilePath
     {
-        get => _configurationFilePath; 
+        get => _configurationFilePath;
         set => SetProperty(ref _configurationFilePath, value);
     }
 
@@ -251,7 +251,7 @@ internal sealed class DeviceViewModel : ObservableRecipient
             controller.SetIndeterminate();
             controller.Canceled += (s, e) => { _cancellationTokenSource.Cancel(); };
         }
-        
+
         Log.Debug("Loading configuration from {fileName}...", filePath);
 
         try

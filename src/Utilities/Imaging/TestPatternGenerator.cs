@@ -119,7 +119,7 @@ public static class TestPatternGenerator
                 return image;
             }
         }
-        
+
         throw new NotImplementedException("PixelFormat not implemented!");
     }
 
@@ -374,7 +374,7 @@ public static class TestPatternGenerator
 
         var colorOrder = pixelFormat.ToString()[..3];
 
-        T color1 = colorOrder.Equals("RGB")? (T)Convert.ChangeType(color.R / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T)) : (T)Convert.ChangeType(color.B / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
+        T color1 = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.R / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T)) : (T)Convert.ChangeType(color.B / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
         T color2 = (T)Convert.ChangeType(color.G / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
         T color3 = colorOrder.Equals("RGB") ? (T)Convert.ChangeType(color.B / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T)) : (T)Convert.ChangeType(color.R / (double)byte.MaxValue * (double)Convert.ChangeType(max, typeof(double)), typeof(T));
 
@@ -572,7 +572,7 @@ public static class TestPatternGenerator
     {
         var image = new T[width * height * 3];
 
-        int lineRow = (int)Math.Round((height + (double)frameNumber) % height); 
+        int lineRow = (int)Math.Round((height + (double)frameNumber) % height);
 
         // build image array
         for (int j = 0; j < width * 3; j += 3)
@@ -631,7 +631,7 @@ public static class TestPatternGenerator
         // Build range of rainbow colors.
         for (int j = 0; j < pixels; j++)
         {
-            colorRGBs[j] = ColorConverter.HSL2RGB(new HSL(h,s,l));
+            colorRGBs[j] = ColorConverter.HSL2RGB(new HSL(h, s, l));
             h += 1.0 / pixels;
         }
 

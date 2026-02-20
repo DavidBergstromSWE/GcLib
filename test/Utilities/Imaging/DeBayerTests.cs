@@ -272,8 +272,8 @@ public class DeBayerTests
             var imageData = GetBayerPatternedImageData(GenICamHelper.GetPixelColorFilter(pixelFormat), r, g, b);
             return new GcBuffer(imageData: imageData, width: 4, height: 4, pixelFormat: pixelFormat, pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), frameID: 42, timeStamp: (ulong)DateTime.Now.Ticks);
         }
-        else 
-        { 
+        else
+        {
             var imageData = GetBayerPatternedImageData<ushort>(GenICamHelper.GetPixelColorFilter(pixelFormat), r, g, b);
             return new GcBuffer(imageData: NumericHelper.ToBytes(imageData), width: 4, height: 4, pixelFormat: pixelFormat, pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), frameID: 42, timeStamp: (ulong)DateTime.Now.Ticks);
         }
@@ -292,7 +292,7 @@ public class DeBayerTests
     private static Mat GetBayerPatternedMat(PixelColorFilter pixelColorFilter, byte r, byte g, byte b)
     {
         byte[] imageData = GetBayerPatternedImageData(pixelColorFilter, r, g, b);
-        
+
         var mat = new Mat(4, 4, Emgu.CV.CvEnum.DepthType.Cv8U, 1);
         mat.SetTo(imageData);
         return mat;

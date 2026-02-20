@@ -1,7 +1,7 @@
-﻿using SpinnakerNET.GenApi;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SpinnakerNET.GenApi;
 
 namespace GcLib;
 

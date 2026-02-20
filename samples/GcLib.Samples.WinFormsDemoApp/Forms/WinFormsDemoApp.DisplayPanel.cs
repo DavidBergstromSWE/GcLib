@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 using GcLib;
 
 namespace WinFormsDemoApp;
@@ -26,6 +25,7 @@ public partial class WinFormsDemoApp : Form
         else
         {
             DisplayControl.DisplayImage(buffer);
-        };
+        }
+        ;
     }
 }

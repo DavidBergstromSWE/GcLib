@@ -156,7 +156,7 @@ public sealed class GcInteger : GcParameter
 
         Name = name;
         Category = category;
-        Description = description;           
+        Description = description;
         IsReadable = isReadable;
         IsWritable = isWritable;
         Visibility = visibility;
@@ -168,7 +168,7 @@ public sealed class GcInteger : GcParameter
 
         Min = min;
         Max = max;
-        
+
         Increment = increment;
         IncrementMode = incrementMode;
         if (incrementMode == EIncMode.listIncrement)
@@ -181,8 +181,8 @@ public sealed class GcInteger : GcParameter
 
             ListOfValidValue = listOfValidValue ?? [];
         }
-            
-        
+
+
         Value = value;
     }
 

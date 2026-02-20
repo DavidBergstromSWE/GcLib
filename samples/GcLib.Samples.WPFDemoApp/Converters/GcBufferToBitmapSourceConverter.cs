@@ -2,8 +2,8 @@
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
-using ImagerViewer.Utilities.Imaging;
 using GcLib;
+using ImagerViewer.Utilities.Imaging;
 
 namespace ImagerViewer.Converters;
 
@@ -17,7 +17,7 @@ internal sealed class GcBufferToBitmapSourceConverter : IValueConverter, IMultiV
     {
         if (value is GcBuffer buffer)
             return BitmapSourceExtensions.ToBitmapSource(buffer);
-        
+
         return null;
     }
 

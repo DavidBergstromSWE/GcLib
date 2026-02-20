@@ -346,7 +346,7 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
                 var barPlot = plot.Add.Bars(positions: xs, values: ys);
                 foreach (var bar in barPlot.Bars)
                 {
-                    bar.Size = xs[2]-xs[1];
+                    bar.Size = xs[2] - xs[1];
                     bar.LineWidth = 0;
                     bar.FillStyle.Color = plotColor;
                     bar.FillStyle.AntiAlias = false;

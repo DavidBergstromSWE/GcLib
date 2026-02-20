@@ -6,11 +6,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using GcLib;
 using ImagerViewer.Models;
 using ImagerViewer.Utilities.Dialogs;
 using ImagerViewer.Utilities.Messages;
 using ImagerViewer.Utilities.Services;
-using GcLib;
 using MahApps.Metro.Controls.Dialogs;
 using Serilog;
 using Serilog.Events;
@@ -431,7 +431,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         Messenger.Register<PropertyChangedMessage<bool>, string>(this, "Busy", BusyHandler);
 
         // Register as recipient for messages requesting active acquisitions to stop.
-        Messenger.Register<StopAcquisitionAsyncRequestMessage>(this, (r, m) => 
+        Messenger.Register<StopAcquisitionAsyncRequestMessage>(this, (r, m) =>
         {
             // Stop acquisition.
             if (IsBusy)

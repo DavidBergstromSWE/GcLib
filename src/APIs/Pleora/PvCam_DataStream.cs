@@ -230,7 +230,7 @@ public sealed partial class PvCam
     {
         // Allocate new byte array to hold image data.
         byte[] byteArray = new byte[buffer.Image.RequiredSize];
-        
+
         // Copy image data to byte array.
         Marshal.Copy((nint)buffer.Image.DataPointer, byteArray, 0, byteArray.Length);
 

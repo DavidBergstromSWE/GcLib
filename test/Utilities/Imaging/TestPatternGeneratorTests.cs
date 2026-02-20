@@ -345,7 +345,7 @@ public class TestPatternGeneratorTests
     {
         var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.FrameCounter);
 
-        for (ulong i = 1; i < GenICamHelper.GetPixelDynamicRangeMax(pixelFormat) + 1; i++) 
+        for (ulong i = 1; i < GenICamHelper.GetPixelDynamicRangeMax(pixelFormat) + 1; i++)
         {
             // Act
             var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.FrameCounter, i);
@@ -405,7 +405,7 @@ public class TestPatternGeneratorTests
     [DataRow(PixelFormat.RGB12)]
     [DataRow(PixelFormat.RGB14)]
     [DataRow(PixelFormat.RGB16)]
-    public void CreateImage_Red_RGB_ColorOrderIsRGB(PixelFormat pixelFormat) 
+    public void CreateImage_Red_RGB_ColorOrderIsRGB(PixelFormat pixelFormat)
     {
         // Act
         var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Red);
@@ -506,7 +506,7 @@ public class TestPatternGeneratorTests
     public void CreateImage_Blue_RGB_ColorOrderIsRGB(PixelFormat pixelFormat)
     {
         // Act
-        var bytes= TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Blue);
+        var bytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.Blue);
 
         // Assert
         Assert.IsNotNull(bytes);

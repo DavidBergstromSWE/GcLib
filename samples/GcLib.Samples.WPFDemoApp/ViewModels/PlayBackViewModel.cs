@@ -10,11 +10,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using GcLib;
 using ImagerViewer.Models;
 using ImagerViewer.Utilities.Dialogs;
 using ImagerViewer.Utilities.Messages;
 using ImagerViewer.Utilities.Services;
-using GcLib;
 using MahApps.Metro.Controls.Dialogs;
 using Serilog;
 
@@ -99,7 +99,7 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
             if (SetProperty(ref _isPlaying, value))
             {
                 // Start playback.
-                if (IsPlaying) 
+                if (IsPlaying)
                 {
                     // Register to playback timer event.
                     _playbackTimer.Elapsed += OnTimerElapsed;
@@ -118,7 +118,7 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
                     // Stop playback timer.
                     _playbackTimer.Stop();
 
-                   Log.Information("Playback stopped");
+                    Log.Information("Playback stopped");
                 }
             }
         }
@@ -328,7 +328,7 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
 
                 // Load recorded image sequence from dropped file.
                 await LoadSequenceFromFileAsync(files[0]);
-            }                
+            }
         }
     }
 

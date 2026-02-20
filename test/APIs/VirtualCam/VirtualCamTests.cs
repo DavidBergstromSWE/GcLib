@@ -1,7 +1,7 @@
-﻿using GcLib.Utilities.Imaging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using GcLib.Utilities.Imaging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GcLib.UnitTests
 {
@@ -48,7 +48,7 @@ namespace GcLib.UnitTests
             Assert.IsGreaterThan<uint>(0, _device.PayloadSize);
             Assert.IsNotEmpty(_device.Parameters);
             Assert.IsGreaterThan<uint>(0, _device.BufferCapacity);
-            Assert.IsFalse(_device.IsAcquiring);         
+            Assert.IsFalse(_device.IsAcquiring);
             Assert.IsNotNull(_device.DeviceInfo);
             Assert.IsTrue(_device.DeviceInfo.IsOpen);
             Assert.IsFalse(_device.DeviceInfo.IsAccessible);

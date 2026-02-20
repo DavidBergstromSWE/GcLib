@@ -103,7 +103,7 @@ public static class DeBayer
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerRggb2Rgb);
         else if (GenICamHelper.GetPixelColorFilter(inputFormat) == PixelColorFilter.BayerGRBG)
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGrbg2Rgb);
-        
+
         return rgbMat;
     }
 

@@ -203,7 +203,7 @@ internal sealed class MetroWindowService : WindowService, IMetroWindowService
             InitialDirectory = defaultPath,
             Multiselect = false,
         };
-    
+
         return folderDialog.ShowDialog() == true ? folderDialog.FolderName : string.Empty;
     }
 

@@ -2,10 +2,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using ImagerViewer.UserControls;
-using ImagerViewer.Utilities.Messages;
 using GcLib;
 using GcLib.Utilities.Imaging;
+using ImagerViewer.UserControls;
+using ImagerViewer.Utilities.Messages;
 
 namespace ImagerViewer.ViewModels;
 
@@ -50,7 +50,8 @@ internal sealed class HistogramViewModel : ObservableRecipient
     public bool IsEnabled
     {
         get => _isEnabled;
-        set {
+        set
+        {
             if (SetProperty(ref _isEnabled, value))
                 UpdateHistogram();
         }
@@ -101,7 +102,8 @@ internal sealed class HistogramViewModel : ObservableRecipient
     public bool ShowGrid
     {
         get => _showGrid;
-        set {
+        set
+        {
             if (SetProperty(ref _showGrid, value))
                 UpdateHistogram();
         }
@@ -220,7 +222,7 @@ internal sealed class HistogramViewModel : ObservableRecipient
             IsEnabled = !message.NewValue;
 
             // Disable reception of image updates.
-            if (message.NewValue) 
+            if (message.NewValue)
                 Messenger.Unregister<ImagesUpdatedMessage>(this);
         }
 

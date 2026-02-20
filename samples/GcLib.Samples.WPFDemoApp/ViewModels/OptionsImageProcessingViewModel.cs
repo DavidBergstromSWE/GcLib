@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-
-namespace ImagerViewer.ViewModels;
+﻿namespace ImagerViewer.ViewModels;
 
 /// <summary>
 /// View model for handling image processing related options.

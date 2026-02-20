@@ -39,7 +39,7 @@ public sealed class GcString : GcParameter
                     throw new InvalidOperationException($"{Name} is not implemented!");
 
                 if (value.Length > MaxLength)
-                    throw new ArgumentOutOfRangeException(Name, value.Length, $"String is too long! Length must be <= { MaxLength }.");
+                    throw new ArgumentOutOfRangeException(Name, value.Length, $"String is too long! Length must be <= {MaxLength}.");
 
                 _value = value;
                 OnPropertyChanged();

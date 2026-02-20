@@ -505,7 +505,7 @@ public partial class ImageViewer : UserControl, INotifyPropertyChanged
         {
             _lastDragPoint = mousePos;
 
-            Mouse.OverrideCursor = Cursors.Hand;           
+            Mouse.OverrideCursor = Cursors.Hand;
             _ = Mouse.Capture(image);
 
             e.Handled = true;
@@ -530,7 +530,7 @@ public partial class ImageViewer : UserControl, INotifyPropertyChanged
             // Reset mouse settings.
             image.ReleaseMouseCapture();
             Mouse.OverrideCursor = Cursors.Cross;
-            
+
             e.Handled = true;
         }
     }
@@ -637,14 +637,14 @@ public partial class ImageViewer : UserControl, INotifyPropertyChanged
             var width = SelectionBoxWidth;
             var height = SelectionBoxHeight;
 
-            if (height > 0 && width > 0) 
+            if (height > 0 && width > 0)
             {
                 // Get center position of selection box in Image control coordinates.
                 var centerPos = GetImagePosition(selectionBox, new Point(width / 2, height / 2));
 
                 // Calculate new scale.
                 var deltaZoom = Math.Min(scrollViewer.ViewportHeight / height, scrollViewer.ViewportWidth / width);
-                
+
                 // Stretch image to new scale.
                 Stretch = Stretch.None;
                 image.Stretch = Stretch.None;
@@ -675,7 +675,7 @@ public partial class ImageViewer : UserControl, INotifyPropertyChanged
             _lastMousePositionOnTarget = null;
 
             // Reset mouse settings.
-            image.ReleaseMouseCapture();     
+            image.ReleaseMouseCapture();
             Mouse.OverrideCursor = Cursors.Cross;
 
             // Raise view changed event.
@@ -767,7 +767,7 @@ public partial class ImageViewer : UserControl, INotifyPropertyChanged
         scrollViewer.UpdateLayout();
 
         var newCenter = scrollViewer.TranslatePoint(scrollViewerCenter, image);
-        
+
         // Calculate center shift.
         double dXInTargetPixels = newCenter.X - oldCenter.X;
         double dYInTargetPixels = newCenter.Y - oldCenter.Y;

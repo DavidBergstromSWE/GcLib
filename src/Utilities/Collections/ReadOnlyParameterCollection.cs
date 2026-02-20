@@ -26,8 +26,8 @@ public sealed class ReadOnlyParameterCollection(string collectionName, IEnumerab
 
     /// <inheritdoc/>
     public IReadOnlyList<GcParameter> ToList()
-    { 
-        return _parameters; 
+    {
+        return _parameters;
     }
 
     /// <inheritdoc/>
@@ -123,7 +123,7 @@ public sealed class ReadOnlyParameterCollection(string collectionName, IEnumerab
     }
 
     /// <inheritdoc/>
-    public void Update() 
+    public void Update()
     {
         return;
     }

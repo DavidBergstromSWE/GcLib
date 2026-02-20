@@ -16,7 +16,7 @@ public static class ByteExtensions
     /// <remarks>This enumeration is commonly used in data serialization and network communication to indicate
     /// the endianness of data. Big-endian format stores the most significant byte at the smallest memory address, while
     /// little-endian format stores the least significant byte first.</remarks>
-    public enum Endianness 
+    public enum Endianness
     {
         /// <summary>
         /// LSB (least significant byte) first.
@@ -34,8 +34,8 @@ public static class ByteExtensions
     /// <remarks>Use this enumeration to indicate whether the least significant bit (Lsb0) or the most
     /// significant bit (Msb0) is considered bit zero. The choice of bit numbering affects how binary data is read,
     /// written, or displayed in various applications, such as image processing or communication protocols.</remarks>
-    public enum BitNumbering 
-    { 
+    public enum BitNumbering
+    {
         /// <summary>
         /// Represents the least significant bit (lsb) position in a binary value, where the rightmost bit is considered bit zero.
         /// </summary>

@@ -190,7 +190,7 @@ public partial class PcoCam
                 LibWrapper.CloseCamera(_cameraHandle);
             }
             catch (PcoException) { }
-            finally 
+            finally
             {
                 // Reset camera handle.
                 _cameraHandle = nint.Zero;
@@ -271,7 +271,7 @@ public partial class PcoCam
                     // Log warning.
                     if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
                         GcLibrary.Logger.LogWarning("Camera warning: {Warning}", warningMessage);
-                    
+
                     // display warning? throw exception?
                 }
 

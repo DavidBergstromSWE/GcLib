@@ -67,7 +67,7 @@ public sealed class GcBufferWriter : IDisposable
     /// </list>
     /// </para> 
     /// </summary>
-    public static readonly uint ImageHeaderSize =   sizeof(long) // Frame ID
+    public static readonly uint ImageHeaderSize = sizeof(long) // Frame ID
                                                   + sizeof(ulong) // Timestamp
                                                   + sizeof(uint) // Width
                                                   + sizeof(uint) // Height
@@ -262,7 +262,7 @@ public sealed class GcBufferWriter : IDisposable
 
         // Stop recording thread.
         _recordingThreadStoppingCondition = true;
-        
+
         // Stop thread immediately (without waiting for next buffer).
         _ = _waitHandle.Set();
 
@@ -295,7 +295,7 @@ public sealed class GcBufferWriter : IDisposable
         while (_recordingThreadStoppingCondition == false)
         {
             // Block thread until buffer has been queued.  
-            if (_bufferQueue.IsEmpty) 
+            if (_bufferQueue.IsEmpty)
                 _ = _waitHandle.WaitOne();
 
             // Retrieve buffer from queue and write to file.
@@ -319,7 +319,7 @@ public sealed class GcBufferWriter : IDisposable
                     OnWritingAborted(ex.Message, ex);
                     break;
                 }
-                
+
                 BuffersWritten++;
             }
         }
@@ -394,7 +394,7 @@ public sealed class GcBufferWriter : IDisposable
         Buffer.BlockCopy(BitConverter.GetBytes(buffer.PixelDynamicRangeMax), 0, imageData, 28, 4); // dynamic range        
 
         // Copy image data.
-        Buffer.BlockCopy(buffer.ImageData, 0, imageData, (int)ImageHeaderSize, buffer.ImageData.Length);        
+        Buffer.BlockCopy(buffer.ImageData, 0, imageData, (int)ImageHeaderSize, buffer.ImageData.Length);
 
         return imageData;
     }
@@ -410,7 +410,7 @@ public sealed class GcBufferWriter : IDisposable
         if (byteArray != null)
         {
             _fileStream.Write(buffer: byteArray, offset: 0, count: byteArray.Length);
-           return byteArray.Length;
+            return byteArray.Length;
         }
         else return 0;
     }

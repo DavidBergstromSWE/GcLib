@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
+using GcLib;
 using ImagerViewer.Utilities.Dialogs;
 using ImagerViewer.Utilities.Services;
-using GcLib;
 using MahApps.Metro.Controls.Dialogs;
 
 namespace ImagerViewer.ViewModels;

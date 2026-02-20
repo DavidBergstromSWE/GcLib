@@ -4,13 +4,13 @@ using System.Windows;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Emgu.CV;
+using GcLib;
 using ImagerViewer.Models;
 using ImagerViewer.Utilities.IO;
 using ImagerViewer.Utilities.Logging;
 using ImagerViewer.Utilities.Services;
 using ImagerViewer.Utilities.Themes;
 using ImagerViewer.ViewModels;
-using GcLib;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -54,11 +54,11 @@ public partial class App : Application
         // Start logging.
         IsLoggingEnabled = true;
 
-        Log.Information("{App} started (v{version})", MainWindowViewModel.Title, MainWindowViewModel.MajorMinorVersion); 
+        Log.Information("{App} started (v{version})", MainWindowViewModel.Title, MainWindowViewModel.MajorMinorVersion);
 
         // Configure services for dependency injection.
         Ioc.Default.ConfigureServices(
-            new ServiceCollection()          
+            new ServiceCollection()
             .AddTransient<IDispatcherService, DispatcherService>()
             .AddTransient<IThemeService, ThemeService>()
             .AddScoped<IMetroWindowService, MetroWindowService>()

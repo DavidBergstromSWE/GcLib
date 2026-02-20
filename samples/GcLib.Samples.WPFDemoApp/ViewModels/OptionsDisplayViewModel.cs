@@ -1,5 +1,4 @@
 ﻿using System.Windows.Media;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ImagerViewer.ViewModels;
 

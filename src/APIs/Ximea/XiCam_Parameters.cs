@@ -434,7 +434,7 @@ public sealed partial class XiCam
     protected override GcInteger GetInteger(string parameterName)
     {
         if (Parameters[parameterName] is GcInteger gcInteger)
-        {                
+        {
             // Retrieve current value from camera using API.
             string xiApiParameter = _xiApiParameterList[parameterName];
             long integerValue = _xiCam.GetParamInt(xiApiParameter);

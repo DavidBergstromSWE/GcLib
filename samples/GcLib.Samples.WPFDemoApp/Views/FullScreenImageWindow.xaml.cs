@@ -68,7 +68,7 @@ public partial class FullScreenImageWindow : MetroWindow
         };
 
         // Add all input bindings from parent window.
-        foreach  (InputBinding binding in InputBindings)
+        foreach (InputBinding binding in InputBindings)
             window.InputBindings.Add(binding);
 
         // Show window.

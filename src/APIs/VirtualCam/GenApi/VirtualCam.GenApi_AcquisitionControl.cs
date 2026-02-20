@@ -1,12 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Timers;
 using Emgu.CV;
-using Emgu.CV.Stitching;
 using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 

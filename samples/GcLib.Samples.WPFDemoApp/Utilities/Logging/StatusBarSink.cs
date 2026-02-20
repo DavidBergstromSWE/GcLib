@@ -41,6 +41,6 @@ internal class StatusBarSink(IMessenger messenger, LogEventLevel minimumLevel, I
 
             // Send log event message to status bar.
             _messenger.Send(new StatusBarLogMessage(message, logEvent.Level));
-        }   
+        }
     }
 }

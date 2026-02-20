@@ -166,7 +166,7 @@ public abstract class GcParameter : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsReadable));
         }
 
-        if (isWritable != IsWritable) 
+        if (isWritable != IsWritable)
         {
             IsWritable = isWritable;
             OnPropertyChanged(nameof(IsWritable));

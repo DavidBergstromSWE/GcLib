@@ -104,7 +104,7 @@ namespace GcLib.UnitTests
             _system.UpdateDeviceList();
 
             // Act
-            var devices= _system.GetDeviceList();
+            var devices = _system.GetDeviceList();
 
             // Assert
             Assert.IsNotEmpty(devices);

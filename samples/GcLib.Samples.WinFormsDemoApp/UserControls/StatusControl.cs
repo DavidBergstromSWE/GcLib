@@ -1,8 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 using GcLib;
 using GcLib.Utilities.Threading;
-using System.ComponentModel;
 
 namespace WinFormsDemoApp;
 

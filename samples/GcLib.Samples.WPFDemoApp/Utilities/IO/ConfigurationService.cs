@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
+using GcLib;
 using ImagerViewer.Models;
 using ImagerViewer.ViewModels;
-using GcLib;
 using Serilog;
 
 namespace ImagerViewer.Utilities.IO;
@@ -97,7 +97,7 @@ internal sealed class ConfigurationService : IConfigurationService
             if (_device.IsConnected)
                 await _device.DisconnectDeviceAsync();
 
-                token.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested();
 
             // Connect device.
             await _device.ConnectDeviceAsync(deviceInfo, _deviceProvider);
@@ -123,15 +123,15 @@ internal sealed class ConfigurationService : IConfigurationService
             }
 
             // Restore channel processing settings.
-                if (reader.Name == "Processing")
-                {
-                    reader.ReadStartElement("Processing");
-                    _imageProcessing.ReadXml(reader);
+            if (reader.Name == "Processing")
+            {
+                reader.ReadStartElement("Processing");
+                _imageProcessing.ReadXml(reader);
 
-                    reader.ReadEndElement();
+                reader.ReadEndElement();
 
-                    Log.Debug("Processing settings restored");
-                }
+                Log.Debug("Processing settings restored");
+            }
 
             reader.ReadEndElement();
         }
@@ -147,7 +147,7 @@ internal sealed class ConfigurationService : IConfigurationService
         {
             throw;
         }
-        
+
     }
 
     /// <inheritdoc />

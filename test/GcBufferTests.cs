@@ -382,7 +382,7 @@ namespace GcLib.UnitTests
                         var pixelValues = buffer.GetPixel((uint)row, (uint)col);
                         foreach (var pixelValue in pixelValues)
                             Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), pixelValue);
-                    }     
+                    }
         }
 
         [TestMethod]
@@ -480,7 +480,7 @@ namespace GcLib.UnitTests
                         var pixelValues = new double[buffer.NumChannels];
                         for (int i = 0; i < buffer.NumChannels; i++)
                             pixelValues[i] = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
-    
+
                         buffer.SetPixel((uint)row, (uint)col, pixelValues);
                     }
 

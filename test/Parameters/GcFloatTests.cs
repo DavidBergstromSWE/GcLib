@@ -97,7 +97,7 @@ public class GcFloatTests
     public void ImplicitConversion_ExpectedValueIsEqual(double expectedValue, double increment)
     {
         // Arrange
-        var gcFloat= new GcFloat(name: "TestFloat", category: "Test", value: expectedValue, min: 0.0, max: 10.0, increment: increment);
+        var gcFloat = new GcFloat(name: "TestFloat", category: "Test", value: expectedValue, min: 0.0, max: 10.0, increment: increment);
 
         // Act
         double actualValue = gcFloat;
@@ -136,7 +136,7 @@ public class GcFloatTests
     {
         // Arrange
         var gcFloat = GetFloat(min: 0.0, max: 100.0, increment: increment);
-        
+
         // Act
         gcFloat.Value = inputValue;
 
@@ -236,7 +236,7 @@ public class GcFloatTests
                                   min: 0.0,
                                   max: 1000000.0,
                                   displayPrecision: displayPrecision,
-                                  visibility: GcVisibility.Expert);        
+                                  visibility: GcVisibility.Expert);
         var expectedString = Convert.ToString(Math.Round(gcFloat.Value, (int)displayPrecision));
 
         // Act

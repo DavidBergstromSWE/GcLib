@@ -21,34 +21,34 @@ public class RandomizerTests
             // Assert
             Assert.IsInstanceOfType<bool>(value);
         }
-	}
+    }
 
-	[TestMethod]
-	public void NextItem_ReturnsItem()
-	{
+    [TestMethod]
+    public void NextItem_ReturnsItem()
+    {
         var collection = Enum.GetValues<DayOfWeek>();
 
         // Act
         for (int i = 0; i < 100; i++)
-		{
+        {
             // Arrange
             var randomizer = new Randomizer(i);
-            
+
             var item = randomizer.NextItem(collection);
 
             // Assert
             Assert.IsInstanceOfType<DayOfWeek>(item);
         }
-	}
+    }
 
     [TestMethod]
     [DataRow(0, 1)]
     [DataRow(1, 10)]
     [DataRow(-34, 65)]
     public void Next_Int32_WithinLimits_ReturnsInteger(int min, int max)
-	{
-		for (int i = 0; i < 100; i++)
-		{
+    {
+        for (int i = 0; i < 100; i++)
+        {
             // Arrange
             var randomizer = new Randomizer(i);
 

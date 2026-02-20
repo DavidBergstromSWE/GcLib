@@ -123,7 +123,7 @@ public sealed class GcCommand : GcParameter
         return new GcCommand(Name, Category, _executeMethod, IsReadable, IsWritable, Visibility, Description, IsSelector, [.. SelectingParameters], [.. SelectedParameters]);
     }
 
-    
+
 
     #endregion
 }

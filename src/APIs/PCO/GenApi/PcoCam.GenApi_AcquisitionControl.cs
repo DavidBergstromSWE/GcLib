@@ -267,7 +267,7 @@ public partial class PcoCam
                         if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
                             GcLibrary.Logger.LogError("Error: acquisition failed in Device: {ModelName} (ID: {ID})", _pcoCam.DeviceInfo.ModelName, _pcoCam.DeviceInfo.UniqueID);
                     }
-                        
+
                     else
                     {
                         if (GcLibrary.Logger.IsEnabled(LogLevel.Error))

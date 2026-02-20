@@ -7,8 +7,8 @@ using System.Xml.Schema;
 using System.Xml.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using ImagerViewer.Utilities.Messages;
 using GcLib;
+using ImagerViewer.Utilities.Messages;
 using Serilog;
 
 namespace ImagerViewer.Models;

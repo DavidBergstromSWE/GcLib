@@ -65,7 +65,7 @@ public class GcEnumerationTests
         Assert.AreEqual(expectedEntry, gcEnumeration.CurrentEntry);
         Assert.AreEqual(gcEnumeration.StringValue, expectedEntry.ValueString);
         Assert.AreEqual(gcEnumeration.IntValue, expectedEntry.ValueInt);
-        Assert.AreEqual(gcEnumeration.NumericValue, expectedEntry.NumericValue);       
+        Assert.AreEqual(gcEnumeration.NumericValue, expectedEntry.NumericValue);
         Assert.IsTrue(gcEnumeration.IsReadable);
         Assert.IsTrue(gcEnumeration.IsWritable);
         Assert.AreEqual(GcVisibility.Beginner, gcEnumeration.Visibility);

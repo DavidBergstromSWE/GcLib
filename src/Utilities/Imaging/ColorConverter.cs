@@ -110,14 +110,14 @@ public static partial class ColorConverter
         l = (m + v) / 2.0;
 
         if (l <= 0.0)
-            return new HSL(h,s,l);
+            return new HSL(h, s, l);
 
         vm = v - m;
         s = vm;
         if (s > 0.0)
             s /= (l <= 0.5) ? (v + m) : (2.0 - v - m);
         else
-            return new HSL(h,s,l);
+            return new HSL(h, s, l);
 
         r2 = (v - r) / vm;
         g2 = (v - g) / vm;

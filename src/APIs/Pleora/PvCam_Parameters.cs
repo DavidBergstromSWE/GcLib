@@ -182,7 +182,7 @@ public sealed partial class PvCam
             return;
 
         (pvGenParameter as PvGenCommand).Execute();
-        
+
         // _pvDevice.Parameters.ExecuteCommand(parameterName); // alternative
     }
 

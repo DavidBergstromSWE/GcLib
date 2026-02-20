@@ -171,7 +171,7 @@ internal class AcquisitionModel : ObservableObject
             await StopAcquisitionAsync();
 
             Log.Error(ex, "Failed to start acquisition");
-                
+
             throw new InvalidOperationException($"Failed to start acquisition: {ex.Message}");
         }
     }

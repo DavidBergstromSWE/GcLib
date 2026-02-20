@@ -164,7 +164,7 @@ public static partial class GenICamHelper
             case PixelFormat.RGB8_Planar:
             case PixelFormat.RGB10_Planar:
             case PixelFormat.RGB12_Planar:
-            case PixelFormat.RGB16_Planar:           
+            case PixelFormat.RGB16_Planar:
             case PixelFormat.RGB565p:
             case PixelFormat.BGR565p:
                 return 3;

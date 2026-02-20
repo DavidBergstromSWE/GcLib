@@ -64,7 +64,7 @@ public static class MatExtensions
             var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
             return NumericHelper.SpanToDouble(bytes);
         }
-        
+
     }
 
     /// <summary>

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using GcLib;
 using ImagerViewer.Models;
 using ImagerViewer.UserControls;
-using GcLib;
 using ScottPlot;
 using Serilog.Events;
 

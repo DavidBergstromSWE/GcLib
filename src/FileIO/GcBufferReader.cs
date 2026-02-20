@@ -131,7 +131,7 @@ public sealed class GcBufferReader : IDisposable
     {
         // Try to open file.
         _fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
-        
+
         FilePath = filePath;
 
         // Retrieve file size.
@@ -236,7 +236,7 @@ public sealed class GcBufferReader : IDisposable
         // Validate frame count.
         if (FrameCount == 0)
             throw new IOException("File does not contain any frames!");
-        
+
         if (FrameCount != (ulong)_frameIDList.Count)
             throw new IOException("File corrupt?");
 

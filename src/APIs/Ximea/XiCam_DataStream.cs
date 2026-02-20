@@ -213,7 +213,7 @@ public sealed partial class XiCam
                     OnAcquisitionAborted(new AcquisitionAbortedEventArgs($"Acquisition timed out in Device: {DeviceInfo.ModelName} (ID: {DeviceInfo.UniqueID})!", ex));
                     break;
                 }
-            }                  
+            }
         }
 
         if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))

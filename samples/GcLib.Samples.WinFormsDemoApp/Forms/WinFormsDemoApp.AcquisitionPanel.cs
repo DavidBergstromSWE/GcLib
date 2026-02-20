@@ -24,7 +24,7 @@ public partial class WinFormsDemoApp
 
             // Retrieve selected acquisition mode.
             var acquisitionMode = Enum.Parse<AcquisitionMode>(AcquisitionModeComboBox.SelectedItem.ToString(), false);
-            
+
             // Start acquisition on datastream.
             switch (acquisitionMode)
             {
@@ -166,7 +166,8 @@ public partial class WinFormsDemoApp
         else
         {
             SetUIState(UIState.ReadyState);
-        };
+        }
+        ;
     }
 
     /// <summary>

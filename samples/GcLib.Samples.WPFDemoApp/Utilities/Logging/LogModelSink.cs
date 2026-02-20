@@ -1,7 +1,7 @@
-﻿using ImagerViewer.Models;
+﻿using System;
+using ImagerViewer.Models;
 using Serilog.Core;
 using Serilog.Events;
-using System;
 
 namespace ImagerViewer.Utilities.Logging;
 

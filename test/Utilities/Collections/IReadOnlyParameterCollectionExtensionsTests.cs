@@ -1,8 +1,8 @@
-﻿using GcLib.Utilities.Collections;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using GcLib.Utilities.Collections;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GcLib.UnitTests
 {
@@ -290,7 +290,7 @@ namespace GcLib.UnitTests
 
         [TestMethod]
         public void GetEnumValueAsString_IsEnumeration_ReturnsValue()
-        {            
+        {
             // Arrange
             var collection = new ReadOnlyParameterCollection("UnitTestCollection", _mockedParameters);
 

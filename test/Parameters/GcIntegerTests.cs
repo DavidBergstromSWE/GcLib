@@ -401,7 +401,7 @@ public class GcIntegerTests
     public void FromString_IsImplemented_StringIsInteger_ValueAsExpected()
     {
         // Arrange
-        var gcInteger = GetInteger(value: 42, min:0, max: 100);
+        var gcInteger = GetInteger(value: 42, min: 0, max: 100);
         var expectedValue = "33";
 
         // Act
@@ -440,7 +440,7 @@ public class GcIntegerTests
         var gcInteger = new GcInteger("NonImplementedParameter");
 
         // Act/Assert
-        Assert.Throws< InvalidOperationException>(() => gcInteger.FromString("33"));
+        Assert.Throws<InvalidOperationException>(() => gcInteger.FromString("33"));
     }
 
     [TestMethod]

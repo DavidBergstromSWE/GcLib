@@ -18,7 +18,7 @@ public sealed partial class VirtualCam
         private GcEnumeration _testEnumeration;
         private GcBoolean _testBoolean;
         private GcFloat _testFloat;
-        
+
         private GcBoolean _acquisitionFailure;
         private GcEnumeration _acquisitionFailureEvent;
         private GcInteger _acquisitionTimeToFailure;

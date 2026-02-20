@@ -1,13 +1,13 @@
-﻿using Emgu.CV;
+﻿using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.Linq;
+using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.UI;
 using GcLib;
 using GcLib.Utilities.Collections;
-using System;
-using System.Drawing;
-using System.Linq;
-using System.ComponentModel;
 
 namespace WinFormsDemoApp.Controls;
 

@@ -209,7 +209,7 @@ public partial class PcoCam
             catch (PcoException ex)
             {
                 // Read current ROI settings from camera.
-                LibWrapper.GetROI(_cameraHandle, out ushort wRoiX0, out ushort wRoiY0, out ushort wRoiX1, out ushort  wRoiY1);
+                LibWrapper.GetROI(_cameraHandle, out ushort wRoiX0, out ushort wRoiY0, out ushort wRoiX1, out ushort wRoiY1);
 
                 // Revert properties to current camera ROI settings.
                 OffsetX.Value = wRoiX0 - 1;

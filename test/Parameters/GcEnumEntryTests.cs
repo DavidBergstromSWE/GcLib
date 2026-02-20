@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GcLib.UnitTests
 {
@@ -128,7 +127,7 @@ namespace GcLib.UnitTests
             // Arrange
             var gcEnumEntry = new GcEnumEntry("TestEnum0", 0);
             var expectedString = "TestEnum0";
-            
+
             // Act
             var actualString = gcEnumEntry.ToString();
 

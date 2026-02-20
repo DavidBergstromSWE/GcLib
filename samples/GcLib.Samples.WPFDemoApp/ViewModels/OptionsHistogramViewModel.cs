@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using ImagerViewer.UserControls;
+﻿using ImagerViewer.UserControls;
 
 namespace ImagerViewer.ViewModels;
 

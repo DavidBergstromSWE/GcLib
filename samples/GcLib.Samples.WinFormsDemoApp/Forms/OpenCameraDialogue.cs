@@ -61,7 +61,7 @@ public partial class OpenCameraDialogue : Form
     {
         // Update list of available camera devices.
         bool changed = _system.UpdateDeviceList();
-        
+
         // Only necessary to update listbox if device list has changed.
         if (changed == false)
             return;

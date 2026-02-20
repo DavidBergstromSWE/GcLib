@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reflection;
-using GcLib.Utilities.Imaging;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using GcLib.Utilities.Imaging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 namespace GcLib.UnitTests

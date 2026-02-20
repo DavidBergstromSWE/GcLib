@@ -165,7 +165,7 @@ public class ReadOnlyParameterCollectionTests
 
             // Assert
             Assert.AreEqual(expectedValue, actualValue);
-        } 
+        }
     }
 
     [TestMethod]

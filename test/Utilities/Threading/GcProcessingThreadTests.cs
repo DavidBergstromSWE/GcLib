@@ -94,7 +94,7 @@ public class GcProcessingThreadTests
         // Arrange
         GcBuffer expectedBuffer = null;
         _processingThread = new GcProcessingThread();
-        _processingThread.BufferProcess += (sender, buffer) => { expectedBuffer = buffer; };         
+        _processingThread.BufferProcess += (sender, buffer) => { expectedBuffer = buffer; };
         _processingThread.Start(_mockStream.Object);
 
         // Act
@@ -121,7 +121,7 @@ public class GcProcessingThreadTests
         _processingThread.WaitComplete();
 
         // Assert
-        Assert.IsNotNull(expectedBuffer);        
+        Assert.IsNotNull(expectedBuffer);
     }
 
     [TestMethod]
@@ -129,7 +129,7 @@ public class GcProcessingThreadTests
     {
         // Arrange
         int capacity = 2;
-        _processingThread = new GcProcessingThread(bufferCapacity: capacity);          
+        _processingThread = new GcProcessingThread(bufferCapacity: capacity);
         _processingThread.BufferProcess += (sender, buffer) => { Thread.Sleep(5000); };
 
         int eventCounter = 0;
@@ -148,7 +148,7 @@ public class GcProcessingThreadTests
     public void Dispose_ValidateState()
     {
         // Arrange
-        _processingThread = new GcProcessingThread();          
+        _processingThread = new GcProcessingThread();
         _processingThread.Start(_mockStream.Object);
 
         // Act

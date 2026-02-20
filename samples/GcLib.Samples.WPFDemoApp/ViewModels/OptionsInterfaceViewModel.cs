@@ -39,8 +39,8 @@ internal sealed class OptionsInterfaceViewModel : ObservableObject, IOptionsSubV
     public ThemeBaseColor SelectedBaseColor
     {
         get => _selectedBaseColor;
-        set 
-        { 
+        set
+        {
             if (SetProperty(ref _selectedBaseColor, value))
                 _mainWindowViewModel.SelectedTheme = _mainWindowViewModel.Themes.Find(t => t.SchemeColor == _selectedTheme.SchemeColor && t.BaseColor == SelectedBaseColor.ToString());
         }

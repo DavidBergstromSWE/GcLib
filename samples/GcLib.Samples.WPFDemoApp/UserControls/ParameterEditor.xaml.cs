@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using GcLib;
 using GcLib.Utilities.Collections;
@@ -209,7 +208,7 @@ public partial class ParameterEditor : UserControl, INotifyPropertyChanged, IDis
 
                     if (parameter.IsWritable)
                         _parameterCollection.SetParameterValue(parameter.Name, parameter.ToString());
-                    
+
                     break;
             }
         }
@@ -246,7 +245,7 @@ public partial class ParameterEditor : UserControl, INotifyPropertyChanged, IDis
                 finally
                 {
                     // Always keep collection updated (even when exceptions are raised).
-                    await UpdateParameterCollectionAsync().ConfigureAwait(false);  
+                    await UpdateParameterCollectionAsync().ConfigureAwait(false);
                 }
             }, _cts.Token);
         }
@@ -260,7 +259,7 @@ public partial class ParameterEditor : UserControl, INotifyPropertyChanged, IDis
     /// <returns>(awaitable) <see cref="Task"/>.</returns>
     private async Task UpdateParameterCollectionAsync()
     {
-        await Task.Run(_parameterCollection.Update);   
+        await Task.Run(_parameterCollection.Update);
     }
 
     /// <summary>

@@ -6,12 +6,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using ImagerViewer.Models;
-using ImagerViewer.Utilities.Messages;
-using ImagerViewer.Utilities.Services;
 using GcLib;
 using GcLib.Utilities.Collections;
 using GcLib.Utilities.Threading;
+using ImagerViewer.Models;
+using ImagerViewer.Utilities.Messages;
+using ImagerViewer.Utilities.Services;
 
 namespace ImagerViewer.ViewModels;
 
@@ -252,7 +252,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
                 _cachedLimitFPS = LimitFPS;
                 LimitFPS = false;
             }
-            else 
+            else
             {
                 // Restore fps limitations.
                 LimitFPS = _cachedLimitFPS;

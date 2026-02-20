@@ -307,7 +307,7 @@ public partial class PcoCam
             _triggerMode = new GcEnumeration(
                 name: nameof(TriggerMode),
                 category: GetCategory(nameof(TriggerMode)),
-                description: "Acquisition trigger mode", 
+                description: "Acquisition trigger mode",
                 enumEntry: LibWrapper.GetTriggerMode(_cameraHandle),
                 enumType: typeof(TriggerMode));
 

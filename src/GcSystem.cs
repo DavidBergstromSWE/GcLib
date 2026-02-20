@@ -90,7 +90,7 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
                 // Missing item: add new.
                 deviceList.Add(device.DeviceInfo);
         }
-        
+
         // Remove duplicates from device list (can happen if device is discoverable by multiple APIs).
         deviceList = [.. deviceList.Distinct()];
 
@@ -100,7 +100,7 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
             _availableDevices = deviceList;
             return true;
         }
-        else return false;       
+        else return false;
     }
 
     /// <inheritdoc />
@@ -194,8 +194,8 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
 
         // Clear lists of devices.
         _connectedDevices.Clear();
-        _availableDevices.Clear();    
-        
+        _availableDevices.Clear();
+
         _isInstantiated = false;
     }
 
@@ -211,10 +211,10 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         var device = (GcDevice)sender;
 
         // Acquire mutual-exclusion lock to list of connected devices for the current thread.
-        lock (_connectedDevices) 
-        { 
+        lock (_connectedDevices)
+        {
             // Remove device from list of connected devices.
-            _connectedDevices.Remove(device); 
+            _connectedDevices.Remove(device);
         }
 
         // Unsubscribe from the event.

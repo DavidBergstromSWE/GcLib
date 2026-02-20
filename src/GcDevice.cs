@@ -185,9 +185,9 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
         if (string.IsNullOrEmpty(dataStreamID))
             dataStreamID = Guid.NewGuid().ToString();
         else
-        // else return datastream with ID if available in the list of datastreams.
-        if (_dataStreamList.TryGetValue(dataStreamID, out GcDataStream value))
-            return value;
+            // else return datastream with ID if available in the list of datastreams.
+            if (_dataStreamList.TryGetValue(dataStreamID, out GcDataStream value))
+                return value;
 
         // Create new datastream on the device, using unique ID.
         var dataStream = new GcDataStream(this, dataStreamID);

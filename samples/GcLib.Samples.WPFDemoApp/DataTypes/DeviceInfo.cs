@@ -14,5 +14,5 @@ internal readonly record struct DeviceInfo(string VendorName, string ModelName, 
     /// Creates a brief top-level description of a device using provided detailed device info.
     /// </summary>
     /// <param name="deviceInfo">Top-level information about device.</param>
-    public DeviceInfo(GcDeviceInfo deviceInfo) : this(deviceInfo.VendorName, deviceInfo.ModelName, deviceInfo.UniqueID) {}
+    public DeviceInfo(GcDeviceInfo deviceInfo) : this(deviceInfo.VendorName, deviceInfo.ModelName, deviceInfo.UniqueID) { }
 }

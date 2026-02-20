@@ -29,9 +29,9 @@ internal sealed class LogWindowViewModel : ObservableObject
     /// <summary>
     /// Displayed log events.
     /// </summary>
-    public ObservableCollection<LogEvent> LogEvents 
+    public ObservableCollection<LogEvent> LogEvents
     {
-        get => _logEvents; 
+        get => _logEvents;
         private set => SetProperty(ref _logEvents, value);
     }
 
