@@ -116,7 +116,18 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     public bool FlipHorizontal
     {
         get => _flipHorizontal;
-        set => SetProperty(ref _flipHorizontal, value);
+        set
+        {
+            if (SetProperty(ref _flipHorizontal, value))
+            {
+                // Update image.
+                if (_rawImage != null)
+                {
+                    ProcessedImage = ProcessImage(_rawImage);
+                    OnImagesUpdated();
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -125,7 +136,18 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     public bool FlipVertical
     {
         get => _flipVertical;
-        set => SetProperty(ref _flipVertical, value);
+        set
+        {
+            if (SetProperty(ref _flipVertical, value))
+            {
+                // Update image.
+                if (_rawImage != null)
+                {
+                    ProcessedImage = ProcessImage(_rawImage);
+                    OnImagesUpdated();
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -134,7 +156,18 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     public int Brightness
     {
         get => _brightness;
-        set => SetProperty(ref _brightness, value);
+        set
+        {
+            if (SetProperty(ref _brightness, value))
+            {
+                // Update image.
+                if (_rawImage != null)
+                {
+                    ProcessedImage = ProcessImage(_rawImage);
+                    OnImagesUpdated();
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -143,7 +176,18 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     public int Contrast
     {
         get => _contrast;
-        set => SetProperty(ref _contrast, value);
+        set
+        {
+            if (SetProperty(ref _contrast, value))
+            {
+                // Update image.
+                if (_rawImage != null)
+                {
+                    ProcessedImage = ProcessImage(_rawImage);
+                    OnImagesUpdated();
+                }
+            }
+        }
     }
 
     #endregion
@@ -227,6 +271,8 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     public ImageModel()
     {
         InitializeSettings();
+
+
     }
 
     #endregion
