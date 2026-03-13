@@ -281,9 +281,14 @@ public partial class PcoCam
                     if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
                         GcLibrary.Logger.LogError("Camera error: {Error}", errorMessage);
 
-                    // Close connection to camera.
-                    LibWrapper.CloseCamera(_cameraHandle);
-                    throw new InvalidOperationException("Connection to camera was closed, as a health status check failed. Please unplug camera to prevent damage!", new InvalidOperationException(errorMessage));
+                    // Stop acquisition before closing connection to camera.
+                    _threadIsRunning = false;
+                    _pcoCam.IsAcquiring = false;
+
+                    // Dispose resources and close camera.
+                    Dispose();
+
+                    throw new InvalidOperationException("Connection to camera was unexpectedly lost!", new InvalidOperationException(errorMessage));
                 }
             }
 

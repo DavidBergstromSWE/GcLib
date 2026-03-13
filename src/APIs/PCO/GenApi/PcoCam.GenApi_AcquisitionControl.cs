@@ -151,7 +151,7 @@ public partial class PcoCam
                     _threadIsRunning = false;
 
                     // Wait for thread to terminate.
-                    _imageAcquisitionThread.Join();
+                    //_imageAcquisitionThread.Join();
 
                     // Cancel all remaining buffers in input buffer pool.
                     LibWrapper.CancelImages(_cameraHandle);
