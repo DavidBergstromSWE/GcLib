@@ -440,7 +440,7 @@
         </member>
         <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_BayerBG12">
              <summary>
-            Pixel format 
+            Pixel format 'Bayer BG 12'
              </summary>
         </member>
         <member name="F:xiApi.NET.GenTL_Image_Format_e.GenTL_Image_Format_BayerGB12">
@@ -6366,6 +6366,18 @@
         <member name="F:xiApi.NET.PRM.OFFSET_Y">
             <summary>
              Vertical offset from the origin to the area of interest (in pixels).
+            By default -. Type	 Integer
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.PRM.WIDTH_TOTAL">
+            <summary>
+             Total width of the Image provided by the device (in pixels).
+            By default -. Type	 Integer
+            </summary>
+        </member>
+        <member name="F:xiApi.NET.PRM.HEIGHT_TOTAL">
+            <summary>
+             Total height of the Image provided by the device (in pixels).
             By default -. Type	 Integer
             </summary>
         </member>
