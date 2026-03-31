@@ -585,6 +585,9 @@ internal sealed class DeviceViewModel : ObservableRecipient
         // Log error.
         Log.Error("Connection to device {DeviceName} (ID: {DeviceID}) was lost", deviceInfo.ModelName, deviceInfo.UniqueID);
 
+        // Update device list.
+        await Task.Run(() => _deviceProvider.UpdateDeviceList());
+
         // Show dialog to user.
         await _windowService.ShowMessageAsync(viewModel: this,
                                               title: "Device error!",
