@@ -3,8 +3,8 @@ GcLib essentially works like a wrapper around the external APIs, hiding their sp
 
 Currently supported APIs are: 
 [eBUS SDK](https://www.pleora.com/machine-vision-connectivity/ebus-sdk/) (v6.4),
-[xiAPI.NET](https://www.ximea.com/support/wiki/apis/xiAPINET) (v4.32),
-[Spinnaker SDK](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) (v4.2) and
+[xiAPI.NET](https://www.ximea.com/support/wiki/apis/xiAPINET) (v4.33),
+[Spinnaker SDK](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) (v4.3) and
 [PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (v1.35). 
 
 > [!NOTE]
