@@ -260,7 +260,7 @@ namespace GcLib.UnitTests
             _system.Dispose();
 
             // Assert
-            Assert.IsFalse(devices.Any(d => d.IsOpen));
+            Assert.DoesNotContain(d => d.IsOpen, devices);
         }
 
         [TestMethod]

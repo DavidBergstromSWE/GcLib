@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GcLib.UnitTests
@@ -106,8 +105,8 @@ namespace GcLib.UnitTests
             GcLibrary.Register<VirtualCam>();
 
             // Assert
-            Assert.IsTrue(GcLibrary.GetAvailableDeviceClasses().Contains(VirtualCam.DeviceClassInfo));
-            Assert.IsTrue(GcLibrary.GetRegisteredDeviceClasses().Contains(VirtualCam.DeviceClassInfo));
+            Assert.Contains(VirtualCam.DeviceClassInfo, GcLibrary.GetAvailableDeviceClasses());
+            Assert.Contains(VirtualCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
         }
 
         [TestMethod]
@@ -139,8 +138,8 @@ namespace GcLib.UnitTests
             GcLibrary.Unregister<VirtualCam>();
 
             // Assert
-            Assert.IsFalse(GcLibrary.GetAvailableDeviceClasses().Contains(VirtualCam.DeviceClassInfo));
-            Assert.IsFalse(GcLibrary.GetRegisteredDeviceClasses().Contains(VirtualCam.DeviceClassInfo));
+            Assert.DoesNotContain(VirtualCam.DeviceClassInfo, GcLibrary.GetAvailableDeviceClasses());
+            Assert.DoesNotContain(VirtualCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
         }
 
         [TestMethod]

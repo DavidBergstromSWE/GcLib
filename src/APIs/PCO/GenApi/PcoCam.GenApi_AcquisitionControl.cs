@@ -239,7 +239,7 @@ public partial class PcoCam
 
             // Set up image transfer requests.
             for (int i = 0; i < _bufferIndex.Length; i++)
-                LibWrapper.AddBufferEx(cameraHandle: _cameraHandle, dwFirstImage: 0, dwLastImage: 0, sBufNr: _bufferIndex[i], wXRes: (ushort)Width, wYRes: (ushort)Height, wBitPerPixel: bitDepth);
+                LibWrapper.AddBufferEx(cameraHandle: _cameraHandle, dwFirstImage: 0, dwLastImage: 0, sBufNr: _bufferIndex[i], wXRes: (ushort)Width.Value, wYRes: (ushort)Height.Value, wBitPerPixel: bitDepth);
 
             uint waitstat; // wait state (used by WaitForMultipleObjects and WaitForSingleObject)
             int test; // represents index of (initial) buffer to test for set event
@@ -338,7 +338,7 @@ public partial class PcoCam
                         }
 
                         // Set up new transfer request.
-                        LibWrapper.AddBufferEx(_cameraHandle, dwFirstImage: 0, dwLastImage: 0, sBufNr: _bufferIndex[test], wXRes: (ushort)Width, wYRes: (ushort)Height, wBitPerPixel: bitDepth);
+                        LibWrapper.AddBufferEx(_cameraHandle, dwFirstImage: 0, dwLastImage: 0, sBufNr: _bufferIndex[test], wXRes: (ushort)Width.Value, wYRes: (ushort)Height.Value, wBitPerPixel: bitDepth);
                     }
 
                     test++;
@@ -367,8 +367,8 @@ public partial class PcoCam
 
             // Return new data container.
             return new GcBuffer(imageData: _inputBufferPool[bufferIndex],
-                                width: (uint)Width,
-                                height: (uint)Height,
+                                width: (uint)Width.Value,
+                                height: (uint)Height.Value,
                                 pixelFormat: (PixelFormat)PixelFormat.IntValue,
                                 pixelDynamicRangeMax: (uint)Math.Pow(2, bitDepth) - 1,
                                 frameID: ImageHeaderHelper.GetImageNumber(imageHeader),

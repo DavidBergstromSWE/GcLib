@@ -54,7 +54,7 @@ public partial class PcoCam
             if (parameterName == nameof(BinningHorizontal))
             {
                 // Set binning in camera.
-                LibWrapper.SetBinning(_cameraHandle, (ushort)BinningHorizontal, BinningOrientation.Horizontal);
+                LibWrapper.SetBinning(_cameraHandle, (ushort)BinningHorizontal.Value, BinningOrientation.Horizontal);
 
                 var previousBinning = SensorWidth / WidthMax;
                 var previousWidth = Width;
@@ -85,7 +85,7 @@ public partial class PcoCam
             if (parameterName == nameof(BinningVertical))
             {
                 // Set binning in camera.
-                LibWrapper.SetBinning(_cameraHandle, (ushort)BinningVertical, BinningOrientation.Vertical);
+                LibWrapper.SetBinning(_cameraHandle, (ushort)BinningVertical.Value, BinningOrientation.Vertical);
 
                 var previousBinning = SensorHeight / HeightMax;
                 var previousHeight = Height;
@@ -134,7 +134,7 @@ public partial class PcoCam
             {
                 try
                 {
-                    LibWrapper.SetFrameRate(_cameraHandle, (float)AcquisitionFrameRate);
+                    LibWrapper.SetFrameRate(_cameraHandle, (float)AcquisitionFrameRate.Value);
 
                     // Get updated exposure time.
                     ExposureTime.Value = LibWrapper.GetExposureTime(_cameraHandle);
@@ -201,7 +201,7 @@ public partial class PcoCam
             try
             {
                 // Change ROI in camera.
-                LibWrapper.SetROI(_cameraHandle, (ushort)Width, (ushort)Height, (ushort)OffsetX, (ushort)OffsetY);
+                LibWrapper.SetROI(_cameraHandle, (ushort)Width.Value, (ushort)Height.Value, (ushort)OffsetX.Value, (ushort)OffsetY.Value);
 
                 // Validate ROI settings.
                 LibWrapper.ArmCamera(_cameraHandle);

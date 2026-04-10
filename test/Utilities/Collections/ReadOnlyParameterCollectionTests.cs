@@ -51,7 +51,7 @@ public class ReadOnlyParameterCollectionTests
 
         // Assert
         Assert.AreEqual(name, collection.Name);
-        Assert.AreEqual(collection.Count, _mockedParameters.Count());
+        Assert.HasCount(collection.Count, _mockedParameters);
     }
 
     [TestMethod]

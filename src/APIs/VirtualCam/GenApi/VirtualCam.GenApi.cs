@@ -70,7 +70,7 @@ public sealed partial class VirtualCam
             InitializeParameters();
 
             // Warm-up image test pattern generator.
-            _ = TestPatternGenerator.CreateImage((uint)Width, (uint)Height, (PixelFormat)PixelFormat.IntValue, (TestPattern)TestPattern.IntValue);
+            _ = TestPatternGenerator.CreateImage((uint)Width.Value, (uint)Height.Value, (PixelFormat)PixelFormat.IntValue, (TestPattern)TestPattern.IntValue);
 
             // Subscribe to device events.
             _virtualCam.ParameterInvalidate += OnParameterChanged;

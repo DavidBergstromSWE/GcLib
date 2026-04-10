@@ -162,7 +162,7 @@ public partial class PcoCam
             InitializeParameters();
 
             // Prepare input buffer pool.
-            SetBufferCapacity((uint)InputBufferCount);
+            SetBufferCapacity((uint)InputBufferCount.Value);
 
             // Subscribe to device events.
             _pcoCam.ParameterInvalidate += OnParameterChanged;

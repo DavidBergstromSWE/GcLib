@@ -56,7 +56,7 @@ namespace GcLib.UnitTests
             Assert.IsNotNull(_device.DeviceInfo.SerialNumber);
             Assert.AreEqual(ID, _device.DeviceInfo.UniqueID);
             Assert.AreEqual(ID, _device.DeviceInfo.UserDefinedName);
-            Assert.IsTrue(_device.DeviceInfo.DeviceClassInfo.DeviceType == typeof(VirtualCam));
+            Assert.AreEqual(typeof(VirtualCam), _device.DeviceInfo.DeviceClassInfo.DeviceType);
             Assert.AreEqual<uint>(0, _device.GetNumDataStreams());
         }
 
