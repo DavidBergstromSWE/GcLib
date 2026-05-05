@@ -12,12 +12,14 @@ public class GcProcessingThreadTests
 {
     private Mock<IBufferStream> _mockStream;
     private GcProcessingThread _processingThread;
+    private GcBuffer _buffer;
 
 
     [TestInitialize]
     public void TestInitialize()
     {
         _mockStream = new Mock<IBufferStream>();
+        _buffer = FakeBufferProvider.GetFakeBuffer();
     }
 
     [TestCleanup]
@@ -98,11 +100,12 @@ public class GcProcessingThreadTests
         _processingThread.Start(_mockStream.Object);
 
         // Act
-        _mockStream.Raise(s => s.BufferTransferred += null, new BufferTransferredEventArgs(FakeBufferProvider.GetFakeBuffer()));
+        _mockStream.Raise(s => s.BufferTransferred += null, new BufferTransferredEventArgs(_buffer));
         _processingThread.Stop(true);
 
         // Assert
         Assert.IsNotNull(expectedBuffer);
+        Assert.AreSame(expectedBuffer, _buffer);
     }
 
     [TestMethod]
@@ -115,13 +118,14 @@ public class GcProcessingThreadTests
         _processingThread.Start(_mockStream.Object);
 
         // Act
-        _mockStream.Raise(s => s.BufferTransferred += null, new BufferTransferredEventArgs(FakeBufferProvider.GetFakeBuffer()));
+        _mockStream.Raise(s => s.BufferTransferred += null, new BufferTransferredEventArgs(_buffer));
         Thread.Sleep(100);
         _processingThread.Stop();
         _processingThread.WaitComplete();
 
         // Assert
         Assert.IsNotNull(expectedBuffer);
+        Assert.AreSame(expectedBuffer, _buffer);
     }
 
     [TestMethod]
@@ -138,7 +142,7 @@ public class GcProcessingThreadTests
         // Act
         _processingThread.Start(_mockStream.Object);
         for (int i = 0; i < capacity + 2; i++)
-            _mockStream.Raise(s => s.BufferTransferred += null, new BufferTransferredEventArgs(FakeBufferProvider.GetFakeBuffer(i)));
+            _mockStream.Raise(s => s.BufferTransferred += null, new BufferTransferredEventArgs(_buffer));
 
         // Assert
         Assert.IsGreaterThan(0, eventCounter);
