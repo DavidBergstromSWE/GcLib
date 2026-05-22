@@ -387,7 +387,6 @@ public sealed partial class XiCam
             return gcBoolean;
         }
         else return new GcBoolean(parameterName);
-
     }
 
     /// <inheritdoc/>
