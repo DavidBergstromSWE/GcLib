@@ -67,6 +67,12 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
 
         // Retrieve collection of camera parameters from node map.
         Parameters = ImportParameters();
+
+        // Set default buffer capacity.
+        BufferCapacity = 4;
+
+        // Open data stream for device.
+        _dataStream = _device.DataStreams()[0].OpenDataStream();
     }
 
     #endregion
@@ -76,7 +82,8 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
     {
         base.Close();
 
-        Library.Close();
+        // Close device.
+        _device.Dispose();
     }
 
     #region IDeviceClassDescriptor
@@ -114,7 +121,7 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
     /// <summary>
     /// Get top-level info about device.
     /// </summary>
-    /// <param name="pvDeviceInfo">Device information used to connect the device.</param>
+    /// <param name="deviceDescriptor">Device ID information.</param>
     /// <returns>Device info.</returns>
     private static GcDeviceInfo GetDeviceInfo(DeviceDescriptor deviceDescriptor)
     {
