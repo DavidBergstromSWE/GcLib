@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Cyotek.CircularBuffer" Version="2.0.0" />
-    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.12.0.5764" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.13.0.5924" />
     <PackageReference Include="IDSImaging.Peak.API" Version="1.15.0.4" />
     <PackageReference Include="IDSImaging.Peak.IPL" Version="1.17.2.4" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
