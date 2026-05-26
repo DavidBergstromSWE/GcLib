@@ -11,7 +11,10 @@ namespace GcLib;
 /// </summary>
 public sealed partial class IdsCam
 {
-    private NodeMap _nodeMap;
+    /// <summary>
+    /// GenAPI node map containing all features implemented by the device.
+    /// </summary>
+    private readonly NodeMap _nodeMap;
 
     /// <inheritdoc/>
     protected override GcDeviceParameterCollection ImportParameters()
@@ -27,15 +30,18 @@ public sealed partial class IdsCam
                 categories.Add(parameter.Name());
         }
 
+        // Loop through all nodes in the node map and create corresponding GcParameter objects for those that are available. If any errors occur while processing a parameter, add its name to the failed parameter list.
         foreach (var parameter in _nodeMap.Nodes())
         {
+            // Skip nodes that are not parameters (e.g. categories) or that are not available, not readable, or invisible.
             if (parameter.IsAvailable() == false || parameter.IsFeature() == false || parameter.Visibility() == NodeVisibility.Invisible || parameter.IsReadable() == false)
             {
                 failedParameterList.Add(parameter.Name());
                 continue;
             }
 
-            var categoryName = "Uncategorized";
+            // Skip parameters that do not belong to a category, to avoid cluttering with parameters that are not relevant for the user.
+            string categoryName;
 
             try
             {
@@ -68,41 +74,46 @@ public sealed partial class IdsCam
                         categoryName = categories.Find(category => enumerationNode.InvalidatedNodes().Select(node => node.Name()).Contains(category)) ?? "Uncategorized";
                         if (categoryName != "Uncategorized")
                             parameterList.Add(new GcEnumeration(name: enumerationNode.Name(),
-                                                            category: categoryName,
-                                                            gcEnumEntry: new GcEnumEntry(enumerationNode.CurrentEntry().SymbolicValue(), enumerationNode.CurrentEntry().Value(), enumerationNode.CurrentEntry().NumericValue()),
-                                                            gcEnumEntries: enumerationNode.Entries().Select(entry => new GcEnumEntry(entry.SymbolicValue(), entry.Value(), entry.NumericValue())).ToList(),
-                                                            isReadable: enumerationNode.IsReadable(),
-                                                            isWritable: enumerationNode.IsWriteable(),
-                                                            visibility: (GcVisibility)enumerationNode.Visibility(),
-                                                            description: enumerationNode.Description()));
+                                                                category: categoryName,
+                                                                gcEnumEntry: new GcEnumEntry(enumerationNode.CurrentEntry().SymbolicValue(), enumerationNode.CurrentEntry().Value(), enumerationNode.CurrentEntry().NumericValue()),
+                                                                gcEnumEntries: enumerationNode.Entries().Select(entry => new GcEnumEntry(entry.SymbolicValue(), entry.Value(), entry.NumericValue())).ToList(),
+                                                                isReadable: enumerationNode.IsReadable(),
+                                                                isWritable: enumerationNode.IsWriteable(),
+                                                                visibility: (GcVisibility)enumerationNode.Visibility(),
+                                                                description: enumerationNode.Description()));
                         break;
                     case NodeType.Float:
                         var floatNode = _nodeMap.FindNode<FloatNode>(parameter.Name());
                         categoryName = categories.Find(category => floatNode.InvalidatedNodes().Select(node => node.Name()).Contains(category)) ?? "Uncategorized";
                         if (categoryName != "Uncategorized")
                             parameterList.Add(new GcFloat(name: floatNode.Name(),
-                                                      category: categoryName,
-                                                      value: floatNode.Value(),
-                                                      min: floatNode.Minimum(),
-                                                      max: floatNode.Maximum(),
-                                                      isReadable: floatNode.IsReadable(),
-                                                      isWritable: floatNode.IsWriteable(),
-                                                      visibility: (GcVisibility)floatNode.Visibility(),
-                                                      description: floatNode.Description()));
+                                                          category: categoryName,
+                                                          value: floatNode.Value(),
+                                                          min: floatNode.Minimum(),
+                                                          max: floatNode.Maximum(),
+                                                          increment: floatNode.Increment(),
+                                                          unit: floatNode.Unit(),
+                                                          displayPrecision: floatNode.DisplayPrecision(),
+                                                          isReadable: floatNode.IsReadable(),
+                                                          isWritable: floatNode.IsWriteable(),
+                                                          visibility: (GcVisibility)floatNode.Visibility(),
+                                                          description: floatNode.Description()));
                         break;
                     case NodeType.Integer:
                         var integerNode = _nodeMap.FindNode<IntegerNode>(parameter.Name());
                         categoryName = categories.Find(category => integerNode.InvalidatedNodes().Select(node => node.Name()).Contains(category)) ?? "Uncategorized";
                         if (categoryName != "Uncategorized")
                             parameterList.Add(new GcInteger(name: integerNode.Name(),
-                                                        category: categoryName,
-                                                        value: integerNode.Value(),
-                                                        min: integerNode.Minimum(),
-                                                        max: integerNode.Maximum(),
-                                                        isReadable: integerNode.IsReadable(),
-                                                        isWritable: integerNode.IsWriteable(),
-                                                        visibility: (GcVisibility)integerNode.Visibility(),
-                                                        description: integerNode.Description()));
+                                                            category: categoryName,
+                                                            value: integerNode.Value(),
+                                                            min: integerNode.Minimum(),
+                                                            max: integerNode.Maximum(),
+                                                            increment: integerNode.Increment(),
+                                                            unit: integerNode.Unit(),
+                                                            isReadable: integerNode.IsReadable(),
+                                                            isWritable: integerNode.IsWriteable(),
+                                                            visibility: (GcVisibility)integerNode.Visibility(),
+                                                            description: integerNode.Description()));
 
                         break;
                     case NodeType.String:
@@ -110,13 +121,13 @@ public sealed partial class IdsCam
                         categoryName = categories.Find(category => stringNode.InvalidatedNodes().Select(node => node.Name()).Contains(category)) ?? "Uncategorized";
                         if (categoryName != "Uncategorized")
                             parameterList.Add(new GcString(name: stringNode.Name(),
-                                                       category: categoryName,
-                                                       value: stringNode.Value(),
-                                                       maxLength: stringNode.MaximumLength(),
-                                                       isReadable: stringNode.IsReadable(),
-                                                       isWritable: stringNode.IsWriteable(),
-                                                       visibility: (GcVisibility)stringNode.Visibility(),
-                                                       description: stringNode.Description()));
+                                                           category: categoryName,
+                                                           value: stringNode.Value(),
+                                                           maxLength: stringNode.MaximumLength(),
+                                                           isReadable: stringNode.IsReadable(),
+                                                           isWritable: stringNode.IsWriteable(),
+                                                           visibility: (GcVisibility)stringNode.Visibility(),
+                                                           description: stringNode.Description()));
                         break;
                 }
             }
@@ -133,93 +144,118 @@ public sealed partial class IdsCam
     /// <inheritdoc/>
     protected override GcBoolean GetBoolean(string parameterName)
     {
-        var param = _nodeMap.FindNode<BooleanNode>(parameterName);
-        var gcBoolean = Parameters[parameterName] as GcBoolean;
-        return new GcBoolean(name: gcBoolean.Name,
-                             category: gcBoolean.Category,
-                             value: param.Value(),
-                             isReadable: param.IsReadable(),
-                             isWritable: param.IsWriteable(),
-                             visibility: gcBoolean.Visibility,
-                             description: gcBoolean.Description);
+        if (Parameters[parameterName] is GcBoolean gcBoolean)
+        {
+            var node = _nodeMap.FindNode<BooleanNode>(parameterName);
+
+            return new GcBoolean(name: gcBoolean.Name,
+                                 category: gcBoolean.Category,
+                                 value: node.Value(),
+                                 isReadable: node.IsReadable(),
+                                 isWritable: node.IsWriteable(),
+                                 visibility: gcBoolean.Visibility,
+                                 description: gcBoolean.Description);
+        }
+        else return null;
     }
 
     /// <inheritdoc/>
     protected override GcCommand GetCommand(string parameterName)
     {
-        var param = _nodeMap.FindNode<CommandNode>(parameterName);
-        var gcCommand = Parameters[parameterName] as GcCommand;
-        return new GcCommand(name: gcCommand.Name,
-                             category: gcCommand.Category,
-                             method: param.Execute,
-                             visibility: gcCommand.Visibility,
-                             description: gcCommand.Description);
+        if (Parameters[parameterName] is GcCommand gcCommand)
+        {
+            var node = _nodeMap.FindNode<CommandNode>(parameterName);
+
+            return new GcCommand(name: gcCommand.Name,
+                                 category: gcCommand.Category,
+                                 method: node.Execute,
+                                 visibility: gcCommand.Visibility,
+                                 description: gcCommand.Description);
+        }
+        else return null;
     }
 
     /// <inheritdoc/>
     protected override GcEnumeration GetEnumeration(string parameterName)
     {
-        var param = _nodeMap.FindNode<EnumerationNode>(parameterName);
-        var gcEnum = Parameters[parameterName] as GcEnumeration;
-        return new GcEnumeration(name: gcEnum.Name,
-                                 category: gcEnum.Category,
-                                 gcEnumEntry: new GcEnumEntry(param.CurrentEntry().SymbolicValue(), param.CurrentEntry().Value(), param.CurrentEntry().NumericValue()),
-                                 gcEnumEntries: [.. param.Entries().Select(entry => new GcEnumEntry(entry.SymbolicValue(), entry.Value(), entry.NumericValue()))],
-                                 isReadable: param.IsReadable(),
-                                 isWritable: param.IsWriteable(),
-                                 visibility: gcEnum.Visibility,
-                                 description: gcEnum.Description);
+        if (Parameters[parameterName] is GcEnumeration gcEnum)
+        {
+            var node = _nodeMap.FindNode<EnumerationNode>(parameterName);
+
+            return new GcEnumeration(name: gcEnum.Name,
+                                     category: gcEnum.Category,
+                                     gcEnumEntry: gcEnum.CurrentEntry,
+                                     gcEnumEntries: gcEnum.Entries,
+                                     isReadable: node.IsReadable(),
+                                     isWritable: node.IsWriteable(),
+                                     visibility: gcEnum.Visibility,
+                                     description: gcEnum.Description);
+        }
+        else return null;
     }
 
     /// <inheritdoc/>
     protected override GcFloat GetFloat(string parameterName)
     {
-        var param = _nodeMap.FindNode<FloatNode>(parameterName);
-        var gcFloat = Parameters[parameterName] as GcFloat;
-        return new GcFloat(name: gcFloat.Name,
-                           category: gcFloat.Category,
-                           value: param.Value(),
-                           min: param.Minimum(),
-                           max: param.Maximum(),
-                           increment: gcFloat.Increment,
-                           unit: param.Unit(),
-                           displayPrecision: param.DisplayPrecision(),
-                           isReadable: param.IsReadable(),
-                           isWritable: param.IsWriteable(),
-                           visibility: gcFloat.Visibility,
-                           description: gcFloat.Description);
+        if (Parameters[parameterName] is GcFloat gcFloat)
+        {
+            var node = _nodeMap.FindNode<FloatNode>(parameterName);
+
+            return new GcFloat(name: gcFloat.Name,
+                               category: gcFloat.Category,
+                               value: node.Value(),
+                               min: node.Minimum(),
+                               max: node.Maximum(),
+                               increment: node.Increment(),
+                               unit: gcFloat.Unit,
+                               displayPrecision: gcFloat.DisplayPrecision,
+                               isReadable: node.IsReadable(),
+                               isWritable: node.IsWriteable(),
+                               visibility: gcFloat.Visibility,
+                               description: gcFloat.Description);
+        }
+        else return null;
     }
 
     /// <inheritdoc/>
     protected override GcInteger GetInteger(string parameterName)
     {
-        var param = _nodeMap.FindNode<IntegerNode>(parameterName);
-        var gcInteger = Parameters[parameterName] as GcInteger;
-        return new GcInteger(name: gcInteger.Name,
-                             category: gcInteger.Category,
-                             value: param.Value(),
-                             min: param.Minimum(),
-                             max: param.Maximum(),
-                             increment: param.Increment(),
-                             isReadable: param.IsReadable(),
-                             isWritable: param.IsWriteable(),
-                             visibility: gcInteger.Visibility,
-                             description: gcInteger.Description);
+        if (Parameters[parameterName] is GcInteger gcInteger)
+        {
+            var node = _nodeMap.FindNode<IntegerNode>(parameterName);
+
+            return new GcInteger(name: gcInteger.Name,
+                                 category: gcInteger.Category,
+                                 value: node.Value(),
+                                 min: node.Minimum(),
+                                 max: node.Maximum(),
+                                 increment: node.Increment(),
+                                 unit: gcInteger.Unit,
+                                 isReadable: node.IsReadable(),
+                                 isWritable: node.IsWriteable(),
+                                 visibility: gcInteger.Visibility,
+                                 description: gcInteger.Description);
+        }
+        else return null;
     }
 
     /// <inheritdoc/>
     protected override GcString GetString(string parameterName)
     {
-        var param = _nodeMap.FindNode<StringNode>(parameterName);
-        var gcString = Parameters[parameterName] as GcString;
-        return new GcString(name: gcString.Name,
-                            category: gcString.Category,
-                            value: param.Value(),
-                            maxLength: param.MaximumLength(),
-                            isReadable: param.IsReadable(),
-                            isWritable: param.IsWriteable(),
-                            visibility: gcString.Visibility,
-                            description: gcString.Description);
+        if (Parameters[parameterName] is GcString gcString)
+        {
+            var node = _nodeMap.FindNode<StringNode>(parameterName);
+
+            return new GcString(name: gcString.Name,
+                                category: gcString.Category,
+                                value: node.Value(),
+                                maxLength: gcString.MaxLength,
+                                isReadable: node.IsReadable(),
+                                isWritable: node.IsWriteable(),
+                                visibility: gcString.Visibility,
+                                description: gcString.Description);
+        }
+        else return null;
     }
 
     /// <inheritdoc/>

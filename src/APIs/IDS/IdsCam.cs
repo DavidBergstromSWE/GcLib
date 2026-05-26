@@ -33,18 +33,18 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
     /// Constructor.
     /// </summary>
     /// <param name="deviceID">(Optional) Unique string identifier for device.</param>
-    public IdsCam(string uniqueID) : base()
+    public IdsCam(string deviceID) : base()
     {
-        // Initialize device using unique ID.
+        // Find camera devices reachable from PC.
         var deviceManager = DeviceManager.Instance();
         deviceManager.Update();
-
         var devices = deviceManager.Devices();
 
+        // Find device with matching ID.
         DeviceDescriptor device = null;
         for (int i = 0; i < devices.Count; i++)
         {
-            if (devices[i].ID().Replace(":", string.Empty) == uniqueID)
+            if (devices[i].ID().Replace(":", string.Empty) == deviceID)
             {
                 device = devices[i];
                 break;
@@ -52,7 +52,7 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         }
 
         if (device == null)
-            throw new InvalidOperationException($"Failed to connect to device with unique ID {uniqueID}.");
+            throw new InvalidOperationException($"Failed to connect to device with unique ID {deviceID}.");
 
         // Connect to device.
         _device = device.OpenDevice(DeviceAccessType.Control);
@@ -105,11 +105,8 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         deviceManager.Update();
 
         var devices = new List<GcDeviceInfo>();
-
         for (int i = 0; i < deviceManager.Devices().Count; i++) 
-        {
             devices.Add(GetDeviceInfo(deviceManager.Devices()[i]));
-        }
 
         return devices;
     }
