@@ -68,7 +68,6 @@ public static class GcLibrary
             Register<PvCam>();
             Register<XiCam>();
             Register<SpinCam>();
-
             Register<IdsCam>();
 
             // add more device classes as they are implemented...
