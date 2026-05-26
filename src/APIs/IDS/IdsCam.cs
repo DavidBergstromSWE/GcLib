@@ -21,38 +21,52 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
 
     #region Constructors
 
+    /// <summary>
+    /// Static constructor. Initializes IDS Peak API library and registers device class info for this device type.
+    /// </summary>
     static IdsCam()
     {
-        // Register device class info for this device type.
+        // Initialize IDS Peak API library.
         Library.Initialize();
 
+        // Register device class info for this device type.
         DeviceClassInfo = new GcDeviceClassInfo("IDS Peak", Library.Version().ToString(), typeof(IdsCam));
     }
 
     /// <summary>
-    /// Constructor.
+    /// Constructor. Connects to device with specified unique ID and retrieves camera parameters. If no unique ID is provided, it will attempt to connect to the first available device.
     /// </summary>
     /// <param name="deviceID">(Optional) Unique string identifier for device.</param>
-    public IdsCam(string deviceID) : base()
+    public IdsCam(string deviceID = "") : base()
     {
         // Find camera devices reachable from PC.
         var deviceManager = DeviceManager.Instance();
         deviceManager.Update();
         var devices = deviceManager.Devices();
 
-        // Find device with matching ID.
         DeviceDescriptor device = null;
-        for (int i = 0; i < devices.Count; i++)
+
+        if (string.IsNullOrEmpty(deviceID))
         {
-            if (devices[i].ID().Replace(":", string.Empty) == deviceID)
+            // Get first available device.
+            if (devices.Count > 0)
+                device = devices[0];
+        }
+        else
+        {
+            // Find device with matching ID.        
+            for (int i = 0; i < devices.Count; i++)
             {
-                device = devices[i];
-                break;
+                if (devices[i].ID().Replace(":", string.Empty) == deviceID)
+                {
+                    device = devices[i];
+                    break;
+                }
             }
         }
 
         if (device == null)
-            throw new InvalidOperationException($"Failed to connect to device with unique ID {deviceID}.");
+            throw new InvalidOperationException($"No camera found!");
 
         // Connect to device.
         _device = device.OpenDevice(DeviceAccessType.Control);
