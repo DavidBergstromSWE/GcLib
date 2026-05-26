@@ -15,9 +15,9 @@
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.13.0.5924" />
     <PackageReference Include="IDSImaging.Peak.API" Version="1.15.0.4" />
     <PackageReference Include="IDSImaging.Peak.IPL" Version="1.17.2.4" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.7" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.8" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="pco.sdk.net">
