@@ -10,14 +10,18 @@ public sealed partial class VirtualCam : GcDevice, IDeviceEnumerator, IDeviceCla
     #region Fields
 
     /// <summary>
-    /// Time delay (in milliseconds) during connection to simulate hardware operations.
-    /// </summary>
-    public const int DeviceConnectionDelay = 0;
-
-    /// <summary>
     /// GenApi module attached to camera.
     /// </summary>
     private readonly GenApi _genApi;
+
+    #endregion
+
+    #region Properties
+
+    /// <summary>
+    /// Time delay (in milliseconds) during connection to simulate hardware operations.
+    /// </summary>
+    public static int DeviceConnectionDelay { get; set; } = 0;
 
     #endregion
 
