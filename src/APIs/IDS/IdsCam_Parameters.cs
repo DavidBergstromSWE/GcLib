@@ -76,7 +76,7 @@ public sealed partial class IdsCam
                             parameterList.Add(new GcEnumeration(name: enumerationNode.Name(),
                                                                 category: categoryName,
                                                                 gcEnumEntry: new GcEnumEntry(enumerationNode.CurrentEntry().SymbolicValue(), enumerationNode.CurrentEntry().Value(), enumerationNode.CurrentEntry().NumericValue()),
-                                                                gcEnumEntries: enumerationNode.Entries().Select(entry => new GcEnumEntry(entry.SymbolicValue(), entry.Value(), entry.NumericValue())).ToList(),
+                                                                gcEnumEntries: [.. enumerationNode.Entries().Select(entry => new GcEnumEntry(entry.SymbolicValue(), entry.Value(), entry.NumericValue()))],
                                                                 isReadable: enumerationNode.IsReadable(),
                                                                 isWritable: enumerationNode.IsWriteable(),
                                                                 visibility: (GcVisibility)enumerationNode.Visibility(),
