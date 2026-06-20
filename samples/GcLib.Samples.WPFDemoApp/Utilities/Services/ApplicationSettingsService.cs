@@ -32,7 +32,6 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
         // AcquisitionViewModel settings.
         acquisitionViewModel.AutoGenerateFileNames = _settings.AutoGenerateFileNames;
         acquisitionViewModel.AcquisitionChannel.SaveRawData = _settings.SaveRawData;
-        acquisitionViewModel.AcquisitionChannel.SaveProcessedData = _settings.SaveProcessedData;
         if (Directory.Exists(Path.GetDirectoryName(_settings.SaveFilePath)))
             acquisitionViewModel.AcquisitionChannel.FilePath = _settings.SaveFilePath;
     }
@@ -50,7 +49,6 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
         // AcquisitionView settings.
         _settings.AutoGenerateFileNames = acquisitionViewModel.AutoGenerateFileNames;
         _settings.SaveRawData = acquisitionViewModel.AcquisitionChannel.SaveRawData;
-        _settings.SaveProcessedData = acquisitionViewModel.AcquisitionChannel.SaveProcessedData;
         _settings.SaveFilePath = acquisitionViewModel.AcquisitionChannel.FilePath;
 
         // Save settings.

@@ -17,7 +17,6 @@ internal class AcquisitionModel : ObservableObject
 
     // backing-fields
     private bool _saveRawData;
-    private bool _saveProcessedData;
     private string _filePath;
 
     /// <summary>
@@ -54,31 +53,12 @@ internal class AcquisitionModel : ObservableObject
     }
 
     /// <summary>
-    /// Setting indicating that raw image data will be saved to file.
+    /// Setting indicating that raw image data will be saved to file. If false, processed data will be saved.
     /// </summary>
     public bool SaveRawData
     {
-        get => _saveRawData;
-        set
-        {
-            _ = SetProperty(ref _saveRawData, value);
-            if (_saveRawData)
-                _ = SetProperty(ref _saveProcessedData, false, nameof(SaveProcessedData));
-        }
-    }
-
-    /// <summary>
-    /// Setting indicating that processed image data will be saved to file.
-    /// </summary>
-    public bool SaveProcessedData
-    {
-        get => _saveProcessedData;
-        set
-        {
-            _ = SetProperty(ref _saveProcessedData, value);
-            if (_saveProcessedData)
-                _ = SetProperty(ref _saveRawData, false, nameof(SaveRawData));
-        }
+        get => _saveRawData; 
+        set => SetProperty(ref _saveRawData, value);
     }
 
     /// <summary>
@@ -217,8 +197,7 @@ internal class AcquisitionModel : ObservableObject
         string filePath = Path.GetDirectoryName(FilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(FilePath) + subString + ".bin";
 
         // Start writing to file.
-        if (SaveRawData || SaveProcessedData)
-            StartWriting(filePath);
+        StartWriting(filePath);
 
         // Start acquisition.
         return StartAcquisitionAsync(startGrabbing);
