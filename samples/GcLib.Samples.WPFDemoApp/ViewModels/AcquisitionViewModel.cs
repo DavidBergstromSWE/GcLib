@@ -128,10 +128,10 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         // Default file paths.
 #if DEBUG
         AcquisitionChannel.BinaryFilePath = Path.GetFullPath(@"C:\testdata\recording.bin");
-        AcquisitionChannel.VideoFilePath = Path.GetFullPath(@"C:\testdata\video.avi");
+        AcquisitionChannel.VideoFolderPath = Path.GetFullPath(@"C:\testdata\");
 #else
         AcquisitionChannel.BinaryFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\recording.bin");
-        AcquisitionChannel.VideoFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\video.avi");
+        AcquisitionChannel.VideoFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\");
 #endif
         // Register eventhandlers to acquisition channel.
         AcquisitionChannel.AcquisitionStopped += Channel_AcquisitionStopped;

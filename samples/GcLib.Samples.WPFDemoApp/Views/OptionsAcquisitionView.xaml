@@ -96,32 +96,21 @@
 
         <!-- Video recording settings -->
         <TextBlock Grid.Row="3" Grid.Column="1" 
-           Text="Video:" 
-           VerticalAlignment="Center" Margin="0 5 10 0"/>
-
+                   Text="Video:" 
+                   VerticalAlignment="Center" Margin="0 5 10 0"/>
         <CheckBox Grid.Row="3" Grid.Column="3"
-          IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel.SaveVideo, FallbackValue=false}"
-          ToolTip="Save video"/>
+                  IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel.SaveVideo, FallbackValue=false}"
+                  ToolTip="Save video"/>
         <StackPanel Grid.Row="3" Grid.Column="4"
-            Orientation="Horizontal" Margin="10 5 0 0">
-            <TextBox x:Name="VideoFilePath"
-             Text="{Binding AcquisitionViewModel.AcquisitionChannel.VideoFilePath}"
-             d:Text="C:\testdata\video.avi"
-             IsEnabled="{Binding ElementName=AutoGenVideo, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"/>
+                    Orientation="Horizontal" Margin="10 5 0 0">
+            <TextBox x:Name="VideoFolderPath"
+                     Text="{Binding AcquisitionViewModel.AcquisitionChannel.VideoFolderPath}"
+                     d:Text="C:\testdata\"/>
             <Button Style="{StaticResource Browsebutton}" 
-            Content="{iconPacks:Material Kind=FolderSearchOutline}"
-            IsEnabled="{Binding ElementName=AutoGenVideo, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"
-            Command="{Binding BrowseVideoFilePathCommand}" CommandParameter="{Binding ElementName=VideoFilePath, Path=Text}"/>
+                    Content="{iconPacks:Material Kind=FolderSearchOutline}"
+                    Command="{Binding BrowseVideoFolderPathCommand}" CommandParameter="{Binding ElementName=VideoFolderPath, Path=Text}"/>
         </StackPanel>
-
-        <!-- Auto-generate filenames togglebutton -->
-        <StackPanel Grid.Row="3" Grid.RowSpan="2" Grid.Column="5"
-            Margin="20 0 0 0" Orientation="Vertical" >
-            <mah:ToggleSwitch x:Name="AutoGenVideo"
-                      OnContent="on" OffContent="off" FontSize="12" MinWidth="80" Width="85" MaxWidth="90"
-                      ToolTip="Enable to auto-generate filename (based on current date and time)" ToolTipService.InitialShowDelay="500"
-                      IsOn="{Binding AcquisitionViewModel.AutoGenerateVideoFileNames}"/>
-        </StackPanel>
+        <!-- FPS selection? -->
 
     </Grid>
 

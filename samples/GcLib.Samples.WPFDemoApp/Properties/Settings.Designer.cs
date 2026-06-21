@@ -110,24 +110,12 @@ namespace GcLib.Samples.WPFDemoApp.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string SaveVideoFilePath {
+        public string SaveVideoFolderPath {
             get {
-                return ((string)(this["SaveVideoFilePath"]));
+                return ((string)(this["SaveVideoFolderPath"]));
             }
             set {
-                this["SaveVideoFilePath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool AutoGenerateVideoFilePath {
-            get {
-                return ((bool)(this["AutoGenerateVideoFilePath"]));
-            }
-            set {
-                this["AutoGenerateVideoFilePath"] = value;
+                this["SaveVideoFolderPath"] = value;
             }
         }
     }

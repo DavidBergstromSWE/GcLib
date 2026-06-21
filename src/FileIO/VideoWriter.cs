@@ -7,7 +7,12 @@ using Microsoft.Extensions.Logging;
 
 namespace GcLib.FileIO;
 
-public class VideoWriter : IDisposable
+/// <summary>
+/// Creates a new video writer, using specified file path and fps. Videos will be saved using auto-generated filenames based on current date and time.
+/// </summary>
+/// <param name="filePath">File path to save videos to.</param>
+/// <param name="fps">Frame rate in frames per second.</param>
+public class VideoWriter(string filePath, int fps = 30) : IDisposable
 {
     /// <summary>
     /// Video writer.
@@ -17,7 +22,7 @@ public class VideoWriter : IDisposable
     /// <summary>
     /// Buffer queue, containing images waiting to be written to file.
     /// </summary>
-    private readonly ConcurrentQueue<GcBuffer> _bufferQueue;
+    private readonly ConcurrentQueue<GcBuffer> _bufferQueue = new();
 
     /// <summary>
     /// Recording thread used in writing to file.
@@ -45,7 +50,7 @@ public class VideoWriter : IDisposable
     public int BuffersQueued => _bufferQueue.Count;
 
     /// <summary>
-    /// Number of buffers written to file.
+    /// Number of frames written to video file.
     /// </summary>
     public int FramesWritten { get; private set; } = 0;
 
@@ -62,19 +67,17 @@ public class VideoWriter : IDisposable
     /// <summary>
     /// A relative or absolute path to the file.
     /// </summary>
-    public string FilePath { get; private set; }
+    public string FilePath { get; private set; } = filePath;
 
     /// <summary>
     /// Frames per second.
     /// </summary>
-    public int FPS { get; private set; } = 30;
+    public int FPS { get; private set; } = fps;
 
-    public VideoWriter(string filePath)
-    {
-        _bufferQueue = new();
-        FilePath = filePath;
-    }
-
+    /// <summary>
+    /// Start writing video.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
     public void Start()
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -89,6 +92,9 @@ public class VideoWriter : IDisposable
         IsWriting = true;
     }
 
+    /// <summary>
+    /// Continuously waits for buffers to be queued and writes queued buffers to video file.
+    /// </summary>
     private void ThreadProc()
     {
         while (_recordingThreadStoppingCondition == false)
@@ -97,11 +103,12 @@ public class VideoWriter : IDisposable
             if (_bufferQueue.IsEmpty)
                 _ = _waitHandle.WaitOne();
 
-            // Retrieve buffer from queue and write to file.
+            // Retrieve buffer from queue.
             if (_bufferQueue.TryDequeue(out GcBuffer buffer))
             {
                 try
                 {
+                    // Write buffer (converted to Mat).
                     _videoWriter.Write(buffer.ToMat());
                 }
                 catch (Exception ex)
@@ -134,8 +141,9 @@ public class VideoWriter : IDisposable
     /// </summary>
     public void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
+        // Initialize new video writer (if not done already), using MJPEG compression.
         _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M','J','P','G'), fps: FPS, size: new Size((int)e.Buffer.Width, (int)e.Buffer.Height), isColor: e.Buffer.NumChannels > 1);
-  
+
         // Queue transferred buffer.
         _bufferQueue.Enqueue(e.Buffer);
 
@@ -174,6 +182,7 @@ public class VideoWriter : IDisposable
         {
             if (disposing)
             {
+                // Stop recording thread.
                 _recordingThreadStoppingCondition = true;
                 _ = _waitHandle.Set();
                 _recordingThread.Join();

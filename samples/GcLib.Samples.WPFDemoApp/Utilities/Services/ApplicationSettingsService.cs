@@ -34,10 +34,9 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
         acquisitionViewModel.AcquisitionChannel.SaveRawData = _settings.SaveRawData;
         if (Directory.Exists(Path.GetDirectoryName(_settings.SaveBinaryFilePath)))
             acquisitionViewModel.AcquisitionChannel.BinaryFilePath = _settings.SaveBinaryFilePath;
-        acquisitionViewModel.AutoGenerateVideoFileNames = _settings.AutoGenerateVideoFilePath;
         acquisitionViewModel.AcquisitionChannel.SaveVideo = _settings.SaveVideo;
-        if (Directory.Exists(Path.GetDirectoryName(_settings.SaveVideoFilePath)))
-            acquisitionViewModel.AcquisitionChannel.VideoFilePath = _settings.SaveVideoFilePath;
+        if (Directory.Exists(Path.GetDirectoryName(_settings.SaveVideoFolderPath)))
+            acquisitionViewModel.AcquisitionChannel.VideoFolderPath = _settings.SaveVideoFolderPath;
     }
 
     /// <inheritdoc />
@@ -54,9 +53,8 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
         _settings.AutoGenerateBinaryFilePath = acquisitionViewModel.AutoGenerateBinaryFileNames;
         _settings.SaveRawData = acquisitionViewModel.AcquisitionChannel.SaveRawData;
         _settings.SaveBinaryFilePath = acquisitionViewModel.AcquisitionChannel.BinaryFilePath;
-        _settings.AutoGenerateVideoFilePath = acquisitionViewModel.AutoGenerateVideoFileNames;
         _settings.SaveVideo = acquisitionViewModel.AcquisitionChannel.SaveVideo;
-        _settings.SaveVideoFilePath = acquisitionViewModel.AcquisitionChannel.VideoFilePath;
+        _settings.SaveVideoFolderPath = acquisitionViewModel.AcquisitionChannel.VideoFolderPath;
 
         // Save settings.
         _settings.Save();

@@ -47,7 +47,7 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
     /// <summary>
     /// Relays a request invoked by a UI command to open a dialogue window for letting user select a new file path for video.
     /// </summary>
-    public IRelayCommand<string> BrowseVideoFilePathCommand { get; }
+    public IRelayCommand<string> BrowseVideoFolderPathCommand { get; }
 
     #endregion
 
@@ -65,12 +65,12 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
         _initialSaveBinaryData = AcquisitionViewModel.AcquisitionChannel.SaveRawData;
         _initialSaveVideo = AcquisitionViewModel.AcquisitionChannel.SaveVideo;
         _initialBinaryFilePath = AcquisitionViewModel.AcquisitionChannel.BinaryFilePath;
-        _initialVideoFilePath = AcquisitionViewModel.AcquisitionChannel.VideoFilePath;
+        _initialVideoFilePath = AcquisitionViewModel.AcquisitionChannel.VideoFolderPath;
         _initialAutoGenerateFileNames = AcquisitionViewModel.AutoGenerateBinaryFileNames;
 
         // Instantiate commands.
         BrowseBinaryFilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.BinaryFilePath = FindFilePath(s, "bin"));
-        BrowseVideoFilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.VideoFilePath = FindFilePath(s, "avi"));
+        BrowseVideoFolderPathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.VideoFolderPath = FindFolderPath(s));
     }
 
     #endregion
@@ -84,7 +84,7 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
         AcquisitionViewModel.AcquisitionChannel.SaveRawData = _initialSaveBinaryData;
         AcquisitionViewModel.AcquisitionChannel.SaveVideo = _initialSaveVideo;
         AcquisitionViewModel.AcquisitionChannel.BinaryFilePath = _initialBinaryFilePath;
-        AcquisitionViewModel.AcquisitionChannel.VideoFilePath = _initialVideoFilePath;
+        AcquisitionViewModel.AcquisitionChannel.VideoFolderPath = _initialVideoFilePath;
         AcquisitionViewModel.AutoGenerateBinaryFileNames = _initialAutoGenerateFileNames;
     }
 
@@ -102,6 +102,12 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
         // Retrieve filepath from dialog.
         string filePath = _windowService.ShowSaveFileDialog(title: "Select output file", fileName: initialFilePath, filter: $"{extension} files (*.{extension})|*.{extension}", defaultExtension: extension, defaultPath: Path.GetDirectoryName(initialFilePath));
         return string.IsNullOrEmpty(filePath) ? initialFilePath : filePath;
+    }
+
+    private string FindFolderPath(string folderName) 
+    {
+        string folderPath = _windowService.ShowOpenFolderDialog(title: "Select folder", folderName);
+        return string.IsNullOrEmpty(folderPath) ? _initialVideoFilePath : folderPath;
     }
 
     #endregion

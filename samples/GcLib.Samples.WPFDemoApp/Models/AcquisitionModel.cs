@@ -58,7 +58,7 @@ internal class AcquisitionModel : ObservableObject
     /// <summary>
     /// File path for saving video.
     /// </summary>
-    public string VideoFilePath
+    public string VideoFolderPath
     {
         get => _videoFilePath;
         set => SetProperty(ref _videoFilePath, value);
@@ -221,7 +221,7 @@ internal class AcquisitionModel : ObservableObject
         StartWriting(filePath);
 
         if (SaveVideo)
-            StartVideoWriting(Path.GetDirectoryName(VideoFilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(VideoFilePath) + $"_{DateTime.Now:yyyyMMddHHmmss}" + ".avi");
+            StartVideoWriting(VideoFolderPath + Path.DirectorySeparatorChar + "Video" + $"_{DateTime.Now:yyyyMMddHHmmss}" + ".avi");
 
         // Start acquisition.
         return StartAcquisitionAsync(startGrabbing);
