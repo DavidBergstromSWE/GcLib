@@ -88,6 +88,11 @@ public class CircularBuffer<T> : ICollection<T>, IEnumerable<T>, ICollection, IE
     public bool IsEmpty => Size == 0;
 
     /// <summary>
+    /// Returns true if size of circular buffer equals its capacity.
+    /// </summary>
+    public bool IsFull => Size == Capacity;
+
+    /// <summary>
     /// Checks if circular buffer contains a specific item.
     /// </summary>
     /// <param name="item">Item.</param>

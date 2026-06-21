@@ -2,17 +2,18 @@
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading;
+using GcLib.Utilities.Collections;
 using Microsoft.Extensions.Logging;
 
 namespace GcLib.FileIO;
 
 /// <summary>
-/// Creates a new video writer, using specified file path and fps. Videos will be saved using auto-generated filenames based on current date and time.
+/// Creates a new video writer, using specified file path. Saved videos will be compressed using MJPEG in an AVI format.
 /// </summary>
 /// <param name="filePath">File path to save videos to.</param>
-/// <param name="fps">Frame rate in frames per second.</param>
-public class VideoWriter(string filePath, int fps = 30) : IDisposable
+public class VideoWriter(string filePath) : IDisposable
 {
     /// <summary>
     /// Video writer.
@@ -50,6 +51,11 @@ public class VideoWriter(string filePath, int fps = 30) : IDisposable
     public int BuffersQueued => _bufferQueue.Count;
 
     /// <summary>
+    /// Circular buffer of timestamps. Increase its capacity to improve accuracy of fps calculation.
+    /// </summary>
+    private readonly CircularBuffer<ulong> _timeStamps = new(capacity: 30, allowOverflow: false);
+
+    /// <summary>
     /// Number of frames written to video file.
     /// </summary>
     public int FramesWritten { get; private set; } = 0;
@@ -70,9 +76,9 @@ public class VideoWriter(string filePath, int fps = 30) : IDisposable
     public string FilePath { get; private set; } = filePath;
 
     /// <summary>
-    /// Frames per second.
+    /// Frames per second (calculated average).
     /// </summary>
-    public int FPS { get; private set; } = fps;
+    public double FPS { get; private set; }
 
     /// <summary>
     /// Start writing video.
@@ -141,14 +147,22 @@ public class VideoWriter(string filePath, int fps = 30) : IDisposable
     /// </summary>
     public void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
-        // Initialize new video writer (if not done already), using MJPEG compression.
-        _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M','J','P','G'), fps: FPS, size: new Size((int)e.Buffer.Width, (int)e.Buffer.Height), isColor: e.Buffer.NumChannels > 1);
-
         // Queue transferred buffer.
         _bufferQueue.Enqueue(e.Buffer);
 
-        // Proceed with thread.
-        _ = _waitHandle.Set();
+        if (_timeStamps.IsFull == false)
+            _timeStamps.Put(e.Buffer.TimeStamp); // Add buffer timestamp to circular buffer.
+        else
+        {
+            // Calculate average fps.
+            FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1);
+
+            // Initialize new video writer (if not done already), using MJPEG compression, calculated fps and buffer properties.
+            _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M', 'J', 'P', 'G'), fps: FPS, size: new Size((int)e.Buffer.Width, (int)e.Buffer.Height), isColor: e.Buffer.NumChannels > 1);
+            
+            // Proceed with thread.
+            _ = _waitHandle.Set();
+        }
     }
 
     /// <summary>
@@ -190,8 +204,9 @@ public class VideoWriter(string filePath, int fps = 30) : IDisposable
                 // Dispose writer.
                 _videoWriter.Dispose();
 
-                // Flush queue.
+                // Flush queues.
                 _bufferQueue.Clear();
+                _timeStamps.Clear();
             }
 
             // Free unmanaged resources (unmanaged objects) (and set large fields to null).
