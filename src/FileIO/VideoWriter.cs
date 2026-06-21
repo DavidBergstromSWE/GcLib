@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace GcLib.FileIO;
 
 /// <summary>
-/// Creates a new video writer, using specified file path. Saved videos will be compressed using MJPEG in an AVI format.
+/// Creates a new video writer, using specified file path. Saved videos will be compressed using MJPEG.
 /// </summary>
 /// <param name="filePath">File path to save videos to.</param>
 public class VideoWriter(string filePath) : IDisposable
@@ -73,7 +73,7 @@ public class VideoWriter(string filePath) : IDisposable
     /// <summary>
     /// A relative or absolute path to the file.
     /// </summary>
-    public string FilePath { get; private set; } = filePath;
+    public string FilePath { get; init; } = filePath;
 
     /// <summary>
     /// Frames per second (calculated average).
