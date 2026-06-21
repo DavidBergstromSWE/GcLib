@@ -12,8 +12,10 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
     #region Fields
 
     // Initial settings.
-    private readonly bool _initialSaveData;
-    private readonly string _initialFilePath;
+    private readonly bool _initialSaveBinaryData;
+    private readonly bool _initialSaveVideo;
+    private readonly string _initialBinaryFilePath;
+    private readonly string _initialVideoFilePath;
     private readonly bool _initialAutoGenerateFileNames;
 
     /// <summary>
@@ -40,7 +42,12 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
     /// <summary>
     /// Relays a request invoked by a UI command to open a dialogue window for letting user select a new file path for recorded data.
     /// </summary>
-    public IRelayCommand<string> BrowseChannelFilePathCommand { get; }
+    public IRelayCommand<string> BrowseBinaryFilePathCommand { get; }
+
+    /// <summary>
+    /// Relays a request invoked by a UI command to open a dialogue window for letting user select a new file path for video.
+    /// </summary>
+    public IRelayCommand<string> BrowseVideoFilePathCommand { get; }
 
     #endregion
 
@@ -55,12 +62,15 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
         _windowService = windowService;
 
         // Store initial settings.
-        _initialSaveData = AcquisitionViewModel.AcquisitionChannel.SaveRawData;
-        _initialFilePath = AcquisitionViewModel.AcquisitionChannel.FilePath;
-        _initialAutoGenerateFileNames = AcquisitionViewModel.AutoGenerateFileNames;
+        _initialSaveBinaryData = AcquisitionViewModel.AcquisitionChannel.SaveRawData;
+        _initialSaveVideo = AcquisitionViewModel.AcquisitionChannel.SaveVideo;
+        _initialBinaryFilePath = AcquisitionViewModel.AcquisitionChannel.BinaryFilePath;
+        _initialVideoFilePath = AcquisitionViewModel.AcquisitionChannel.VideoFilePath;
+        _initialAutoGenerateFileNames = AcquisitionViewModel.AutoGenerateBinaryFileNames;
 
         // Instantiate commands.
-        BrowseChannelFilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.FilePath = FindFilePath(s));
+        BrowseBinaryFilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.BinaryFilePath = FindFilePath(s, "bin"));
+        BrowseVideoFilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.VideoFilePath = FindFilePath(s, "avi"));
     }
 
     #endregion
@@ -71,9 +81,11 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
     public void CancelChanges()
     {
         // Restore initial settings.
-        AcquisitionViewModel.AcquisitionChannel.SaveRawData = _initialSaveData;
-        AcquisitionViewModel.AcquisitionChannel.FilePath = _initialFilePath;
-        AcquisitionViewModel.AutoGenerateFileNames = _initialAutoGenerateFileNames;
+        AcquisitionViewModel.AcquisitionChannel.SaveRawData = _initialSaveBinaryData;
+        AcquisitionViewModel.AcquisitionChannel.SaveVideo = _initialSaveVideo;
+        AcquisitionViewModel.AcquisitionChannel.BinaryFilePath = _initialBinaryFilePath;
+        AcquisitionViewModel.AcquisitionChannel.VideoFilePath = _initialVideoFilePath;
+        AcquisitionViewModel.AutoGenerateBinaryFileNames = _initialAutoGenerateFileNames;
     }
 
     #endregion
@@ -85,10 +97,10 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
     /// </summary>
     /// <param name="initialFilePath">Initial file path.</param>
     /// <returns>User-selected file path (or initial file path if cancelled).</returns>
-    private string FindFilePath(string initialFilePath)
+    private string FindFilePath(string initialFilePath, string extension)
     {
         // Retrieve filepath from dialog.
-        string filePath = _windowService.ShowSaveFileDialog(title: "Select output file", fileName: initialFilePath, filter: "bin files (*.bin)|*.bin", defaultExtension: "bin", defaultPath: Path.GetDirectoryName(initialFilePath));
+        string filePath = _windowService.ShowSaveFileDialog(title: "Select output file", fileName: initialFilePath, filter: $"{extension} files (*.{extension})|*.{extension}", defaultExtension: extension, defaultPath: Path.GetDirectoryName(initialFilePath));
         return string.IsNullOrEmpty(filePath) ? initialFilePath : filePath;
     }
 

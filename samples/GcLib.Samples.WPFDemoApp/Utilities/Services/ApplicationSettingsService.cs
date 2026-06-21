@@ -30,10 +30,14 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
         deviceViewModel.DeviceParameterUpdateTimeDelay = _settings.ParameterUpdateDelay;
 
         // AcquisitionViewModel settings.
-        acquisitionViewModel.AutoGenerateFileNames = _settings.AutoGenerateFileNames;
+        acquisitionViewModel.AutoGenerateBinaryFileNames = _settings.AutoGenerateBinaryFilePath;
         acquisitionViewModel.AcquisitionChannel.SaveRawData = _settings.SaveRawData;
-        if (Directory.Exists(Path.GetDirectoryName(_settings.SaveFilePath)))
-            acquisitionViewModel.AcquisitionChannel.FilePath = _settings.SaveFilePath;
+        if (Directory.Exists(Path.GetDirectoryName(_settings.SaveBinaryFilePath)))
+            acquisitionViewModel.AcquisitionChannel.BinaryFilePath = _settings.SaveBinaryFilePath;
+        acquisitionViewModel.AutoGenerateVideoFileNames = _settings.AutoGenerateVideoFilePath;
+        acquisitionViewModel.AcquisitionChannel.SaveVideo = _settings.SaveVideo;
+        if (Directory.Exists(Path.GetDirectoryName(_settings.SaveVideoFilePath)))
+            acquisitionViewModel.AcquisitionChannel.VideoFilePath = _settings.SaveVideoFilePath;
     }
 
     /// <inheritdoc />
@@ -47,9 +51,12 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
         _settings.ParameterUpdateDelay = deviceViewModel.DeviceParameterUpdateTimeDelay;
 
         // AcquisitionView settings.
-        _settings.AutoGenerateFileNames = acquisitionViewModel.AutoGenerateFileNames;
+        _settings.AutoGenerateBinaryFilePath = acquisitionViewModel.AutoGenerateBinaryFileNames;
         _settings.SaveRawData = acquisitionViewModel.AcquisitionChannel.SaveRawData;
-        _settings.SaveFilePath = acquisitionViewModel.AcquisitionChannel.FilePath;
+        _settings.SaveBinaryFilePath = acquisitionViewModel.AcquisitionChannel.BinaryFilePath;
+        _settings.AutoGenerateVideoFilePath = acquisitionViewModel.AutoGenerateVideoFileNames;
+        _settings.SaveVideo = acquisitionViewModel.AcquisitionChannel.SaveVideo;
+        _settings.SaveVideoFilePath = acquisitionViewModel.AcquisitionChannel.VideoFilePath;
 
         // Save settings.
         _settings.Save();

@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GcLib;
+using GcLib.FileIO;
 using GcLib.Utilities.Threading;
 using Serilog;
 
@@ -17,7 +18,9 @@ internal class AcquisitionModel : ObservableObject
 
     // backing-fields
     private bool _saveRawData;
-    private string _filePath;
+    private bool _saveVideo;
+    private string _binaryFilePath;
+    private string _videoFilePath;
 
     /// <summary>
     /// Image datastream from device.
@@ -44,21 +47,39 @@ internal class AcquisitionModel : ObservableObject
     public ImageModel ImageModel { get; }
 
     /// <summary>
-    /// File path for saving image data.
+    /// File path for saving binary image data.
     /// </summary>
-    public string FilePath
+    public string BinaryFilePath
     {
-        get => _filePath;
-        set => SetProperty(ref _filePath, value);
+        get => _binaryFilePath;
+        set => SetProperty(ref _binaryFilePath, value);
     }
 
     /// <summary>
-    /// Setting indicating that raw image data will be saved to file. If false, processed data will be saved.
+    /// File path for saving video.
+    /// </summary>
+    public string VideoFilePath
+    {
+        get => _videoFilePath;
+        set => SetProperty(ref _videoFilePath, value);
+    }
+
+    /// <summary>
+    /// Setting indicating that raw binary image data will be saved to file. If false, processed data will be saved.
     /// </summary>
     public bool SaveRawData
     {
         get => _saveRawData; 
         set => SetProperty(ref _saveRawData, value);
+    }
+
+    /// <summary>
+    /// Setting indicating that video will be saved to file.
+    /// </summary>
+    public bool SaveVideo
+    {
+        get => _saveVideo;
+        set => SetProperty(ref _saveVideo, value);
     }
 
     /// <summary>
@@ -194,7 +215,7 @@ internal class AcquisitionModel : ObservableObject
             throw new InvalidOperationException($"Acquisition is already actively running!");
 
         // Create file path by adding substring to end of filename.
-        string filePath = Path.GetDirectoryName(FilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(FilePath) + subString + ".bin";
+        string filePath = Path.GetDirectoryName(BinaryFilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(BinaryFilePath) + subString + ".bin";
 
         // Start writing to file.
         StartWriting(filePath);

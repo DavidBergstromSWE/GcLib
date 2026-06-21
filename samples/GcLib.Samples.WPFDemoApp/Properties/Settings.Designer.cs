@@ -12,7 +12,7 @@ namespace GcLib.Samples.WPFDemoApp.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.11.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "18.8.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -74,36 +74,60 @@ namespace GcLib.Samples.WPFDemoApp.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string SaveFilePath {
+        public string SaveBinaryFilePath {
             get {
-                return ((string)(this["SaveFilePath"]));
+                return ((string)(this["SaveBinaryFilePath"]));
             }
             set {
-                this["SaveFilePath"] = value;
+                this["SaveBinaryFilePath"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool AutoGenerateFileNames {
+        public bool AutoGenerateBinaryFilePath {
             get {
-                return ((bool)(this["AutoGenerateFileNames"]));
+                return ((bool)(this["AutoGenerateBinaryFilePath"]));
             }
             set {
-                this["AutoGenerateFileNames"] = value;
+                this["AutoGenerateBinaryFilePath"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool SaveProcessedData {
+        public bool SaveVideo {
             get {
-                return ((bool)(this["SaveProcessedData"]));
+                return ((bool)(this["SaveVideo"]));
             }
             set {
-                this["SaveProcessedData"] = value;
+                this["SaveVideo"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SaveVideoFilePath {
+            get {
+                return ((string)(this["SaveVideoFilePath"]));
+            }
+            set {
+                this["SaveVideoFilePath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AutoGenerateVideoFilePath {
+            get {
+                return ((bool)(this["AutoGenerateVideoFilePath"]));
+            }
+            set {
+                this["AutoGenerateVideoFilePath"] = value;
             }
         }
     }

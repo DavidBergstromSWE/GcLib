@@ -14,13 +14,19 @@
     <Setting Name="SaveRawData" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="SaveFilePath" Type="System.String" Scope="User">
+    <Setting Name="SaveBinaryFilePath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="AutoGenerateFileNames" Type="System.Boolean" Scope="User">
+    <Setting Name="AutoGenerateBinaryFilePath" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="SaveProcessedData" Type="System.Boolean" Scope="User">
+    <Setting Name="SaveVideo" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SaveVideoFilePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="AutoGenerateVideoFilePath" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>

@@ -28,7 +28,8 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     private bool _isEnabled;
     private bool _isBusy;
     private bool _isRecording;
-    private bool _autoGenerateFileNames;
+    private bool _autoGenerateBinaryFileNames;
+    private bool _autoGenerateVideoFileNames;
 
     /// <summary>
     /// Service providing windows and dialogs.
@@ -44,6 +45,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// True if an active acquisition is currently being aborted.
     /// </summary>
     private bool _isAborting;
+    
 
     #endregion
 
@@ -64,12 +66,21 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     public AcquisitionModel AcquisitionChannel { get; }
 
     /// <summary>
-    /// Indicates that filenames will be auto-generated (by current date and time).
+    /// Indicates that binary filenames will be auto-generated (by current date and time).
     /// </summary>
-    public bool AutoGenerateFileNames
+    public bool AutoGenerateBinaryFileNames
     {
-        get => _autoGenerateFileNames;
-        set => SetProperty(ref _autoGenerateFileNames, value);
+        get => _autoGenerateBinaryFileNames;
+        set => SetProperty(ref _autoGenerateBinaryFileNames, value);
+    }
+
+    /// <summary>
+    /// Indicates that binary filenames will be auto-generated (by current date and time).
+    /// </summary>
+    public bool AutoGenerateVideoFileNames
+    {
+        get => _autoGenerateVideoFileNames;
+        set => SetProperty(ref _autoGenerateVideoFileNames, value);
     }
 
     /// <summary>
@@ -116,9 +127,11 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 
         // Default file paths.
 #if DEBUG
-        AcquisitionChannel.FilePath = Path.GetFullPath(@"C:\testdata\recording.bin");
+        AcquisitionChannel.BinaryFilePath = Path.GetFullPath(@"C:\testdata\recording.bin");
+        AcquisitionChannel.VideoFilePath = Path.GetFullPath(@"C:\testdata\video.avi");
 #else
-        AcquisitionChannel.FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\recording.bin");
+        AcquisitionChannel.BinaryFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\recording.bin");
+        AcquisitionChannel.VideoFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"FusionViewer\Recordings\video.avi");
 #endif
         // Register eventhandlers to acquisition channel.
         AcquisitionChannel.AcquisitionStopped += Channel_AcquisitionStopped;
@@ -192,7 +205,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
         Log.Information("Recording started");
 
         // Show warning dialog to user that files will be overwritten (with yes or no choices).
-        if (AutoGenerateFileNames == false && File.Exists(AcquisitionChannel.FilePath))
+        if (AutoGenerateBinaryFileNames == false && File.Exists(AcquisitionChannel.BinaryFilePath))
         {
             var result = _windowService.ShowMessageDialog(this, "Warning!", "File already exists! Overwrite?", MessageDialogStyle.AffirmativeAndNegative, MetroDialogHelper.DefaultSettings);
             if (result == MessageDialogResult.Negative)
@@ -209,7 +222,7 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
 
         try
         {
-            await AcquisitionChannel.StartRecordingAsync(AutoGenerateFileNames ? dateTimeSubString : string.Empty);
+            await AcquisitionChannel.StartRecordingAsync(AutoGenerateBinaryFileNames ? dateTimeSubString : string.Empty);
             AcquisitionChannel.StartGrabbing();
             IsBusy = true;
         }
