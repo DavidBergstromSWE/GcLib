@@ -9,7 +9,10 @@ namespace GcLib.FileIO;
 
 public class VideoWriter : IDisposable
 {
-    private readonly Emgu.CV.VideoWriter _videoWriter;
+    /// <summary>
+    /// Video writer.
+    /// </summary>
+    private Emgu.CV.VideoWriter _videoWriter;
 
     /// <summary>
     /// Buffer queue, containing images waiting to be written to file.
@@ -61,9 +64,13 @@ public class VideoWriter : IDisposable
     /// </summary>
     public string FilePath { get; private set; }
 
-    public VideoWriter(string filePath, int compressionCode, int fps, Size size, bool isColor)
+    /// <summary>
+    /// Frames per second.
+    /// </summary>
+    public int FPS { get; private set; } = 30;
+
+    public VideoWriter(string filePath)
     {
-        _videoWriter = new(filePath, compressionCode, fps, size, isColor);
         _bufferQueue = new();
         FilePath = filePath;
     }
@@ -78,6 +85,8 @@ public class VideoWriter : IDisposable
         // Start recording thread.
         _recordingThread = new Thread(ThreadProc);
         _recordingThread.Start();
+
+        IsWriting = true;
     }
 
     private void ThreadProc()
@@ -125,6 +134,8 @@ public class VideoWriter : IDisposable
     /// </summary>
     public void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
+        _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M','J','P','G'), fps: FPS, size: new Size((int)e.Buffer.Width, (int)e.Buffer.Height), isColor: e.Buffer.NumChannels > 1);
+  
         // Queue transferred buffer.
         _bufferQueue.Enqueue(e.Buffer);
 
@@ -163,7 +174,12 @@ public class VideoWriter : IDisposable
         {
             if (disposing)
             {
-                // Dispose managed state (managed objects).
+                _recordingThreadStoppingCondition = true;
+                _ = _waitHandle.Set();
+                _recordingThread.Join();
+
+                // Dispose writer.
+                _videoWriter.Dispose();
 
                 // Flush queue.
                 _bufferQueue.Clear();

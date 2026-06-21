@@ -220,6 +220,9 @@ internal class AcquisitionModel : ObservableObject
         // Start writing to file.
         StartWriting(filePath);
 
+        if (SaveVideo)
+            StartVideoWriting(Path.GetDirectoryName(VideoFilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(VideoFilePath) + $"_{DateTime.Now:yyyyMMddHHmmss}" + ".avi");
+
         // Start acquisition.
         return StartAcquisitionAsync(startGrabbing);
     }
@@ -245,6 +248,9 @@ internal class AcquisitionModel : ObservableObject
         // Stop recording (if writing).
         if (ImageWriter != null && ImageWriter.IsWriting)
             await StopWritingAsync();
+
+        if (videoWriter != null && videoWriter.IsWriting)
+            StopVideoWriting();
 
         // Stop grabbing images from datastream.
         _imageGrabbingThread.Stop();
@@ -323,6 +329,37 @@ internal class AcquisitionModel : ObservableObject
 
         // Close writer and dispose resources.
         ImageWriter?.Dispose();
+    }
+
+    #endregion
+
+    #region Video
+
+    /// <summary>
+    /// Converts buffers to video frames and writes to disk.
+    /// </summary>
+    private VideoWriter videoWriter;
+
+    /// <summary>
+    /// Start writing to video file.
+    /// </summary>
+    /// <param name="filePath"></param>
+    protected void StartVideoWriting(string filePath)
+    {
+        videoWriter = new VideoWriter(filePath);
+        ImageModel.ProcessedImageAdded += videoWriter.OnBufferTransferred;
+        videoWriter.WritingAborted += OnWritingAborted;
+        videoWriter.Start();
+    }
+
+    /// <summary>
+    /// Stop writing to video file.
+    /// </summary>
+    protected void StopVideoWriting()
+    {
+        videoWriter.WritingAborted -= OnWritingAborted;
+        ImageModel.ProcessedImageAdded -= videoWriter.OnBufferTransferred;
+        videoWriter.Dispose();
     }
 
     #endregion
