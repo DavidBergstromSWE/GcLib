@@ -12,7 +12,8 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
     #region Fields
 
     // Initial settings.
-    private readonly bool _initialSaveBinaryData;
+    private readonly bool _initialSaveRawData;
+    private readonly bool _initialSaveProcessedData;
     private readonly bool _initialSaveVideo;
     private readonly string _initialBinaryFilePath;
     private readonly string _initialVideoFilePath;
@@ -62,7 +63,8 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
         _windowService = windowService;
 
         // Store initial settings.
-        _initialSaveBinaryData = AcquisitionViewModel.AcquisitionChannel.SaveRawData;
+        _initialSaveRawData = AcquisitionViewModel.AcquisitionChannel.SaveRawData;
+        _initialSaveProcessedData = AcquisitionViewModel.AcquisitionChannel.SaveProcessedData;
         _initialSaveVideo = AcquisitionViewModel.AcquisitionChannel.SaveVideo;
         _initialBinaryFilePath = AcquisitionViewModel.AcquisitionChannel.BinaryFilePath;
         _initialVideoFilePath = AcquisitionViewModel.AcquisitionChannel.VideoFolderPath;
@@ -81,7 +83,8 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
     public void CancelChanges()
     {
         // Restore initial settings.
-        AcquisitionViewModel.AcquisitionChannel.SaveRawData = _initialSaveBinaryData;
+        AcquisitionViewModel.AcquisitionChannel.SaveRawData = _initialSaveRawData;
+        AcquisitionViewModel.AcquisitionChannel.SaveProcessedData = _initialSaveProcessedData;
         AcquisitionViewModel.AcquisitionChannel.SaveVideo = _initialSaveVideo;
         AcquisitionViewModel.AcquisitionChannel.BinaryFilePath = _initialBinaryFilePath;
         AcquisitionViewModel.AcquisitionChannel.VideoFolderPath = _initialVideoFilePath;
@@ -104,9 +107,14 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
         return string.IsNullOrEmpty(filePath) ? initialFilePath : filePath;
     }
 
-    private string FindFolderPath(string folderName) 
+    /// <summary>
+    /// Opens a dialogue window for letting user select a folder path.
+    /// </summary>
+    /// <param name="initialFolderPath">Initial folder path.</param>
+    /// <returns>User-selected folder path (or initial path if cancelled).</returns>
+    private string FindFolderPath(string initialFolderPath) 
     {
-        string folderPath = _windowService.ShowOpenFolderDialog(title: "Select folder", folderName);
+        string folderPath = _windowService.ShowOpenFolderDialog(title: "Select folder", initialFolderPath);
         return string.IsNullOrEmpty(folderPath) ? _initialVideoFilePath : folderPath;
     }
 

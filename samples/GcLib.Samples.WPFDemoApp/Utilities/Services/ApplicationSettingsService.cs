@@ -32,6 +32,7 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
         // AcquisitionViewModel settings.
         acquisitionViewModel.AutoGenerateBinaryFileNames = _settings.AutoGenerateBinaryFilePath;
         acquisitionViewModel.AcquisitionChannel.SaveRawData = _settings.SaveRawData;
+        acquisitionViewModel.AcquisitionChannel.SaveProcessedData = _settings.SaveProcessedData;
         if (Directory.Exists(Path.GetDirectoryName(_settings.SaveBinaryFilePath)))
             acquisitionViewModel.AcquisitionChannel.BinaryFilePath = _settings.SaveBinaryFilePath;
         acquisitionViewModel.AcquisitionChannel.SaveVideo = _settings.SaveVideo;
@@ -52,6 +53,7 @@ internal class ApplicationSettingsService(MainWindowViewModel mainWindowViewMode
         // AcquisitionView settings.
         _settings.AutoGenerateBinaryFilePath = acquisitionViewModel.AutoGenerateBinaryFileNames;
         _settings.SaveRawData = acquisitionViewModel.AcquisitionChannel.SaveRawData;
+        _settings.SaveProcessedData = acquisitionViewModel.AcquisitionChannel.SaveProcessedData;
         _settings.SaveBinaryFilePath = acquisitionViewModel.AcquisitionChannel.BinaryFilePath;
         _settings.SaveVideo = acquisitionViewModel.AcquisitionChannel.SaveVideo;
         _settings.SaveVideoFolderPath = acquisitionViewModel.AcquisitionChannel.VideoFolderPath;

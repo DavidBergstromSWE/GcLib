@@ -18,6 +18,7 @@ internal class AcquisitionModel : ObservableObject
 
     // backing-fields
     private bool _saveRawData;
+    private bool _saveProcessedData;
     private bool _saveVideo;
     private string _binaryFilePath;
     private string _videoFilePath;
@@ -65,12 +66,35 @@ internal class AcquisitionModel : ObservableObject
     }
 
     /// <summary>
-    /// Setting indicating that raw binary image data will be saved to file. If false, processed data will be saved.
+    /// Setting indicating that raw binary image data will be saved to file.
     /// </summary>
     public bool SaveRawData
     {
-        get => _saveRawData; 
-        set => SetProperty(ref _saveRawData, value);
+        get => _saveRawData;
+        set
+        {
+            if (SetProperty(ref _saveRawData, value))
+            {
+                if (_saveRawData)
+                    SaveProcessedData = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Setting indicating that processed binary image data will be saved to file.
+    /// </summary>
+    public bool SaveProcessedData
+    {
+        get => _saveProcessedData;
+        set
+        {
+            if (SetProperty(ref _saveProcessedData, value))
+            {
+                if (_saveProcessedData)
+                    SaveRawData = false;
+            }
+        }
     }
 
     /// <summary>
@@ -218,7 +242,8 @@ internal class AcquisitionModel : ObservableObject
         string filePath = Path.GetDirectoryName(BinaryFilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(BinaryFilePath) + subString + ".bin";
 
         // Start writing to file.
-        StartWriting(filePath);
+        if (SaveRawData || SaveProcessedData)
+            StartWriting(filePath);
 
         // Save video (if selected). Videos will be saved using auto-generated filenames based on current date and time.
         if (SaveVideo)
@@ -250,7 +275,7 @@ internal class AcquisitionModel : ObservableObject
         if (ImageWriter != null && ImageWriter.IsWriting)
             await StopWritingAsync();
 
-        if (videoWriter != null && videoWriter.IsWriting)
+        if (_videoWriter != null && _videoWriter.IsWriting)
             StopVideoWriting();
 
         // Stop grabbing images from datastream.
@@ -334,12 +359,12 @@ internal class AcquisitionModel : ObservableObject
 
     #endregion
 
-    #region Video
+    #region Video recording
 
     /// <summary>
     /// Converts buffers to video frames and writes to disk.
     /// </summary>
-    private VideoWriter videoWriter;
+    private VideoWriter _videoWriter;
 
     /// <summary>
     /// Start writing to video file.
@@ -347,10 +372,10 @@ internal class AcquisitionModel : ObservableObject
     /// <param name="filePath"></param>
     protected void StartVideoWriting(string filePath)
     {
-        videoWriter = new VideoWriter(filePath);
-        ImageModel.ProcessedImageAdded += videoWriter.OnBufferTransferred;
-        videoWriter.WritingAborted += OnWritingAborted;
-        videoWriter.Start();
+        _videoWriter = new VideoWriter(filePath);
+        ImageModel.ProcessedImageAdded += _videoWriter.OnBufferTransferred;
+        _videoWriter.WritingAborted += OnWritingAborted;
+        _videoWriter.Start();
     }
 
     /// <summary>
@@ -358,9 +383,9 @@ internal class AcquisitionModel : ObservableObject
     /// </summary>
     protected void StopVideoWriting()
     {
-        videoWriter.WritingAborted -= OnWritingAborted;
-        ImageModel.ProcessedImageAdded -= videoWriter.OnBufferTransferred;
-        videoWriter.Dispose();
+        _videoWriter.WritingAborted -= OnWritingAborted;
+        ImageModel.ProcessedImageAdded -= _videoWriter.OnBufferTransferred;
+        _videoWriter.Dispose();
     }
 
     #endregion

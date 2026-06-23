@@ -70,7 +70,7 @@
                   IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel.SaveRawData, FallbackValue=true}" 
                   ToolTip="Save raw data"/>
         <CheckBox Grid.Row="2" Grid.Column="3"
-                  IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel.SaveRawData, Converter={StaticResource InverseBooleanConverter}, FallbackValue=false}"
+                  IsChecked="{Binding AcquisitionViewModel.AcquisitionChannel.SaveProcessedData, FallbackValue=false}"
                   ToolTip="Save processed data"/>
         <StackPanel Grid.Row="2" Grid.Column="4"
                     Orientation="Horizontal" Margin="10 5 0 0">
