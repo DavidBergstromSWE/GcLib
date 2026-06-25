@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using GcLib.Utilities.Collections;
 using Microsoft.Extensions.Logging;
 
@@ -112,16 +113,32 @@ public class VideoWriter(string filePath) : IDisposable
     /// Stop writing video frames.
     /// </summary>
     /// <param name="discardRemaining">(Optional) If true, remaining buffers in recording queue are discarded.</param>
-    public void Stop(bool discardRemaining = false)
+    public async Task StopAsync(bool discardRemaining = false)
     {
         if (IsWriting == false)
             return;
 
         // Stop recording thread.
         _recordingThreadStoppingCondition = true;
+
+        // Stop thread immediately (without waiting for next buffer).
         _ = _waitHandle.Set();
 
+        // Wait for thread to terminate.
         _recordingThread?.Join();
+
+        if (discardRemaining == false)
+        {
+            // Write remaining buffers to file.
+            await WriteRemainingBuffersAsync();
+        }
+        else
+        {
+            // Discard remaining buffers.
+            _bufferQueue.Clear();
+        }
+
+        IsWriting = false;
     }
 
     #endregion
@@ -145,7 +162,9 @@ public class VideoWriter(string filePath) : IDisposable
                 try
                 {
                     // Write buffer (converted to Mat).
-                    _videoWriter.Write(buffer.ToMat());
+                    _videoWriter?.Write(buffer.ToMat());
+
+                    FramesWritten++;
                 }
                 catch (Exception ex)
                 {
@@ -160,12 +179,53 @@ public class VideoWriter(string filePath) : IDisposable
                     OnWritingAborted(ex.Message, ex);
                     break;
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Write remaining buffers in queue to file.
+    /// </summary>
+    /// <returns>Awaitable task.</returns>
+    private async Task WriteRemainingBuffersAsync()
+    {
+        if (_bufferQueue.IsEmpty == false)
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+                GcLibrary.Logger.LogDebug("{bufferCount} buffers remaining. Finishing up...", _bufferQueue.Count);
+
+        while (_bufferQueue.TryDequeue(out var buffer))
+        {
+            try
+            {
+                // Calculate average fps.
+                FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1);
+
+                // Initialize new video writer (if not done already), using MJPEG compression, calculated fps and buffer properties.
+                _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M', 'J', 'P', 'G'), fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
+
+                // Write buffer (converted to Mat).
+                _videoWriter.Write(buffer.ToMat());
 
                 FramesWritten++;
             }
+            catch (Exception ex)
+            {
+                // Log error.
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                    GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
+
+                // Clear buffer.
+                _bufferQueue.Clear();
+
+                // Raise event.
+                OnWritingAborted(ex.Message, ex);
+
+                break;
+            }
         }
 
-        IsWriting = false;
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+            GcLibrary.Logger.LogDebug("Writing complete. {bufferCount} buffers remaining.", _bufferQueue.Count);
     }
 
     #endregion
@@ -235,7 +295,7 @@ public class VideoWriter(string filePath) : IDisposable
             {
                 // Stop recording thread.
                 if (IsWriting)
-                    Stop();
+                    StopAsync(true).Wait();
 
                 // Dispose writer.
                 _videoWriter?.Dispose();

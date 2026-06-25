@@ -266,17 +266,17 @@ public sealed class GcBufferWriter : IDisposable
         // Stop thread immediately (without waiting for next buffer).
         _ = _waitHandle.Set();
 
-        // Wait for thread to terminate (bad practice?).
+        // Wait for thread to terminate.
         _recordingThread?.Join();
 
         if (discardRemaining == false)
         {
-            // Write remaining buffers in queue to file.
+            // Write remaining buffers to file.
             await WriteRemainingBuffersAsync();
         }
         else
         {
-            // Discard buffers remaining.
+            // Discard remaining buffers.
             _bufferQueue.Clear();
         }
 
@@ -328,6 +328,7 @@ public sealed class GcBufferWriter : IDisposable
     /// <summary>
     /// Write remaining buffers in queue to file.
     /// </summary>
+    /// <returns>Awaitable task.</returns>
     private async Task WriteRemainingBuffersAsync()
     {
         if (_bufferQueue.IsEmpty == false)

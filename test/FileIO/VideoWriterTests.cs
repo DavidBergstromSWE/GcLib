@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using GcLib.FileIO;
 using GcLib.Utilities.Imaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -34,12 +35,11 @@ public class VideoWriterTests
     [TestCleanup]
     public void TestCleanup()
     {
-        if (_writer is not null && _writer.IsWriting)
-        {
+        if (_writer != null)
             BufferTransferred -= _writer.OnBufferTransferred;
-            _writer.Dispose();
-        }
 
+        if (_writer != null && _writer.IsDisposed == false)
+            _writer.Dispose();
 
         if (File.Exists(_path))
             File.Delete(_path);
@@ -108,6 +108,7 @@ public class VideoWriterTests
         int numBuffers = 10;
         for (int i = 0; i < numBuffers; i++)
             BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
+        Thread.Sleep(100);
 
         // Assert
         Assert.AreEqual(numBuffers, _writer.BuffersQueued);
@@ -134,23 +135,23 @@ public class VideoWriterTests
     #region Stop
 
     [TestMethod]
-    public void Stop_IsWriting_IsNotWriting()
+    public async Task Stop_IsWriting_IsNotWriting()
     {
         // Arrange
         _writer.Start();
 
         // Act
-        _writer.Stop();
+        await _writer.StopAsync();
 
         // Assert
         Assert.IsFalse(_writer.IsWriting);
     }
 
     [TestMethod]
-    public void Stop_IsNotWriting_IsNotWriting()
+    public async Task Stop_IsNotWriting_IsNotWriting()
     {
         // Act
-        _writer.Stop();
+        await _writer.StopAsync();
 
         // Assert
         Assert.IsFalse(_writer.IsWriting);
@@ -162,7 +163,7 @@ public class VideoWriterTests
     [DataRow(30)]
     [DataRow(40)]
     [DataRow(100)]
-    public void Stop_WithoutDiscard_AllQueuedBuffersAreWritten(int numBuffers)
+    public async Task Stop_WithoutDiscard_AllQueuedBuffersAreWritten(int numBuffers)
     {
         // Arrange
         _writer.Start();
@@ -170,11 +171,12 @@ public class VideoWriterTests
             BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
 
         // Act
-        _writer.Stop(discardRemaining: false);
-        Thread.Sleep(300);
+        await _writer.StopAsync(discardRemaining: false);
 
         // Assert
         Assert.AreEqual(numBuffers, _writer.FramesWritten);
+        Assert.AreEqual(0, _writer.BuffersQueued);
+        Assert.IsFalse(_writer.IsWriting);       
     }
 
     [TestMethod]
@@ -183,7 +185,7 @@ public class VideoWriterTests
     [DataRow(30)]
     [DataRow(40)]
     [DataRow(100)]
-    public void Stop_WithDiscard_AllQueuedBuffersAreNotWritten(int numBuffers)
+    public async Task Stop_WithDiscard_AllQueuedBuffersAreNotWritten(int numBuffers)
     {
         // Arrange
         _writer.Start();
@@ -191,14 +193,17 @@ public class VideoWriterTests
             BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
 
         // Act
-        _writer.Stop(discardRemaining: true);
+        await _writer.StopAsync(discardRemaining: true);
         Thread.Sleep(300);
 
         // Assert
         Assert.AreNotEqual(numBuffers, _writer.FramesWritten);
+        Assert.IsFalse(_writer.IsWriting);
     }
 
     #endregion
+
+    #region IDisposable
 
     [TestMethod]
     public void Dispose_IsNotWriting_IsDisposed()
@@ -212,7 +217,7 @@ public class VideoWriterTests
     }
 
     [TestMethod]
-    public void Dispose_IsWriting_IsDisposed()
+    public void Dispose_IsWriting_IsNotWritingAndIsDisposed()
     {
         // Arrange
         _writer.Start();
@@ -221,10 +226,12 @@ public class VideoWriterTests
         _writer.Dispose();
 
         // Assert
-        Assert.IsTrue(_writer.IsDisposed);
         Assert.IsFalse(_writer.IsWriting);
+        Assert.IsTrue(_writer.IsDisposed);        
         Assert.AreEqual(0, _writer.BuffersQueued);
     }
+
+    #endregion
 
     #endregion
 
