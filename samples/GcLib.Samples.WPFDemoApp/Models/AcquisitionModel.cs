@@ -247,7 +247,7 @@ internal class AcquisitionModel : ObservableObject
 
         // Save video (if selected). Videos will be saved using auto-generated filenames based on current date and time.
         if (SaveVideo)
-            StartVideoWriting(VideoFolderPath + Path.DirectorySeparatorChar + "Video" + $"_{DateTime.Now:yyyyMMddHHmmss}" + ".avi"); // Alternativ format: mp4
+            StartVideoWriting(VideoFolderPath + Path.DirectorySeparatorChar + "Video" + $"_{DateTime.Now:yyyyMMddHHmmss}" + ".mp4");
 
         // Start acquisition.
         return StartAcquisitionAsync(startGrabbing);

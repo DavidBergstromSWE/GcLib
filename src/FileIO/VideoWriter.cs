@@ -11,12 +11,33 @@ using Microsoft.Extensions.Logging;
 namespace GcLib.FileIO;
 
 /// <summary>
-/// Creates a new video writer, using specified file path. Saved videos will be compressed using MJPEG.
+/// Video writer, taking buffers and compressing them into a mp4 file using a specified video codec (supported codecs are Motion JPEG, H.264 and H.265).
 /// </summary>
-/// <param name="filePath">File path to save videos to.</param>
-/// <param name="fps">Frame rate in frames per second. If not specified (0.0), it will be calculated from input buffer timestamps.</param>
-public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
+public class VideoWriter : IDisposable
 {
+    #region Enums
+
+    /// <summary>
+    /// Supported video codecs.
+    /// </summary>
+    public enum CODEC
+    {
+        /// <summary>
+        /// Motion JPEG. Intraframe-only compression in which each video frame or interlaced field of a digital video sequence is compressed separately as a JPEG image.
+        /// </summary>
+        MJPEG = 1196444237,
+        /// <summary>
+        /// H.264/AVC (Advanced Video Coding). Block-oriented, motion-compensated compression using integer discrete cosine transform (DCT) with 4×4 and 8×8 block sizes.
+        /// </summary>
+        H264 = 875967048,
+        /// <summary>
+        /// H.265/HEVC (High Efficiency Video Coding). Block-oriented, motion-compensated compression using both integer discrete cosine transform (DCT) and discrete sine transform (DST) with varied block sizes between 4×4 and 32×32.
+        /// </summary>
+        H265 = 892744264
+    }
+
+    #endregion
+
     #region Fields
 
     /// <summary>
@@ -81,14 +102,34 @@ public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
     /// <summary>
     /// A relative or absolute path to the file.
     /// </summary>
-    public string FilePath { get; init; } = filePath;
+    public string FilePath { get; init; }
 
     /// <summary>
     /// Frame rate (in frames per second).
     /// </summary>
-    public double FPS { get; private set; } = fps;
+    public double FPS { get; private set; }
+
+    /// <summary>
+    /// Video codec to use im compression.
+    /// </summary>
+    public CODEC Codec { get; }
 
     #endregion
+
+    /// <summary>
+    /// Creates a new video writer, taking buffers and compressing them into a video file using the specified <paramref name="filePath"/> (in mp4 format). 
+    /// Videos will be saved at a frame rate specified by <paramref name="fps"/>. If no frame rate is specified, it will be calculated from buffer timestamps. 
+    /// Saved video will be compressed using the scheme specified by <paramref name="codec"/>.
+    /// </summary>
+    /// <param name="filePath">File path to save videos to (must have mp4 extension).</param>
+    /// <param name="fps">Frame rate in frames per second. If not specified, it will be calculated from input buffer timestamps.</param>
+    /// <param name="codec">Video codec to use in video compression.</param>
+    public VideoWriter(string filePath, double fps = 0.0, VideoWriter.CODEC codec = VideoWriter.CODEC.MJPEG)
+    {
+        FilePath = filePath;
+        FPS = fps;
+        Codec = codec;
+    }
 
     #region Public methods
 
@@ -211,8 +252,8 @@ public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
             FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1); // Calculate average fps.
 
         // Initialize new video writer (if not done already), using MJPEG compression, calculated fps and buffer properties.
-        _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M', 'J', 'P', 'G'), fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
-
+        _videoWriter ??= new(fileName: FilePath, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
+        
         // Write buffer (converted to Mat).
         _videoWriter.Write(buffer.ToMat());
 
