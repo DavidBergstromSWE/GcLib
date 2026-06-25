@@ -49,7 +49,6 @@
                 <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="Margin" Value="5 0 0 0"/>
                 <Setter Property="Padding" Value="1"/>
-                <Setter Property="ToolTip" Value="Select file..."/>
                 <Setter Property="ToolTipService.InitialShowDelay" Value="500"/>
             </Style>
         </Grid.Resources>
@@ -78,7 +77,7 @@
                      Text="{Binding AcquisitionViewModel.AcquisitionChannel.BinaryFilePath}"
                      d:Text="C:\testdata\recording.bin"
                      IsEnabled="{Binding ElementName=AutoGenBinary, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"/>
-            <Button Style="{StaticResource Browsebutton}" 
+            <Button Style="{StaticResource Browsebutton}" ToolTip="Select file..."
                     Content="{iconPacks:Material Kind=FolderSearchOutline}"
                     IsEnabled="{Binding ElementName=AutoGenBinary, Path=IsOn, Converter={StaticResource InverseBooleanConverter}}"
                     Command="{Binding BrowseBinaryFilePathCommand}" CommandParameter="{Binding ElementName=BinaryFilePath, Path=Text}"/>
@@ -106,7 +105,7 @@
             <TextBox x:Name="VideoFolderPath"
                      Text="{Binding AcquisitionViewModel.AcquisitionChannel.VideoFolderPath}"
                      d:Text="C:\testdata\"/>
-            <Button Style="{StaticResource Browsebutton}" 
+            <Button Style="{StaticResource Browsebutton}" ToolTip="Select folder..."
                     Content="{iconPacks:Material Kind=FolderSearchOutline}"
                     Command="{Binding BrowseVideoFolderPathCommand}" CommandParameter="{Binding ElementName=VideoFolderPath, Path=Text}"/>
         </StackPanel>

@@ -15,6 +15,8 @@ namespace GcLib.FileIO;
 /// <param name="filePath">File path to save videos to.</param>
 public class VideoWriter(string filePath) : IDisposable
 {
+    #region Fields
+
     /// <summary>
     /// Video writer.
     /// </summary>
@@ -24,6 +26,11 @@ public class VideoWriter(string filePath) : IDisposable
     /// Buffer queue, containing images waiting to be written to file.
     /// </summary>
     private readonly ConcurrentQueue<GcBuffer> _bufferQueue = new();
+
+    /// <summary>
+    /// Circular buffer of timestamps. Increase its capacity to improve accuracy of fps calculation.
+    /// </summary>
+    private readonly CircularBuffer<ulong> _timeStamps = new(capacity: 30, allowOverflow: false);
 
     /// <summary>
     /// Recording thread used in writing to file.
@@ -45,15 +52,14 @@ public class VideoWriter(string filePath) : IDisposable
     /// </summary>
     private readonly AutoResetEvent _waitHandle = new(false);
 
+    #endregion
+
+    #region Properties
+
     /// <summary>
     /// Number of buffers currently queued for writing.
     /// </summary>
     public int BuffersQueued => _bufferQueue.Count;
-
-    /// <summary>
-    /// Circular buffer of timestamps. Increase its capacity to improve accuracy of fps calculation.
-    /// </summary>
-    private readonly CircularBuffer<ulong> _timeStamps = new(capacity: 30, allowOverflow: false);
 
     /// <summary>
     /// Number of frames written to video file.
@@ -80,8 +86,12 @@ public class VideoWriter(string filePath) : IDisposable
     /// </summary>
     public double FPS { get; private set; }
 
+    #endregion
+
+    #region Public methods
+
     /// <summary>
-    /// Start writing video.
+    /// Start writing video frames.
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
     public void Start()
@@ -97,6 +107,26 @@ public class VideoWriter(string filePath) : IDisposable
 
         IsWriting = true;
     }
+
+    /// <summary>
+    /// Stop writing video frames.
+    /// </summary>
+    /// <param name="discardRemaining">(Optional) If true, remaining buffers in recording queue are discarded.</param>
+    public void Stop(bool discardRemaining = false)
+    {
+        if (IsWriting == false)
+            return;
+
+        // Stop recording thread.
+        _recordingThreadStoppingCondition = true;
+        _ = _waitHandle.Set();
+
+        _recordingThread?.Join();
+    }
+
+    #endregion
+
+    #region Private methods
 
     /// <summary>
     /// Continuously waits for buffers to be queued and writes queued buffers to video file.
@@ -134,19 +164,22 @@ public class VideoWriter(string filePath) : IDisposable
                 FramesWritten++;
             }
         }
+
+        IsWriting = false;
     }
 
-    ~VideoWriter() 
-    { 
-        _videoWriter.Dispose(); 
-    }
+    #endregion
 
+    #region Events
 
     /// <summary>
     /// Event-handling method to BufferTransferred events, queuing transferred buffer for writing.
     /// </summary>
     public void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
+        if (IsWriting == false) 
+            return;
+
         // Queue transferred buffer.
         _bufferQueue.Enqueue(e.Buffer);
 
@@ -179,6 +212,10 @@ public class VideoWriter(string filePath) : IDisposable
         WritingAborted?.Invoke(this, new WritingAbortedEventArgs(message, ex));
     }
 
+    #endregion
+
+    #region IDisposable
+
     public void Dispose()
     {
         Dispose(disposing: true);
@@ -197,12 +234,11 @@ public class VideoWriter(string filePath) : IDisposable
             if (disposing)
             {
                 // Stop recording thread.
-                _recordingThreadStoppingCondition = true;
-                _ = _waitHandle.Set();
-                _recordingThread.Join();
+                if (IsWriting)
+                    Stop();
 
                 // Dispose writer.
-                _videoWriter.Dispose();
+                _videoWriter?.Dispose();
 
                 // Flush queues.
                 _bufferQueue.Clear();
@@ -217,4 +253,6 @@ public class VideoWriter(string filePath) : IDisposable
             _disposed = true;
         }
     }
+
+    #endregion
 }
