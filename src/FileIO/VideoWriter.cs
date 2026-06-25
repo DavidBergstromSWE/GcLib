@@ -181,10 +181,6 @@ public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
     /// <returns>Awaitable task.</returns>
     private async Task WriteRemainingBuffersAsync()
     {
-        if (_bufferQueue.IsEmpty == false)
-            if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
-                GcLibrary.Logger.LogDebug("{bufferCount} buffers remaining. Finishing up...", _bufferQueue.Count);
-
         while (_bufferQueue.TryDequeue(out var buffer))
         {
             try
@@ -215,9 +211,6 @@ public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
                 break;
             }
         }
-
-        if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
-            GcLibrary.Logger.LogDebug("Writing complete. {bufferCount} buffers remaining.", _bufferQueue.Count);
     }
 
     #endregion

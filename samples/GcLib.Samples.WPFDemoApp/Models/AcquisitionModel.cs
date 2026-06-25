@@ -276,7 +276,7 @@ internal class AcquisitionModel : ObservableObject
             await StopWritingAsync();
 
         if (_videoWriter != null && _videoWriter.IsWriting)
-            StopVideoWriting();
+            await StopVideoWriting();
 
         // Stop grabbing images from datastream.
         _imageGrabbingThread.Stop();
@@ -342,8 +342,6 @@ internal class AcquisitionModel : ObservableObject
         ImageModel.RawImageAdded -= ImageWriter.OnBufferTransferred;
         ImageModel.ProcessedImageAdded -= ImageWriter.OnBufferTransferred;
 
-        Log.Verbose("Stopping recording thread");
-
         // Stop writing images to disk.
         await ImageWriter.StopAsync();
 
@@ -376,15 +374,29 @@ internal class AcquisitionModel : ObservableObject
         ImageModel.ProcessedImageAdded += _videoWriter.OnBufferTransferred;
         _videoWriter.WritingAborted += OnWritingAborted;
         _videoWriter.Start();
+
+        // Log information.
+        Log.Debug("Recording to {file} started", _videoWriter.FilePath);
     }
 
     /// <summary>
     /// Stop writing to video file.
     /// </summary>
-    protected void StopVideoWriting()
+    protected async Task StopVideoWriting()
     {
-        _videoWriter.WritingAborted -= OnWritingAborted;
+        // Unhook image announcing events.
         ImageModel.ProcessedImageAdded -= _videoWriter.OnBufferTransferred;
+
+        // Stop writing frames to video.
+        await _videoWriter.StopAsync();
+
+        // Log information.
+        Log.Debug("Recording to {file} finished ({buffers} frames written)", _videoWriter.FilePath, _videoWriter.FramesWritten);
+
+        // Unhook exception eventhandler.
+        _videoWriter.WritingAborted -= OnWritingAborted;
+
+        // Close writer and dispose resources.
         _videoWriter.Dispose();
     }
 
