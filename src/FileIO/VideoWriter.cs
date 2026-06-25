@@ -153,10 +153,7 @@ public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
             {
                 try
                 {
-                    // Write buffer (converted to Mat).
-                    _videoWriter?.Write(buffer.ToMat());
-
-                    FramesWritten++;
+                    WriteBuffer(buffer);
                 }
                 catch (Exception ex)
                 {
@@ -184,17 +181,8 @@ public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
         while (_bufferQueue.TryDequeue(out var buffer))
         {
             try
-            {            
-                if (FPS == 0.0)
-                    FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1); // Calculate average fps.
-
-                // Initialize new video writer (if not done already), using MJPEG compression, calculated fps and buffer properties.
-                _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M', 'J', 'P', 'G'), fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
-
-                // Write buffer (converted to Mat).
-                _videoWriter.Write(buffer.ToMat());
-
-                FramesWritten++;
+            {
+                WriteBuffer(buffer);
             }
             catch (Exception ex)
             {
@@ -213,13 +201,30 @@ public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
         }
     }
 
+    /// <summary>
+    /// Write buffer to video file.
+    /// </summary>
+    /// <param name="buffer">Buffer to be written to file.</param>
+    private void WriteBuffer(GcBuffer buffer)
+    {
+        if (FPS == 0.0)
+            FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1); // Calculate average fps.
+
+        // Initialize new video writer (if not done already), using MJPEG compression, calculated fps and buffer properties.
+        _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M', 'J', 'P', 'G'), fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
+
+        // Write buffer (converted to Mat).
+        _videoWriter.Write(buffer.ToMat());
+
+        FramesWritten++;
+    }
+
     #endregion
 
     #region Events
 
     /// <summary>
     /// Event-handling method to BufferTransferred events, queuing transferred buffer for writing.
-    /// </summary>
     public void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
         if (IsWriting == false) 
@@ -232,13 +237,7 @@ public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
             _timeStamps.Put(e.Buffer.TimeStamp); // Add buffer timestamp to circular buffer.
         else
         {         
-            if (FPS == 0.0)
-                FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1); // Calculate average fps.
-
-            // Initialize new video writer (if not done already), using MJPEG compression, calculated fps and buffer properties.
-            _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M', 'J', 'P', 'G'), fps: FPS, size: new Size((int)e.Buffer.Width, (int)e.Buffer.Height), isColor: e.Buffer.NumChannels > 1);
-            
-            // Proceed with thread.
+            // Proceed with recording thread.
             _ = _waitHandle.Set();
         }
     }
