@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -128,6 +129,7 @@ public class VideoWriterTests
 
         // Assert
         Assert.AreEqual(numBuffers, _writer.FramesWritten);
+        Assert.IsTrue(File.Exists(_path));
     }
 
     #endregion
@@ -159,11 +161,9 @@ public class VideoWriterTests
 
     [TestMethod]
     [DataRow(10)]
-    [DataRow(20)]
     [DataRow(30)]
-    [DataRow(40)]
-    [DataRow(100)]
-    public async Task Stop_WithoutDiscard_AllQueuedBuffersAreWritten(int numBuffers)
+    [DataRow(60)]
+    public async Task Stop_AllQueuedBuffersAreWritten(int numBuffers)
     {
         // Arrange
         _writer.Start();
@@ -171,34 +171,38 @@ public class VideoWriterTests
             BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
 
         // Act
-        await _writer.StopAsync(discardRemaining: false);
+        await _writer.StopAsync();
 
         // Assert
         Assert.AreEqual(numBuffers, _writer.FramesWritten);
         Assert.AreEqual(0, _writer.BuffersQueued);
-        Assert.IsFalse(_writer.IsWriting);       
+        Assert.IsFalse(_writer.IsWriting);
+        Assert.IsTrue(File.Exists(_path));
     }
 
     [TestMethod]
     [DataRow(10)]
-    [DataRow(20)]
     [DataRow(30)]
-    [DataRow(40)]
-    [DataRow(100)]
-    public async Task Stop_WithDiscard_AllQueuedBuffersAreNotWritten(int numBuffers)
+    [DataRow(60)]
+    public async Task Stop_FPS_ValidateAverage(int numBuffers)
     {
         // Arrange
         _writer.Start();
-        for (int i = 0; i < numBuffers; i++)
-            BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
+        var timer = new System.Timers.Timer(1 / 30.0 * 1000) { AutoReset = true };
+        var i = 0;
+        timer.Elapsed += (s, e) => { BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(++i))); };
+        timer.Start();
+        while (i < numBuffers) { }
+        timer.Stop();
 
         // Act
-        await _writer.StopAsync(discardRemaining: true);
-        Thread.Sleep(300);
+        await _writer.StopAsync();
 
         // Assert
-        Assert.AreNotEqual(numBuffers, _writer.FramesWritten);
-        Assert.IsFalse(_writer.IsWriting);
+        Assert.IsLessThan(35, _writer.FPS);
+        Assert.IsGreaterThan(25, _writer.FPS);
+
+        timer.Dispose();
     }
 
     #endregion

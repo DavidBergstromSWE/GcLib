@@ -14,7 +14,8 @@ namespace GcLib.FileIO;
 /// Creates a new video writer, using specified file path. Saved videos will be compressed using MJPEG.
 /// </summary>
 /// <param name="filePath">File path to save videos to.</param>
-public class VideoWriter(string filePath) : IDisposable
+/// <param name="fps">Frame rate in frames per second. If not specified (0.0), it will be calculated from input buffer timestamps.</param>
+public class VideoWriter(string filePath, double fps = 0.0) : IDisposable
 {
     #region Fields
 
@@ -83,9 +84,9 @@ public class VideoWriter(string filePath) : IDisposable
     public string FilePath { get; init; } = filePath;
 
     /// <summary>
-    /// Frames per second (calculated average).
+    /// Frame rate (in frames per second).
     /// </summary>
-    public double FPS { get; private set; }
+    public double FPS { get; private set; } = fps;
 
     #endregion
 
@@ -112,8 +113,7 @@ public class VideoWriter(string filePath) : IDisposable
     /// <summary>
     /// Stop writing video frames.
     /// </summary>
-    /// <param name="discardRemaining">(Optional) If true, remaining buffers in recording queue are discarded.</param>
-    public async Task StopAsync(bool discardRemaining = false)
+    public async Task StopAsync()
     {
         if (IsWriting == false)
             return;
@@ -127,16 +127,8 @@ public class VideoWriter(string filePath) : IDisposable
         // Wait for thread to terminate.
         _recordingThread?.Join();
 
-        if (discardRemaining == false)
-        {
-            // Write remaining buffers to file.
-            await WriteRemainingBuffersAsync();
-        }
-        else
-        {
-            // Discard remaining buffers.
-            _bufferQueue.Clear();
-        }
+        // Write remaining buffers to file.
+        await WriteRemainingBuffersAsync();
 
         IsWriting = false;
     }
@@ -196,9 +188,9 @@ public class VideoWriter(string filePath) : IDisposable
         while (_bufferQueue.TryDequeue(out var buffer))
         {
             try
-            {
-                // Calculate average fps.
-                FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1);
+            {            
+                if (FPS == 0.0)
+                    FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1); // Calculate average fps.
 
                 // Initialize new video writer (if not done already), using MJPEG compression, calculated fps and buffer properties.
                 _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M', 'J', 'P', 'G'), fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
@@ -246,9 +238,9 @@ public class VideoWriter(string filePath) : IDisposable
         if (_timeStamps.IsFull == false)
             _timeStamps.Put(e.Buffer.TimeStamp); // Add buffer timestamp to circular buffer.
         else
-        {
-            // Calculate average fps.
-            FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1);
+        {         
+            if (FPS == 0.0)
+                FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1); // Calculate average fps.
 
             // Initialize new video writer (if not done already), using MJPEG compression, calculated fps and buffer properties.
             _videoWriter ??= new(fileName: FilePath, compressionCode: Emgu.CV.VideoWriter.Fourcc('M', 'J', 'P', 'G'), fps: FPS, size: new Size((int)e.Buffer.Width, (int)e.Buffer.Height), isColor: e.Buffer.NumChannels > 1);
@@ -295,7 +287,7 @@ public class VideoWriter(string filePath) : IDisposable
             {
                 // Stop recording thread.
                 if (IsWriting)
-                    StopAsync(true).Wait();
+                    StopAsync().Wait();
 
                 // Dispose writer.
                 _videoWriter?.Dispose();
