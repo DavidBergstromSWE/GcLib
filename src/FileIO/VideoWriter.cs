@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace GcLib.FileIO;
 
 /// <summary>
-/// Video writer, taking buffers and compressing them into a mp4 file using a specified video codec (supported codecs are Motion JPEG, H.264 and H.265).
+/// Video writer, taking buffers and compressing them into a mp4 file using a specified video codec. Currently supported codecs are enumerated in <see cref="CODEC"/>.
 /// </summary>
 public class VideoWriter : IDisposable
 {
@@ -33,7 +33,7 @@ public class VideoWriter : IDisposable
         /// <summary>
         /// H.265/HEVC (High Efficiency Video Coding). Block-oriented, motion-compensated compression using both integer discrete cosine transform (DCT) and discrete sine transform (DST) with varied block sizes between 4×4 and 32×32.
         /// </summary>
-        H265 = 892744264
+        //H265 = 892744264
     }
 
     #endregion
@@ -102,7 +102,7 @@ public class VideoWriter : IDisposable
     /// <summary>
     /// A relative or absolute path to the file.
     /// </summary>
-    public string FilePath { get; init; }
+    public string FilePath { get; }
 
     /// <summary>
     /// Frame rate (in frames per second).
@@ -117,15 +117,19 @@ public class VideoWriter : IDisposable
     #endregion
 
     /// <summary>
-    /// Creates a new video writer, taking buffers and compressing them into a video file using the specified <paramref name="filePath"/> (in mp4 format). 
+    /// Creates a new video writer, using the specified <paramref name="filePath"/> (must be in mp4 format/extension). 
     /// Videos will be saved at a frame rate specified by <paramref name="fps"/>. If no frame rate is specified, it will be calculated from buffer timestamps. 
     /// Saved video will be compressed using the scheme specified by <paramref name="codec"/>.
     /// </summary>
     /// <param name="filePath">File path to save videos to (must have mp4 extension).</param>
     /// <param name="fps">Frame rate in frames per second. If not specified, it will be calculated from input buffer timestamps.</param>
     /// <param name="codec">Video codec to use in video compression.</param>
-    public VideoWriter(string filePath, double fps = 0.0, VideoWriter.CODEC codec = VideoWriter.CODEC.MJPEG)
+    /// <exception cref="ArgumentException"></exception>
+    public VideoWriter(string filePath, double fps = 0.0, CODEC codec = CODEC.MJPEG)
     {
+        if (Path.GetExtension(filePath) != ".mp4")
+            throw new ArgumentException("Input file must have mp4 extension!");
+        
         FilePath = filePath;
         FPS = fps;
         Codec = codec;
@@ -136,6 +140,7 @@ public class VideoWriter : IDisposable
     /// <summary>
     /// Start writing video frames.
     /// </summary>
+    /// <exception cref="ObjectDisposedException"></exception>
     /// <exception cref="InvalidOperationException"></exception>
     public void Start()
     {
@@ -207,6 +212,7 @@ public class VideoWriter : IDisposable
 
                     // Raise event.
                     OnWritingAborted(ex.Message, ex);
+                    
                     break;
                 }
             }
@@ -248,10 +254,11 @@ public class VideoWriter : IDisposable
     /// <param name="buffer">Buffer to be written to file.</param>
     private void WriteBuffer(GcBuffer buffer)
     {
+        // If fps is not specified, calculate it as an average from incoming buffer timestamps.
         if (FPS == 0.0)
-            FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1); // Calculate average fps.
+            FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1); 
 
-        // Initialize new video writer (if not done already), using MJPEG compression, calculated fps and buffer properties.
+        // Initialize new video writer (if not done already), using selected codec, fps and buffer properties.
         _videoWriter ??= new(fileName: FilePath, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
         
         // Write buffer (converted to Mat).
@@ -316,27 +323,37 @@ public class VideoWriter : IDisposable
     {
         if (!_disposed)
         {
+            // Stop recording thread.
+            if (IsWriting)
+                StopAsync().Wait();
+
             if (disposing)
             {
-                // Stop recording thread.
-                if (IsWriting)
-                    StopAsync().Wait();
-
-                // Dispose writer.
-                _videoWriter?.Dispose();
+                // Free managed resources.
 
                 // Flush queues.
                 _bufferQueue.Clear();
                 _timeStamps.Clear();
             }
 
-            // Free unmanaged resources (unmanaged objects) (and set large fields to null).
+            // Free unmanaged resources.
+
+            // Dispose writer.
+            _videoWriter?.Dispose();
 
             // Dispose WaitHandle.
             _waitHandle?.Dispose();
 
             _disposed = true;
         }
+    }
+
+    /// <summary>
+    /// Finalizer.
+    /// </summary>
+    ~VideoWriter()
+    {
+        Dispose(false);
     }
 
     #endregion
