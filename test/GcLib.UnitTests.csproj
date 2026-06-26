@@ -23,9 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Resources\fake.bin">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Resources\test_320x240_Mono8_10frames.bin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
