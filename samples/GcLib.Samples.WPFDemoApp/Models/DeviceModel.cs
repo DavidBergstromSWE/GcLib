@@ -16,17 +16,12 @@ namespace ImagerViewer.Models;
 /// <summary>
 /// Models a camera device.
 /// </summary>
-internal sealed class DeviceModel : ObservableObject, IXmlSerializable
+internal sealed partial class DeviceModel : ObservableObject, IXmlSerializable
 {
     #region Fields
 
     // backing-fields
-    private GcDevice _device;
-    private bool _isConnected;
     private bool _isConnecting;
-    private string _modelName;
-    private string _vendorName;
-    private string _uniqueID;
 
     #endregion
 
@@ -35,47 +30,32 @@ internal sealed class DeviceModel : ObservableObject, IXmlSerializable
     /// <summary>
     /// Model name of device. 
     /// </summary>
-    public string ModelName
-    {
-        get => _modelName;
-        private set => SetProperty(ref _modelName, value);
-    }
+    [ObservableProperty]
+    public partial string ModelName { get; set; }
 
     /// <summary>
     /// Vendor name of device.
     /// </summary>
-    public string VendorName
-    {
-        get => _vendorName;
-        private set => SetProperty(ref _vendorName, value);
-    }
+    [ObservableProperty]
+    public partial string VendorName { get; private set; }
 
     /// <summary>
     /// Unique string identifier of device.
     /// </summary>
-    public string UniqueID
-    {
-        get => _uniqueID;
-        private set => SetProperty(ref _uniqueID, value);
-    }
+    [ObservableProperty]
+    public partial string UniqueID { get; private set; }
 
     /// <summary>
     /// Connected device.
     /// </summary>
-    public GcDevice Device
-    {
-        get => _device;
-        private set => SetProperty(ref _device, value);
-    }
+    [ObservableProperty]
+    public partial GcDevice Device { get; private set; }
 
     /// <summary>
     /// Indicates if device is connected.
     /// </summary>
-    public bool IsConnected
-    {
-        get => _isConnected;
-        set => SetProperty(ref _isConnected, value);
-    }
+    [ObservableProperty]
+    public partial bool IsConnected { get; set; }
 
     /// <summary>
     /// Indicates that device is currently being connected to.

@@ -20,16 +20,9 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// Models a view for handling acquisition and recording of image data from an input (device) channel.
 /// </summary>
-internal sealed class AcquisitionViewModel : ObservableRecipient
+internal sealed partial class AcquisitionViewModel : ObservableRecipient
 {
     #region Fields
-
-    // backing-fields
-    private bool _isEnabled;
-    private bool _isBusy;
-    private bool _isRecording;
-    private bool _autoGenerateBinaryFileNames;
-    private bool _autoGenerateVideoFileNames;
 
     /// <summary>
     /// Service providing windows and dialogs.
@@ -45,7 +38,6 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// True if an active acquisition is currently being aborted.
     /// </summary>
     private bool _isAborting;
-    
 
     #endregion
 
@@ -54,56 +46,39 @@ internal sealed class AcquisitionViewModel : ObservableRecipient
     /// <summary>
     /// Indicates that view is enabled.
     /// </summary>
-    public bool IsEnabled
-    {
-        get => _isEnabled;
-        private set => SetProperty(ref _isEnabled, value);
-    }
+    [ObservableProperty]
+    public partial bool IsEnabled { get; private set; }
+
+    /// <summary>
+    /// Indicates that binary filenames will be auto-generated (by current date and time).
+    /// </summary>
+    [ObservableProperty]
+    public partial bool AutoGenerateBinaryFileNames { get; set; }
+
+    /// <summary>
+    /// Indicates that binary filenames will be auto-generated (by current date and time).
+    /// </summary>
+    [ObservableProperty]
+    public partial bool AutoGenerateVideoFileNames { get; set; }
+
+    /// <summary>
+    /// Indicates that a recording is currently running.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsRecording { get; private set; }
+
+    /// <summary>
+    /// Indicates that an acquisition (either live view or recording) is currently running.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PlayCommand), nameof(StopCommand), nameof(RecordCommand))]
+    [NotifyPropertyChangedRecipients]
+    public partial bool IsBusy { get; private set;  }
 
     /// <summary>
     /// Input (device) channel.
     /// </summary>
     public AcquisitionModel AcquisitionChannel { get; }
-
-    /// <summary>
-    /// Indicates that binary filenames will be auto-generated (by current date and time).
-    /// </summary>
-    public bool AutoGenerateBinaryFileNames
-    {
-        get => _autoGenerateBinaryFileNames;
-        set => SetProperty(ref _autoGenerateBinaryFileNames, value);
-    }
-
-    /// <summary>
-    /// Indicates that binary filenames will be auto-generated (by current date and time).
-    /// </summary>
-    public bool AutoGenerateVideoFileNames
-    {
-        get => _autoGenerateVideoFileNames;
-        set => SetProperty(ref _autoGenerateVideoFileNames, value);
-    }
-
-    /// <summary>
-    /// Indicates that an acquisition (either live view or recording) is currently running.
-    /// </summary>
-    public bool IsBusy
-    {
-        get => _isBusy;
-        private set
-        {
-            if (SetProperty(field: ref _isBusy, newValue: value, broadcast: true))
-                NotifyAcquisitionCommands();
-        }
-    }
-
-    /// <summary>
-    /// Indicates that a recording is currently running.
-    /// </summary>
-    public bool IsRecording
-    {
-        get => _isRecording;
-        private set => SetProperty(ref _isRecording, value);
-    }
 
     #endregion
 

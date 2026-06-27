@@ -49,13 +49,13 @@ internal partial class AcquisitionModel : ObservableObject
     /// File path for saving binary image data.
     /// </summary>
     [ObservableProperty]
-    public string _binaryFilePath;
+    public partial string BinaryFilePath { get; set; }
 
     /// <summary>
     /// File path for saving video.
     /// </summary>
     [ObservableProperty]
-    public string _videoFolderPath;
+    public partial string VideoFolderPath { get; set; }
 
     /// <summary>
     /// Setting indicating that raw binary image data will be saved to file.
@@ -93,7 +93,7 @@ internal partial class AcquisitionModel : ObservableObject
     /// Setting indicating that video will be saved to file.
     /// </summary>
     [ObservableProperty]
-    public bool _saveVideo;
+    public partial bool SaveVideo { get; set; }
 
     /// <summary>
     /// True if channel is currently acquiring.
@@ -124,8 +124,8 @@ internal partial class AcquisitionModel : ObservableObject
     /// Selected video codec.
     /// </summary>
     [ObservableProperty]
-    public VideoWriter.CODEC _selectedCodec;
-    
+    public partial VideoWriter.CODEC SelectedCodec { get; set; }
+
     #endregion
 
     #region Constructors
