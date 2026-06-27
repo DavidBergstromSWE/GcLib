@@ -43,8 +43,8 @@
     <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.142" />
-    <PackageReference Include="ScottPlot" Version="5.1.58" />
-    <PackageReference Include="ScottPlot.WPF" Version="5.1.58" />
+    <PackageReference Include="ScottPlot" Version="5.1.59" />
+    <PackageReference Include="ScottPlot.WPF" Version="5.1.59" />
     <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
