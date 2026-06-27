@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GcLib;
@@ -21,9 +20,6 @@ internal partial class AcquisitionModel : ObservableObject
     // backing-fields
     private bool _saveRawData;
     private bool _saveProcessedData;
-    private bool _saveVideo;
-    private string _binaryFilePath;
-    private string _videoFilePath;
 
     /// <summary>
     /// Image datastream from device.
@@ -52,20 +48,14 @@ internal partial class AcquisitionModel : ObservableObject
     /// <summary>
     /// File path for saving binary image data.
     /// </summary>
-    public string BinaryFilePath
-    {
-        get => _binaryFilePath;
-        set => SetProperty(ref _binaryFilePath, value);
-    }
+    [ObservableProperty]
+    public string _binaryFilePath;
 
     /// <summary>
     /// File path for saving video.
     /// </summary>
-    public string VideoFolderPath
-    {
-        get => _videoFilePath;
-        set => SetProperty(ref _videoFilePath, value);
-    }
+    [ObservableProperty]
+    public string _videoFolderPath;
 
     /// <summary>
     /// Setting indicating that raw binary image data will be saved to file.
@@ -102,11 +92,8 @@ internal partial class AcquisitionModel : ObservableObject
     /// <summary>
     /// Setting indicating that video will be saved to file.
     /// </summary>
-    public bool SaveVideo
-    {
-        get => _saveVideo;
-        set => SetProperty(ref _saveVideo, value);
-    }
+    [ObservableProperty]
+    public bool _saveVideo;
 
     /// <summary>
     /// True if channel is currently acquiring.
@@ -128,8 +115,14 @@ internal partial class AcquisitionModel : ObservableObject
     /// </summary>
     protected GcBufferWriter ImageWriter { get; set; }
 
+    /// <summary>
+    /// Available video codecs.
+    /// </summary>
     public static List<VideoWriter.CODEC> Codecs => [.. Enum.GetValues<VideoWriter.CODEC>()];
 
+    /// <summary>
+    /// Selected video codec.
+    /// </summary>
     [ObservableProperty]
     public VideoWriter.CODEC _selectedCodec;
     
