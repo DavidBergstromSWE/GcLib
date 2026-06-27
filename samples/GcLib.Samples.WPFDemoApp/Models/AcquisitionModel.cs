@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GcLib;
@@ -12,7 +14,7 @@ namespace ImagerViewer.Models;
 /// <summary>
 /// Grabs, acquires and records image data from a device (input channel) datastream.
 /// </summary>
-internal class AcquisitionModel : ObservableObject
+internal partial class AcquisitionModel : ObservableObject
 {
     #region Fields
 
@@ -126,6 +128,11 @@ internal class AcquisitionModel : ObservableObject
     /// </summary>
     protected GcBufferWriter ImageWriter { get; set; }
 
+    public static List<VideoWriter.CODEC> Codecs => [.. Enum.GetValues<VideoWriter.CODEC>()];
+
+    [ObservableProperty]
+    public VideoWriter.CODEC _selectedCodec;
+    
     #endregion
 
     #region Constructors
@@ -142,6 +149,9 @@ internal class AcquisitionModel : ObservableObject
 
         // Save raw data by default.
         SaveRawData = true;
+
+        // Default codec.
+        SelectedCodec = VideoWriter.CODEC.MJPEG;
 
         // Initialize grabbing thread with device ID.
         if (deviceModel != null)
@@ -370,7 +380,7 @@ internal class AcquisitionModel : ObservableObject
     /// <param name="filePath"></param>
     protected void StartVideoWriting(string filePath)
     {
-        _videoWriter = new VideoWriter(filePath);
+        _videoWriter = new VideoWriter(filePath, 0.0, SelectedCodec);
         ImageModel.ProcessedImageAdded += _videoWriter.OnBufferTransferred;
         _videoWriter.WritingAborted += OnWritingAborted;
         _videoWriter.Start();

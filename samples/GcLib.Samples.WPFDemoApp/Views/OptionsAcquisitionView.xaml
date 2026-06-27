@@ -104,12 +104,17 @@
                     Orientation="Horizontal" Margin="10 5 0 0">
             <TextBox x:Name="VideoFolderPath"
                      Text="{Binding AcquisitionViewModel.AcquisitionChannel.VideoFolderPath}"
-                     d:Text="C:\testdata\"/>
-            <Button Style="{StaticResource Browsebutton}" ToolTip="Select folder..."
+                     d:Text="C:\testdata\"
+                     ToolTip="Videos will be saved to the folder"/>
+            <Button Style="{StaticResource Browsebutton}" 
                     Content="{iconPacks:Material Kind=FolderSearchOutline}"
-                    Command="{Binding BrowseVideoFolderPathCommand}" CommandParameter="{Binding ElementName=VideoFolderPath, Path=Text}"/>
+                    Command="{Binding BrowseVideoFolderPathCommand}" CommandParameter="{Binding ElementName=VideoFolderPath, Path=Text}"
+                    ToolTip="Select folder..."/>
         </StackPanel>
-        <!-- FPS selection? -->
+        <ComboBox Grid.Row="3" Grid.Column="5" Margin="10 0 0 0"
+                  ItemsSource="{Binding AcquisitionViewModel.AcquisitionChannel.Codecs, Mode=OneTime}"
+                  SelectedItem="{Binding AcquisitionViewModel.AcquisitionChannel.SelectedCodec, Mode=TwoWay}"
+                  ToolTip="Compression method"/>
 
     </Grid>
 
