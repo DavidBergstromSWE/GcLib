@@ -22,17 +22,13 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// Models a view for connecting/disconnecting to a device and loading/saving device settings. 
 /// </summary>
-internal sealed class DeviceViewModel : ObservableRecipient
+internal sealed partial class DeviceViewModel : ObservableRecipient
 {
     #region Fields
 
     // Backing-fields.
     private bool _canLoadConfiguration;
     private bool _canSaveConfiguration;
-    private DeviceModel _device;
-    private bool _isEnabled;
-    private uint _deviceParameterUpdateTimeDelay;
-    private string _configurationFilePath;
 
     /// <summary>
     /// Service providing devices.
@@ -73,42 +69,22 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <summary>
     /// Flag indicating if view is enabled.
     /// </summary>
-    public bool IsEnabled
-    {
-        get => _isEnabled;
-        set
-        {
-            if (SetProperty(ref _isEnabled, value))
-            {
-                // Notify commands of property changes.
-                ConnectCameraFromDialogCommand?.NotifyCanExecuteChanged();
-                OpenParameterDialogWindowCommand?.NotifyCanExecuteChanged();
-            }
-        }
-    }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ConnectCameraFromDialogCommand), nameof(OpenParameterDialogWindowCommand))]
+    public partial bool IsEnabled { get; private set; }
 
     /// <summary>
     /// Device channel.
     /// </summary>
-    public DeviceModel Device
-    {
-        get => _device;
-        set
-        {
-            if (SetProperty(ref _device, value))
-                OpenParameterDialogWindowCommand?.NotifyCanExecuteChanged();
-        }
-    }
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OpenParameterDialogWindowCommand))]
+    public partial DeviceModel Device { get; private set; }
 
     /// <summary>
     /// Time delay before updating device parameter after changing value (in milliseconds).
     /// </summary>
-    public uint DeviceParameterUpdateTimeDelay
-    {
-        get => _deviceParameterUpdateTimeDelay;
-        set => SetProperty(ref _deviceParameterUpdateTimeDelay, value);
-    }
-
+    [ObservableProperty]
+    public partial uint DeviceParameterUpdateTimeDelay { get; set; }
 
     /// <summary>
     /// User visibility level.
@@ -118,11 +94,8 @@ internal sealed class DeviceViewModel : ObservableRecipient
     /// <summary>
     /// Currently used file path for configurations.
     /// </summary>
-    public string ConfigurationFilePath
-    {
-        get => _configurationFilePath;
-        set => SetProperty(ref _configurationFilePath, value);
-    }
+    [ObservableProperty]
+    public partial string ConfigurationFilePath { get; private set; }
 
     #endregion
 
@@ -205,6 +178,12 @@ internal sealed class DeviceViewModel : ObservableRecipient
         // Update device list in background.
         _initialDeviceUpdateTask = Task.Run(() => _deviceProvider.UpdateDeviceList());
 
+        // Instantiate commands.
+        OpenParameterDialogWindowCommand = new RelayCommand(() => OpenParameterDialogWindow(Device), () => IsEnabled && Device.IsConnecting == false && Device.IsConnected);
+        LoadConfigurationDialogCommand = new AsyncRelayCommand(LoadConfigurationDialogAsync, () => CanLoadConfiguration);
+        SaveConfigurationDialogCommand = new AsyncRelayCommand<bool>(SaveConfigurationDialogAsync, b => CanSaveConfiguration);
+        ConnectCameraFromDialogCommand = new AsyncRelayCommand(ConnectCameraFromDialogAsync, () => IsEnabled);
+        
         // Hook eventhandlers to device events.
         Device = device;
         Device.ConnectionLost += DeviceModel_ConnectionLost;
@@ -215,12 +194,6 @@ internal sealed class DeviceViewModel : ObservableRecipient
         CanSaveConfiguration = false;
         IsEnabled = true;
         DeviceParameterUpdateTimeDelay = 500;
-
-        // Instantiate commands.
-        OpenParameterDialogWindowCommand = new RelayCommand(() => OpenParameterDialogWindow(Device), () => IsEnabled && Device.IsConnecting == false && Device.IsConnected);
-        LoadConfigurationDialogCommand = new AsyncRelayCommand(LoadConfigurationDialogAsync, () => CanLoadConfiguration);
-        SaveConfigurationDialogCommand = new AsyncRelayCommand<bool>(SaveConfigurationDialogAsync, b => CanSaveConfiguration);
-        ConnectCameraFromDialogCommand = new AsyncRelayCommand(ConnectCameraFromDialogAsync, () => IsEnabled);
 
         // Activate viewmodel for message sending/receiving.
         IsActive = true;
