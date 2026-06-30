@@ -256,7 +256,11 @@ public class VideoWriter : IDisposable
     {
         // If fps is not specified, calculate it as an average from incoming buffer timestamps.
         if (FPS == 0.0)
-            FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1); 
+        {
+            if (_timeStamps.Size > 1)
+                FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1);
+            else FPS = 30; // special case
+        }
 
         // Initialize new video writer (if not done already), using selected codec, fps and buffer properties.
         _videoWriter ??= new(fileName: FilePath, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
