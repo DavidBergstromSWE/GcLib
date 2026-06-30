@@ -112,7 +112,7 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
     /// </summary>
     /// <param name="initialFolderPath">Initial folder path.</param>
     /// <returns>User-selected folder path (or initial path if cancelled).</returns>
-    private string FindFolderPath(string initialFolderPath) 
+    private string FindFolderPath(string initialFolderPath)
     {
         string folderPath = _windowService.ShowOpenFolderDialog(title: "Select folder", initialFolderPath);
         return string.IsNullOrEmpty(folderPath) ? _initialVideoFilePath : folderPath;

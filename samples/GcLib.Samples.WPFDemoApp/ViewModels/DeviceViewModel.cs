@@ -184,7 +184,7 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
         LoadConfigurationDialogCommand = new AsyncRelayCommand(LoadConfigurationDialogAsync, () => CanLoadConfiguration);
         SaveConfigurationDialogCommand = new AsyncRelayCommand<bool>(SaveConfigurationDialogAsync, b => CanSaveConfiguration);
         ConnectCameraFromDialogCommand = new AsyncRelayCommand(ConnectCameraFromDialogAsync, () => IsEnabled);
-        
+
         // Hook eventhandlers to device events.
         Device = device;
         Device.ConnectionLost += DeviceModel_ConnectionLost;

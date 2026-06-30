@@ -73,7 +73,7 @@ internal sealed partial class AcquisitionViewModel : ObservableRecipient
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(PlayCommand), nameof(StopCommand), nameof(RecordCommand))]
     [NotifyPropertyChangedRecipients]
-    public partial bool IsBusy { get; private set;  }
+    public partial bool IsBusy { get; private set; }
 
     /// <summary>
     /// Input (device) channel.
