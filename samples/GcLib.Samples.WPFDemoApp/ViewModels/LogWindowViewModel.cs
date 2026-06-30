@@ -9,12 +9,11 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// Model for a view displaying application logging information.
 /// </summary>
-internal sealed class LogWindowViewModel : ObservableObject
+internal sealed partial class LogWindowViewModel : ObservableObject
 {
     #region Fields
 
     // backing_fields
-    private ObservableCollection<LogEvent> _logEvents;
     private LogEventLevel _minimumLogLevel;
 
     /// <summary>
@@ -29,11 +28,8 @@ internal sealed class LogWindowViewModel : ObservableObject
     /// <summary>
     /// Displayed log events.
     /// </summary>
-    public ObservableCollection<LogEvent> LogEvents
-    {
-        get => _logEvents;
-        private set => SetProperty(ref _logEvents, value);
-    }
+    [ObservableProperty]
+    public partial ObservableCollection<LogEvent> LogEvents { get; private set; }
 
     /// <summary>
     /// Available log levels.

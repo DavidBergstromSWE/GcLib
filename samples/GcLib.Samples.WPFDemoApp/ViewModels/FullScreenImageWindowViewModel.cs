@@ -6,24 +6,15 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// View model for showing images in full screen mode.
 /// </summary>
-internal sealed class FullScreenImageWindowViewModel : ObservableObject
+internal sealed partial class FullScreenImageWindowViewModel : ObservableObject
 {
-    #region Fields
-
-    private bool _showTitleBar;
-
-    #endregion
-
     #region Properties
 
     /// <summary>
     /// True if title bar is visible.
     /// </summary>
-    public bool ShowTitleBar
-    {
-        get => _showTitleBar;
-        set => SetProperty(ref _showTitleBar, value);
-    }
+    [ObservableProperty]
+    public partial bool ShowTitleBar { get; set; }
 
     #endregion
 

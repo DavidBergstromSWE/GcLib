@@ -21,7 +21,7 @@
                 <TextBlock Text="Brightness" FontSize="12" Width="60" VerticalAlignment="Center"/>
                 <Slider Name="brightnessSlider" Style="{StaticResource MahApps.Styles.Slider}" VerticalAlignment="Center" Margin="10 0 0 0" 
                         FontSize="11" Width="85"
-                        Value="{Binding ImageChannel.Brightness, Mode=TwoWay, FallbackValue=50}" 
+                        Value="{Binding ImageChannel.Brightness, Mode=TwoWay, FallbackValue=30}" 
                         Minimum="0" Maximum="100" 
                         TickFrequency="5" IsSnapToTickEnabled="True"
                         SmallChange="1" LargeChange="10"
@@ -29,7 +29,7 @@
                         ToolTip="Drag to adjust (right-click to reset)"
                         PreviewMouseRightButtonUp="Slider_PreviewMouseRightButtonUp"/>
                 <mah:NumericUpDown Margin="10 0 0 0" Width="70" Padding="0" VerticalAlignment="Center" FontSize="11"
-                                   Value="{Binding ElementName=brightnessSlider, Path=Value, Mode=TwoWay}" d:Value="{Binding SelectedImageChannel.Brightness}"
+                                   Value="{Binding ElementName=brightnessSlider, Path=Value, Mode=TwoWay}"
                                    Minimum="{Binding ElementName=brightnessSlider, Path=Minimum}"
                                    Maximum="{Binding ElementName=brightnessSlider, Path=Maximum}"
                                    Interval="{Binding ElementName=brightnessSlider, Path=TickFrequency}"                              
@@ -42,7 +42,7 @@
                 <TextBlock Text="Contrast" FontSize="12" Width="60" VerticalAlignment="Center"/>
                 <Slider Name="contrastSlider" Style="{StaticResource MahApps.Styles.Slider}" VerticalAlignment="Center" Margin="10 0 0 0" 
                         FontSize="11" Width="85"
-                        Value="{Binding ImageChannel.Contrast, Mode=TwoWay, FallbackValue=50}" 
+                        Value="{Binding ImageChannel.Contrast, Mode=TwoWay, FallbackValue=60}" 
                         Minimum="0" Maximum="100" 
                         TickFrequency="5" IsSnapToTickEnabled="True"
                         SmallChange="1" LargeChange="10"
@@ -50,7 +50,7 @@
                         ToolTip="Drag to adjust (right-click to reset)"
                         PreviewMouseRightButtonUp="Slider_PreviewMouseRightButtonUp"/>  
                 <mah:NumericUpDown Margin="10 0 0 0" Width="70" Padding="0" VerticalAlignment="Center" FontSize="11"
-                   Value="{Binding ElementName=contrastSlider, Path=Value, Mode=TwoWay}" d:Value="{Binding SelectedImageChannel.Contrast}"
+                   Value="{Binding ElementName=contrastSlider, Path=Value, Mode=TwoWay}"
                    Minimum="{Binding ElementName=contrastSlider, Path=Minimum}"
                    Maximum="{Binding ElementName=contrastSlider, Path=Maximum}"
                    Interval="{Binding ElementName=contrastSlider, Path=TickFrequency}"                              

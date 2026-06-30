@@ -59,8 +59,16 @@ internal sealed class MockDeviceViewModel
 /// </summary>
 internal sealed class MockImageProcessingViewModel
 {
-    public static ImageModel SelectedImageChannel { get; set; } = new() { Brightness = 50, Contrast = 50 };
+    public static ImageModel ImageChannel { get; set; } = new() { Brightness = 50, Contrast = 50 };
     public static ICommand OpenParameterDialogWindowCommand { get; }
+}
+
+/// <summary>
+/// Mockup for <see cref="OptionsDeviceViewModel"/>, to be used in design mode.
+/// </summary>
+internal sealed class MockOptionsDeviceViewModel
+{
+    public static string Name => "Devices";
 }
 
 /// <summary>
@@ -77,18 +85,6 @@ internal sealed class MockOpenDeviceDialogWindowViewModel
     public static List<GcDeviceInfo> DeviceList => [SelectedDevice];
 
     private static readonly GcDeviceClassInfo _classInfo = new(SelectedDevice.ModelName, SelectedDevice.SerialNumber, typeof(VirtualCam));
-}
-
-/// <summary>
-/// Mockup for <see cref="OptionsDeviceViewModel"/>, to be used in design mode.
-/// </summary>
-internal sealed class MockOptionsDeviceViewModel
-{
-    public static string Name => "Devices";
-
-    public static Visibility SelectedVisibility => Visibility.Guru;
-
-    public static uint DeviceParameterUpdateTimeDelay { get; set; } = 500;
 }
 
 /// <summary>

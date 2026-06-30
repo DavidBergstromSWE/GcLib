@@ -10,24 +10,12 @@ namespace ImagerViewer.ViewModels;
 /// </summary>
 internal sealed class ImageProcessingViewModel : ObservableRecipient
 {
-    #region Fields
-
-    // backing-fields
-    private ImageModel _imageChannel;
-
-
-    #endregion
-
     #region Properties
 
     /// <summary>
     /// Image data channel for processing.
     /// </summary>
-    public ImageModel ImageChannel
-    {
-        get => _imageChannel;
-        set => SetProperty(ref _imageChannel, value);
-    }
+    public ImageModel ImageChannel { get; init; }
 
     #endregion
 
