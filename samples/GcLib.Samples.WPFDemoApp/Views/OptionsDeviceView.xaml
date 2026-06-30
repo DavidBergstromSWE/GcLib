@@ -75,7 +75,7 @@
                         Margin="2 10 0 0"
                         HorizontalAlignment="Left"
                         Width="180"
-                        Value="{Binding DeviceParameterUpdateTimeDelay, FallbackValue=300}"
+                        Value="{Binding DeviceViewModel.DeviceParameterUpdateTimeDelay, FallbackValue=300}"
                         SmallChange="100" LargeChange="500"
                         Minimum="0" Maximum="1500"
                         TickFrequency="100" TickPlacement="BottomRight" IsSnapToTickEnabled="True"

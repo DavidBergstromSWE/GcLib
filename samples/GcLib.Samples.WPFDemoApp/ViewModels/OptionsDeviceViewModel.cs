@@ -14,9 +14,6 @@ internal sealed class OptionsDeviceViewModel : ObservableObject, IOptionsSubView
     private readonly Visibility _initialVisibility;
     private readonly uint _initialDeviceParameterUpdateTimeDelay;
 
-    // backing-fields
-    private uint _deviceParameterUpdateTimeDelay;
-
     #endregion
 
     #region Properties
@@ -28,21 +25,6 @@ internal sealed class OptionsDeviceViewModel : ObservableObject, IOptionsSubView
 
     /// <inheritdoc/>
     public string Name => "Devices";
-
-    /// <summary>
-    /// Time delay before updating device parameter after changing value (in milliseconds).
-    /// </summary>
-    public uint DeviceParameterUpdateTimeDelay
-    {
-        get => _deviceParameterUpdateTimeDelay;
-        set
-        {
-            if (SetProperty(field: ref _deviceParameterUpdateTimeDelay, newValue: value))
-            {
-                DeviceViewModel.DeviceParameterUpdateTimeDelay = value;
-            }
-        }
-    }
 
     #endregion
 
@@ -69,7 +51,6 @@ internal sealed class OptionsDeviceViewModel : ObservableObject, IOptionsSubView
         _initialDeviceParameterUpdateTimeDelay = DeviceViewModel.DeviceParameterUpdateTimeDelay;
 
         // Instantiate members.
-        DeviceParameterUpdateTimeDelay = _initialDeviceParameterUpdateTimeDelay;
         ChangeParameterVisibilityCommand = new RelayCommand<Visibility>(p => DeviceViewModel.UserVisibility = p);
     }
 
