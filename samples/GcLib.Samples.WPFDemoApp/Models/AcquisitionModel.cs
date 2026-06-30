@@ -106,11 +106,6 @@ internal partial class AcquisitionModel : ObservableObject
     public virtual bool IsGrabbing { get; protected set; }
 
     /// <summary>
-    /// True if channel is enabled for acquisition.
-    /// </summary>
-    public virtual bool IsEnabled => DeviceModel != null && DeviceModel.IsConnected;
-
-    /// <summary>
     /// Writer of image data.
     /// </summary>
     protected GcBufferWriter ImageWriter { get; set; }
