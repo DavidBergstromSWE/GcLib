@@ -13,14 +13,9 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// View model for the selection of a device to connect to.
 /// </summary>
-internal sealed class OpenDeviceDialogWindowViewModel : ObservableObject, IDisposable
+internal sealed partial class OpenDeviceDialogWindowViewModel : ObservableObject, IDisposable
 {
     #region Fields
-
-    // backing-fields
-    private List<GcDeviceInfo> _deviceList;
-    private GcDeviceInfo _selectedDevice;
-    private MessageDialogResult _dialogResult;
 
     /// <summary>
     /// Service providing windows and dialogs.
@@ -44,29 +39,20 @@ internal sealed class OpenDeviceDialogWindowViewModel : ObservableObject, IDispo
     /// <summary>
     /// Current list of devices available.
     /// </summary>
-    public List<GcDeviceInfo> DeviceList
-    {
-        get => _deviceList;
-        set => SetProperty(ref _deviceList, value);
-    }
+    [ObservableProperty]
+    public partial List<GcDeviceInfo> DeviceList { get; set; }
 
     /// <summary>
     /// Selected device (in current list of devices available).
     /// </summary>
-    public GcDeviceInfo SelectedDevice
-    {
-        get => _selectedDevice;
-        set => SetProperty(ref _selectedDevice, value);
-    }
+    [ObservableProperty]
+    public partial GcDeviceInfo SelectedDevice { get; set; }
 
     /// <summary>
     /// Result of dialog.
     /// </summary>
-    public MessageDialogResult DialogResult
-    {
-        get => _dialogResult;
-        set => SetProperty(ref _dialogResult, value);
-    }
+    [ObservableProperty]
+    public partial MessageDialogResult DialogResult { get; set; }
 
     #endregion
 

@@ -23,21 +23,13 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// Models a view for handling playback of previously recorded image data.
 /// </summary>
-internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
+internal sealed partial class PlayBackViewModel : ObservableRecipient, IDisposable
 {
     #region Fields
 
     // backing-fields
-    private bool _isLoading;
-    private bool _isLoaded;
     private bool _isPlaying;
-    private bool _isEnabled;
-    private int _firstFrame;
-    private int _lastFrame;
-    private int _smallFrameChange;
-    private int _largeFrameChange;
     private int _currentFrame;
-    private string _frameInfo;
 
     /// <summary>
     /// Indicates if a sequence can be loaded.
@@ -127,20 +119,14 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
     /// <summary>
     /// Index of first frame in sequence.
     /// </summary>
-    public int FirstFrame
-    {
-        get => _firstFrame;
-        private set => SetProperty(ref _firstFrame, value);
-    }
+    [ObservableProperty]
+    public partial int FirstFrame { get; private set; }
 
     /// <summary>
     /// Index of last frame in sequence.
     /// </summary>
-    public int LastFrame
-    {
-        get => _lastFrame;
-        private set => SetProperty(ref _lastFrame, value);
-    }
+    [ObservableProperty]
+    public partial int LastFrame { get; private set; }
 
     /// <summary>
     /// Current frame index in sequence.
@@ -158,62 +144,41 @@ internal sealed class PlayBackViewModel : ObservableRecipient, IDisposable
     /// <summary>
     /// Number of frames representing a small change of the current frame index.
     /// </summary>
-    public int SmallFrameChange
-    {
-        get => _smallFrameChange;
-        set => SetProperty(ref _smallFrameChange, value);
-    }
+    [ObservableProperty]
+    public partial int SmallFrameChange { get; set; }
 
     /// <summary>
     /// Number of frames representing a large change of the current frame index.
     /// </summary>
-    public int LargeFrameChange
-    {
-        get => _largeFrameChange;
-        set => SetProperty(ref _largeFrameChange, value);
-    }
+    [ObservableProperty]
+    public partial int LargeFrameChange { get; set; }
 
     /// <summary>
     /// Text string containing frame index and time elapsed info.
     /// </summary>
-    public string FrameInfo
-    {
-        get => _frameInfo;
-        private set => SetProperty(ref _frameInfo, value);
-    }
+    [ObservableProperty]
+    public partial string FrameInfo { get; private set; }
 
     /// <summary>
     /// True if a sequence is currently being loaded.
     /// </summary>
-    public bool IsLoading
-    {
-        get => _isLoading;
-        private set => SetProperty(field: ref _isLoading, newValue: value, broadcast: true);
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedRecipients]
+    public partial bool IsLoading { get; private set; }
 
     /// <summary>
     /// Indicates that image sequence has been succesfully loaded.
     /// </summary>
-    public bool IsLoaded
-    {
-        get => _isLoaded;
-        private set
-        {
-            if (SetProperty(field: ref _isLoaded, newValue: value, broadcast: true))
-            {
-                CloseSequenceCommand?.NotifyCanExecuteChanged();
-            }
-        }
-    }
+    [ObservableProperty]
+    [NotifyPropertyChangedRecipients]
+    [NotifyCanExecuteChangedFor(nameof(CloseSequenceCommand))]
+    public partial bool IsLoaded { get; private set; }
 
     /// <summary>
     /// True if playback buttons are enabled.
     /// </summary>
-    public bool IsEnabled
-    {
-        get => _isEnabled;
-        private set => SetProperty(field: ref _isEnabled, newValue: value);
-    }
+    [ObservableProperty]
+    public partial bool IsEnabled { get; private set; }
 
     #endregion
 
