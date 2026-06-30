@@ -35,21 +35,21 @@
                          Width="80"
                          ToolTip="Only basic features will be shown"
                          Command="{Binding ChangeParameterVisibilityCommand}" CommandParameter="{x:Static local:Visibility.Beginner}"
-                         IsChecked="{Binding SelectedVisibility, Mode=OneWay, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:Visibility.Beginner}}"/>
+                         IsChecked="{Binding DeviceViewModel.UserVisibility, Mode=OneWay, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:Visibility.Beginner}}"/>
             <RadioButton Content="Expert" 
                          Style="{StaticResource RadioAsToggle}"
                          Margin="5 0 0 0"
                          Width="80"
                          ToolTip="Features that require a more in-depth knowledge of functionality will be shown"
                          Command="{Binding ChangeParameterVisibilityCommand}" CommandParameter="{x:Static local:Visibility.Expert}"
-                         IsChecked="{Binding SelectedVisibility, Mode=OneWay, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:Visibility.Expert}}"/>
+                         IsChecked="{Binding DeviceViewModel.UserVisibility, Mode=OneWay, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:Visibility.Expert}}"/>
             <RadioButton Content="Guru" 
                          Style="{StaticResource RadioAsToggle}"
                          Margin="5 0 0 0"
                          Width="80"
                          ToolTip="Advanced features that might bring the cameras into a non-working state will be shown" 
                          Command="{Binding ChangeParameterVisibilityCommand}" CommandParameter="{x:Static local:Visibility.Guru}"
-                         IsChecked="{Binding SelectedVisibility, Mode=OneWay, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:Visibility.Guru}, FallbackValue=True}"/>
+                         IsChecked="{Binding DeviceViewModel.UserVisibility, Mode=OneWay, Converter={StaticResource IsEqualConverter}, ConverterParameter={x:Static local:Visibility.Guru}, FallbackValue=True}"/>
         </StackPanel>
 
         <!-- Parameter update delay -->

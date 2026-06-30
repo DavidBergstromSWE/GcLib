@@ -30,11 +30,6 @@ internal sealed class OptionsDeviceViewModel : ObservableObject, IOptionsSubView
     public string Name => "Devices";
 
     /// <summary>
-    /// Selected user visibility level for device interaction.
-    /// </summary>
-    public Visibility SelectedVisibility => DeviceViewModel.UserVisibility;
-
-    /// <summary>
     /// Time delay before updating device parameter after changing value (in milliseconds).
     /// </summary>
     public uint DeviceParameterUpdateTimeDelay

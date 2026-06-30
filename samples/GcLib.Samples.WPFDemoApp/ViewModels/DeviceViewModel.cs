@@ -89,7 +89,8 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
     /// <summary>
     /// User visibility level.
     /// </summary>
-    public Visibility UserVisibility { get; set; } = Visibility.Beginner;
+    [ObservableProperty]
+    public partial Visibility UserVisibility { get; set; }
 
     /// <summary>
     /// Currently used file path for configurations.
@@ -194,6 +195,7 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
         CanSaveConfiguration = false;
         IsEnabled = true;
         DeviceParameterUpdateTimeDelay = 500;
+        UserVisibility = Visibility.Beginner;
 
         // Activate viewmodel for message sending/receiving.
         IsActive = true;
