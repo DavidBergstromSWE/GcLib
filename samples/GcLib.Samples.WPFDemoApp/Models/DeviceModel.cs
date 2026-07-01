@@ -58,11 +58,8 @@ internal sealed partial class DeviceModel : ObservableObject, IXmlSerializable
         get;
         set
         {
-            if (SetProperty(ref field, value))
-            {
-                if (field)
-                    SetDeviceInfo("Loading...");
-            }
+            if (SetProperty(ref field, value) && (field == true))
+                SetDeviceInfo("Loading...");
         }
     }
 
