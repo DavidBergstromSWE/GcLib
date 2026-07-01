@@ -17,10 +17,6 @@ internal partial class AcquisitionModel : ObservableObject
 {
     #region Fields
 
-    // backing-fields
-    private bool _saveRawData;
-    private bool _saveProcessedData;
-
     /// <summary>
     /// Image datastream from device.
     /// </summary>
@@ -67,12 +63,12 @@ internal partial class AcquisitionModel : ObservableObject
     /// </summary>
     public bool SaveRawData
     {
-        get => _saveRawData;
+        get;
         set
         {
-            if (SetProperty(ref _saveRawData, value))
+            if (SetProperty(ref field, value))
             {
-                if (_saveRawData)
+                if (field)
                     SaveProcessedData = false;
             }
         }
@@ -83,12 +79,12 @@ internal partial class AcquisitionModel : ObservableObject
     /// </summary>
     public bool SaveProcessedData
     {
-        get => _saveProcessedData;
+        get;
         set
         {
-            if (SetProperty(ref _saveProcessedData, value))
+            if (SetProperty(ref field, value))
             {
-                if (_saveProcessedData)
+                if (field)
                     SaveRawData = false;
             }
         }
