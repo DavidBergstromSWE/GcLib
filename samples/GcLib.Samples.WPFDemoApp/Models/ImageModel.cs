@@ -19,20 +19,12 @@ internal class ImageModel : ObservableObject, IXmlSerializable
 {
     #region Fields
 
-    // backing-fields
-    private GcBuffer _rawImage;
-    private GcBuffer _processedImage;
-    private bool _flipHorizontal;
-    private bool _flipVertical;
-    private int _brightness;
-    private int _contrast;
-
     /// <summary>
     /// List of pixel formats supported.
     /// </summary>
     /// <remarks>This list defines the pixel formats that can be processed or produced. Derived classes may
     /// use this collection to determine format compatibility or to advertise supported formats to consumers.</remarks>
-    protected List<PixelFormat> SupportedPixelFormats =
+    private List<PixelFormat> SupportedPixelFormats =
     [
         PixelFormat.Mono8,
         PixelFormat.Mono10,
@@ -70,19 +62,19 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// </summary>
     public GcBuffer RawImage
     {
-        get => _rawImage;
+        get;
         set
         {
-            if (SetProperty(ref _rawImage, value))
+            if (SetProperty(ref field, value))
             {
-                if (_rawImage != null)
+                if (field != null)
                 {
-                    OnRawImageAdded(_rawImage);
+                    OnRawImageAdded(field);
 
                     // Process image.
                     try
                     {
-                        ProcessedImage = ProcessImage(_rawImage);
+                        ProcessedImage = ProcessImage(field);
                     }
                     catch (Exception ex)
                     {
@@ -102,11 +94,11 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// </summary>
     public GcBuffer ProcessedImage
     {
-        get => _processedImage;
+        get;
         private set
         {
-            if (SetProperty(ref _processedImage, value) && _processedImage != null)
-                OnProcessedImageAdded(_processedImage);
+            if (SetProperty(ref field, value) && field != null)
+                OnProcessedImageAdded(field);
         }
     }
 
@@ -115,15 +107,15 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// </summary>
     public bool FlipHorizontal
     {
-        get => _flipHorizontal;
+        get;
         set
         {
-            if (SetProperty(ref _flipHorizontal, value))
+            if (SetProperty(ref field, value))
             {
                 // Update image.
-                if (_rawImage != null)
+                if (RawImage != null)
                 {
-                    ProcessedImage = ProcessImage(_rawImage);
+                    ProcessedImage = ProcessImage(RawImage);
                     OnImagesUpdated();
                 }
             }
@@ -135,15 +127,15 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// </summary>
     public bool FlipVertical
     {
-        get => _flipVertical;
+        get;
         set
         {
-            if (SetProperty(ref _flipVertical, value))
+            if (SetProperty(ref field, value))
             {
                 // Update image.
-                if (_rawImage != null)
+                if (RawImage != null)
                 {
-                    ProcessedImage = ProcessImage(_rawImage);
+                    ProcessedImage = ProcessImage(RawImage);
                     OnImagesUpdated();
                 }
             }
@@ -155,15 +147,15 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// </summary>
     public int Brightness
     {
-        get => _brightness;
+        get;
         set
         {
-            if (SetProperty(ref _brightness, value))
+            if (SetProperty(ref field, value))
             {
                 // Update image.
-                if (_rawImage != null)
+                if (RawImage != null)
                 {
-                    ProcessedImage = ProcessImage(_rawImage);
+                    ProcessedImage = ProcessImage(RawImage);
                     OnImagesUpdated();
                 }
             }
@@ -175,15 +167,15 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// </summary>
     public int Contrast
     {
-        get => _contrast;
+        get;
         set
         {
-            if (SetProperty(ref _contrast, value))
+            if (SetProperty(ref field, value))
             {
                 // Update image.
-                if (_rawImage != null)
+                if (RawImage != null)
                 {
-                    ProcessedImage = ProcessImage(_rawImage);
+                    ProcessedImage = ProcessImage(RawImage);
                     OnImagesUpdated();
                 }
             }
