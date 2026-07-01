@@ -12,18 +12,11 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// View model for displaying image histograms.
 /// </summary>
-internal sealed class HistogramViewModel : ObservableRecipient
+internal sealed partial class HistogramViewModel : ObservableRecipient
 {
     #region Fields
 
     // backing-fields
-    private bool _isEnabled;
-    private bool _showLiveHistogram;
-    private bool _showGrid;
-    private bool _showProcessed;
-    private HistogramPlotType _selectedPlotType;
-    private int _selectedHistogramSize;
-    private ImageHistogram _histogram;
 
     /// <summary>
     /// Raw image source of image histogram.
@@ -49,10 +42,10 @@ internal sealed class HistogramViewModel : ObservableRecipient
     /// </summary>
     public bool IsEnabled
     {
-        get => _isEnabled;
+        get;
         set
         {
-            if (SetProperty(ref _isEnabled, value))
+            if (SetProperty(ref field, value))
                 UpdateHistogram();
         }
     }
@@ -62,10 +55,10 @@ internal sealed class HistogramViewModel : ObservableRecipient
     /// </summary>
     public bool ShowLiveHistogram
     {
-        get => _showLiveHistogram;
+        get;
         set
         {
-            if (SetProperty(ref _showLiveHistogram, value))
+            if (SetProperty(ref field, value))
                 UpdateHistogram();
         }
     }
@@ -75,10 +68,10 @@ internal sealed class HistogramViewModel : ObservableRecipient
     /// </summary>
     public int SelectedHistogramSize
     {
-        get => _selectedHistogramSize;
+        get;
         set
         {
-            if (SetProperty(ref _selectedHistogramSize, value))
+            if (SetProperty(ref field, value))
                 UpdateHistogram();
         }
     }
@@ -88,10 +81,10 @@ internal sealed class HistogramViewModel : ObservableRecipient
     /// </summary>
     public HistogramPlotType SelectedPlotType
     {
-        get => _selectedPlotType;
+        get;
         set
         {
-            if (SetProperty(ref _selectedPlotType, value))
+            if (SetProperty(ref field, value))
                 UpdateHistogram();
         }
     }
@@ -101,10 +94,10 @@ internal sealed class HistogramViewModel : ObservableRecipient
     /// </summary>
     public bool ShowGrid
     {
-        get => _showGrid;
+        get;
         set
         {
-            if (SetProperty(ref _showGrid, value))
+            if (SetProperty(ref field, value))
                 UpdateHistogram();
         }
     }
@@ -114,10 +107,10 @@ internal sealed class HistogramViewModel : ObservableRecipient
     /// </summary>
     public bool ShowProcessed
     {
-        get => _showProcessed;
+        get;
         set
         {
-            if (SetProperty(ref _showProcessed, value))
+            if (SetProperty(ref field, value))
                 UpdateHistogram();
         }
     }
@@ -125,11 +118,8 @@ internal sealed class HistogramViewModel : ObservableRecipient
     /// <summary>
     /// Image histogram to be displayed.
     /// </summary>
-    public ImageHistogram Histogram
-    {
-        get => _histogram;
-        private set => SetProperty(ref _histogram, value);
-    }
+    [ObservableProperty]
+    public partial ImageHistogram Histogram { get; private set; }
 
     #endregion
 

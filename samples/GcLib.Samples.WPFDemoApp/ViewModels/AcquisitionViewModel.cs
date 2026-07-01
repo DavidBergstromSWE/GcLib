@@ -162,7 +162,6 @@ internal sealed partial class AcquisitionViewModel : ObservableRecipient
         try
         {
             await AcquisitionChannel.StartAcquisitionAsync();
-            AcquisitionChannel.StartGrabbing();
             IsBusy = true;
         }
         catch (Exception ex)
@@ -198,7 +197,6 @@ internal sealed partial class AcquisitionViewModel : ObservableRecipient
         try
         {
             await AcquisitionChannel.StartRecordingAsync(AutoGenerateBinaryFileNames ? dateTimeSubString : string.Empty);
-            AcquisitionChannel.StartGrabbing();
             IsBusy = true;
         }
         catch (Exception ex)

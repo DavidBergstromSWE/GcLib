@@ -31,6 +31,16 @@ internal partial class AcquisitionModel : ObservableObject
     /// </summary>
     private readonly GcProcessingThread _imageGrabbingThread;
 
+    /// <summary>
+    /// Storage and processing of acquired image data.
+    /// </summary>
+    private readonly ImageModel _imageModel;
+
+    /// <summary>
+    /// Writer of image buffer data.
+    /// </summary>
+    private GcBufferWriter _bufferWriter;
+
     #endregion
 
     #region Properties
@@ -39,11 +49,6 @@ internal partial class AcquisitionModel : ObservableObject
     /// Device used as image acquisition source.
     /// </summary>
     public DeviceModel DeviceModel { get; }
-
-    /// <summary>
-    /// Storage and processing of acquired image data.
-    /// </summary>
-    public ImageModel ImageModel { get; }
 
     /// <summary>
     /// File path for saving binary image data.
@@ -101,16 +106,6 @@ internal partial class AcquisitionModel : ObservableObject
     public bool IsAcquiring { get; protected set; }
 
     /// <summary>
-    /// True if channel is currently grabbing.
-    /// </summary>
-    public virtual bool IsGrabbing { get; protected set; }
-
-    /// <summary>
-    /// Writer of image data.
-    /// </summary>
-    protected GcBufferWriter ImageWriter { get; set; }
-
-    /// <summary>
     /// Available video codecs.
     /// </summary>
     public static List<VideoWriter.CODEC> Codecs => [.. Enum.GetValues<VideoWriter.CODEC>()];
@@ -133,7 +128,7 @@ internal partial class AcquisitionModel : ObservableObject
     public AcquisitionModel(DeviceModel deviceModel, ImageModel imageModel)
     {
         DeviceModel = deviceModel;
-        ImageModel = imageModel;
+        _imageModel = imageModel;
 
         // Save raw data by default.
         SaveRawData = true;
@@ -155,7 +150,7 @@ internal partial class AcquisitionModel : ObservableObject
     /// </summary>
     /// <param name="startGrabbing">True if image grabbing should be started automatically on the device datastream. If false, grabbing needs to be manually started using <see cref="StartGrabbing"/>.</param>
     /// <exception cref="InvalidOperationException"/>
-    public virtual async Task StartAcquisitionAsync(bool startGrabbing = false)
+    public virtual async Task StartAcquisitionAsync()
     {
         if (DeviceModel.IsConnected == false)
             throw new InvalidOperationException($"No device is connected!");
@@ -181,9 +176,11 @@ internal partial class AcquisitionModel : ObservableObject
             // Start acquisition.
             await Task.Run(() => _dataStream.Start());
 
-            // Auto-start grabbing.
-            if (startGrabbing)
-                StartGrabbing();
+            // Hook handler to events announcing new buffers for processing.
+            _imageGrabbingThread.BufferProcess += _imageModel.OnBufferProcess;
+
+            // Start grabbing images using thread.
+            _imageGrabbingThread.Start(_dataStream);
 
             // Log information.
             Log.Debug("Acquisition started");
@@ -197,29 +194,6 @@ internal partial class AcquisitionModel : ObservableObject
 
             throw new InvalidOperationException($"Failed to start acquisition: {ex.Message}");
         }
-    }
-
-    /// <summary>
-    /// Starts grabbing images from device datastream.
-    /// </summary>
-    /// <exception cref="InvalidOperationException"></exception>
-    public virtual void StartGrabbing()
-    {
-        if (IsAcquiring == false)
-            throw new InvalidOperationException($"No acquisition is actively running!");
-
-        if (IsGrabbing)
-            throw new InvalidOperationException($"Grabbing has already been started!");
-
-        // Hook handler to events announcing new buffers for processing.
-        _imageGrabbingThread.BufferProcess += ImageModel.OnBufferProcess;
-
-        // Start grabbing images using thread.
-        _imageGrabbingThread.Start(_dataStream);
-
-        IsGrabbing = true;
-
-        Log.Verbose("Grabbing started");
     }
 
     /// <summary>
@@ -248,7 +222,7 @@ internal partial class AcquisitionModel : ObservableObject
             StartVideoWriting(VideoFolderPath + Path.DirectorySeparatorChar + "Video" + $"_{DateTime.Now:yyyyMMddHHmmss}" + ".mp4");
 
         // Start acquisition.
-        return StartAcquisitionAsync(startGrabbing);
+        return StartAcquisitionAsync();
     }
 
     /// <summary>
@@ -270,7 +244,7 @@ internal partial class AcquisitionModel : ObservableObject
         _dataStream.FrameDropped -= OnFrameDropped;
 
         // Stop recording (if writing).
-        if (ImageWriter != null && ImageWriter.IsWriting)
+        if (_bufferWriter != null && _bufferWriter.IsWriting)
             await StopWritingAsync();
 
         if (_videoWriter != null && _videoWriter.IsWriting)
@@ -279,12 +253,8 @@ internal partial class AcquisitionModel : ObservableObject
         // Stop grabbing images from datastream.
         _imageGrabbingThread.Stop();
 
-        // Unhook eventhandler.
-        _imageGrabbingThread.BufferProcess -= ImageModel.OnBufferProcess;
-
-        IsGrabbing = false;
-
-        Log.Verbose("Grabbing stopped");
+        // Unhook grabbing eventhandler.
+        _imageGrabbingThread.BufferProcess -= _imageModel.OnBufferProcess;
 
         // Stop streaming image data from device.
         _dataStream.Stop();
@@ -313,21 +283,21 @@ internal partial class AcquisitionModel : ObservableObject
     protected void StartWriting(string filePath)
     {
         // Instantiate new writer with filepath.
-        ImageWriter = new GcBufferWriter(filePath);
+        _bufferWriter = new GcBufferWriter(filePath);
 
         // Hook appropriate image announcing event according to recording settings.
         if (SaveRawData)
-            ImageModel.RawImageAdded += ImageWriter.OnBufferTransferred;
-        else ImageModel.ProcessedImageAdded += ImageWriter.OnBufferTransferred;
+            _imageModel.RawImageAdded += _bufferWriter.OnBufferTransferred;
+        else _imageModel.ProcessedImageAdded += _bufferWriter.OnBufferTransferred;
 
         // Hook eventhandler to exceptions thrown while writing.
-        ImageWriter.WritingAborted += OnWritingAborted;
+        _bufferWriter.WritingAborted += OnWritingAborted;
 
         // Start writing images to disk.
-        ImageWriter.Start();
+        _bufferWriter.Start();
 
         // Log information.
-        Log.Debug("Recording to {file} started", ImageWriter.FilePath);
+        Log.Debug("Recording to {file} started", _bufferWriter.FilePath);
     }
 
     /// <summary>
@@ -337,20 +307,20 @@ internal partial class AcquisitionModel : ObservableObject
     protected async Task StopWritingAsync()
     {
         // Unhook image announcing events.
-        ImageModel.RawImageAdded -= ImageWriter.OnBufferTransferred;
-        ImageModel.ProcessedImageAdded -= ImageWriter.OnBufferTransferred;
+        _imageModel.RawImageAdded -= _bufferWriter.OnBufferTransferred;
+        _imageModel.ProcessedImageAdded -= _bufferWriter.OnBufferTransferred;
 
         // Stop writing images to disk.
-        await ImageWriter.StopAsync();
+        await _bufferWriter.StopAsync();
 
         // Log information.
-        Log.Debug("Recording to {file} finished ({buffers} buffers and {bytes} bytes written)", ImageWriter.FilePath, ImageWriter.BuffersWritten, ImageWriter.FileSize);
+        Log.Debug("Recording to {file} finished ({buffers} buffers and {bytes} bytes written)", _bufferWriter.FilePath, _bufferWriter.BuffersWritten, _bufferWriter.FileSize);
 
         // Unhook exception eventhandler.
-        ImageWriter.WritingAborted -= OnWritingAborted;
+        _bufferWriter.WritingAborted -= OnWritingAborted;
 
         // Close writer and dispose resources.
-        ImageWriter?.Dispose();
+        _bufferWriter?.Dispose();
     }
 
     #endregion
@@ -369,7 +339,7 @@ internal partial class AcquisitionModel : ObservableObject
     protected void StartVideoWriting(string filePath)
     {
         _videoWriter = new VideoWriter(filePath, 0.0, SelectedCodec);
-        ImageModel.ProcessedImageAdded += _videoWriter.OnBufferTransferred;
+        _imageModel.ProcessedImageAdded += _videoWriter.OnBufferTransferred;
         _videoWriter.WritingAborted += OnWritingAborted;
         _videoWriter.Start();
 
@@ -383,7 +353,7 @@ internal partial class AcquisitionModel : ObservableObject
     protected async Task StopVideoWriting()
     {
         // Unhook image announcing events.
-        ImageModel.ProcessedImageAdded -= _videoWriter.OnBufferTransferred;
+        _imageModel.ProcessedImageAdded -= _videoWriter.OnBufferTransferred;
 
         // Stop writing frames to video.
         await _videoWriter.StopAsync();
@@ -474,7 +444,7 @@ internal partial class AcquisitionModel : ObservableObject
     protected void OnWritingAborted(object sender, WritingAbortedEventArgs eventArgs)
     {
         // Abort recording with error message.
-        OnRecordingAborted(this, new WritingAbortedEventArgs($"Recording to {ImageWriter.FilePath} was aborted: {eventArgs.ErrorMessage}", eventArgs.Exception));
+        OnRecordingAborted(this, new WritingAbortedEventArgs($"Recording to {_bufferWriter.FilePath} was aborted: {eventArgs.ErrorMessage}", eventArgs.Exception));
     }
 
     #endregion
