@@ -18,13 +18,6 @@ namespace ImagerViewer.Models;
 /// </summary>
 internal sealed partial class DeviceModel : ObservableObject, IXmlSerializable
 {
-    #region Fields
-
-    // backing-fields
-    private bool _isConnecting;
-
-    #endregion
-
     #region Properties
 
     /// <summary>
@@ -62,12 +55,12 @@ internal sealed partial class DeviceModel : ObservableObject, IXmlSerializable
     /// </summary>
     public bool IsConnecting
     {
-        get => _isConnecting;
+        get;
         set
         {
-            if (SetProperty(ref _isConnecting, value))
+            if (SetProperty(ref field, value))
             {
-                if (_isConnecting)
+                if (field)
                     SetDeviceInfo("Loading...");
             }
         }
@@ -149,7 +142,7 @@ internal sealed partial class DeviceModel : ObservableObject, IXmlSerializable
             // Update device info.
             if (Device == null)
             {
-                SetDeviceInfo("No camera connected");
+                SetDeviceInfo();
                 IsConnected = false;
             }
         }
@@ -179,7 +172,7 @@ internal sealed partial class DeviceModel : ObservableObject, IXmlSerializable
 
         // Update device info.
         Device = null;
-        SetDeviceInfo("No camera connected");
+        SetDeviceInfo();
         IsConnected = false;
     }
 
