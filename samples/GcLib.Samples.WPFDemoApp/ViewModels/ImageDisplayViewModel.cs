@@ -38,7 +38,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     private readonly IDispatcherService _dispatcherService;
 
     /// <summary>
-    /// Image source.
+    /// Source of images to be displayed.
     /// </summary>
     private readonly ImageModel _imageSource;
 
@@ -62,12 +62,12 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     #region Properties
 
     /// <summary>
-    /// Raw image.
+    /// Image being displayed, as received from image source in raw format.
     /// </summary>
     public GcBuffer SourceImage => _imageSource.RawImage;
 
     /// <summary>
-    /// Processed image.
+    /// Image being displayed, as received from image source in processed format.
     /// </summary>
     public GcBuffer ProcessedImage => _imageSource.ProcessedImage;
 
@@ -171,6 +171,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         _windowService = windowService;
         _dispatcherService = dispatcherService;
 
+        // Retrieve image source to display.
         _imageSource = imageSource;
         _imageSource.ImagesUpdated += Channel_ImagesUpdated;
 

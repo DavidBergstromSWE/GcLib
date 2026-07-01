@@ -11,12 +11,11 @@ namespace ImagerViewer.ViewModels;
 /// <summary>
 /// View model for the main window.
 /// </summary>
-internal sealed class MainWindowViewModel : ObservableRecipient
+internal sealed partial class MainWindowViewModel : ObservableRecipient
 {
     #region Fields
 
     // backing-fields
-    private StatusBarLogMessage _statusMessage;
     private Theme _selectedTheme;
 
     /// <summary>
@@ -53,11 +52,8 @@ internal sealed class MainWindowViewModel : ObservableRecipient
     /// <summary>
     /// Message shown in status bar.
     /// </summary>
-    public StatusBarLogMessage StatusMessage
-    {
-        get => _statusMessage;
-        private set => SetProperty(ref _statusMessage, value);
-    }
+    [ObservableProperty]
+    public partial StatusBarLogMessage StatusMessage { get; private set; }
 
     /// <summary>
     /// Available UI themes.
