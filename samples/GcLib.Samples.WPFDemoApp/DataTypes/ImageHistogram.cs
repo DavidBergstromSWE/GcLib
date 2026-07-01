@@ -25,6 +25,4 @@ public class ImageHistogram(double[,] data, uint maximum, uint numChannels)
     /// Number of image channels in histogram data.
     /// </summary>
     public uint NumChannels { get; init; } = numChannels;
-
-    public bool ContainsData => Data != null;
 }
