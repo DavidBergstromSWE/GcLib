@@ -24,10 +24,8 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
 
     // backing-fields
     private BitmapScalingMode _bitmapScalingMode;
-    private bool _showPixelInspector;
     private bool _limitFPS;
     private uint _targetFPS;
-    private bool _showFullScreenFrameInfo;
 
     /// <summary>
     /// Service providing windows and dialogs.
@@ -95,11 +93,8 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     /// <summary>
     /// Show pixel value inspector when moving mouse pointer over displayed image.
     /// </summary>
-    public bool ShowPixelInspector
-    {
-        get => _showPixelInspector;
-        set => SetProperty(ref _showPixelInspector, value);
-    }
+    [ObservableProperty]
+    public partial bool ShowPixelInspector { get; set; }
 
     /// <summary>
     /// Limit displayed frame rate. 
@@ -142,16 +137,14 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     /// <summary>
     /// Currently displayed frame rate.
     /// </summary>
-    public double CurrentFPS => CalcFPS();
+    [ObservableProperty]
+    public partial double CurrentFPS { get; private set; }
 
     /// <summary>
     /// Show frame info in full screen mode.
     /// </summary>
-    public bool ShowFullScreenFrameInfo
-    {
-        get => _showFullScreenFrameInfo;
-        set => SetProperty(ref _showFullScreenFrameInfo, value);
-    }
+    [ObservableProperty]
+    public partial bool ShowFullScreenFrameInfo { get; set; }
 
     #endregion
 
@@ -219,7 +212,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
             else UpdateImages();
 
             _timeStamps.Put((ulong)DateTime.Now.Ticks);
-            OnPropertyChanged(nameof(CurrentFPS));
+            CurrentFPS = CalcFPS();
         });
     }
 
