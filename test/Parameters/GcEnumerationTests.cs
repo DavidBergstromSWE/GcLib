@@ -365,8 +365,7 @@ public class GcEnumerationTests
         var actualEntries = gcEnumeration.Entries;
 
         // Assert
-        Assert.AreEqual(expectedEntries, actualEntries);
-        Assert.IsTrue(Enumerable.SequenceEqual(actualEntries, expectedEntries));
+        Assert.AreSequenceEqual(expectedEntries, actualEntries);
     }
 
     [TestMethod]

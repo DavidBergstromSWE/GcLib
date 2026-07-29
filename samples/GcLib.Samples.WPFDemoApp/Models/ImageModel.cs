@@ -24,7 +24,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// </summary>
     /// <remarks>This list defines the pixel formats that can be processed or produced. Derived classes may
     /// use this collection to determine format compatibility or to advertise supported formats to consumers.</remarks>
-    private List<PixelFormat> SupportedPixelFormats =
+    private readonly List<PixelFormat> SupportedPixelFormats =
     [
         PixelFormat.Mono8,
         PixelFormat.Mono10,

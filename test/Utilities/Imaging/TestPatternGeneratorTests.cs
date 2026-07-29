@@ -153,7 +153,7 @@ public class TestPatternGeneratorTests
             // Assert
             Assert.IsNotNull(newBytes);
             Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
-            Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
+            Assert.AreNotSequenceEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
             oldBytes = newBytes;
         }
@@ -225,7 +225,7 @@ public class TestPatternGeneratorTests
             // Assert
             Assert.IsNotNull(newBytes);
             Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
-            Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
+            Assert.AreNotSequenceEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
             oldBytes = newBytes;
         }
@@ -259,7 +259,7 @@ public class TestPatternGeneratorTests
             // Assert
             Assert.IsNotNull(newBytes);
             Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
-            Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
+            Assert.AreNotSequenceEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
             if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
             {
@@ -306,7 +306,7 @@ public class TestPatternGeneratorTests
             // Assert
             Assert.IsNotNull(newBytes);
             Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
-            Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
+            Assert.AreNotSequenceEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
             if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
             {
@@ -353,7 +353,7 @@ public class TestPatternGeneratorTests
             // Assert
             Assert.IsNotNull(newBytes);
             Assert.AreEqual((uint)newBytes.Length, _width * _height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8);
-            Assert.AreNotEqual(oldBytes, newBytes); // Ensure the image changes with frame number
+            Assert.AreNotSequenceEqual(oldBytes, newBytes); // Ensure the image changes with frame number
 
             if (GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) <= 8)
             {

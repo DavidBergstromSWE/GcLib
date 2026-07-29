@@ -19,7 +19,7 @@ public class ByteExtensionsTests
         ByteExtensions.SetBitRange(target: bytes, start: 0, length: 0, value: value, endianness: ByteExtensions.Endianness.BigEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
 
         // Assert
-        CollectionAssert.AreEqual(originalBytes, bytes);
+        Assert.AreSequenceEqual(originalBytes, bytes);
     }
 
     [TestMethod]

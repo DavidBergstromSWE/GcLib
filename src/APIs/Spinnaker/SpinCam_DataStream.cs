@@ -126,7 +126,7 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
     /// </summary>
     /// <param name="image">Image buffer.</param>
     /// <returns>Converted <see cref="GcBuffer"/>.</returns>
-    private GcBuffer ToGcBuffer(IManagedImage image)
+    private static GcBuffer ToGcBuffer(IManagedImage image)
     {
         // Parse pixel format.
         PixelFormat pixelFormat = Enum.Parse<PixelFormat>(image.PixelFormat.ToString());

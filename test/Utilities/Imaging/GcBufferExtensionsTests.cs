@@ -163,6 +163,6 @@ public class GcBufferExtensionsTests
         Assert.AreEqual(originalBuffer.Width, unpackedBuffer.Width);
         Assert.AreEqual(originalBuffer.Height, unpackedBuffer.Height);
         Assert.AreEqual(originalBuffer.BitDepth, unpackedBuffer.BitDepth);
-        CollectionAssert.AreEqual(originalBuffer.ImageData, unpackedBuffer.ImageData);
+        Assert.AreSequenceEqual(originalBuffer.ImageData, unpackedBuffer.ImageData);
     }
 }
