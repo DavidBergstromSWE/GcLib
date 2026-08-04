@@ -213,33 +213,46 @@ public sealed class GcInteger : GcParameter
 
     #region Methods
 
-    /// <inheritdoc/>
-    public void ImposeMin(long int64Value)
+    /// <summary>
+    /// Imposes a new minimum value for the parameter.
+    /// </summary>
+    /// <param name="minValue">The new minimum value to impose.</param>
+    public void ImposeMin(long minValue)
     {
-        Min = int64Value;
+        Min = minValue;
         OnPropertyChanged(nameof(Min));
 
+        // Ensure that the maximum value is not less than the new minimum value.
         if (Max < Min)
-            ImposeMax(int64Value);
+            ImposeMax(minValue);
 
+        // Ensure that the current value is not less than the new minimum value.
         if (Value < Min)
             Value = Min;
     }
 
-    /// <inheritdoc/>
-    public void ImposeMax(long int64Value)
+    /// <summary>
+    /// Imposes a new maximum value for the parameter.
+    /// </summary>
+    /// <param name="maxValue">The new maximum value to impose.</param>
+    public void ImposeMax(long maxValue)
     {
-        Max = int64Value;
+        Max = maxValue;
         OnPropertyChanged(nameof(Max));
 
+        // Ensure that the minimum value is not greater than the new maximum value.
         if (Min > Max)
-            ImposeMin(int64Value);
+            ImposeMin(maxValue);
 
+        // Ensure that the current value is not greater than the new maximum value.
         if (Value > Max)
             Value = Max;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Creates an equivalent <see cref="GcFloat"/> parameter that is an alias of the current <see cref="GcInteger"/> parameter.
+    /// </summary>
+    /// <returns>The new <see cref="GcFloat"/> parameter.</returns>
     public GcFloat GetFloatAlias()
     {
         return new GcFloat(name: Name,

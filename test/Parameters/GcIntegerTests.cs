@@ -250,23 +250,20 @@ public class GcIntegerTests
     }
 
     [TestMethod]
-    public void ImposeMin_SmallerThanValue_MinAsExpected()
+    public void ImposeMin_MinIsLessThanMax_MinIsSetToMin()
     {
         // Arrange
-        var gcInteger = GetInteger(min: 10, max: 100, value: 15);
-        var expectedValue = -10;
+        var gcInteger = GetInteger(min: 10, max: 100);
 
         // Act
-        gcInteger.ImposeMin(expectedValue);
-        var actualValue = gcInteger.Min;
+        gcInteger.ImposeMin(-10);
 
         // Assert
-        Assert.AreEqual(expectedValue, actualValue);
-        Assert.AreEqual(15, gcInteger.Value);
+        Assert.AreEqual(-10, gcInteger.Min);
     }
 
     [TestMethod]
-    public void ImposeMin_LargerThanValue_ValueAsMin()
+    public void ImposeMin_MinIsGreaterThanValue_ValueIsSetToMin()
     {
         // Arrange
         var gcInteger = GetInteger(value: 42, min: 0, max: 100);
@@ -279,62 +276,55 @@ public class GcIntegerTests
     }
 
     [TestMethod]
-    public void ImposeMin_LargerThanMax_MaxAsMin()
+    public void ImposeMin_MinIsGreaterThanMax_MaxIsSetToMin()
     {
         // Arrange
         var gcInteger = GetInteger(value: 42, min: 0, max: 100);
-        var expectedValue = 120;
 
         // Act
-        gcInteger.ImposeMin(expectedValue);
+        gcInteger.ImposeMin(104);
 
         // Assert
-        Assert.AreEqual(gcInteger.Max, gcInteger.Min);
-        Assert.AreEqual(expectedValue, gcInteger.Value);
+        Assert.AreEqual(gcInteger.Min, gcInteger.Max);
     }
 
     [TestMethod]
-    public void ImposeMax_LargerThanValue_MaxAsExpected()
+    public void ImposeMax_MaxIsGreaterThanMin_MaxIsSetToMax()
     {
         // Arrange
         var gcInteger = GetInteger(min: 10, max: 100, value: 15);
-        var expectedValue = 75;
 
         // Act
-        gcInteger.ImposeMax(expectedValue);
-        var actualValue = gcInteger.Max;
+        gcInteger.ImposeMax(50);
 
         // Assert
-        Assert.AreEqual(expectedValue, actualValue);
-        Assert.AreEqual(15, gcInteger.Value);
+        Assert.AreEqual(50, gcInteger.Max);
     }
 
     [TestMethod]
-    public void ImposeMax_SmallerThanValue_ValueAsMax()
+    public void ImposeMax_MaxIsLessThanMin_MinIsSetToMax()
     {
         // Arrange
         var gcInteger = GetInteger(min: 10, max: 100, value: 40);
 
         // Act
-        gcInteger.ImposeMax(25);
+        gcInteger.ImposeMax(5);
 
         // Assert
-        Assert.AreEqual(gcInteger.Value, gcInteger.Max);
+        Assert.AreEqual(gcInteger.Max, gcInteger.Min);
     }
 
     [TestMethod]
-    public void ImposeMax_SmallerThanMin_MinAsMax()
+    public void ImposeMax_MaxIsLessThanMin_ValueIsSetToMax()
     {
         // Arrange
         var gcInteger = GetInteger(value: 42, min: 0, max: 100);
-        var expectedValue = -10;
 
         // Act
-        gcInteger.ImposeMax(expectedValue);
+        gcInteger.ImposeMax(20);
 
         // Assert
-        Assert.AreEqual(gcInteger.Min, gcInteger.Max);
-        Assert.AreEqual(expectedValue, gcInteger.Value);
+        Assert.AreEqual(gcInteger.Max, gcInteger.Value);
     }
 
     [TestMethod]

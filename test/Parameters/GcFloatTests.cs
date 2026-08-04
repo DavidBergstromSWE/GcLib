@@ -163,6 +163,84 @@ public class GcFloatTests
     }
 
     [TestMethod]
+    public void ImposeMin_MinIsLessThanMax_MinIsSetToMin()
+    {
+        // Arrange
+        var gcFloat = GetFloat(min: 0.0, max: 10.0);
+
+        // Act
+        gcFloat.ImposeMin(5.0);
+
+        // Assert
+        Assert.AreEqual(5.0, gcFloat.Min);
+    }
+
+    [TestMethod]
+    public void ImposeMin_MinIsGreaterThanMax_MaxIsSetToMin()
+    {
+        // Arrange
+        var gcFloat = GetFloat(min: 0.0, max: 10.0);
+
+        // Act
+        gcFloat.ImposeMin(15.0);
+
+        // Assert
+        Assert.AreEqual(gcFloat.Min, gcFloat.Max);
+    }
+
+    [TestMethod]
+    public void ImposeMin_MinIsGreaterThanMax_ValueIsSetToMin()
+    {
+        // Arrange
+        var gcFloat = GetFloat(min: 0.0, max: 10.0);
+
+        // Act
+        gcFloat.ImposeMin(15.0);
+
+        // Assert
+        Assert.AreEqual(gcFloat.Min, gcFloat.Value);
+    }
+
+    [TestMethod]
+    public void ImposeMax_MaxIsGreaterThanMin_MaxIsSetToMax()
+    {
+        // Arrange
+        var gcFloat = GetFloat(min: 0.0, max: 10.0);
+
+        // Act
+        gcFloat.ImposeMax(15.0);
+
+        // Assert
+        Assert.AreEqual(15.0, gcFloat.Max);
+    }
+
+    [TestMethod]
+    public void ImposeMax_MaxIsLessThanMin_MinIsSetToMax()
+    {
+        // Arrange
+        var gcFloat = GetFloat(min: 0.0, max: 10.0);
+
+        // Act
+        gcFloat.ImposeMax(-5.0);
+
+        // Assert
+        Assert.AreEqual(gcFloat.Max, gcFloat.Min);
+    }
+
+    [TestMethod]
+    public void ImposeMax_MaxIsLessThanMin_ValueIsSetToMax()
+    {
+        // Arrange
+        var gcFloat = GetFloat(min: 0.0, max: 10.0);
+
+        // Act
+        gcFloat.ImposeMax(-5.0);
+
+        // Assert
+        Assert.AreEqual(gcFloat.Max, gcFloat.Value);
+    }
+
+    [TestMethod]
     public void GetIntAlias_AreEquall()
     {
         // Arrange

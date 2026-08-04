@@ -81,7 +81,9 @@ public sealed class GcCommand : GcParameter
 
     // ToDo: Add ExecuteAsync to GcCommand?
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Executes the command.
+    /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
     public void Execute()
     {
@@ -93,7 +95,10 @@ public sealed class GcCommand : GcParameter
         _isDone = true;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets a value indicating whether the command has been executed.
+    /// </summary>
+    /// <returns>True if the command has been executed, false otherwise.</returns>
     public bool IsDone()
     {
         return _isDone;
@@ -122,8 +127,6 @@ public sealed class GcCommand : GcParameter
     {
         return new GcCommand(Name, Category, _executeMethod, IsReadable, IsWritable, Visibility, Description, IsSelector, [.. SelectingParameters], [.. SelectedParameters]);
     }
-
-
 
     #endregion
 }
