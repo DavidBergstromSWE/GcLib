@@ -45,7 +45,7 @@ public sealed partial class IdsCam
 
             try
             {
-                switch(parameter.Type())
+                switch (parameter.Type())
                 {
                     case NodeType.Boolean:
                         var booleanNode = _nodeMap.FindNode<BooleanNode>(parameter.Name());
@@ -265,19 +265,19 @@ public sealed partial class IdsCam
         {
             case GcParameterType.Boolean:
                 var booleanNode = _nodeMap.FindNode<BooleanNode>(parameterName);
-                return booleanNode.IsReadable()? booleanNode.Value().ToString() : null;
+                return booleanNode.IsReadable() ? booleanNode.Value().ToString() : null;
             case GcParameterType.Enumeration:
                 var enumerationNode = _nodeMap.FindNode<EnumerationNode>(parameterName);
-                return enumerationNode.IsReadable()? enumerationNode.CurrentEntry().SymbolicValue() : null;
+                return enumerationNode.IsReadable() ? enumerationNode.CurrentEntry().SymbolicValue() : null;
             case GcParameterType.Float:
                 var floatNode = _nodeMap.FindNode<FloatNode>(parameterName);
-                return floatNode.IsReadable()? floatNode.Value().ToString() : null;
+                return floatNode.IsReadable() ? floatNode.Value().ToString() : null;
             case GcParameterType.Integer:
                 var integerNode = _nodeMap.FindNode<IntegerNode>(parameterName);
-                return integerNode.IsReadable()? integerNode.Value().ToString() : null;
+                return integerNode.IsReadable() ? integerNode.Value().ToString() : null;
             case GcParameterType.String:
                 var stringNode = _nodeMap.FindNode<StringNode>(parameterName);
-                return stringNode.IsReadable()? stringNode.Value() : null;
+                return stringNode.IsReadable() ? stringNode.Value() : null;
             default:
                 return string.Empty;
         }

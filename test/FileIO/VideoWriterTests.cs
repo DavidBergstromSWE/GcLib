@@ -255,7 +255,7 @@ public class VideoWriterTests
 
         // Assert
         Assert.IsFalse(_writer.IsWriting);
-        Assert.IsTrue(_writer.IsDisposed);        
+        Assert.IsTrue(_writer.IsDisposed);
         Assert.AreEqual(0, _writer.BuffersQueued);
     }
 

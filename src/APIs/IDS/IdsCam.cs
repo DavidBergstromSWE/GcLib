@@ -119,7 +119,7 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         deviceManager.Update();
 
         var devices = new List<GcDeviceInfo>();
-        for (int i = 0; i < deviceManager.Devices().Count; i++) 
+        for (int i = 0; i < deviceManager.Devices().Count; i++)
             devices.Add(GetDeviceInfo(deviceManager.Devices()[i]));
 
         return devices;

@@ -129,7 +129,7 @@ public class VideoWriter : IDisposable
     {
         if (Path.GetExtension(filePath) != ".mp4")
             throw new ArgumentException("Input file must have mp4 extension!");
-        
+
         FilePath = filePath;
         FPS = fps;
         Codec = codec;
@@ -212,7 +212,7 @@ public class VideoWriter : IDisposable
 
                     // Raise event.
                     OnWritingAborted(ex.Message, ex);
-                    
+
                     break;
                 }
             }
@@ -264,7 +264,7 @@ public class VideoWriter : IDisposable
 
         // Initialize new video writer (if not done already), using selected codec, fps and buffer properties.
         _videoWriter ??= new(fileName: FilePath, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
-        
+
         // Write buffer (converted to Mat).
         _videoWriter.Write(buffer.ToMat());
 
@@ -279,7 +279,7 @@ public class VideoWriter : IDisposable
     /// Event-handling method to BufferTransferred events, queuing transferred buffer for writing.
     public void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
-        if (IsWriting == false) 
+        if (IsWriting == false)
             return;
 
         // Queue transferred buffer.
@@ -288,7 +288,7 @@ public class VideoWriter : IDisposable
         if (_timeStamps.IsFull == false)
             _timeStamps.Put(e.Buffer.TimeStamp); // Add buffer timestamp to circular buffer.
         else
-        {         
+        {
             // Proceed with recording thread.
             _ = _waitHandle.Set();
         }
