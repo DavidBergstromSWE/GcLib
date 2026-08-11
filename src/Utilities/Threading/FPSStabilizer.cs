@@ -18,7 +18,7 @@ public sealed class FPSStabilizer(int numSamples = 30)
     /// <summary>
     /// Circular buffer of timestamps.
     /// </summary>
-    private readonly CircularBuffer<long> _timeStamps = new(numSamples, true);
+    private readonly CircularBuffer<long> _timeStamps = new(capacity: numSamples, allowOverflow: true);
 
     #endregion
 
@@ -27,7 +27,7 @@ public sealed class FPSStabilizer(int numSamples = 30)
     /// <summary>
     /// Queries the average frames per seconds.
     /// </summary>
-    public double Average => (_timeStamps.IsEmpty == false) ? TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1) : 0.0;
+    public double Average => (_timeStamps.IsEmpty == false) ? CalcFPS(_timeStamps.Max()) : 0.0;
 
     #endregion
 
@@ -42,19 +42,13 @@ public sealed class FPSStabilizer(int numSamples = 30)
     {
         long timeNow = DateTime.Now.Ticks;
 
-        if (_timeStamps.IsEmpty)
+        // If the buffer is empty or if the new average FPS will be less than or equal to the target FPS, we can display the frame.
+        if (_timeStamps.IsEmpty || CalcFPS(timeNow) <= targetFPS)
         {
             _timeStamps.Put(timeNow);
             return true;
         }
-
-        long[] array = [.. _timeStamps.Where(x => x > 0)];
-        if (TimeSpan.TicksPerSecond / (timeNow - (double)array.Min()) * array.Length <= targetFPS)
-        {
-            _timeStamps.Put(timeNow);
-            return true;
-        }
-        else return false;
+        else return false; // Otherwise, we skip the frame to maintain the target FPS.
     }
 
     /// <summary>
@@ -63,6 +57,20 @@ public sealed class FPSStabilizer(int numSamples = 30)
     public void Reset()
     {
         _timeStamps.Clear();
+    }
+
+    #endregion
+
+    #region Private methods
+
+    /// <summary>
+    /// Calculates the average frames per second based on the current timestamps in the buffer and the added one.
+    /// </summary>
+    /// <param name="timeStamp">Added timestamp.</param>
+    /// <returns>The calculated frames per second.</returns>
+    private double CalcFPS(long timeStamp)
+    {
+        return (_timeStamps.Size - 1) / ((double)timeStamp - _timeStamps.Min()) * TimeSpan.TicksPerSecond;
     }
 
     #endregion
