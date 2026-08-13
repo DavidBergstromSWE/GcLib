@@ -73,7 +73,7 @@ public abstract partial class GcDevice : IBufferProducer
 
             // Log debugging info.
             if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
-                GcLibrary.Logger.LogTrace("{ParameterCount} parameters successfully imported ({FailedParameterCount} failed) from {ModelName} ({ID})", parameters.Count, FailedParameters.Count, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
+                GcLibrary.Logger.LogTrace("{ParameterCount} parameters successfully imported ({FailedParameterCount} failed or skipped) from {ModelName} ({ID})", parameters.Count, FailedParameters.Count, _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID);
         }
 
         #endregion

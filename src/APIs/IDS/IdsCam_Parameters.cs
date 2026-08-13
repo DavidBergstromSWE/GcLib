@@ -91,7 +91,7 @@ public sealed partial class IdsCam
                                                           value: floatNode.Value(),
                                                           min: floatNode.Minimum(),
                                                           max: floatNode.Maximum(),
-                                                          increment: floatNode.Increment(),
+                                                          //increment: floatNode.Increment(),
                                                           unit: floatNode.Unit(),
                                                           displayPrecision: floatNode.DisplayPrecision(),
                                                           isReadable: floatNode.IsReadable(),
