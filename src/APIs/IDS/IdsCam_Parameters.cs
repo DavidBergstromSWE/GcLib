@@ -206,7 +206,7 @@ public sealed partial class IdsCam
                                value: node.Value(),
                                min: node.Minimum(),
                                max: node.Maximum(),
-                               increment: node.Increment(),
+                               increment: node.HasConstantIncrement() ? node.Increment() : 0,
                                unit: gcFloat.Unit,
                                displayPrecision: gcFloat.DisplayPrecision,
                                isReadable: node.IsReadable(),
