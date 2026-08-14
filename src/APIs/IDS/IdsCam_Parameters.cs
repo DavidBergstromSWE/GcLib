@@ -33,8 +33,8 @@ public sealed partial class IdsCam
         // Loop through all nodes in the node map and create corresponding GcParameter objects for those that are available. If any errors occur while processing a parameter, add its name to the failed parameter list.
         foreach (var parameter in _nodeMap.Nodes())
         {
-            // Skip nodes that are not parameters (e.g. categories) or that are not available, not readable, or invisible.
-            if (parameter.IsAvailable() == false || parameter.IsFeature() == false || parameter.Visibility() == NodeVisibility.Invisible || parameter.IsReadable() == false)
+            // Skip nodes that are not parameters or that are not available (neither readable nor writable).
+            if (parameter.IsFeature() == false || parameter.IsAvailable() == false)
             {
                 failedParameterList.Add(parameter.Name());
                 continue;
