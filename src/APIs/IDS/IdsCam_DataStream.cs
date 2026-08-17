@@ -13,6 +13,8 @@ namespace GcLib;
 /// </summary>
 public sealed partial class IdsCam
 {
+    #region Private fields
+
     /// <summary>
     /// GenTL datastream used for image acquisition.
     /// </summary>
@@ -33,11 +35,19 @@ public sealed partial class IdsCam
     /// </summary>
     private ulong _pcTime0;
 
+    #endregion
+
+    #region Public properties
+
     /// <inheritdoc/>
     public override uint PayloadSize => (uint)_nodeMap.FindNode<IntegerNode>("PayloadSize").Value();
 
     /// <inheritdoc/>
     public override uint BufferCapacity { get; set; }
+
+    #endregion
+
+    #region Public methods
 
     /// <inheritdoc/>
     public override void StartAcquisition()
@@ -113,6 +123,10 @@ public sealed partial class IdsCam
         OnAcquisitionStopped();
     }
 
+    #endregion
+
+    #region Private methods
+
     /// <summary>
     /// Image acquisition thread. Attempts to retrieve buffers from datastream and signals a new buffer event if successfull.
     /// </summary>
@@ -173,4 +187,6 @@ public sealed partial class IdsCam
                             frameID: (long)buffer.FrameID(),
                             timeStamp: _pcTime0 + (ulong)Math.Round(buffer.Timestamp_ns() / 100d));
     }
+
+    #endregion
 }

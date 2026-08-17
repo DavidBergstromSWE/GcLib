@@ -11,10 +11,16 @@ namespace GcLib;
 /// </summary>
 public sealed partial class IdsCam
 {
+    #region Private fields
+
     /// <summary>
     /// GenAPI node map containing all features implemented by the device.
     /// </summary>
     private readonly NodeMap _nodeMap;
+
+    #endregion
+
+    #region Protected methods
 
     /// <inheritdoc/>
     protected override GcDeviceParameterCollection ImportParameters()
@@ -327,4 +333,6 @@ public sealed partial class IdsCam
             if (commandParam.IsAvailable()) commandParam.Execute();
         }
     }
+
+    #endregion
 }

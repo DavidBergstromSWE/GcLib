@@ -106,6 +106,8 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
 
     #endregion
 
+    #region Public methods
+
     /// <inheritdoc/>
     public override void Close()
     {
@@ -122,6 +124,8 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         // Close device.
         _device.Dispose();
     }
+
+    #endregion
 
     #region IDeviceClassDescriptor
 
