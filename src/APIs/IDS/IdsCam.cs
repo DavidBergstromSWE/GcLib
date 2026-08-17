@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Timers;
 using IDSImaging.Peak.API;
 using IDSImaging.Peak.API.Core;
 
@@ -16,6 +17,11 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
     /// Device-level class in IDS Peak API. Connects, configures and controls devices.
     /// </summary>
     private readonly Device _device;
+
+    /// <summary>
+    /// Timer object used to periodically check if device connection is valid.
+    /// </summary>
+    private readonly Timer _checkConnectionTimer;
 
     #endregion
 
@@ -44,13 +50,13 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         deviceManager.Update();
         var devices = deviceManager.Devices();
 
-        DeviceDescriptor device = null;
+        DeviceDescriptor deviceDescriptor = null;
 
         if (string.IsNullOrEmpty(deviceID))
         {
             // Get first available device.
             if (devices.Count > 0)
-                device = devices[0];
+                deviceDescriptor = devices[0];
         }
         else
         {
@@ -59,20 +65,20 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
             {
                 if (devices[i].ID().Replace(":", string.Empty) == deviceID)
                 {
-                    device = devices[i];
+                    deviceDescriptor = devices[i];
                     break;
                 }
             }
         }
 
-        if (device == null)
+        if (deviceDescriptor == null)
             throw new InvalidOperationException($"No camera found!");
 
         // Connect to device.
-        _device = device.OpenDevice(DeviceAccessType.Control);
+        _device = deviceDescriptor.OpenDevice(DeviceAccessType.Control);
 
         // Update device info.
-        DeviceInfo = GetDeviceInfo(device);
+        DeviceInfo = GetDeviceInfo(deviceDescriptor);
         DeviceInfo.IsOpen = true;
         DeviceInfo.IsAccessible = false;
 
@@ -87,6 +93,15 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
 
         // Open data stream for device.
         _dataStream = _device.DataStreams()[0].OpenDataStream();
+
+        // Start periodic checking of device connection validity.
+        _checkConnectionTimer = new Timer()
+        {
+            Interval = 3000, // milliseconds
+            AutoReset = true
+        };
+        _checkConnectionTimer.Elapsed += CheckConnection;
+        _checkConnectionTimer.Start();
     }
 
     #endregion
@@ -95,6 +110,14 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
     public override void Close()
     {
         base.Close();
+
+        // Stop connection checking timer and dispose of it.
+        _checkConnectionTimer.Stop();
+        try
+        {
+            _checkConnectionTimer.Dispose();
+        }
+        catch (Exception){ }
 
         // Close device.
         _device.Dispose();
@@ -144,6 +167,31 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
             userDefinedName: deviceDescriptor.UserDefinedName(),
             deviceClass: DeviceClassInfo,
             isAccessible: deviceDescriptor.AccessStatus() != DeviceAccessStatus.NoAccess);
+    }
+
+    /// <summary>
+    /// Callback method for periodic checking of device connection validity. If the device is no longer accessible, it raises the ConnectionLost event.
+    /// </summary>
+    private void CheckConnection(object sender, ElapsedEventArgs e)
+    {
+        // Check if device is still connected and accessible.
+        var deviceManager = DeviceManager.Instance();
+        deviceManager.Update();
+        var devices = deviceManager.Devices();
+        if (devices.Count > 0)
+        {
+            foreach (var device in devices)
+            {
+                if (device.ID().Replace(":", string.Empty) == DeviceInfo.UniqueID)
+                {
+                    // Device is still accessible.
+                    return;
+                }
+            }
+        }
+
+        // Device is no longer accessible, raise event.
+        OnConnectionLost();
     }
 
     #endregion 

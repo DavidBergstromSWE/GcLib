@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Timers;
 using GcLib.Utilities.IO;
 using SpinnakerNET;
 using SpinnakerNET.GenApi;
@@ -22,6 +23,11 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
     /// Node map of the camera, containing features implemented by the device.
     /// </summary>
     private readonly INodeMap _nodeMap;
+
+    /// <summary>
+    /// Timer object used to periodically check if device connection is valid.
+    /// </summary>
+    private readonly Timer _checkConnectionTimer;
 
     #endregion
 
@@ -55,6 +61,15 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
 
         // Retrieve collection of camera parameters.
         Parameters = ImportParameters();
+
+        // Start periodic checking of device connection validity.
+        _checkConnectionTimer = new Timer()
+        {
+            Interval = 3000, // milliseconds
+            AutoReset = true
+        };
+        _checkConnectionTimer.Elapsed += CheckConnection;
+        _checkConnectionTimer.Start();
     }
 
     #endregion
@@ -65,6 +80,17 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
     public override void Close()
     {
         base.Close();
+
+        // Stop connection checking timer and dispose of it.
+        _checkConnectionTimer.Stop();
+        try
+        {
+            _checkConnectionTimer.Dispose();
+        }
+        catch (Exception)
+        {
+            //
+        }
 
         // Stop acquisition (if running).
         if (_camera.IsStreaming())
@@ -93,6 +119,19 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
                                 uniqueID: camera.TLDevice.DeviceID,
                                 deviceClass: DeviceClassInfo,
                                 userDefinedName: camera.TLDevice.DeviceUserID);
+    }
+
+    /// <summary>
+    /// Callback method for periodic checking of device connection validity. If the device is no longer accessible, it raises the ConnectionLost event.
+    /// </summary>
+    private void CheckConnection(object sender, ElapsedEventArgs e)
+    {
+        // ToDo: Needs to be tested with a real camera. The current implementation may not be sufficient to detect a lost connection.
+        if (_camera == null || !_camera.IsValid() || !_camera.IsInitialized())
+        {
+            // Device is no longer accessible, raise event.
+            OnConnectionLost();
+        }
     }
 
     #endregion
