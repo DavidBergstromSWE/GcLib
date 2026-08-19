@@ -50,11 +50,7 @@ public partial class PcoCam
         /// User-specifiable device ID.
         /// </summary>
         [Category("DeviceControl")]
-        public GcString DeviceUserID
-        {
-            get => _deviceUserID;
-            set => _deviceUserID.Value = value;
-        }
+        public GcString DeviceUserID => _deviceUserID;
 
         /// <summary>
         /// Transport layer type.
@@ -66,17 +62,20 @@ public partial class PcoCam
         /// Selects which device temperature to measure in <see cref="DeviceTemperature"/>.
         /// </summary>
         [Category("DeviceControl")]
-        public GcEnumeration DeviceTemperatureSelector
-        {
-            get => _deviceTemperatureSelector;
-            set => _deviceTemperatureSelector.IntValue = value;
-        }
+        public GcEnumeration DeviceTemperatureSelector => _deviceTemperatureSelector;
 
         /// <summary>
         /// Temperature as given by device sensor selected by <see cref="DeviceTemperatureSelector"/>.
         /// </summary>
         [Category("DeviceControl")]
-        public GcFloat DeviceTemperature => _deviceTemperature;
+        public GcFloat DeviceTemperature
+        {
+            get
+            {
+                _deviceTemperature.Value = LibWrapper.GetCameraTemperature(_cameraHandle, (TemperatureSelector)_deviceTemperatureSelector.IntValue);
+                return _deviceTemperature;
+            }
+        }
 
         /// <summary>
         /// Current timestamp in device.

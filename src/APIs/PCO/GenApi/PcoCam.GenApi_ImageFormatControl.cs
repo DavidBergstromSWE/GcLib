@@ -61,91 +61,55 @@ public partial class PcoCam
         /// Width of the image provided by the device (in pixels). 
         /// </summary>
         [Category("ImageFormatControl")]
-        public GcInteger Width
-        {
-            get => _width;
-            set => _width.Value = value;
-        }
+        public GcInteger Width => _width;
 
         /// <summary>
         /// Height of the image provided by the device (in pixels). 
         /// </summary>
         [Category("ImageFormatControl")]
-        public GcInteger Height
-        {
-            get => _height;
-            set => _height.Value = value;
-        }
+        public GcInteger Height => _height;
 
         /// <summary>
         /// Horizontal offset from the origin to the region of interest (in pixels).
         /// </summary>
         [Category("ImageFormatControl")]
-        public GcInteger OffsetX
-        {
-            get => _offsetX;
-            set => _offsetX.Value = value;
-        }
+        public GcInteger OffsetX => _offsetX;
 
         /// <summary>
         /// Vertical offset from the origin to the region of interest (in pixels).
         /// </summary>
         [Category("ImageFormatControl")]
-        public GcInteger OffsetY
-        {
-            get => _offsetY;
-            set => _offsetY.Value = value;
-        }
+        public GcInteger OffsetY => _offsetY;
 
         /// <summary>
         /// Number of horizontal pixels to combine together.
         /// </summary>
         [Category("ImageFormatControl")]
-        public GcInteger BinningHorizontal
-        {
-            get => _binningHorizontal;
-            set => _binningHorizontal.Value = value;
-        }
+        public GcInteger BinningHorizontal => _binningHorizontal;
 
         /// <summary>
         /// Number of vertical pixels to combine together.
         /// </summary>
         [Category("ImageFormatControl")]
-        public GcInteger BinningVertical
-        {
-            get => _binningVertical;
-            set => _binningVertical.Value = value;
-        }
+        public GcInteger BinningVertical => _binningVertical;
 
         /// <summary>
         /// Format of the pixels provided by the device.
         /// </summary>
         [Category("ImageFormatControl")]
-        public GcEnumeration PixelFormat
-        {
-            get => _pixelFormat;
-            set => _pixelFormat.IntValue = value;
-        }
+        public GcEnumeration PixelFormat => _pixelFormat;
 
         /// <summary>
         /// Total size in bits of a pixel of the image.
         /// </summary>
         [Category("ImageFormatControl")]
-        public GcEnumeration PixelSize
-        {
-            get => _pixelSize;
-            set => _pixelSize.IntValue = value;
-        }
+        public GcEnumeration PixelSize => _pixelSize;
 
         /// <summary>
         /// Noise filtering mode.
         /// </summary>
         [Category("ImageFormatControl")]
-        public GcEnumeration NoiseFilterMode
-        {
-            get => _noiseFilterMode;
-            set => _noiseFilterMode.IntValue = value;
-        }
+        public GcEnumeration NoiseFilterMode => _noiseFilterMode;
 
         #endregion
     }

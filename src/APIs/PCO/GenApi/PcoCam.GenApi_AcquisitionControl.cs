@@ -39,41 +39,25 @@ public partial class PcoCam
         /// Acquisition mode.
         /// </summary>
         [Category("AcquisitionControl")]
-        public GcEnumeration AcquisitionMode
-        {
-            get => _acquisitionMode;
-            set => _acquisitionMode.IntValue = value;
-        }
+        public GcEnumeration AcquisitionMode => _acquisitionMode;
 
         /// <summary>
-        /// Number of images to acquire for a <see cref="GcLib.AcquisitionMode.MultiFrame"/> acquisition mode.
+        /// Number of images to acquire for a <see cref="AcquisitionMode.MultiFrame"/> acquisition mode.
         /// </summary>
         [Category("AcquisitionControl")]
-        public GcInteger AcquisitionFrameCount
-        {
-            get => _acquisitionFrameCount;
-            set => _acquisitionFrameCount.Value = value;
-        }
+        public GcInteger AcquisitionFrameCount => _acquisitionFrameCount;
 
         /// <summary>
         /// Upper limit for acquisition rate at which frames are captured.
         /// </summary>
         [Category("AcquisitionControl")]
-        public GcFloat AcquisitionFrameRate
-        {
-            get => _acquisitionFrameRate;
-            set => _acquisitionFrameRate.Value = value;
-        }
+        public GcFloat AcquisitionFrameRate => _acquisitionFrameRate;
 
         /// <summary>
         /// Exposure time.
         /// </summary>
         [Category("AcquisitionControl")]
-        public GcFloat ExposureTime
-        {
-            get => _exposureTime;
-            set => _exposureTime.Value = value;
-        }
+        public GcFloat ExposureTime => _exposureTime;
 
         /// <summary>
         /// Arms (prepares) the camera for acquisition.
@@ -171,21 +155,13 @@ public partial class PcoCam
         /// Acquisition trigger mode.
         /// </summary>
         [Category("AcquisitionControl")]
-        public GcEnumeration TriggerMode
-        {
-            get => _triggerMode;
-            set => _triggerMode.IntValue = value;
-        }
+        public GcEnumeration TriggerMode => _triggerMode;
 
         /// <summary>
         /// Number of buffers in the input buffer pool.
         /// </summary>
         [Category("AcquisitionControl")]
-        public GcInteger InputBufferCount
-        {
-            get => _inputBufferCount;
-            set => _inputBufferCount.Value = value;
-        }
+        public GcInteger InputBufferCount => _inputBufferCount;
 
         #endregion
 
