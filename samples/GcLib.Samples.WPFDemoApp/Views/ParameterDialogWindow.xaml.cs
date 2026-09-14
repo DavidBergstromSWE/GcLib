@@ -1,6 +1,6 @@
 ﻿using MahApps.Metro.Controls;
 
-namespace ImagerViewer.Views;
+namespace WPFDemoApp.Views;
 
 /// <summary>
 /// Dialog window for displaying and editing device parameters.

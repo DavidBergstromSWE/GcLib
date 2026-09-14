@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ImagerViewer.Utilities.Themes;
+namespace WPFDemoApp.Utilities.Themes;
 
 /// <summary>
 /// Interface for a service providing themes for the user interface of the application.

@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace ImagerViewer.Utilities.IO;
+namespace WPFDemoApp.Utilities.IO;
 
 /// <summary>
 /// Interface for a service managing the storing and restoring of a configuration.

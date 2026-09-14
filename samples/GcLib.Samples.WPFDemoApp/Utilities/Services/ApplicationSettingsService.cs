@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
-using ImagerViewer.ViewModels;
+using WPFDemoApp.ViewModels;
 
-namespace ImagerViewer.Utilities.Services;
+namespace WPFDemoApp.Utilities.Services;
 
 /// <summary>
 /// Service providing loading/saving access to application settings.

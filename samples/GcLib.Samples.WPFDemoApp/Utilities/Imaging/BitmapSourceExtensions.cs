@@ -3,7 +3,7 @@ using System.Windows.Media.Imaging;
 using GcLib;
 using PixelFormat = GcLib.PixelFormat;
 
-namespace ImagerViewer.Utilities.Imaging;
+namespace WPFDemoApp.Utilities.Imaging;
 
 /// <summary>
 /// Provides extension methods for the <see cref="GcBuffer"/> class in <see cref="GcLib"/> library to support WPF applications.

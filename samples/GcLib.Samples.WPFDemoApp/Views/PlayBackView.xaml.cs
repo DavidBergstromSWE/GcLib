@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace ImagerViewer.Views;
+namespace WPFDemoApp.Views;
 
 public partial class PlayBackView : UserControl
 {

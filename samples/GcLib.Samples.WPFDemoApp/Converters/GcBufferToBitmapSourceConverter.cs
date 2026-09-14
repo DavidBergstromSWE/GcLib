@@ -3,9 +3,9 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using GcLib;
-using ImagerViewer.Utilities.Imaging;
+using WPFDemoApp.Utilities.Imaging;
 
-namespace ImagerViewer.Converters;
+namespace WPFDemoApp.Converters;
 
 /// <summary>
 /// Converts an image of <see cref="GcBuffer"/> type to an image of <see cref="BitmapSource"/> type.

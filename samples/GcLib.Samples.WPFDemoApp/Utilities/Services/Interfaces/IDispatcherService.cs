@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace ImagerViewer.Utilities.Services;
+namespace WPFDemoApp.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing dispatching and execution of action delegates onto the UI thread.

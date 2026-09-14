@@ -8,10 +8,10 @@ using System.Xml.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using GcLib;
-using ImagerViewer.Utilities.Messages;
+using WPFDemoApp.Utilities.Messages;
 using Serilog;
 
-namespace ImagerViewer.Models;
+namespace WPFDemoApp.Models;
 
 /// <summary>
 /// Models a camera device.

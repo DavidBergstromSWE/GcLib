@@ -11,14 +11,14 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using GcLib;
-using ImagerViewer.Models;
-using ImagerViewer.Utilities.Dialogs;
-using ImagerViewer.Utilities.Messages;
-using ImagerViewer.Utilities.Services;
+using WPFDemoApp.Models;
+using WPFDemoApp.Utilities.Dialogs;
+using WPFDemoApp.Utilities.Messages;
+using WPFDemoApp.Utilities.Services;
 using MahApps.Metro.Controls.Dialogs;
 using Serilog;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// Models a view for handling playback of previously recorded image data.

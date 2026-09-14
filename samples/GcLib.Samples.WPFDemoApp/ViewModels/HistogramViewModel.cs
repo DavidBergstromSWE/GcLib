@@ -4,10 +4,10 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using GcLib;
 using GcLib.Utilities.Imaging;
-using ImagerViewer.UserControls;
-using ImagerViewer.Utilities.Messages;
+using WPFDemoApp.UserControls;
+using WPFDemoApp.Utilities.Messages;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// View model for displaying image histograms.

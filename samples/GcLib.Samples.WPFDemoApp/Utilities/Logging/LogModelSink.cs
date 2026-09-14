@@ -1,9 +1,9 @@
 ﻿using System;
-using ImagerViewer.Models;
+using WPFDemoApp.Models;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace ImagerViewer.Utilities.Logging;
+namespace WPFDemoApp.Utilities.Logging;
 
 /// <summary>
 /// Sink where received log events are forwarded to an application log data store. 

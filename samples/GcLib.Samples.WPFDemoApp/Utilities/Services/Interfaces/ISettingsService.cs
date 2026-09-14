@@ -1,4 +1,4 @@
-﻿namespace ImagerViewer.Utilities.Services;
+﻿namespace WPFDemoApp.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing access to application settings.

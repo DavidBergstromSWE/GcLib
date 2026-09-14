@@ -1,12 +1,12 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.Messaging;
-using ImagerViewer.Models;
-using ImagerViewer.Utilities.Messages;
+using WPFDemoApp.Models;
+using WPFDemoApp.Utilities.Messages;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Events;
 
-namespace ImagerViewer.Utilities.Logging;
+namespace WPFDemoApp.Utilities.Logging;
 
 /// <summary>
 /// Extension class for <see cref="LoggerSinkConfiguration"/>, providing configurations for custom sinks.

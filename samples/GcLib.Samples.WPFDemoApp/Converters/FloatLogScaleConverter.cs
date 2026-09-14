@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ImagerViewer.Converters;
+namespace WPFDemoApp.Converters;
 
 /// <summary>
 /// Converts a double value to its (natural) logarithmic value.

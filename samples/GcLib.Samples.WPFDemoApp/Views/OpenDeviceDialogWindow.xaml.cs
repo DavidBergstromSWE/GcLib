@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using MahApps.Metro.Controls;
 
-namespace ImagerViewer.Views;
+namespace WPFDemoApp.Views;
 
 /// <summary>
 /// Dialog for a window allowing user selection of a device from a list of available devices on the system.

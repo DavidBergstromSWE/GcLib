@@ -1,4 +1,4 @@
-﻿namespace ImagerViewer.Utilities.Imaging;
+﻿namespace WPFDemoApp.Utilities.Imaging;
 
 /// <summary>
 /// Color converter class, containing methods for converting between different color representations in the Windows system.

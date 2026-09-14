@@ -3,7 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using MahApps.Metro.Controls;
 
-namespace ImagerViewer.Views;
+namespace WPFDemoApp.Views;
 
 /// <summary>
 /// Window for showing images in full screen mode.

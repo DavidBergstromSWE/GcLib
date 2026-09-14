@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
-namespace ImagerViewer.Utilities.Services;
+namespace WPFDemoApp.Utilities.Services;
 
 /// <summary>
 /// Service providing dispatching and running of actions onto the UI thread.

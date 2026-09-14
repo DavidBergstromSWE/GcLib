@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using ImagerViewer.Models;
-using ImagerViewer.Utilities.Messages;
+using WPFDemoApp.Models;
+using WPFDemoApp.Utilities.Messages;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// Models a view handling the processing of input (device) images.

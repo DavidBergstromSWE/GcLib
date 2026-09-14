@@ -1,10 +1,10 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.Messaging;
-using ImagerViewer.Utilities.Messages;
+using WPFDemoApp.Utilities.Messages;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace ImagerViewer.Utilities.Logging;
+namespace WPFDemoApp.Utilities.Logging;
 
 /// <summary>
 /// Sink where received log events are forwarded as messages of type <see cref="StatusBarLogMessage"/>. 

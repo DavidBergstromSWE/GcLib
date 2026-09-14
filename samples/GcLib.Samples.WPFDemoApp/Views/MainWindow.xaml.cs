@@ -2,7 +2,7 @@
 using MahApps.Metro.Controls;
 using Serilog;
 
-namespace ImagerViewer.Views;
+namespace WPFDemoApp.Views;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml

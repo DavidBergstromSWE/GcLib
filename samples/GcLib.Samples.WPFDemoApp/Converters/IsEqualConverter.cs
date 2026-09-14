@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ImagerViewer.Converters;
+namespace WPFDemoApp.Converters;
 
 /// <summary>
 /// Compares two objects and returns true if they are equal and false if they are not.

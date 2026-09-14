@@ -2,7 +2,7 @@
 using System.Windows.Data;
 using System.Windows.Input;
 
-namespace ImagerViewer.Views;
+namespace WPFDemoApp.Views;
 
 /// <summary>
 /// Interaction logic for DisplayView.xaml

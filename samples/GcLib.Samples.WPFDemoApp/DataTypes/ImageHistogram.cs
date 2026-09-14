@@ -1,4 +1,4 @@
-﻿namespace ImagerViewer;
+﻿namespace WPFDemoApp;
 
 /// <summary>
 /// Stores data for an image histogram.

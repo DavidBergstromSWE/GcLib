@@ -1,4 +1,4 @@
-﻿namespace ImagerViewer.Converters;
+﻿namespace WPFDemoApp.Converters;
 
 public class InverseBooleanToVisibilityConverter : BooleanConverter<System.Windows.Visibility>
 {

@@ -1,4 +1,4 @@
-﻿namespace ImagerViewer.ViewModels;
+﻿namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// View model for handling image processing related options.

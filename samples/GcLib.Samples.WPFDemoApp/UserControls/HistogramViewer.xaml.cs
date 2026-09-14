@@ -7,11 +7,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-using ImagerViewer.Utilities.Imaging;
+using WPFDemoApp.Utilities.Imaging;
 using ScottPlot;
-using Theme = ImagerViewer.Utilities.Themes.Theme;
+using Theme = WPFDemoApp.Utilities.Themes.Theme;
 
-namespace ImagerViewer.UserControls;
+namespace WPFDemoApp.UserControls;
 
 /// <summary>
 /// Type of plot for drawing histogram bins.

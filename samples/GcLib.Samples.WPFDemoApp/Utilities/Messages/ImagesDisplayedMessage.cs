@@ -1,6 +1,6 @@
 ﻿using GcLib;
 
-namespace ImagerViewer.Utilities.Messages;
+namespace WPFDemoApp.Utilities.Messages;
 
 /// <summary>
 /// A message announcing the updating of images.

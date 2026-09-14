@@ -1,6 +1,6 @@
 ﻿using Serilog.Events;
 
-namespace ImagerViewer.Utilities.Messages;
+namespace WPFDemoApp.Utilities.Messages;
 
 /// <summary>
 /// A log message for the status bar.

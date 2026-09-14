@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
 
-namespace ImagerViewer.Utilities.Behaviors;
+namespace WPFDemoApp.Utilities.Behaviors;
 
 /// <summary>
 /// Attachable behavior for objects of type <see cref="MenuItem"/> in a <see cref="ContextMenu"/>, where checkable menu items can be grouped together (similar to a group of radiobuttons).

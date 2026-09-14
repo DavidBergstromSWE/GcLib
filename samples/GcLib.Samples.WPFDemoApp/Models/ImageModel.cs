@@ -10,7 +10,7 @@ using GcLib;
 using GcLib.Utilities.Imaging;
 using GcLib.Utilities.Threading;
 
-namespace ImagerViewer.Models;
+namespace WPFDemoApp.Models;
 
 /// <summary>
 /// Processes and stores acquired image data.

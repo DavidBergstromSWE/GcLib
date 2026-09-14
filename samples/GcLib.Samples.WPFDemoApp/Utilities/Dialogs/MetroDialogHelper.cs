@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using MahApps.Metro.Controls.Dialogs;
 
-namespace ImagerViewer.Utilities.Dialogs;
+namespace WPFDemoApp.Utilities.Dialogs;
 
 /// <summary>
 /// Helper class for using dialogs within the <see cref="MahApps.Metro.Controls.Dialogs"/> namespace.

@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace ImagerViewer.Views;
+namespace WPFDemoApp.Views;
 
 /// <summary>
 /// Interaction logic for FileOptionsView.xaml

@@ -13,7 +13,7 @@ using GcLib;
 using GcLib.Utilities.Collections;
 using Microsoft.Win32;
 
-namespace ImagerViewer.UserControls;
+namespace WPFDemoApp.UserControls;
 
 /// <summary>
 /// Control for displaying image content inside a scrollviewer, with pan and zoom and pixel info inspection functionality.

@@ -5,17 +5,17 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Emgu.CV;
 using GcLib;
-using ImagerViewer.Models;
-using ImagerViewer.Utilities.IO;
-using ImagerViewer.Utilities.Logging;
-using ImagerViewer.Utilities.Services;
-using ImagerViewer.Utilities.Themes;
-using ImagerViewer.ViewModels;
+using WPFDemoApp.Models;
+using WPFDemoApp.Utilities.IO;
+using WPFDemoApp.Utilities.Logging;
+using WPFDemoApp.Utilities.Services;
+using WPFDemoApp.Utilities.Themes;
+using WPFDemoApp.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
-namespace ImagerViewer;
+namespace WPFDemoApp;
 
 /// <summary>
 /// ImageViewer is a demo app for the <see cref="GcLib"/> library. The app demonstrates how to connect to devices, change device parameter settings and display live image streams. The app also provide some elementary recording and playback functionality.

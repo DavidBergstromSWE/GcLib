@@ -12,7 +12,7 @@ using CommunityToolkit.Mvvm.Input;
 using GcLib;
 using GcLib.Utilities.Collections;
 
-namespace ImagerViewer.UserControls;
+namespace WPFDemoApp.UserControls;
 
 /// <summary>
 /// Control for displaying and editing parameters, with parameter category filter and parameter search string functionality.

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 
-namespace ImagerViewer.Utilities.Messages;
+namespace WPFDemoApp.Utilities.Messages;
 
 /// <summary>
 /// A message requesting all active acquisitions to stop, returning the task.

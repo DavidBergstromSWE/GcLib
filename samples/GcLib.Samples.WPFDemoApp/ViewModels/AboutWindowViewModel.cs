@@ -2,7 +2,7 @@
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// View model of a window displaying info about the application.

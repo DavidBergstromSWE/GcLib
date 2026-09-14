@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 
-namespace ImagerViewer.Utilities.Themes;
+namespace WPFDemoApp.Utilities.Themes;
 
 /// <summary>
 /// Stores data about a theme for the user interface.

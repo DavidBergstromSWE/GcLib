@@ -9,11 +9,11 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 using GcLib;
 using GcLib.Utilities.Collections;
 using GcLib.Utilities.Threading;
-using ImagerViewer.Models;
-using ImagerViewer.Utilities.Messages;
-using ImagerViewer.Utilities.Services;
+using WPFDemoApp.Models;
+using WPFDemoApp.Utilities.Messages;
+using WPFDemoApp.Utilities.Services;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// View model exposing properties and commands related to the displaying of images.

@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// View model for handling display-related options.

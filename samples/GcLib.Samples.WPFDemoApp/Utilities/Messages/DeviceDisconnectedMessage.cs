@@ -1,4 +1,4 @@
-﻿namespace ImagerViewer.Utilities.Messages;
+﻿namespace WPFDemoApp.Utilities.Messages;
 
 /// <summary>
 /// A message announcing the disconnection of a device.

@@ -8,7 +8,7 @@ using GcLib.FileIO;
 using GcLib.Utilities.Threading;
 using Serilog;
 
-namespace ImagerViewer.Models;
+namespace WPFDemoApp.Models;
 
 /// <summary>
 /// Grabs, acquires and records image data from a device (input channel) datastream.

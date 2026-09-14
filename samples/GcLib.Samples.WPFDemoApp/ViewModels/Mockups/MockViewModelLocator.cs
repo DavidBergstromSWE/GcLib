@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using GcLib;
-using ImagerViewer.Models;
-using ImagerViewer.UserControls;
+using WPFDemoApp.Models;
+using WPFDemoApp.UserControls;
 using ScottPlot;
 using Serilog.Events;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// Provides view models in design time, being populated by dummy properties and commands.

@@ -1,6 +1,6 @@
-﻿using ImagerViewer.UserControls;
+﻿using WPFDemoApp.UserControls;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// View model for handling histogram-related options.

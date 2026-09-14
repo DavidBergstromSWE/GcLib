@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GcLib;
-using ImagerViewer.Utilities.Dialogs;
-using ImagerViewer.Utilities.Services;
+using WPFDemoApp.Utilities.Dialogs;
+using WPFDemoApp.Utilities.Services;
 using MahApps.Metro.Controls.Dialogs;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// View model for the selection of a device to connect to.

@@ -3,7 +3,7 @@ using GcLib;
 using GcLib.Utilities.Collections;
 using MahApps.Metro.Controls.Dialogs;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// View model for displaying and editing parameters.

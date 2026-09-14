@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ImagerViewer.Converters;
+namespace WPFDemoApp.Converters;
 
 /// <summary>
 /// Converts display precision for a float number to a suitable string format representation.

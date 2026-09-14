@@ -1,6 +1,6 @@
 ﻿using GcLib;
 
-namespace ImagerViewer;
+namespace WPFDemoApp;
 
 /// <summary>
 /// Brief top-level description of a device.

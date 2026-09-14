@@ -2,11 +2,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using ImagerViewer.Utilities.Messages;
-using ImagerViewer.Utilities.Services;
-using ImagerViewer.Utilities.Themes;
+using WPFDemoApp.Utilities.Messages;
+using WPFDemoApp.Utilities.Services;
+using WPFDemoApp.Utilities.Themes;
 
-namespace ImagerViewer.ViewModels;
+namespace WPFDemoApp.ViewModels;
 
 /// <summary>
 /// View model for the main window.

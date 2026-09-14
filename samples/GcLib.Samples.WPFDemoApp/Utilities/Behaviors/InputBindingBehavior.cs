@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
-namespace ImagerViewer.Utilities.Behaviors;
+namespace WPFDemoApp.Utilities.Behaviors;
 
 /// <summary>
 /// Attached behaviour allowing inputbindings to be propagated from a UserControl or FrameworkElement to a parent window. 
