@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="clr-namespace:Microsoft.Xaml.Behaviors;assembly=Microsoft.Xaml.Behaviors"
              xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+             xmlns:uc="clr-namespace:WPFDemoApp.UserControls"
              xmlns:gclib="clr-namespace:GcLib;assembly=GcLib"
              xmlns:conv="clr-namespace:WPFDemoApp.Converters"
              xmlns:templates="clr-namespace:WPFDemoApp.Utilities.Templates"
@@ -12,10 +13,10 @@
              x:Name="parameterEditorControl"
              mc:Ignorable="d"
              Unloaded="OnUnloaded"
-             d:DesignHeight="150">
-
+             d:DesignHeight="400">
     <Grid x:Name="grid" 
-          DataContext="{Binding ElementName=parameterEditorControl}" >
+          DataContext="{Binding ElementName=parameterEditorControl}"
+          d:DataContext="{d:DesignInstance Type=uc:ParameterEditor, IsDesignTimeCreatable=True}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>

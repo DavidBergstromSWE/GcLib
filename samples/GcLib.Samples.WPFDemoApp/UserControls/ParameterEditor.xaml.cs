@@ -299,6 +299,16 @@ public partial class ParameterEditor : UserControl, INotifyPropertyChanged, IDis
 
         Parameters = [];
 
+        // Populate user control with design time data.
+        if (DesignerProperties.GetIsInDesignMode(this))
+        {
+            VirtualCam cam = new();
+            Parameters = new(cam.Parameters);
+            Categories = new(cam.Parameters.GetCategories(GcVisibility.Beginner)) { "All" };
+
+            SelectedCategory = "All";
+        }
+
         // Instantiate commands.
         UpdateParameterCommand = new AsyncRelayCommand<GcParameter>(UpdateParameterAsync, p => p is not null);
         UpdateParameterCollectionCommand = new AsyncRelayCommand(UpdateParameterCollectionAsync);
