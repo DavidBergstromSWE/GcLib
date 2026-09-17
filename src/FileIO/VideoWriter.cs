@@ -5,8 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using GcLib.Utilities.Collections;
 using Microsoft.Extensions.Logging;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace GcLib.FileIO;
 
@@ -266,7 +269,11 @@ public class VideoWriter : IDisposable
         _videoWriter ??= new(fileName: FilePath, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
 
         // Write buffer (converted to Mat).
-        _videoWriter.Write(buffer.ToMat());
+        using var mat = buffer.ToMat();
+        if (buffer.NumChannels > 1)
+            CvInvoke.CvtColor(src: mat, dst: mat, code: ColorConversion.Bgr2Rgb); // OpenCV assumes BGR color space.
+
+        _videoWriter.Write(mat);
 
         FramesWritten++;
     }
