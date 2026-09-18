@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -42,6 +43,16 @@ public class VideoWriter : IDisposable
     #endregion
 
     #region Fields
+
+    /// <summary>
+    /// Supported pixel formats.
+    /// </summary>
+    public static readonly List<PixelFormat> SupportedPixelFormats =
+    [
+        PixelFormat.Mono8,
+        PixelFormat.RGB8,
+        PixelFormat.BGR8
+    ];
 
     /// <summary>
     /// Video writer.
@@ -257,6 +268,9 @@ public class VideoWriter : IDisposable
     /// <param name="buffer">Buffer to be written to file.</param>
     private void WriteBuffer(GcBuffer buffer)
     {
+        if (SupportedPixelFormats.Contains(buffer.PixelFormat) == false)
+            throw new NotSupportedException($"Pixel format {buffer.PixelFormat} not supported!");
+
         // If fps is not specified, calculate it as an average from incoming buffer timestamps.
         if (FPS == 0.0)
         {
@@ -266,7 +280,7 @@ public class VideoWriter : IDisposable
         }
 
         // Initialize new video writer (if not done already), using selected codec, fps and buffer properties.
-        _videoWriter ??= new(fileName: FilePath, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
+        _videoWriter ??= new(fileName: FilePath, 0, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
 
         // Write buffer (converted to Mat).
         using var mat = buffer.ToMat();

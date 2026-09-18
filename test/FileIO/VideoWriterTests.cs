@@ -208,7 +208,7 @@ public class VideoWriterTests
     [DataRow(VideoWriter.CODEC.MJPEG)]
     [DataRow(VideoWriter.CODEC.H264)]
     //[DataRow(VideoWriter.CODEC.H265)]
-    public async Task StopAsync_FormatIsSupported_BuffersAreWritten(VideoWriter.CODEC codec)
+    public async Task StopAsync_CodecIsSupported_BuffersAreWritten(VideoWriter.CODEC codec)
     {
         // Arrange
         var writer = new VideoWriter(_path, 30, codec);
@@ -224,6 +224,59 @@ public class VideoWriterTests
         // Assert
         Assert.AreEqual(numBuffers, writer.FramesWritten);
         Assert.IsTrue(File.Exists(_path));
+
+        BufferTransferred -= writer.OnBufferTransferred;
+        writer.Dispose();
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono8)]
+    [DataRow(PixelFormat.RGB8)]
+    [DataRow(PixelFormat.BGR8)]
+    public async Task StopAsync_PixelFormatIsSupported_BuffersAreWritten(PixelFormat pixelFormat)
+    {
+        // Arrange
+        var writer = new VideoWriter(_path, 30);
+        BufferTransferred += writer.OnBufferTransferred;
+        writer.Start();
+        int numBuffers = 30;
+        for (int i = 0; i < numBuffers; i++)
+            BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i, 640, 320, pixelFormat)));
+
+        // Act
+        await writer.StopAsync();
+
+        // Assert
+        Assert.AreEqual(numBuffers, writer.FramesWritten);
+        Assert.IsTrue(File.Exists(_path));
+
+        BufferTransferred -= writer.OnBufferTransferred;
+        writer.Dispose();
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10)]
+    [DataRow(PixelFormat.RGB12)]
+    [DataRow(PixelFormat.BGR16)]
+    public async Task StopAsync_PixelFormatIsNotSupported_WritingAbortedIsRaised(PixelFormat pixelFormat)
+    {
+        // Arrange
+        var writer = new VideoWriter(_path, 30);
+        BufferTransferred += writer.OnBufferTransferred;
+        bool eventIsRaised = false;
+        writer.WritingAborted += (s, e) => { eventIsRaised = true; };
+        writer.Start();
+        int numBuffers = 30;
+        for (int i = 0; i < numBuffers; i++)
+            BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i, 640, 320, pixelFormat)));
+
+        // Act
+        await writer.StopAsync();
+
+        // Assert
+        Assert.IsTrue(eventIsRaised);
+        Assert.AreEqual(0, writer.FramesWritten);
+        Assert.IsFalse(File.Exists(_path));
 
         BufferTransferred -= writer.OnBufferTransferred;
         writer.Dispose();
@@ -265,15 +318,15 @@ public class VideoWriterTests
 
     #region Private methods
 
-    private static GcBuffer GetBuffer(int n = 42, uint width = 640, uint height = 320)
+    private static GcBuffer GetBuffer(int n = 42, uint width = 640, uint height = 320, PixelFormat pixelFormat = PixelFormat.Mono8)
     {
         byte[] data = TestPatternGenerator.CreateImage(width: width,
                                                        height: height,
-                                                       pixelFormat: PixelFormat.Mono8,
+                                                       pixelFormat: pixelFormat,
                                                        testPattern: TestPattern.GrayHorizontalRamp,
                                                        frameNumber: 42);
 
-        return new GcBuffer(imageData: data, width: width, height: height, pixelFormat: PixelFormat.Mono8, pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), frameID: n, timeStamp: (ulong)DateTime.Now.Ticks);
+        return new GcBuffer(imageData: data, width: width, height: height, pixelFormat: pixelFormat, pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), frameID: n, timeStamp: (ulong)DateTime.Now.Ticks);
     }
 
     #endregion
