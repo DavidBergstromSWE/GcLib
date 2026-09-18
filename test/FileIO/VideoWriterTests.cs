@@ -318,7 +318,7 @@ public class VideoWriterTests
 
     #region Private methods
 
-    private static GcBuffer GetBuffer(int n = 42, uint width = 640, uint height = 320, PixelFormat pixelFormat = PixelFormat.Mono8)
+    private static GcBuffer GetBuffer(int n = 42, uint width = 320, uint height = 240, PixelFormat pixelFormat = PixelFormat.Mono8)
     {
         byte[] data = TestPatternGenerator.CreateImage(width: width,
                                                        height: height,

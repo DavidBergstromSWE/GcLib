@@ -130,7 +130,7 @@ internal partial class AcquisitionModel : ObservableObject
         SaveRawData = true;
 
         // Default codec.
-        SelectedCodec = VideoWriter.CODEC.MJPEG;
+        SelectedCodec = VideoWriter.CODEC.H264;
 
         // Initialize grabbing thread with device ID.
         if (deviceModel != null)

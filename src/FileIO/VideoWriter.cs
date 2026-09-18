@@ -280,7 +280,7 @@ public class VideoWriter : IDisposable
         }
 
         // Initialize new video writer (if not done already), using selected codec, fps and buffer properties.
-        _videoWriter ??= new(fileName: FilePath, 0, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
+        _videoWriter ??= new(fileName: FilePath, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
 
         // Write buffer (converted to Mat).
         using var mat = buffer.ToMat();
