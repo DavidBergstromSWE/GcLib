@@ -3,7 +3,6 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using GcLib.FileIO;
 using GcLib.Utilities.Imaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -12,7 +12,7 @@ using GcLib.Utilities.Collections;
 using Microsoft.Extensions.Logging;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace GcLib.FileIO;
+namespace GcLib.Utilities.Imaging;
 
 /// <summary>
 /// Video writer, taking buffers and compressing them into a mp4 file using a specified video codec. Currently supported codecs are enumerated in <see cref="CODEC"/>.
