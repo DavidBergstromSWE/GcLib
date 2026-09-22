@@ -32,7 +32,8 @@ public class VideoWriter : IDisposable
         /// </summary>
         MJPEG = 1196444237,
         /// <summary>
-        /// x264 is a free and open-source software library and a command-line utility developed by VideoLAN for encoding video streams into the H.264/MPEG-4 AVC video coding format.
+        /// x264 (open-source version of H.264/AVC video coding format).
+        /// Block-oriented, motion-compensated compression using integer discrete cosine transform (DCT) with 4×4 and 8×8 block sizes.
         /// </summary>
         X264 = 875967064,
         /// <summary>
