@@ -15,7 +15,8 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 namespace GcLib.Utilities.Imaging;
 
 /// <summary>
-/// Video writer, taking buffers and compressing them into a mp4 file using a specified video codec. Currently supported codecs are enumerated in <see cref="CODEC"/>.
+/// Video writer, taking buffers and compressing them into an mp4 or avi file using a specified video codec. Currently supported codecs are enumerated in <see cref="CODEC"/>.
+/// <para>The class is a wrapper around <see cref="Emgu.CV.VideoWriter"/>, which is used to write input images to the output video format file.</para>
 /// </summary>
 public class VideoWriter : IDisposable
 {
@@ -31,9 +32,13 @@ public class VideoWriter : IDisposable
         /// </summary>
         MJPEG = 1196444237,
         /// <summary>
+        /// x264 is a free and open-source software library and a command-line utility developed by VideoLAN for encoding video streams into the H.264/MPEG-4 AVC video coding format.
+        /// </summary>
+        X264 = 875967064,
+        /// <summary>
         /// H.264/AVC (Advanced Video Coding). Block-oriented, motion-compensated compression using integer discrete cosine transform (DCT) with 4×4 and 8×8 block sizes.
         /// </summary>
-        H264 = 875967048,
+        //H264 = 875967048,
         /// <summary>
         /// H.265/HEVC (High Efficiency Video Coding). Block-oriented, motion-compensated compression using both integer discrete cosine transform (DCT) and discrete sine transform (DST) with varied block sizes between 4×4 and 32×32.
         /// </summary>
@@ -131,18 +136,18 @@ public class VideoWriter : IDisposable
     #endregion
 
     /// <summary>
-    /// Creates a new video writer, using the specified <paramref name="filePath"/> (must be in mp4 format/extension). 
+    /// Creates a new video writer, using the specified <paramref name="filePath"/> (must be in mp4 or avi format/extension). 
     /// Videos will be saved at a frame rate specified by <paramref name="fps"/>. If no frame rate is specified, it will be calculated from buffer timestamps. 
     /// Saved video will be compressed using the scheme specified by <paramref name="codec"/>.
     /// </summary>
-    /// <param name="filePath">File path to save videos to (must have mp4 extension).</param>
+    /// <param name="filePath">File path to save videos to (must have mp4 or avi extension).</param>
     /// <param name="fps">Frame rate in frames per second. If not specified, it will be calculated from input buffer timestamps.</param>
     /// <param name="codec">Video codec to use in video compression.</param>
     /// <exception cref="ArgumentException"></exception>
     public VideoWriter(string filePath, double fps = 0.0, CODEC codec = CODEC.MJPEG)
     {
-        if (Path.GetExtension(filePath) != ".mp4")
-            throw new ArgumentException("Input file must have mp4 extension!");
+        if ((Path.GetExtension(filePath) == ".mp4" || Path.GetExtension(filePath) == ".avi") == false)
+            throw new ArgumentException("Input file must have mp4 or avi extension!");
 
         FilePath = filePath;
         FPS = fps;
@@ -280,7 +285,7 @@ public class VideoWriter : IDisposable
         }
 
         // Initialize new video writer (if not done already), using selected codec, fps and buffer properties.
-        _videoWriter ??= new(fileName: FilePath, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
+        _videoWriter ??= new(fileName: FilePath, apiPreference: 0, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
 
         // Write buffer (converted to Mat).
         using var mat = buffer.ToMat();
