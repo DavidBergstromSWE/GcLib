@@ -205,7 +205,7 @@ public class VideoWriterTests
 
     [TestMethod]
     [DataRow(VideoWriter.CODEC.MJPEG)]
-    [DataRow(VideoWriter.CODEC.H264)]
+    [DataRow(VideoWriter.CODEC.X264)]
     //[DataRow(VideoWriter.CODEC.H265)]
     public async Task StopAsync_CodecIsSupported_BuffersAreWritten(VideoWriter.CODEC codec)
     {
