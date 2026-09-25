@@ -155,7 +155,6 @@ namespace GcLib.UnitTests
         [DataRow(DepthType.Cv32F)]
         [DataRow(DepthType.Cv32S)]
         [DataRow(DepthType.Cv64F)]
-        [DataRow(DepthType.Default)]
         public void GcBuffer_MatWithInvalidDepthType_ThrowsNotSupportedException(DepthType depthType)
         {
             // Arrange

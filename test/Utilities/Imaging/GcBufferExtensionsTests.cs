@@ -152,7 +152,7 @@ public class GcBufferExtensionsTests
     public void UnpackBuffer_PackedBuffer_ReturnsOriginalBuffer(PixelFormat unpackedFormat)
     {
         // Arrange
-        var originalBuffer = new GcBuffer(TestPatternGenerator.CreateImage(10, 10, unpackedFormat, TestPattern.FrameCounter), 10, 10, unpackedFormat, GenICamHelper.GetPixelDynamicRangeMax(unpackedFormat), 42, (ulong)DateTime.Now.Ticks);
+        var originalBuffer = new GcBuffer(TestPatternGenerator.CreateImage(10, 10, unpackedFormat, TestPattern.GrayVerticalRamp), 10, 10, unpackedFormat, GenICamHelper.GetPixelDynamicRangeMax(unpackedFormat), 42, (ulong)DateTime.Now.Ticks);
         var packedBuffer = originalBuffer.Pack();
 
         // Act

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using GcLib.Utilities.Numbers;
 
@@ -135,19 +136,40 @@ public static class MatExtensions
         var black = EmguHelper.GetMin(mat.Depth);
 
         // Draw white background rectangle with black border.
-        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x, y: y - size.Height - 2, width: size.Width, height: size.Height + 5), color: new Emgu.CV.Structure.Bgr(white, white, white).MCvScalar, thickness: -1); // White background
-        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x, y: y - size.Height - 2, width: size.Width, height: size.Height + 5), color: new Emgu.CV.Structure.Bgr(black, black, black).MCvScalar); // Black border
+        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x, y: y - size.Height - 2, width: size.Width, height: size.Height + 5), color: new Bgr(white, white, white).MCvScalar, thickness: -1); // White background
+        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x, y: y - size.Height - 2, width: size.Width, height: size.Height + 5), color: new Bgr(black, black, black).MCvScalar); // Black border
 
-        // Draw text in rectangle.
-        CvInvoke.PutText(img: mat,
+        // 2. Create a temporary blank 8-bit mask of the same size
+        Mat mask = new(mat.Rows, mat.Cols, DepthType.Cv8U, 1);
+        mask.SetTo(new MCvScalar(0)); // Clear canvas to black
+
+        // 3. Draw your text in pure white (255) onto the 8-bit mask
+        CvInvoke.PutText(img: mask,
                          text: text,
                          org: new Point(x, y),
                          fontFace: HersheyFonts.Duplex,
-                         fontScale: 1,
-                         color: new Emgu.CV.Structure.Bgr(black, black, black).MCvScalar, // Black text
+                         fontScale: 1.0,
+                         color: new Bgr(255, 255, 255).MCvScalar,
                          thickness: 1,
-                         lineType: LineType.AntiAlias,
-                         bottomLeftOrigin: false);
+                         lineType: LineType.AntiAlias);
+
+        // Draw text in rectangle.
+        //CvInvoke.PutText(img: mat,
+        //                 text: text,
+        //                 org: new Point(x, y),
+        //                 fontFace: HersheyFonts.Duplex,
+        //                 fontScale: 1,
+        //                 color: new Emgu.CV.Structure.Bgr(black, black, black).MCvScalar, // Black text
+        //                 thickness: 1,
+        //                 lineType: LineType.AntiAlias,
+        //                 bottomLeftOrigin: false);
+
+        // 4. Copy a 16-bit scalar value (e.g., max value 65535) onto the 16-bit image using the mask
+        // This only applies the value where text pixels exist
+        mat.SetTo(new MCvScalar(grayLevel), mask);
+
+        // Clean up temporary allocation
+        mask.Dispose();
     }
 
     /// <summary>
