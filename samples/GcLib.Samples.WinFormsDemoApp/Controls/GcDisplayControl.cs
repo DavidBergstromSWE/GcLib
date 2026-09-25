@@ -83,7 +83,7 @@ public partial class GcDisplayControl : ImageBox
     /// Font size of text overlays.
     /// </summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-    public FontFace TextOverlayFont { get; set; } = FontFace.HersheyPlain;
+    public HersheyFonts TextOverlayFont { get; set; } = HersheyFonts.Plain;
 
     #endregion
 
@@ -115,11 +115,11 @@ public partial class GcDisplayControl : ImageBox
 
         // Convert 4-channel image to 3-channel RGB.
         if (buffer.NumChannels == 4)
-            mat = mat.ToImage<Rgb, byte>().Mat;
+            CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Rgb);
 
         // Add timestamp to circular buffer.
         _timeStamps.Put(buffer.TimeStamp);
-
+    
         // Add text overlays as requested.
         mat = OverlayChunkData(mat, buffer.FrameID, buffer.TimeStamp);
 

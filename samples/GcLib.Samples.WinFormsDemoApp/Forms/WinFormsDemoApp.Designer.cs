@@ -1,4 +1,5 @@
-﻿using WinFormsDemoApp.Controls;
+﻿using Emgu.CV.CvEnum;
+using WinFormsDemoApp.Controls;
 using WinFormsDemoApp.UserControls;
 
 namespace WinFormsDemoApp;
@@ -406,7 +407,7 @@ partial class WinFormsDemoApp
         DisplayControl.TabIndex = 2;
         DisplayControl.TabStop = false;
         DisplayControl.TextOverlayColor = System.Drawing.Color.Black;
-        DisplayControl.TextOverlayFont = Emgu.CV.CvEnum.FontFace.HersheyPlain;
+        DisplayControl.TextOverlayFont = HersheyFonts.Plain;
         // 
         // StatusControl
         // 

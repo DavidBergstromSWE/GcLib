@@ -124,7 +124,7 @@ public static class MatExtensions
     {
         // Get text size.
         int baseLine = 0;
-        var size = CvInvoke.GetTextSize(text: text, fontFace: FontFace.HersheyDuplex, fontScale: 1, thickness: 1, baseLine: ref baseLine);
+        var size = CvInvoke.GetTextSize(text: text, fontFace: HersheyFonts.Duplex, fontScale: 1, thickness: 1, baseLine: ref baseLine);
 
         // Calculate text position.
         int x = (int)Math.Round((mat.Width - size.Width) / 2.0);
@@ -142,7 +142,7 @@ public static class MatExtensions
         CvInvoke.PutText(img: mat,
                          text: text,
                          org: new Point(x, y),
-                         fontFace: FontFace.HersheyDuplex,
+                         fontFace: HersheyFonts.Duplex,
                          fontScale: 1,
                          color: new Emgu.CV.Structure.Bgr(black, black, black).MCvScalar, // Black text
                          thickness: 1,
