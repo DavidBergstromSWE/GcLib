@@ -121,6 +121,7 @@ public static class MatExtensions
     /// </summary>
     /// <param name="mat">Image.</param>
     /// <param name="text">Text to be drawn.</param>
+    /// <param name="grayLevel">Pixel value to draw text with.</param>
     public static void DrawCenteredText(this Mat mat, string text, int grayLevel)
     {
         // Get text size.
