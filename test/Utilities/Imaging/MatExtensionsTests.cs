@@ -222,7 +222,7 @@ public class MatExtensionsTests
         var newMat = originalMat.Clone();
 
         // Act
-        newMat.DrawCenteredText("Test", (int)EmguHelper.GetMax(depthType));
+        newMat.DrawCenteredText("Test", 0, (int)EmguHelper.GetMax(depthType));
 
         // Assert
         Assert.IsFalse(newMat.Equals(originalMat));

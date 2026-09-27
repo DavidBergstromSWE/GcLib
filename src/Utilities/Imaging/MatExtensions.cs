@@ -117,39 +117,36 @@ public static class MatExtensions
     }
 
     /// <summary>
-    /// Draws text in center of image.
+    /// Renders text in center of image.
     /// </summary>
     /// <param name="mat">Image.</param>
     /// <param name="text">Text to be drawn.</param>
-    /// <param name="grayLevel">Pixel value to draw text with.</param>
-    public static void DrawCenteredText(this Mat mat, string text, int grayLevel)
+    /// <param name="foreground">Pixel value to draw text foreground with.</param>
+    /// <param name="background">Pixel value to draw text background with.</param>
+    public static void DrawCenteredText(this Mat mat, string text, int foreground, int background)
     {
         // Get text size.
         int baseLine = 0;
         var font = HersheyFonts.Complex;
         var fontScale = 1.0;
-        var size = CvInvoke.GetTextSize(text: text, fontFace: font, fontScale: fontScale, thickness: 1, baseLine: ref baseLine);
+        var textSize = CvInvoke.GetTextSize(text: text, fontFace: font, fontScale: fontScale, thickness: 1, baseLine: ref baseLine);
 
-        // Calculate text position.
-        int x = (int)Math.Round((mat.Width - size.Width) / 2.0);
-        int y = (int)Math.Round(mat.Height / 2.0);
+        // Create rectangle background for text.
+        int borderSize = 2;
+        var rectSize = textSize + 2 * new Size(borderSize, borderSize);
+        Point topLeft = new((int)Math.Round(mat.Width / 2.0 - rectSize.Width / 2.0), (int)Math.Round(mat.Height / 2.0 - rectSize.Height / 2.0));
 
-        // Get white and black levels based on image depth.
-        var white = grayLevel;
-        var black = EmguHelper.GetMin(mat.Depth);
-
-        // Draw white background rectangle with black border.
-        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x - 1, y: y - size.Height + 1, width: size.Width + 1, height: size.Height + 2), color: new Bgr(white, white, white).MCvScalar, thickness: -1); // White background
-        CvInvoke.Rectangle(img: mat, rect: new Rectangle(x: x - 1, y: y - size.Height + 1, width: size.Width + 1, height: size.Height + 2), color: new Bgr(black, black, black).MCvScalar); // Black border
+        // Draw rectangle with border.
+        CvInvoke.Rectangle(img: mat, rect: new Rectangle(topLeft, rectSize), color: new Bgr(background, background, background).MCvScalar, thickness: -1); // rectangle for text background
+        CvInvoke.Rectangle(img: mat, rect: new Rectangle(topLeft, rectSize), color: new Bgr(foreground, foreground, foreground).MCvScalar); // border
 
         // Create a temporary blank 8-bit mask of the same size.
-        using Mat mask = new(mat.Rows, mat.Cols, DepthType.Cv8U, 1);
-        mask.SetTo(new MCvScalar(black)); // Clear canvas to black
+        using Mat mask = Mat.Zeros(mat.Rows, mat.Cols, DepthType.Cv8U, 1);
 
         // Draw text in pure white (255) onto the 8-bit mask.
         CvInvoke.PutText(img: mask,
                          text: text,
-                         org: new Point(x, y),
+                         org: new Point((int)Math.Round(mat.Width / 2.0 - textSize.Width / 2.0), (int)Math.Round(mat.Height / 2.0 + textSize.Height / 2.0 - borderSize * 2)),
                          fontFace: font,
                          fontScale: fontScale,
                          color: new Bgr(255, 255, 255).MCvScalar,
@@ -157,8 +154,8 @@ public static class MatExtensions
                          lineType: LineType.AntiAlias, 
                          bottomLeftOrigin: false);
 
-        // Paint black onto the 16-bit image using the mask (this only applies the value where text pixels exist).
-        mat.SetTo(new MCvScalar(black), mask);
+        // Paint black onto the image using the mask (this only applies the value where text pixels exist).
+        mat.SetTo(new MCvScalar(foreground), mask);
     }
 
     /// <summary>

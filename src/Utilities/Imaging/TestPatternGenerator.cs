@@ -653,7 +653,7 @@ public static class TestPatternGenerator
         var mat = new Emgu.CV.Mat((int)height, (int)width, EmguHelper.GetDepthType(pixelFormat), (int)GenICamHelper.GetNumChannels(pixelFormat));
         mat.SetTo(image);
 
-        mat.DrawCenteredText(text, (int)Convert.ChangeType(max, typeof(int)));
+        mat.DrawCenteredText(text, 0, (int)Convert.ChangeType(max, typeof(int)));
 
         mat.CopyTo(image);
         return image;
