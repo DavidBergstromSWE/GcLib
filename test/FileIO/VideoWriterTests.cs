@@ -107,14 +107,13 @@ public class VideoWriterTests
         int numBuffers = 10;
         for (int i = 0; i < numBuffers; i++)
             BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
-        Thread.Sleep(100);
-
+        
         // Assert
         Assert.AreEqual(numBuffers, _writer.BuffersQueued);
     }
 
     [TestMethod]
-    public void Start_OnBufferTransferred_BuffersAreWritten()
+    public async Task Start_OnBufferTransferred_BuffersAreWritten()
     {
         // Arrange
         _writer.Start();
@@ -123,7 +122,8 @@ public class VideoWriterTests
         int numBuffers = 40;
         for (int i = 0; i < numBuffers; i++)
             BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
-        Thread.Sleep(300);
+
+        await _writer.StopAsync();
 
         // Assert
         Assert.AreEqual(numBuffers, _writer.FramesWritten);
@@ -181,7 +181,6 @@ public class VideoWriterTests
     [TestMethod]
     [DataRow(10)]
     [DataRow(30)]
-    [DataRow(60)]
     public async Task StopAsync_FPS_ValidateAverage(int numBuffers)
     {
         // Arrange

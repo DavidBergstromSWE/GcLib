@@ -210,7 +210,7 @@ namespace GcLib.UnitTests
         public void Close_GetAvailableDeviceClasses_ThrowsInvalidOperationException()
         {
             // Arrange
-            GcLibrary.Init();
+            GcLibrary.Init(false);
 
             // Act
             GcLibrary.Close();
@@ -223,7 +223,7 @@ namespace GcLib.UnitTests
         public void Close_GetRegisteredDeviceClasses_ThrowsInvalidOperationException()
         {
             // Arrange
-            GcLibrary.Init();
+            GcLibrary.Init(false);
 
             // Act
             GcLibrary.Close();
