@@ -88,11 +88,12 @@ public static class EmguHelper
     {
         return depthType switch
         {
+            DepthType.CvBool => 1,
             DepthType.Cv8U or DepthType.Cv8S => 8,
-            DepthType.Cv16U or DepthType.Cv16S => 16,
-            DepthType.Cv32S or DepthType.Cv32F => 32,
-            DepthType.Cv64F => 64,
-            _ => throw new NotSupportedException(),
+            DepthType.Cv16S or DepthType.Cv16U or DepthType.Cv16F => 16,
+            DepthType.Cv32S or DepthType.Cv32U or DepthType.Cv32F => 32,
+            DepthType.Cv64S or DepthType.Cv64U or DepthType.Cv64F => 64,
+            _ => throw new ArgumentException($"Depth type {depthType} does not have a defined bit depth!")
         };
     }
 
@@ -105,14 +106,19 @@ public static class EmguHelper
     {
         return depthType switch
         {
+            DepthType.CvBool => 1,
             DepthType.Cv8U => byte.MaxValue,
             DepthType.Cv8S => sbyte.MaxValue,
             DepthType.Cv16U => ushort.MaxValue,
             DepthType.Cv16S => short.MaxValue,
+            DepthType.Cv16F => (double)Half.MaxValue,
+            DepthType.Cv32U => uint.MaxValue,
             DepthType.Cv32S => int.MaxValue,
             DepthType.Cv32F => float.MaxValue,
+            DepthType.Cv64S => long.MaxValue,
+            DepthType.Cv64U => ulong.MaxValue,
             DepthType.Cv64F => double.MaxValue,
-            _ => byte.MaxValue,
+            _ => throw new ArgumentException($"Depth type {depthType} does not have a defined maximum value!")
         };
     }
 
@@ -125,14 +131,19 @@ public static class EmguHelper
     {
         return depthType switch
         {
+            DepthType.CvBool => 0,
             DepthType.Cv8U => byte.MinValue,
             DepthType.Cv8S => sbyte.MinValue,
             DepthType.Cv16U => ushort.MinValue,
             DepthType.Cv16S => short.MinValue,
+            DepthType.Cv16F => (double)Half.MinValue,
+            DepthType.Cv32U => uint.MinValue,
             DepthType.Cv32S => int.MinValue,
             DepthType.Cv32F => float.MinValue,
+            DepthType.Cv64S => long.MinValue,
+            DepthType.Cv64U => ulong.MinValue,
             DepthType.Cv64F => double.MinValue,
-            _ => byte.MinValue,
+            _ => throw new ArgumentException($"Depth type {depthType} does not have a defined minimum value!")
         };
     }
 

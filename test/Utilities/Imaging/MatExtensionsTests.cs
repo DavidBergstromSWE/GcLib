@@ -11,52 +11,70 @@ namespace GcLib.UnitTests;
 public class MatExtensionsTests
 {
     [TestMethod]
+    [DataRow(DepthType.CvBool)]
+    [DataRow(DepthType.Cv8S)]
     [DataRow(DepthType.Cv8U)]
+    [DataRow(DepthType.Cv16S)]
     [DataRow(DepthType.Cv16U)]
+    [DataRow(DepthType.Cv16F)]
+    [DataRow(DepthType.Cv32S)]
+    [DataRow(DepthType.Cv32U)]
+    [DataRow(DepthType.Cv32F)]
+    [DataRow(DepthType.Cv64F)]
     public void GetPixel_ForSpecificChannel_ValidatePixelValues(DepthType depthType)
     {
         // Arrange
-        double expected = EmguHelper.GetMax(depthType);
-        var mat = Mat.Zeros(3, 3, depthType, 3) + expected;
+        double[] expected = [EmguHelper.GetMax(depthType), EmguHelper.GetMin(depthType), EmguHelper.GetMax(depthType)];
+        var mat = Mat.Zeros(3, 3, depthType, 3);
+        mat.SetTo(new Emgu.CV.Structure.MCvScalar(expected[0], expected[1], expected[2]));
 
         // Act/Assert
-        Assert.AreEqual(expected, mat.GetPixel(0, 0, 0));
-        Assert.AreEqual(expected, mat.GetPixel(0, 0, 1));
-        Assert.AreEqual(expected, mat.GetPixel(0, 0, 2));
-        Assert.AreEqual(expected, mat.GetPixel(0, 1, 0));
-        Assert.AreEqual(expected, mat.GetPixel(0, 1, 1));
-        Assert.AreEqual(expected, mat.GetPixel(0, 1, 2));
-        Assert.AreEqual(expected, mat.GetPixel(0, 2, 0));
-        Assert.AreEqual(expected, mat.GetPixel(0, 2, 1));
-        Assert.AreEqual(expected, mat.GetPixel(0, 2, 2));
-        Assert.AreEqual(expected, mat.GetPixel(1, 0, 0));
-        Assert.AreEqual(expected, mat.GetPixel(1, 0, 1));
-        Assert.AreEqual(expected, mat.GetPixel(1, 0, 2));
-        Assert.AreEqual(expected, mat.GetPixel(1, 1, 0));
-        Assert.AreEqual(expected, mat.GetPixel(1, 1, 1));
-        Assert.AreEqual(expected, mat.GetPixel(1, 1, 2));
-        Assert.AreEqual(expected, mat.GetPixel(1, 2, 0));
-        Assert.AreEqual(expected, mat.GetPixel(1, 2, 1));
-        Assert.AreEqual(expected, mat.GetPixel(1, 2, 2));
-        Assert.AreEqual(expected, mat.GetPixel(2, 0, 0));
-        Assert.AreEqual(expected, mat.GetPixel(2, 0, 1));
-        Assert.AreEqual(expected, mat.GetPixel(2, 0, 2));
-        Assert.AreEqual(expected, mat.GetPixel(2, 1, 0));
-        Assert.AreEqual(expected, mat.GetPixel(2, 1, 1));
-        Assert.AreEqual(expected, mat.GetPixel(2, 1, 2));
-        Assert.AreEqual(expected, mat.GetPixel(2, 2, 0));
-        Assert.AreEqual(expected, mat.GetPixel(2, 2, 1));
-        Assert.AreEqual(expected, mat.GetPixel(2, 2, 2));
+        Assert.AreEqual(expected[0], mat.GetPixel(0, 0, 0));
+        Assert.AreEqual(expected[1], mat.GetPixel(0, 0, 1));
+        Assert.AreEqual(expected[2], mat.GetPixel(0, 0, 2));
+        Assert.AreEqual(expected[0], mat.GetPixel(0, 1, 0));
+        Assert.AreEqual(expected[1], mat.GetPixel(0, 1, 1));
+        Assert.AreEqual(expected[2], mat.GetPixel(0, 1, 2));
+        Assert.AreEqual(expected[0], mat.GetPixel(0, 2, 0));
+        Assert.AreEqual(expected[1], mat.GetPixel(0, 2, 1));
+        Assert.AreEqual(expected[2], mat.GetPixel(0, 2, 2));
+        Assert.AreEqual(expected[0], mat.GetPixel(1, 0, 0));
+        Assert.AreEqual(expected[1], mat.GetPixel(1, 0, 1));
+        Assert.AreEqual(expected[2], mat.GetPixel(1, 0, 2));
+        Assert.AreEqual(expected[0], mat.GetPixel(1, 1, 0));
+        Assert.AreEqual(expected[1], mat.GetPixel(1, 1, 1));
+        Assert.AreEqual(expected[2], mat.GetPixel(1, 1, 2));
+        Assert.AreEqual(expected[0], mat.GetPixel(1, 2, 0));
+        Assert.AreEqual(expected[1], mat.GetPixel(1, 2, 1));
+        Assert.AreEqual(expected[2], mat.GetPixel(1, 2, 2));
+        Assert.AreEqual(expected[0], mat.GetPixel(2, 0, 0));
+        Assert.AreEqual(expected[1], mat.GetPixel(2, 0, 1));
+        Assert.AreEqual(expected[2], mat.GetPixel(2, 0, 2));
+        Assert.AreEqual(expected[0], mat.GetPixel(2, 1, 0));
+        Assert.AreEqual(expected[1], mat.GetPixel(2, 1, 1));
+        Assert.AreEqual(expected[2], mat.GetPixel(2, 1, 2));
+        Assert.AreEqual(expected[0], mat.GetPixel(2, 2, 0));
+        Assert.AreEqual(expected[1], mat.GetPixel(2, 2, 1));
+        Assert.AreEqual(expected[2], mat.GetPixel(2, 2, 2));
     }
 
     [TestMethod]
+    [DataRow(DepthType.CvBool)]
+    [DataRow(DepthType.Cv8S)]
     [DataRow(DepthType.Cv8U)]
+    [DataRow(DepthType.Cv16S)]
     [DataRow(DepthType.Cv16U)]
+    [DataRow(DepthType.Cv16F)]
+    [DataRow(DepthType.Cv32S)]
+    [DataRow(DepthType.Cv32U)]
+    [DataRow(DepthType.Cv32F)]
+    [DataRow(DepthType.Cv64F)]
     public void GetPixel_ForAllChannels_ValidatePixelValues(DepthType depthType)
     {
         // Arrange
-        double[] expected = [EmguHelper.GetMax(depthType), EmguHelper.GetMax(depthType), EmguHelper.GetMax(depthType)];
-        var mat = Mat.Zeros(3, 3, depthType, 3) + expected[0];
+        double[] expected = [EmguHelper.GetMax(depthType), EmguHelper.GetMin(depthType), EmguHelper.GetMax(depthType)];
+        var mat = new Mat(3, 3, depthType, 3);
+        mat.SetTo(new Emgu.CV.Structure.MCvScalar(expected[0], expected[1], expected[2]));
 
         // Act/Assert
         Assert.IsTrue(Enumerable.SequenceEqual(expected, mat.GetPixel(0, 0)));
@@ -108,8 +126,29 @@ public class MatExtensionsTests
     }
 
     [TestMethod]
+    [DataRow(DepthType.Cv64S)]
+    [DataRow(DepthType.Cv64U)]
+    public void GetPixel_DepthTypeNotSupported_ThrowsArgumentOutOfRangeException(DepthType depthType)
+    {
+        // Arrange
+        var mat = Mat.Zeros(3, 3, depthType, 1);
+
+        // Act/Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => mat.GetPixel(2, 2, 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => mat.GetPixel(2, 2));
+    }
+
+    [TestMethod]
+    [DataRow(DepthType.CvBool)]
+    [DataRow(DepthType.Cv8S)]
     [DataRow(DepthType.Cv8U)]
+    [DataRow(DepthType.Cv16S)]
     [DataRow(DepthType.Cv16U)]
+    [DataRow(DepthType.Cv16F)]
+    [DataRow(DepthType.Cv32S)]
+    [DataRow(DepthType.Cv32U)]
+    [DataRow(DepthType.Cv32F)]
+    [DataRow(DepthType.Cv64F)]
     public void SetPixel_ForSpecificChannel_ValidateChangedPixelValues(DepthType depthType)
     {
         // Arrange
@@ -117,32 +156,36 @@ public class MatExtensionsTests
 
         // Act
         mat.SetPixel(0, 0, 0, EmguHelper.GetMax(depthType));
-        mat.SetPixel(1, 2, 1, EmguHelper.GetMax(depthType) - 33);
-        mat.SetPixel(2, 0, 2, EmguHelper.GetMax(depthType) - 42);
+        mat.SetPixel(1, 2, 1, EmguHelper.GetMin(depthType));
+        mat.SetPixel(2, 0, 2, EmguHelper.GetMax(depthType));
 
         // Assert
         Assert.AreEqual(mat.GetPixel(0, 0, 0), EmguHelper.GetMax(depthType));
-        Assert.AreEqual(mat.GetPixel(1, 2, 1), EmguHelper.GetMax(depthType) - 33);
-        Assert.AreEqual(mat.GetPixel(2, 0, 2), EmguHelper.GetMax(depthType) - 42);
+        Assert.AreEqual(mat.GetPixel(1, 2, 1), EmguHelper.GetMin(depthType));
+        Assert.AreEqual(mat.GetPixel(2, 0, 2), EmguHelper.GetMax(depthType));
     }
 
     [TestMethod]
+    [DataRow(DepthType.CvBool)]
+    [DataRow(DepthType.Cv8S)]
     [DataRow(DepthType.Cv8U)]
+    [DataRow(DepthType.Cv16S)]
     [DataRow(DepthType.Cv16U)]
+    [DataRow(DepthType.Cv16F)]
+    [DataRow(DepthType.Cv32S)]
+    [DataRow(DepthType.Cv32U)]
+    [DataRow(DepthType.Cv32F)]
+    [DataRow(DepthType.Cv64F)]
     public void SetPixel_ForAllChannels_ValidateChangedPixelValues(DepthType depthType)
     {
         // Arrange
         var mat = Mat.Zeros(3, 3, depthType, 3);
 
         // Act
-        mat.SetPixel(0, 0, [EmguHelper.GetMax(depthType), EmguHelper.GetMax(depthType) - 1, EmguHelper.GetMax(depthType) - 4]);
-        mat.SetPixel(1, 2, [EmguHelper.GetMax(depthType) - 33, EmguHelper.GetMax(depthType) - 11, EmguHelper.GetMax(depthType) - 67]);
-        mat.SetPixel(2, 0, [EmguHelper.GetMax(depthType) - 42, EmguHelper.GetMax(depthType) - 111, EmguHelper.GetMax(depthType) - 74]);
+        mat.SetPixel(1, 2, [EmguHelper.GetMax(depthType), EmguHelper.GetMin(depthType), EmguHelper.GetMax(depthType)]);
 
         // Assert
-        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(0, 0), [EmguHelper.GetMax(depthType), EmguHelper.GetMax(depthType) - 1, EmguHelper.GetMax(depthType) - 4]));
-        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(1, 2), [EmguHelper.GetMax(depthType) - 33, EmguHelper.GetMax(depthType) - 11, EmguHelper.GetMax(depthType) - 67]));
-        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(2, 0), [EmguHelper.GetMax(depthType) - 42, EmguHelper.GetMax(depthType) - 111, EmguHelper.GetMax(depthType) - 74]));
+        Assert.IsTrue(Enumerable.SequenceEqual(mat.GetPixel(1, 2), [EmguHelper.GetMax(depthType), EmguHelper.GetMin(depthType), EmguHelper.GetMax(depthType)]));
     }
 
     [TestMethod]
@@ -180,6 +223,19 @@ public class MatExtensionsTests
         // Act/Assert
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => mat.SetPixel(2, 2, 1, 0));
         Assert.AreEqual("channel", ex.ParamName);
+    }
+
+    [TestMethod]
+    [DataRow(DepthType.Cv64S)]
+    [DataRow(DepthType.Cv64U)]
+    public void SetPixel_DepthTypeNotSupported_ThrowsArgumentOutOfRangeException(DepthType depthType)
+    {
+        // Arrange
+        var mat = Mat.Zeros(3, 3, depthType, 1);
+
+        // Act/Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => mat.SetPixel(2, 2, 1, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => mat.SetPixel(2, 2, [0, 0, 0]));
     }
 
     [TestMethod]

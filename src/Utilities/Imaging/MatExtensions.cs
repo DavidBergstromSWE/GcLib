@@ -5,7 +5,6 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
-using GcLib.Utilities.Numbers;
 
 namespace GcLib.Utilities.Imaging;
 
@@ -30,13 +29,68 @@ public static class MatExtensions
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, mat.Height, nameof(row));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, mat.Width, nameof(col));
 
+        // Check that depth type of mat can be cast to double.
+        ArgumentOutOfRangeException.ThrowIfEqual(mat.Depth, DepthType.Cv64S, $"Depth type {mat.Depth} is not supported as it cannot be cast to a {nameof(Double)} without loosing precison!");
+        ArgumentOutOfRangeException.ThrowIfEqual(mat.Depth, DepthType.Cv64U, $"Depth type {mat.Depth} is not supported as it cannot be cast to a {nameof(Double)} without loosing precison!");
+
         double[] value = new double[mat.NumberOfChannels];
 
         unsafe
         {
-            var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
             for (int i = 0; i < mat.NumberOfChannels; i++)
-                value[i] = NumericHelper.SpanToDouble(bytes.Slice(i * mat.ElementSize / mat.NumberOfChannels, mat.ElementSize / mat.NumberOfChannels));
+            {
+                if (mat.Depth == DepthType.CvBool)
+                {
+                    var bytes = new ReadOnlySpan<bool>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = Convert.ToDouble(bytes[i]);
+                }
+                else if (mat.Depth == DepthType.Cv8S)
+                {
+                    var bytes = new ReadOnlySpan<sbyte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = Convert.ToDouble(bytes[i]);
+                }
+                else if (mat.Depth == DepthType.Cv8U)
+                {
+                    var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = Convert.ToDouble(bytes[i]);
+                }
+                else if (mat.Depth == DepthType.Cv16S)
+                {
+                    var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = BitConverter.ToInt16(bytes.Slice(i * mat.ElementSize / mat.NumberOfChannels, mat.ElementSize / mat.NumberOfChannels));
+                }
+                else if (mat.Depth == DepthType.Cv16U)
+                {
+                    var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = BitConverter.ToUInt16(bytes.Slice(i * mat.ElementSize / mat.NumberOfChannels, mat.ElementSize / mat.NumberOfChannels));
+                }
+                else if (mat.Depth == DepthType.Cv16F)
+                {
+                    var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = (double)BitConverter.ToHalf(bytes.Slice(i * mat.ElementSize / mat.NumberOfChannels, mat.ElementSize / mat.NumberOfChannels));
+                }
+                else if (mat.Depth == DepthType.Cv32U)
+                {
+                    var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = BitConverter.ToUInt32(bytes.Slice(i * mat.ElementSize / mat.NumberOfChannels, mat.ElementSize / mat.NumberOfChannels));
+                }
+                else if (mat.Depth == DepthType.Cv32S)
+                {
+                    var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = BitConverter.ToInt32(bytes.Slice(i * mat.ElementSize / mat.NumberOfChannels, mat.ElementSize / mat.NumberOfChannels));
+                }
+                else if (mat.Depth == DepthType.Cv32F)
+                {
+                    var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = BitConverter.ToSingle(bytes.Slice(i * mat.ElementSize / mat.NumberOfChannels, mat.ElementSize / mat.NumberOfChannels));
+                }
+                else if (mat.Depth == DepthType.Cv64F)
+                {
+                    var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
+                    value[i] = BitConverter.ToDouble(bytes.Slice(i * mat.ElementSize / mat.NumberOfChannels, mat.ElementSize / mat.NumberOfChannels));
+                }
+                else throw new NotSupportedException($"Depth type {mat.Depth} is not supported!");
+            }
         }
 
         return value;
@@ -60,10 +114,63 @@ public static class MatExtensions
         // Check that channel number falls within number of channels.
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((int)channel, mat.NumberOfChannels, nameof(channel));
 
+        // Check that depth type can be cast to double.
+        ArgumentOutOfRangeException.ThrowIfEqual(mat.Depth, DepthType.Cv64S, $"Depth type {mat.Depth} is not supported as it cannot be cast to a {nameof(Double)} without loosing precison!");
+        ArgumentOutOfRangeException.ThrowIfEqual(mat.Depth, DepthType.Cv64U, $"Depth type {mat.Depth} is not supported as it cannot be cast to a {nameof(Double)} without loosing precison!");
+
         unsafe
         {
-            var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
-            return NumericHelper.SpanToDouble(bytes);
+            if (mat.Depth == DepthType.CvBool)
+            {
+                var bytes = new ReadOnlySpan<bool>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return Convert.ToDouble(bytes[0]);
+            }
+            else if (mat.Depth == DepthType.Cv8S)
+            {
+                var bytes = new ReadOnlySpan<sbyte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return Convert.ToSByte(bytes[0]);
+            }
+            else if (mat.Depth == DepthType.Cv8U)
+            {
+                var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return Convert.ToByte(bytes[0]);
+            }
+            else if (mat.Depth == DepthType.Cv16S)
+            {
+                var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return BitConverter.ToInt16(bytes);
+            }
+            else if (mat.Depth == DepthType.Cv16U)
+            {
+                var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return BitConverter.ToUInt16(bytes);
+            }
+            else if (mat.Depth == DepthType.Cv16F)
+            {
+                var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return (double)BitConverter.ToHalf(bytes);
+            }
+            else if (mat.Depth == DepthType.Cv32U)
+            {
+                var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return BitConverter.ToUInt32(bytes);
+            }
+            else if (mat.Depth == DepthType.Cv32S)
+            {
+                var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return BitConverter.ToInt32(bytes);
+            }
+            else if (mat.Depth == DepthType.Cv32F)
+            {
+                var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return BitConverter.ToSingle(bytes);
+            }
+            else if (mat.Depth == DepthType.Cv64F)
+            {
+                var bytes = new ReadOnlySpan<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                return BitConverter.ToDouble(bytes);
+            }
+            else throw new NotSupportedException($"Depth type {mat.Depth} is not supported!");
         }
 
     }
@@ -86,11 +193,63 @@ public static class MatExtensions
         // Check that channel number falls within number of channels.
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((int)channel, mat.NumberOfChannels, nameof(channel));
 
+        // Check that depth type can be cast to double.
+        ArgumentOutOfRangeException.ThrowIfEqual(mat.Depth, DepthType.Cv64S, $"Depth type {mat.Depth} is not supported as it cannot be cast to a {nameof(Double)} without loosing precison!");
+        ArgumentOutOfRangeException.ThrowIfEqual(mat.Depth, DepthType.Cv64U, $"Depth type {mat.Depth} is not supported as it cannot be cast to a {nameof(Double)} without loosing precison!");
+
         unsafe
         {
-            var bytes = new Span<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
-            NumericHelper.DoubleToSpan(ref bytes, value);
-            bytes.CopyTo(new Span<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), bytes.Length));
+            if (mat.Depth == DepthType.CvBool)
+            {
+                var bytes = new Span<bool>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = Convert.ToBoolean(value);
+            }
+            else if (mat.Depth == DepthType.Cv8S)
+            {
+                var bytes = new Span<sbyte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = Convert.ToSByte(value);
+            }
+            else if (mat.Depth == DepthType.Cv8U)
+            {
+                var bytes = new Span<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = Convert.ToByte(value);
+            }
+            else if (mat.Depth == DepthType.Cv16S)
+            {
+                var bytes = new Span<short>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = Convert.ToInt16(value);
+            }
+            else if (mat.Depth == DepthType.Cv16U)
+            {
+                var bytes = new Span<ushort>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = Convert.ToUInt16(value);
+            }
+            else if (mat.Depth == DepthType.Cv16F)
+            {
+                var bytes = new Span<Half>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = (Half)value;
+            }
+            else if (mat.Depth == DepthType.Cv32S)
+            {
+                var bytes = new Span<int>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = Convert.ToInt32(value);
+            }
+            else if (mat.Depth == DepthType.Cv32U)
+            {
+                var bytes = new Span<uint>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = Convert.ToUInt32(value);
+            }
+            else if (mat.Depth == DepthType.Cv32F)
+            {
+                var bytes = new Span<float>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = Convert.ToSingle(value);
+            }
+            else if (mat.Depth == DepthType.Cv64F)
+            {
+                var bytes = new Span<double>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize + channel * mat.ElementSize / mat.NumberOfChannels), mat.ElementSize / mat.NumberOfChannels);
+                bytes[..1][0] = value;
+            }
+            else throw new NotSupportedException($"Depth type {mat.Depth} is not supported!");
         }
     }
 
@@ -108,11 +267,78 @@ public static class MatExtensions
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, mat.Height, nameof(row));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, mat.Width, nameof(col));
 
+        // Check that pixel value matches number of channels.
+        ArgumentOutOfRangeException.ThrowIfNotEqual(value.Length, mat.NumberOfChannels, nameof(value));
+
+        // Check that depth type can be cast to double.
+        ArgumentOutOfRangeException.ThrowIfEqual(mat.Depth, DepthType.Cv64S, $"Depth type {mat.Depth} is not supported as it cannot be cast to a {nameof(Double)} without loosing precison!");
+        ArgumentOutOfRangeException.ThrowIfEqual(mat.Depth, DepthType.Cv64U, $"Depth type {mat.Depth} is not supported as it cannot be cast to a {nameof(Double)} without loosing precison!");
+
         unsafe
         {
-            var bytes = new Span<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), mat.ElementSize);
-            NumericHelper.DoubleToSpan(ref bytes, value);
-            bytes.CopyTo(new Span<byte>((void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize), bytes.Length));
+            var ptr = (void*)(mat.DataPointer + (row * mat.Cols + col) * mat.ElementSize); // pointer to pixel memory address in mat
+
+            if (mat.Depth == DepthType.CvBool)
+            {
+                var bytes = new Span<bool>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = Convert.ToBoolean(value[i]);
+            }
+            else if (mat.Depth == DepthType.Cv8S)
+            {
+                var bytes = new Span<sbyte>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = Convert.ToSByte(value[i]);
+            }
+            else if (mat.Depth == DepthType.Cv8U)
+            {
+                var bytes = new Span<byte>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = Convert.ToByte(value[i]);
+            }
+            else if (mat.Depth == DepthType.Cv16S)
+            {
+                var bytes = new Span<short>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = Convert.ToInt16(value[i]);
+            }
+            else if (mat.Depth == DepthType.Cv16U)
+            {
+                var bytes = new Span<ushort>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = Convert.ToUInt16(value[i]);
+            }
+            else if (mat.Depth == DepthType.Cv16F)
+            {
+                var bytes = new Span<Half>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = (Half)value[i];
+            }
+            else if (mat.Depth == DepthType.Cv32S)
+            {
+                var bytes = new Span<int>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = Convert.ToInt32(value[i]);
+            }
+            else if (mat.Depth == DepthType.Cv32U)
+            {
+                var bytes = new Span<uint>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = Convert.ToUInt32(value[i]);
+            }
+            else if (mat.Depth == DepthType.Cv32F)
+            {
+                var bytes = new Span<float>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = Convert.ToSingle(value[i]);
+            }
+            else if (mat.Depth == DepthType.Cv64F)
+            {
+                var bytes = new Span<double>(ptr, mat.ElementSize);
+                for (int i = 0; i < value.Length; i++)
+                    bytes.Slice(i, 1)[0] = value[i];
+            }
+            else throw new NotSupportedException($"Depth type {mat.Depth} is not supported!");
         }
     }
 
