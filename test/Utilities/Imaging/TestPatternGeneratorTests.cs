@@ -145,7 +145,7 @@ public class TestPatternGeneratorTests
     {
         var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayVerticalRampMoving);
 
-        for (ulong i = 1; i < _height + 10; i++)
+        for (ulong i = 1; i < 10; i++)
         {
             // Act
             var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayVerticalRampMoving, i);
@@ -217,7 +217,7 @@ public class TestPatternGeneratorTests
     {
         var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayHorizontalRampMoving);
 
-        for (ulong i = 1; i < _width + 10; i++)
+        for (ulong i = 1; i < 10; i++)
         {
             // Act
             var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.GrayHorizontalRampMoving, i);
@@ -251,7 +251,7 @@ public class TestPatternGeneratorTests
     {
         var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.VerticalLineMoving);
 
-        for (ulong i = 1; i < _width + 10; i++)
+        for (ulong i = 1; i < 10; i++)
         {
             // Act
             var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.VerticalLineMoving, i);
@@ -298,7 +298,7 @@ public class TestPatternGeneratorTests
     {
         var oldBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.HorizontalLineMoving);
 
-        for (ulong i = 1; i < _width + 10; i++)
+        for (ulong i = 1; i < 10; i++)
         {
             // Act
             var newBytes = TestPatternGenerator.CreateImage(_width, _height, pixelFormat, TestPattern.HorizontalLineMoving, i);

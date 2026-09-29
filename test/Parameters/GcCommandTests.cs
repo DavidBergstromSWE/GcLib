@@ -93,7 +93,7 @@ public class GcCommandTests
         bool actionWasInvoked = false;
         var gcCommand = new GcCommand(name: "TestCommand",
                                       category: "Test",
-                                      new Action(() => { Task.Delay(100, TestContext.CancellationToken).Wait(TestContext.CancellationToken); actionWasInvoked = true; }),
+                                      new Action(() => { Task.Delay(10, TestContext.CancellationToken).Wait(TestContext.CancellationToken); actionWasInvoked = true; }),
                                       isReadable: true,
                                       isWritable: true,
                                       visibility: GcVisibility.Beginner,
