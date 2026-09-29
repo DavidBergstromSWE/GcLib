@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using GcLib;
+using GcLib.Utilities.FileIO;
 using MahApps.Metro.Controls.Dialogs;
 using Serilog;
 using WPFDemoApp.Models;

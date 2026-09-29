@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GcLib.Utilities.Imaging;
 
-namespace GcLib;
+namespace GcLib.Utilities.FileIO;
 
 /// <summary>
 /// Reader of image buffers from file.

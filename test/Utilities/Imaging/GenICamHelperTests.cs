@@ -1,7 +1,7 @@
 ﻿using GcLib.Utilities.Imaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GcLib.UnitTests;
+namespace GcLib.UnitTests.Utilities;
 
 [TestClass]
 public class GenICamHelperTests

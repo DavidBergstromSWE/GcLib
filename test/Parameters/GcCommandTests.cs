@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GcLib.UnitTests;
+namespace GcLib.UnitTests.Parameters;
 
 [TestClass]
 public class GcCommandTests

@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GcLib.UnitTests;
+namespace GcLib.UnitTests.Parameters;
 
 [TestClass]
 public class GcStringTests

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows.Forms;
 using GcLib;
+using GcLib.Utilities.FileIO;
 using Serilog;
 
 namespace WinFormsDemoApp;

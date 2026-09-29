@@ -2,7 +2,7 @@
 using GcLib.Utilities.Numbers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GcLib.UnitTests;
+namespace GcLib.UnitTests.Utilities;
 
 [TestClass]
 public class RandomizerTests

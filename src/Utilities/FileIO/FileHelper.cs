@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace GcLib.Utilities.IO;
+namespace GcLib.Utilities.FileIO;
 
 public static class FileHelper
 {

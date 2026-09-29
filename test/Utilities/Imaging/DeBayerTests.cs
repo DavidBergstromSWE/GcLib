@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Numerics;
 using Emgu.CV;
-using GcLib.UnitTests.Utilities;
 using GcLib.Utilities.Imaging;
 using GcLib.Utilities.Numbers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GcLib.UnitTests;
+namespace GcLib.UnitTests.Utilities;
 
 [TestClass]
 public class DeBayerTests

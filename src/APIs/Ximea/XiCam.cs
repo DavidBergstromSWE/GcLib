@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Timers;
-using GcLib.Utilities.IO;
+using GcLib.Utilities.FileIO;
 using Microsoft.Extensions.Logging;
 using xiApi.NET;
 

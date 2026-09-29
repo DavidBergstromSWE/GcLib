@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Timers;
-using GcLib.Utilities.IO;
+using GcLib.Utilities.FileIO;
 using PCO.SDK.NET;
 
 namespace GcLib;

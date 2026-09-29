@@ -5,7 +5,7 @@ using GcLib.Utilities.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace GcLib.UnitTests;
+namespace GcLib.UnitTests.Utilities;
 
 [TestClass]
 public class GcProcessingThreadTests

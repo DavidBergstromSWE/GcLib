@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace GcLib;
+namespace GcLib.Utilities.FileIO;
 
 /// <summary>
 /// Writer of image buffers to file.

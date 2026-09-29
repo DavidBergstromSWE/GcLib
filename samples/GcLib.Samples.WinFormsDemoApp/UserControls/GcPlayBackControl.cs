@@ -3,6 +3,7 @@ using System.Timers;
 using System.Windows.Forms;
 using GcLib;
 using GcLib.Samples.WinFormsDemoApp.Properties;
+using GcLib.Utilities.FileIO;
 
 namespace WinFormsDemoApp.UserControls;
 

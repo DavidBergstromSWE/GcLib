@@ -4,7 +4,7 @@ using System.Linq;
 using System.Xml;
 using GcLib.Utilities.Collections;
 
-namespace GcLib;
+namespace GcLib.Utilities.FileIO;
 
 /// <summary>
 /// Manages loading and saving of configuration xml files, containing lists of simple camera parameter name/value string pairs (properties).
