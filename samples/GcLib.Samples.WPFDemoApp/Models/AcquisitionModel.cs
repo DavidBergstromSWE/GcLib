@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GcLib;
 using GcLib.Utilities.FileIO;
-using GcLib.Utilities.Imaging;
 using GcLib.Utilities.Threading;
 using Serilog;
 

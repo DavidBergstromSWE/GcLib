@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using GcLib.Utilities.FileIO;
 using GcLib.Utilities.Imaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
