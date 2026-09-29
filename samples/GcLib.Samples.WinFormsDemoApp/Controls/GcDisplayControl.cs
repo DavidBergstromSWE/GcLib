@@ -119,7 +119,7 @@ public partial class GcDisplayControl : ImageBox
 
         // Add timestamp to circular buffer.
         _timeStamps.Put(buffer.TimeStamp);
-    
+
         // Add text overlays as requested.
         mat = OverlayChunkData(mat, buffer.FrameID, buffer.TimeStamp);
 

@@ -1,7 +1,7 @@
 ﻿using System;
-using WPFDemoApp.Models;
 using Serilog.Core;
 using Serilog.Events;
+using WPFDemoApp.Models;
 
 namespace WPFDemoApp.Utilities.Logging;
 

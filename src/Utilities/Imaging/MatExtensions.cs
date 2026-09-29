@@ -36,7 +36,7 @@ public static class MatExtensions
         double[] value = new double[mat.NumberOfChannels];
 
         unsafe
-        {        
+        {
             byte* pixelPtr = (byte*)mat.DataPointer + ((row * mat.Cols + col) * mat.ElementSize); // Pointer to pixel memory address.
             int bytesPerChannel = mat.ElementSize / mat.NumberOfChannels;
 
@@ -280,7 +280,7 @@ public static class MatExtensions
                          fontScale: fontScale,
                          color: new Bgr(255, 255, 255).MCvScalar,
                          thickness: 1,
-                         lineType: LineType.AntiAlias, 
+                         lineType: LineType.AntiAlias,
                          bottomLeftOrigin: false);
 
         // Paint black onto the image using the mask (this only applies the value where text pixels exist).

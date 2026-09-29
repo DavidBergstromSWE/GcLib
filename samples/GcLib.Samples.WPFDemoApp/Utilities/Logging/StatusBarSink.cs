@@ -1,8 +1,8 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.Messaging;
-using WPFDemoApp.Utilities.Messages;
 using Serilog.Core;
 using Serilog.Events;
+using WPFDemoApp.Utilities.Messages;
 
 namespace WPFDemoApp.Utilities.Logging;
 

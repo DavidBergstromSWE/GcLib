@@ -5,15 +5,15 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Emgu.CV;
 using GcLib;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using WPFDemoApp.Models;
 using WPFDemoApp.Utilities.IO;
 using WPFDemoApp.Utilities.Logging;
 using WPFDemoApp.Utilities.Services;
 using WPFDemoApp.Utilities.Themes;
 using WPFDemoApp.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace WPFDemoApp;
 

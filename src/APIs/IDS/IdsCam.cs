@@ -119,7 +119,7 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         {
             _checkConnectionTimer.Dispose();
         }
-        catch (Exception){ }
+        catch (Exception) { }
 
         // Close device.
         _device.Dispose();

@@ -8,8 +8,8 @@ using System.Xml.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using GcLib;
-using WPFDemoApp.Utilities.Messages;
 using Serilog;
+using WPFDemoApp.Utilities.Messages;
 
 namespace WPFDemoApp.Models;
 

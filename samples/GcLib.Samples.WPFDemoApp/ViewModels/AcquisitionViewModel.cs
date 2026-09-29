@@ -7,13 +7,13 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using GcLib;
+using MahApps.Metro.Controls.Dialogs;
+using Serilog;
+using Serilog.Events;
 using WPFDemoApp.Models;
 using WPFDemoApp.Utilities.Dialogs;
 using WPFDemoApp.Utilities.Messages;
 using WPFDemoApp.Utilities.Services;
-using MahApps.Metro.Controls.Dialogs;
-using Serilog;
-using Serilog.Events;
 
 namespace WPFDemoApp.ViewModels;
 

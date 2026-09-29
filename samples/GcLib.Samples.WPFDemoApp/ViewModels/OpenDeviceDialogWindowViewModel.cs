@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GcLib;
+using MahApps.Metro.Controls.Dialogs;
 using WPFDemoApp.Utilities.Dialogs;
 using WPFDemoApp.Utilities.Services;
-using MahApps.Metro.Controls.Dialogs;
 
 namespace WPFDemoApp.ViewModels;
 

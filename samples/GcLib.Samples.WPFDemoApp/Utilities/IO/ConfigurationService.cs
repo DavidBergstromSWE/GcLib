@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
 using GcLib;
+using Serilog;
 using WPFDemoApp.Models;
 using WPFDemoApp.ViewModels;
-using Serilog;
 
 namespace WPFDemoApp.Utilities.IO;
 

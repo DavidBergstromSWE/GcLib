@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using GcLib.Utilities.Imaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -107,7 +106,7 @@ public class VideoWriterTests
         int numBuffers = 10;
         for (int i = 0; i < numBuffers; i++)
             BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
-        
+
         // Assert
         Assert.AreEqual(numBuffers, _writer.BuffersQueued);
     }

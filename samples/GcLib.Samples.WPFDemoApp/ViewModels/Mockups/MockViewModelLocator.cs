@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using GcLib;
-using WPFDemoApp.Models;
-using WPFDemoApp.UserControls;
 using ScottPlot;
 using Serilog.Events;
+using WPFDemoApp.Models;
+using WPFDemoApp.UserControls;
 
 namespace WPFDemoApp.ViewModels;
 
