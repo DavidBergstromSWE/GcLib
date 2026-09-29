@@ -56,14 +56,6 @@ public sealed partial class VirtualCam
                 description: "User-programmable device identifier",
                 maxLength: 20);
 
-            _deviceTLType = new GcEnumeration(
-                name: nameof(DeviceTLType),
-                category: GetCategory(nameof(DeviceTLType)),
-                description: "Transport Layer type of the device",
-                enumEntry: GcLib.DeviceTLType.Custom,
-                enumArray: [GcLib.DeviceTLType.USB3Vision, GcLib.DeviceTLType.Custom],
-                isWritable: false);
-
             _deviceTemperatureSelector = new GcEnumeration(
                 name: nameof(DeviceTemperatureSelector),
                 category: GetCategory(nameof(DeviceTemperatureSelector)),

@@ -17,7 +17,6 @@ public sealed partial class VirtualCam
         private GcString _deviceModelName;
         private GcString _deviceSerialNumber;
         private GcString _deviceUserID;
-        private GcEnumeration _deviceTLType;
         private GcEnumeration _deviceTemperatureSelector;
         private GcFloat _deviceTemperature;
         private GcInteger _timeStamp;
@@ -53,12 +52,6 @@ public sealed partial class VirtualCam
         [Category("DeviceControl")]
         [DefaultValue("CameraSimulator")]
         public GcString DeviceUserID => _deviceUserID;
-
-        /// <summary>
-        /// Transport layer type.
-        /// </summary>
-        [Category("DeviceControl")]
-        public GcEnumeration DeviceTLType => _deviceTLType;
 
         /// <summary>
         /// Selects which device temperature to measure in <see cref="DeviceTemperature"/>.
