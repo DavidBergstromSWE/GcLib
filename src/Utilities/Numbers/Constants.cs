@@ -1,4 +1,4 @@
-﻿namespace GcLib;
+﻿namespace GcLib.Utilities.Numbers;
 
 /// <summary>
 /// Utility class, holding references to constants used in the library.

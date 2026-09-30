@@ -1,4 +1,5 @@
 ﻿using System;
+using GcLib.Utilities.Numbers;
 
 namespace GcLib;
 
