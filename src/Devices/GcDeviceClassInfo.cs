@@ -5,7 +5,7 @@ namespace GcLib;
 /// <summary>
 /// Provides information about a <see cref="GcDevice"/>-derived subclass and its API implementation.
 /// </summary>
-public class GcDeviceClassInfo
+public readonly record struct GcDeviceClassInfo
 {
     /// <summary>
     /// Name of API.
