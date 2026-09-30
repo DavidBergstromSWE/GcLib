@@ -13,8 +13,8 @@
   <ItemGroup>
     <PackageReference Include="Cyotek.CircularBuffer" Version="2.0.0" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="5.0.0.6584" />
-    <PackageReference Include="IDSImaging.Peak.API" Version="1.16.0.5" />
-    <PackageReference Include="IDSImaging.Peak.IPL" Version="1.17.2.5" />
+    <PackageReference Include="IDSImaging.Peak.API" Version="1.17.0" />
+    <PackageReference Include="IDSImaging.Peak.IPL" Version="1.18.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.12" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Drawing.Common" Version="10.0.12" />
