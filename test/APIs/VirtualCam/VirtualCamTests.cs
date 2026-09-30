@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using GcLib.Utilities.Imaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -19,8 +20,7 @@ public class VirtualCamTests
     [TestCleanup]
     public void TestCleanUp()
     {
-        if (_device?.IsAcquiring == false)
-            _device?.Close();
+        _device?.Close();
     }
 
     [TestMethod]
@@ -91,22 +91,28 @@ public class VirtualCamTests
     }
 
     [TestMethod]
-    public void StartAcquisition_NewBufferEventIsRaised()
+    public async Task StartAcquisition_NewBufferEventIsRaised()
     {
         // Arrange
         _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("Width", "80");
+        _device.Parameters.SetParameterValue("Height", "60");
+        _device.Parameters.SetParameterValue("AcquisitionFrameRate", "60");
         int eventCounter = 0;
-        void eventHandler(object s, EventArgs e) { eventCounter++; }
+        GcBuffer buffer = null;
+        void eventHandler(object s, NewBufferEventArgs e) { eventCounter++; buffer = e.Buffer; }
         _device.NewBuffer += eventHandler;
 
         // Act
         _device.StartAcquisition();
-        Thread.Sleep(300);
-
+        await Task.Delay(300, CancellationToken.None);
+        
         // Assert
         Assert.IsGreaterThan(0, eventCounter);
+        Assert.IsNotNull(buffer);
 
         // Cleanup
+        _device.StopAcquisition();
         _device.NewBuffer -= eventHandler;
     }
 
