@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using GcLib.Utilities.Collections;
+using Cyotek.Collections.Generic;
 
 namespace GcLib.Utilities.Threading;
 
@@ -18,7 +18,7 @@ public sealed class FPSStabilizer(int numSamples = 30)
     /// <summary>
     /// Circular buffer of timestamps.
     /// </summary>
-    private readonly CircularBuffer<long> _timeStamps = new(capacity: numSamples, allowOverflow: true);
+    private readonly CircularBuffer<long> _timeStamps = new(capacity: numSamples, allowOverwrite: true);
 
     #endregion
 

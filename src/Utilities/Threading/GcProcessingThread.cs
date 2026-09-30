@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Cyotek.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
 namespace GcLib.Utilities.Threading;
@@ -44,7 +45,7 @@ public sealed class GcProcessingThread : IDisposable
     /// Ring buffer, containing buffers queued for processing.
     /// </summary>
     /// ToDo: Use own implementation of circular buffer (in GcLib.Utilities.Collections namespace)?
-    private readonly Cyotek.Collections.Generic.CircularBuffer<GcBuffer> _imageQueue;
+    private readonly CircularBuffer<GcBuffer> _imageQueue;
 
     /// <summary>
     /// Frame rate manager, used for stabilizing the rate of buffers processed.
@@ -119,7 +120,7 @@ public sealed class GcProcessingThread : IDisposable
     /// <param name="ID">Thread ID.</param>
     public GcProcessingThread(int bufferCapacity = 4, bool limitFPS = false, double targetFPS = 30.0, string ID = "")
     {
-        _imageQueue = new Cyotek.Collections.Generic.CircularBuffer<GcBuffer>(capacity: bufferCapacity, allowOverwrite: true);
+        _imageQueue = new CircularBuffer<GcBuffer>(capacity: bufferCapacity, allowOverwrite: true);
         this.ID = ID;
         LimitFPS = limitFPS;
         TargetFPS = targetFPS;

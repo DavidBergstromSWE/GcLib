@@ -9,8 +9,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
+using Cyotek.Collections.Generic;
 using GcLib;
-using GcLib.Utilities.Collections;
 using Microsoft.Win32;
 
 namespace WPFDemoApp.UserControls;

@@ -6,9 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Cyotek.Collections.Generic;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using GcLib.Utilities.Collections;
 using Microsoft.Extensions.Logging;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -73,7 +73,7 @@ public class VideoWriter : IDisposable
     /// <summary>
     /// Circular buffer of timestamps. Increase its capacity to improve accuracy of fps calculation.
     /// </summary>
-    private readonly CircularBuffer<ulong> _timeStamps = new(capacity: 30, allowOverflow: false);
+    private readonly CircularBuffer<ulong> _timeStamps = new(capacity: 30, allowOverwrite: false);
 
     /// <summary>
     /// Recording thread used in writing to file.

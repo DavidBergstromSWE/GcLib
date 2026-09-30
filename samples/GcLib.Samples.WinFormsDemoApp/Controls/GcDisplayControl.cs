@@ -2,12 +2,12 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using Cyotek.Collections.Generic;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.UI;
 using GcLib;
-using GcLib.Utilities.Collections;
 
 namespace WinFormsDemoApp.Controls;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using Cyotek.Collections.Generic;
 using GcLib.Utilities.Numbers;
 
 namespace GcLib;
@@ -22,7 +23,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// Output buffer queue, containing images transferred from device input buffer pool and available to GenTL consumer.
     /// ToDo: Use own implementation for a circular buffer instead?
     /// </summary>
-    private readonly Cyotek.Collections.Generic.CircularBuffer<GcBuffer> _outputBufferQueue = new(capacity: bufferCapacity, allowOverwrite: true);
+    private readonly CircularBuffer<GcBuffer> _outputBufferQueue = new(capacity: bufferCapacity, allowOverwrite: true);
 
     /// <summary>
     /// Index of last grabbed image (used for counting dropped images).
