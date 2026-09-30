@@ -14,7 +14,7 @@ public class VirtualCamTests
     [TestInitialize]
     public void TestInitialize()
     {
-        
+
     }
 
     [TestCleanup]
@@ -106,7 +106,7 @@ public class VirtualCamTests
         // Act
         _device.StartAcquisition();
         await Task.Delay(300, CancellationToken.None);
-        
+
         // Assert
         Assert.IsGreaterThan(0, eventCounter);
         Assert.IsNotNull(buffer);

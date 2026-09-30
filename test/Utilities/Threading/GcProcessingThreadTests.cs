@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using GcLib.UnitTests.Utilities;
 using GcLib.Utilities.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

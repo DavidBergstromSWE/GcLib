@@ -84,8 +84,8 @@ public class GcLibraryTests
         var classInfo = GcLibrary.GetDeviceClassInfo<VirtualCam>();
 
         // Assert
-        Assert.IsNotNull(classInfo);
         Assert.AreEqual(typeof(VirtualCam), classInfo.DeviceType);
+        Assert.AreEqual(nameof(VirtualCam), classInfo.Name);
     }
 
     [TestMethod]
