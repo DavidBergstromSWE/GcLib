@@ -26,7 +26,6 @@ internal class SettingsService : ISettingsService
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
     public UserSettings Current { get; private set; } = new();
@@ -40,7 +39,7 @@ internal class SettingsService : ISettingsService
             {
                 // Read the JSON content from the settings file and deserialize it into the current settings.
                 string json = File.ReadAllText(FilePath);
-                Current = JsonSerializer.Deserialize<UserSettings>(json) ?? new UserSettings(); // If deserialization fails, create a new instance of UserSettings.
+                Current = JsonSerializer.Deserialize<UserSettings>(json, _jsonOptions) ?? new UserSettings(); // If deserialization fails, create a new instance of UserSettings.
                 return;
             }
             catch

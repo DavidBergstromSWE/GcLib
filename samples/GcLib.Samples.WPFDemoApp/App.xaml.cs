@@ -57,9 +57,6 @@ public partial class App : Application
 
         Log.Information("{App} started (v{version})", MainWindowViewModel.Title, MainWindowViewModel.MajorMinorVersion);
 
-        var settingsService = new SettingsService();
-        settingsService.Restore(); // Load from disk immediately
-
         // Configure services for dependency injection.
         Ioc.Default.ConfigureServices(
             new ServiceCollection()
@@ -67,7 +64,7 @@ public partial class App : Application
             .AddTransient<IThemeService, ThemeService>()
             .AddScoped<IMetroWindowService, MetroWindowService>()
             .AddSingleton<IConfigurationService, ConfigurationService>()
-            .AddSingleton<ISettingsService>(settingsService)
+            .AddSingleton<ISettingsService, SettingsService>()
             .AddScoped<MainWindowViewModel>()
             .AddScoped<ImageProcessingViewModel>()
             .AddScoped<ImageDisplayViewModel>()
