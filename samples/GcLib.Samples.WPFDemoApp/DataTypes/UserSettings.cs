@@ -1,6 +1,6 @@
 ﻿using GcLib;
 
-namespace WPFDemoApp.Utilities.Services;
+namespace WPFDemoApp;
 
 /// <summary>
 /// Class representing user settings for the application.
