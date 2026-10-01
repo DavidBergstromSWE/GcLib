@@ -15,9 +15,6 @@ internal sealed partial class MainWindowViewModel : ObservableRecipient
 {
     #region Fields
 
-    // backing-fields
-    private Theme _selectedTheme;
-
     /// <summary>
     /// Service providing windows and dialogs.
     /// </summary>
@@ -27,6 +24,11 @@ internal sealed partial class MainWindowViewModel : ObservableRecipient
     /// Service providing themes.
     /// </summary>
     private readonly IThemeService _themeService;
+
+    /// <summary>
+    /// Service providing access to application settings.
+    /// </summary>
+    private readonly ISettingsService _settingsService;
 
     #endregion
 
@@ -65,11 +67,14 @@ internal sealed partial class MainWindowViewModel : ObservableRecipient
     /// </summary>
     public Theme SelectedTheme
     {
-        get => _selectedTheme;
+        get;
         set
         {
-            if (SetProperty(ref _selectedTheme, value))
-                _themeService.SetTheme(_selectedTheme);
+            if (SetProperty(ref field, value))
+            {
+                _themeService.SetTheme(field);
+                _settingsService.Current.Theme = field.Name;
+            }
         }
     }
 
@@ -144,9 +149,9 @@ internal sealed partial class MainWindowViewModel : ObservableRecipient
     private void ToggleTheme()
     {
         // Retrieve inverted theme.
-        Theme invertedTheme = SelectedTheme.BaseColor == "Light"
+        Theme invertedTheme = (Theme)(SelectedTheme.BaseColor == "Light"
             ? _themeService.GetTheme(SelectedTheme.Name.Replace(SelectedTheme.BaseColor, "Dark"))
-            : _themeService.GetTheme(SelectedTheme.Name.Replace(SelectedTheme.BaseColor, "Light"));
+            : _themeService.GetTheme(SelectedTheme.Name.Replace(SelectedTheme.BaseColor, "Light")));
 
         // Change theme.
         SelectedTheme = invertedTheme;
@@ -170,10 +175,11 @@ internal sealed partial class MainWindowViewModel : ObservableRecipient
     /// <summary>
     /// Creates a new view model for the main window.
     /// </summary>
-    public MainWindowViewModel(IMetroWindowService windowService, IThemeService themeService)
+    public MainWindowViewModel(IMetroWindowService windowService, IThemeService themeService, ISettingsService settingsService)
     {
         _windowService = windowService;
         _themeService = themeService;
+        _settingsService = settingsService;
 
         // Instantiate commands.
         OpenOptionsWindowCommand = new RelayCommand(OpenOptionsWindow);
@@ -185,8 +191,10 @@ internal sealed partial class MainWindowViewModel : ObservableRecipient
         // Available accent colors.
         Themes = [.. _themeService.Themes];
 
-        // Detect current theme.
-        SelectedTheme = _themeService.GetTheme();
+        // Set current theme.
+        SelectedTheme = (Theme)(_themeService.GetTheme(_settingsService.Current.Theme) is null
+            ? _themeService.GetTheme()
+            : (Theme)_themeService.GetTheme(_settingsService.Current.Theme));
 
         IsActive = true;
     }

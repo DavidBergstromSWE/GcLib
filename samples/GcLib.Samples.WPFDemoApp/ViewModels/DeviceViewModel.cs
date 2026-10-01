@@ -51,6 +51,11 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
     private readonly IConfigurationService _configurationService;
 
     /// <summary>
+    /// Service providing access to application settings.
+    /// </summary>
+    private readonly ISettingsService _settingsService;
+
+    /// <summary>
     /// Signals to a <see cref="CancellationToken"/> that it should be canceled.
     /// </summary>
     private CancellationTokenSource _cancellationTokenSource;
@@ -83,14 +88,28 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
     /// <summary>
     /// Time delay before updating device parameter after changing value (in milliseconds).
     /// </summary>
-    [ObservableProperty]
-    public partial uint DeviceParameterUpdateTimeDelay { get; set; }
+    public uint DeviceParameterUpdateTimeDelay
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+                _settingsService.Current.ParameterUpdateDelay = (int)value;
+        }
+    }
 
     /// <summary>
     /// User visibility level.
     /// </summary>
-    [ObservableProperty]
-    public partial Visibility UserVisibility { get; set; }
+    public Visibility UserVisibility
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+                _settingsService.Current.UserVisibility = value.ToString();
+        }
+    }
 
     /// <summary>
     /// Currently used file path for configurations.
@@ -168,13 +187,14 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
     /// <param name="deviceProvider">Service providing devices.</param>
     /// <param name="configurationService">Service managing loading/saving of system configurations.</param>
     /// <param name="device">Device channel.</param>
-    public DeviceViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, IDeviceProvider deviceProvider, IConfigurationService configurationService, DeviceModel device)
+    public DeviceViewModel(IMetroWindowService windowService, IDispatcherService dispatcherService, IDeviceProvider deviceProvider, IConfigurationService configurationService, ISettingsService settingsService, DeviceModel device)
     {
         // Get required services.
         _windowService = windowService;
         _dispatcherService = dispatcherService;
         _deviceProvider = deviceProvider;
         _configurationService = configurationService;
+        _settingsService = settingsService;
 
         // Update device list in background.
         _initialDeviceUpdateTask = Task.Run(() => _deviceProvider.UpdateDeviceList());
@@ -194,8 +214,12 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
         CanLoadConfiguration = true;
         CanSaveConfiguration = false;
         IsEnabled = true;
-        DeviceParameterUpdateTimeDelay = 500;
-        UserVisibility = Visibility.Beginner;
+
+        // Restore user settings.
+        UserVisibility = Enum.TryParse(_settingsService.Current.UserVisibility, out Visibility visibility) ? visibility : Visibility.Beginner;
+        DeviceParameterUpdateTimeDelay = _settingsService.Current.ParameterUpdateDelay <= 1500 && _settingsService.Current.ParameterUpdateDelay > 0
+            ? (uint)_settingsService.Current.ParameterUpdateDelay
+            : 500;
 
         // Activate viewmodel for message sending/receiving.
         IsActive = true;

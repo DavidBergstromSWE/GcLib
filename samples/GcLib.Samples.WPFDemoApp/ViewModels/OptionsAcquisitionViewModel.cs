@@ -67,12 +67,12 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
         _initialSaveProcessedData = AcquisitionViewModel.AcquisitionChannel.SaveProcessedData;
         _initialSaveVideo = AcquisitionViewModel.AcquisitionChannel.SaveVideo;
         _initialBinaryFilePath = AcquisitionViewModel.AcquisitionChannel.BinaryFilePath;
-        _initialVideoFilePath = AcquisitionViewModel.AcquisitionChannel.VideoFolderPath;
+        _initialVideoFilePath = AcquisitionViewModel.AcquisitionChannel.RecordingFolderPath;
         _initialAutoGenerateFileNames = AcquisitionViewModel.AutoGenerateBinaryFileNames;
 
         // Instantiate commands.
         BrowseBinaryFilePathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.BinaryFilePath = FindFilePath(s, "bin"));
-        BrowseVideoFolderPathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.VideoFolderPath = FindFolderPath(s));
+        BrowseVideoFolderPathCommand = new RelayCommand<string>(s => AcquisitionViewModel.AcquisitionChannel.RecordingFolderPath = FindFolderPath(s));
     }
 
     #endregion
@@ -87,7 +87,7 @@ internal sealed class OptionsAcquisitionViewModel : IOptionsSubViewModel
         AcquisitionViewModel.AcquisitionChannel.SaveProcessedData = _initialSaveProcessedData;
         AcquisitionViewModel.AcquisitionChannel.SaveVideo = _initialSaveVideo;
         AcquisitionViewModel.AcquisitionChannel.BinaryFilePath = _initialBinaryFilePath;
-        AcquisitionViewModel.AcquisitionChannel.VideoFolderPath = _initialVideoFilePath;
+        AcquisitionViewModel.AcquisitionChannel.RecordingFolderPath = _initialVideoFilePath;
         AcquisitionViewModel.AutoGenerateBinaryFileNames = _initialAutoGenerateFileNames;
     }
 

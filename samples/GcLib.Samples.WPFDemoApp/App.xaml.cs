@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.DependencyInjection;
@@ -56,6 +57,9 @@ public partial class App : Application
 
         Log.Information("{App} started (v{version})", MainWindowViewModel.Title, MainWindowViewModel.MajorMinorVersion);
 
+        var settingsService = new SettingsService();
+        settingsService.Restore(); // Load from disk immediately
+
         // Configure services for dependency injection.
         Ioc.Default.ConfigureServices(
             new ServiceCollection()
@@ -63,7 +67,7 @@ public partial class App : Application
             .AddTransient<IThemeService, ThemeService>()
             .AddScoped<IMetroWindowService, MetroWindowService>()
             .AddSingleton<IConfigurationService, ConfigurationService>()
-            .AddSingleton<ISettingsService, ApplicationSettingsService>()
+            .AddSingleton<ISettingsService>(settingsService)
             .AddScoped<MainWindowViewModel>()
             .AddScoped<ImageProcessingViewModel>()
             .AddScoped<ImageDisplayViewModel>()
@@ -86,7 +90,7 @@ public partial class App : Application
         Log.Debug("Services configured");
 
         // Restore user settings to UI.
-        Ioc.Default.GetRequiredService<ISettingsService>().RestoreSettings();
+        Ioc.Default.GetRequiredService<ISettingsService>().Restore();
         Log.Debug("Application settings restored");
 
         // Shut down all child windows on main window closing.
@@ -126,7 +130,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         // Persist user settings.
-        Ioc.Default.GetRequiredService<ISettingsService>().StoreSettings();
+        Ioc.Default.GetRequiredService<ISettingsService>().Store();
         Log.Debug("Application settings stored");
 
         // Close libraries.
@@ -148,7 +152,19 @@ public partial class App : Application
             throw new InvalidOperationException("Emgu CV could not be initialized!");
 
         // Initialize GcLib with logger.
-        GcLibrary.Init(logger: Ioc.Default.GetService<ILogger<App>>());
+        GcLibrary.Init(autoRegister: false, logger: Ioc.Default.GetService<ILogger<App>>());
+        foreach (var deviceClass in Ioc.Default.GetRequiredService<ISettingsService>().Current.RegisterDeviceClasses)
+        {
+            // Register device class if it exists as a GcDevice-derived class in GcLibrary or application, using Reflection.
+            var deviceType = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(assembly => assembly.GetTypes())
+                .FirstOrDefault(type => type.IsSubclassOf(typeof(GcDevice)) && type.Name == deviceClass);
+            if (deviceType != null)
+            {
+                var registerMethod = typeof(GcLibrary).GetMethod("Register")?.MakeGenericMethod(deviceType);
+                registerMethod?.Invoke(null, null);
+            }
+        }
     }
 
     /// <summary>

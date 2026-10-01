@@ -35,22 +35,20 @@ internal sealed class ThemeService : IThemeService
                                                                                      backgroundBrush: a.Resources["MahApps.Brushes.ThemeBackground"] as SolidColorBrush))];
 
     /// <inheritdoc/>
-    /// <exception cref="InvalidOperationException"/>
-    public Theme GetTheme()
+    public Theme? GetTheme()
     {
         var currentTheme = _themeManager.DetectTheme(Application.Current);
         if (currentTheme != null)
             return Themes.Single(t => t.Name == currentTheme.Name);
-        else throw new InvalidOperationException("Could not retrieve the currently used theme in the application!");
+        else return null;
     }
 
     /// <inheritdoc/>
-    /// <exception cref="InvalidOperationException"/>
-    public Theme GetTheme(string name)
+    public Theme? GetTheme(string name)
     {
         if (Themes.ToList().Exists(t => t.Name == name))
             return Themes.Single(t => t.Name == name);
-        else throw new InvalidOperationException($"Theme with name {name} was not found in the collection of available ones!");
+        else return null;
     }
 
     /// <inheritdoc/>

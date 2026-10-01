@@ -35,6 +35,11 @@ internal sealed partial class AcquisitionViewModel : ObservableRecipient
     private readonly IDispatcherService _dispatcherService;
 
     /// <summary>
+    /// Service providing access to application settings.
+    /// </summary>
+    private readonly ISettingsService _settingsService;
+
+    /// <summary>
     /// True if an active acquisition is currently being aborted.
     /// </summary>
     private bool _isAborting;
@@ -52,8 +57,15 @@ internal sealed partial class AcquisitionViewModel : ObservableRecipient
     /// <summary>
     /// Indicates that binary filenames will be auto-generated (by current date and time).
     /// </summary>
-    [ObservableProperty]
-    public partial bool AutoGenerateBinaryFileNames { get; set; }
+    public bool AutoGenerateBinaryFileNames
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+                _settingsService.Current.AutoGenerateBinaryFilePath = value;
+        }
+    }
 
     /// <summary>
     /// Indicates that binary filenames will be auto-generated (by current date and time).
@@ -91,23 +103,18 @@ internal sealed partial class AcquisitionViewModel : ObservableRecipient
     /// <param name="dispatcherService">Service providing dispatching and running of actions onto the UI thread.</param>
     /// <param name="device">Device channel.</param>
     /// <param name="imageChannel">Image data source.</param>
-    public AcquisitionViewModel(IMetroWindowService dialogService, IDispatcherService dispatcherService, DeviceModel device, ImageModel imageChannel)
+    public AcquisitionViewModel(IMetroWindowService dialogService, IDispatcherService dispatcherService, ISettingsService settingsService, DeviceModel device, ImageModel imageChannel)
     {
         // Get required services.
         _windowService = dialogService;
         _dispatcherService = dispatcherService;
+        _settingsService = settingsService;
+
+        AutoGenerateBinaryFileNames = _settingsService.Current.AutoGenerateBinaryFilePath;
 
         // Instantiate acquisition channel.
-        AcquisitionChannel = new AcquisitionModel(device, imageChannel);
+        AcquisitionChannel = new AcquisitionModel(device, imageChannel, _settingsService);
 
-        // Default file paths.
-#if DEBUG
-        AcquisitionChannel.BinaryFilePath = Path.GetFullPath(@"C:\testdata\recording.bin");
-        AcquisitionChannel.VideoFolderPath = Path.GetFullPath(@"C:\testdata\");
-#else
-        AcquisitionChannel.BinaryFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"ImageViewer\Recordings\recording.bin");
-        AcquisitionChannel.VideoFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"ImageViewer\Recordings\");
-#endif
         // Register eventhandlers to acquisition channel.
         AcquisitionChannel.AcquisitionStopped += Channel_AcquisitionStopped;
         AcquisitionChannel.FrameDropped += Channel_FrameDropped;

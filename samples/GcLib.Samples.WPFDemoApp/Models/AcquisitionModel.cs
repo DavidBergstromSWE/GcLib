@@ -7,6 +7,7 @@ using GcLib;
 using GcLib.Utilities.FileIO;
 using GcLib.Utilities.Threading;
 using Serilog;
+using WPFDemoApp.Utilities.Services;
 
 namespace WPFDemoApp.Models;
 
@@ -33,6 +34,11 @@ internal partial class AcquisitionModel : ObservableObject
     private readonly ImageModel _imageModel;
 
     /// <summary>
+    /// Service providing access to application settings.
+    /// </summary>
+    private readonly ISettingsService _settingsService;
+
+    /// <summary>
     /// Writer of image buffer data.
     /// </summary>
     private GcBufferWriter _bufferWriter;
@@ -55,8 +61,15 @@ internal partial class AcquisitionModel : ObservableObject
     /// <summary>
     /// File path for saving video.
     /// </summary>
-    [ObservableProperty]
-    public partial string VideoFolderPath { get; set; }
+    public string RecordingFolderPath
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+                _settingsService.Current.RecordingFolderPath = field;
+        }
+    }
 
     /// <summary>
     /// Setting indicating that raw binary image data will be saved to file.
@@ -68,6 +81,8 @@ internal partial class AcquisitionModel : ObservableObject
         {
             if (SetProperty(ref field, value))
             {
+                _settingsService.Current.SaveRawData = field;
+
                 if (field)
                     SaveProcessedData = false;
             }
@@ -84,6 +99,8 @@ internal partial class AcquisitionModel : ObservableObject
         {
             if (SetProperty(ref field, value))
             {
+                _settingsService.Current.SaveProcessedData = field;
+
                 if (field)
                     SaveRawData = false;
             }
@@ -93,8 +110,15 @@ internal partial class AcquisitionModel : ObservableObject
     /// <summary>
     /// Setting indicating that video will be saved to file.
     /// </summary>
-    [ObservableProperty]
-    public partial bool SaveVideo { get; set; }
+    public bool SaveVideo
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+                _settingsService.Current.SaveVideo = field;
+        }
+    }
 
     /// <summary>
     /// True if channel is currently acquiring.
@@ -121,13 +145,25 @@ internal partial class AcquisitionModel : ObservableObject
     /// </summary>
     /// <param name="deviceModel">Device input source.</param>
     /// <param name="imageModel">Channel for storing images.</param>
-    public AcquisitionModel(DeviceModel deviceModel, ImageModel imageModel)
+    /// <param name="settingsService">Service providing access to application settings.</param>
+    public AcquisitionModel(DeviceModel deviceModel, ImageModel imageModel, ISettingsService settingsService)
     {
         DeviceModel = deviceModel;
         _imageModel = imageModel;
+        _settingsService = settingsService;
 
-        // Save raw data by default.
-        SaveRawData = true;
+#if DEBUG
+        BinaryFilePath = Path.GetFullPath(@"C:\testdata\recording.bin");
+        RecordingFolderPath = _settingsService.Current.RecordingFolderPath ?? Path.GetFullPath(@"C:\testdata\");
+#else
+        BinaryFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"ImageViewer\Recordings\recording.bin");
+        VideoFolderPath = _settingsService.Current.VideoFolderPath ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"ImageViewer\Recordings\");
+#endif
+
+        // Initialize recording settings.
+        SaveRawData = _settingsService.Current.SaveRawData;
+        SaveProcessedData = _settingsService.Current.SaveProcessedData;
+        SaveVideo = _settingsService.Current.SaveVideo;
 
         // Default codec.
         SelectedCodec = VideoWriter.CODEC.X264;
@@ -215,7 +251,7 @@ internal partial class AcquisitionModel : ObservableObject
 
         // Save video (if selected). Videos will be saved using auto-generated filenames based on current date and time.
         if (SaveVideo)
-            StartVideoWriting(VideoFolderPath + Path.DirectorySeparatorChar + "Video" + $"_{DateTime.Now:yyyyMMddHHmmss}" + ".mp4");
+            StartVideoWriting(RecordingFolderPath + Path.DirectorySeparatorChar + "Video" + $"_{DateTime.Now:yyyyMMddHHmmss}" + ".mp4");
 
         // Start acquisition.
         return StartAcquisitionAsync();

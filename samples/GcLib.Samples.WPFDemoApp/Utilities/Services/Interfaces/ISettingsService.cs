@@ -6,12 +6,17 @@
 public interface ISettingsService
 {
     /// <summary>
+    /// Current application settings.
+    /// </summary>
+    UserSettings Current { get; }
+
+    /// <summary>
     /// Restore application settings.
     /// </summary>
-    public void RestoreSettings();
+    public void Restore();
 
     /// <summary>
     /// Store application settings.
     /// </summary>
-    public void StoreSettings();
+    public void Store();
 }

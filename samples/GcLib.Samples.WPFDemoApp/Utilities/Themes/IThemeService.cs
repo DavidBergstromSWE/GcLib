@@ -11,14 +11,14 @@ public interface IThemeService
     /// Retrieve the currently used theme.
     /// </summary>
     /// <returns>Theme currently used.</returns>
-    Theme GetTheme();
+    Theme? GetTheme();
 
     /// <summary>
     /// Retrieve a named theme.
     /// </summary>
     /// <param name="name">Name of theme.</param>
     /// <returns>Theme.</returns>
-    Theme GetTheme(string name);
+    Theme? GetTheme(string name);
 
     /// <summary>
     /// Change the currently used theme.
