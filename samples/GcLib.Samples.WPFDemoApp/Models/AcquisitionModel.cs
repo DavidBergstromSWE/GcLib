@@ -59,7 +59,7 @@ internal partial class AcquisitionModel : ObservableObject
     public partial string BinaryFilePath { get; set; }
 
     /// <summary>
-    /// File path for saving video.
+    /// Folder path for saving video.
     /// </summary>
     public string RecordingFolderPath
     {

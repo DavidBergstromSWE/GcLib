@@ -1,33 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="GcLib.Samples.WPFDemoApp.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)">
   <Profiles />
-  <Settings>
-    <Setting Name="ThemeName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Light.Blue</Value>
-    </Setting>
-    <Setting Name="UserVisibility" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Guru</Value>
-    </Setting>
-    <Setting Name="ParameterUpdateDelay" Type="System.UInt32" Scope="User">
-      <Value Profile="(Default)">500</Value>
-    </Setting>
-    <Setting Name="SaveRawData" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
-    <Setting Name="SaveBinaryFilePath" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="AutoGenerateBinaryFilePath" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="SaveVideo" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="SaveVideoFolderPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="SaveProcessedData" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-  </Settings>
+  <Settings />
 </SettingsFile>

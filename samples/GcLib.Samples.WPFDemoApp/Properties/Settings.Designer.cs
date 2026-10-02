@@ -12,7 +12,7 @@ namespace GcLib.Samples.WPFDemoApp.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "18.8.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "18.11.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -20,114 +20,6 @@ namespace GcLib.Samples.WPFDemoApp.Properties {
         public static Settings Default {
             get {
                 return defaultInstance;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Light.Blue")]
-        public string ThemeName {
-            get {
-                return ((string)(this["ThemeName"]));
-            }
-            set {
-                this["ThemeName"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Guru")]
-        public string UserVisibility {
-            get {
-                return ((string)(this["UserVisibility"]));
-            }
-            set {
-                this["UserVisibility"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("500")]
-        public uint ParameterUpdateDelay {
-            get {
-                return ((uint)(this["ParameterUpdateDelay"]));
-            }
-            set {
-                this["ParameterUpdateDelay"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool SaveRawData {
-            get {
-                return ((bool)(this["SaveRawData"]));
-            }
-            set {
-                this["SaveRawData"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string SaveBinaryFilePath {
-            get {
-                return ((string)(this["SaveBinaryFilePath"]));
-            }
-            set {
-                this["SaveBinaryFilePath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool AutoGenerateBinaryFilePath {
-            get {
-                return ((bool)(this["AutoGenerateBinaryFilePath"]));
-            }
-            set {
-                this["AutoGenerateBinaryFilePath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool SaveVideo {
-            get {
-                return ((bool)(this["SaveVideo"]));
-            }
-            set {
-                this["SaveVideo"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string SaveVideoFolderPath {
-            get {
-                return ((string)(this["SaveVideoFolderPath"]));
-            }
-            set {
-                this["SaveVideoFolderPath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool SaveProcessedData {
-            get {
-                return ((bool)(this["SaveProcessedData"]));
-            }
-            set {
-                this["SaveProcessedData"] = value;
             }
         }
     }
