@@ -42,10 +42,10 @@ internal class SettingsService : ISettingsService
                 Current = JsonSerializer.Deserialize<UserSettings>(json, _jsonOptions) ?? new UserSettings(); // If deserialization fails, create a new instance of UserSettings.
                 return;
             }
-            catch
+            catch (Exception ex)
             {
                 /* Log errors here */
-                Log.Error("Failed to restore user settings from file, Creating a new instance of UserSettings.");
+                Log.Error(ex, "Failed to restore user settings from file, creating a new instance of {UserSettings}].", nameof(UserSettings));
             }
         }
 

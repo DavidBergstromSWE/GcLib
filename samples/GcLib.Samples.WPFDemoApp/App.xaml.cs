@@ -82,13 +82,13 @@ public partial class App : Application
             .AddLogging(loggingBuilder => loggingBuilder.AddSerilog())
             .BuildServiceProvider());
 
-        InitializeLibraries();
-
-        Log.Debug("Services configured");
-
         // Restore user settings to UI.
         Ioc.Default.GetRequiredService<ISettingsService>().Restore();
         Log.Debug("Application settings restored");
+
+        InitializeLibraries();
+
+        Log.Debug("Services configured");
 
         // Shut down all child windows on main window closing.
         Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
@@ -158,8 +158,12 @@ public partial class App : Application
                 .FirstOrDefault(type => type.IsSubclassOf(typeof(GcDevice)) && type.Name == deviceClass);
             if (deviceType != null)
             {
-                var registerMethod = typeof(GcLibrary).GetMethod("Register")?.MakeGenericMethod(deviceType);
+                var registerMethod = typeof(GcLibrary).GetMethod(nameof(GcLibrary.Register))?.MakeGenericMethod(deviceType);
                 registerMethod?.Invoke(null, null);
+            }
+            else
+            {
+                Log.Warning(new ArgumentException("Invalid device class specified in application settings"), "Unable to register device class of type {DeviceClass}", deviceClass);
             }
         }
     }
