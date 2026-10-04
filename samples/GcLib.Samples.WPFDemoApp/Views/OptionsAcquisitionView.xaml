@@ -108,7 +108,7 @@
                      ToolTip="Videos will be saved to the folder"/>
             <Button Style="{StaticResource Browsebutton}" 
                     Content="{iconPacks:Material Kind=FolderSearchOutline}"
-                    Command="{Binding BrowseVideoFolderPathCommand}" CommandParameter="{Binding ElementName=RecordingFolderPath, Path=Text}"
+                    Command="{Binding BrowseVideoFolderPathCommand}" CommandParameter="{Binding ElementName=VideoFolderPath, Path=Text}"
                     ToolTip="Select folder..."/>
         </StackPanel>
         <ComboBox Grid.Row="3" Grid.Column="5" Margin="10 0 0 0"
