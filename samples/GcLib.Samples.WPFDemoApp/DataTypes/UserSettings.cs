@@ -1,6 +1,4 @@
-﻿using GcLib;
-
-namespace WPFDemoApp;
+﻿namespace WPFDemoApp;
 
 /// <summary>
 /// Class representing user settings for the application.
@@ -46,9 +44,4 @@ public class UserSettings
     /// Path to the folder for saving recordings during acquisition.
     /// </summary>
     public string RecordingFolderPath { get; set; } = @"C:\testdata";
-
-    /// <summary>
-    /// Device classes to register for the application.
-    /// </summary>
-    public string[] RegisterDeviceClasses { get; set; } = [nameof(VirtualCam), nameof(PcoCam), nameof(PvCam), nameof(XiCam), nameof(SpinCam), nameof(IdsCam)];
 }

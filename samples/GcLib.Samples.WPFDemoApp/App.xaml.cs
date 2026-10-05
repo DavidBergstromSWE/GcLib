@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using CommandLine;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Emgu.CV;
@@ -82,13 +84,19 @@ public partial class App : Application
             .AddLogging(loggingBuilder => loggingBuilder.AddSerilog())
             .BuildServiceProvider());
 
+        Log.Debug("Services configured");
+
         // Restore user settings to UI.
         Ioc.Default.GetRequiredService<ISettingsService>().Restore();
         Log.Debug("Application settings restored");
 
         InitializeLibraries();
 
-        Log.Debug("Services configured");
+        // Parse path to configuration file if specified in command line arguments.
+        string filePath = Parser.Default.ParseArguments<Options>(e.Args)
+            .MapResult(o => o.InputFile, _ => string.Empty);
+
+        // Start GUI with configuration file loaded (if provided).
 
         // Shut down all child windows on main window closing.
         Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
@@ -148,24 +156,40 @@ public partial class App : Application
         if (CvInvoke.Init() == false)
             throw new InvalidOperationException("Emgu CV could not be initialized!");
 
-        // Initialize GcLib with logger.
-        GcLibrary.Init(autoRegister: false, logger: Ioc.Default.GetService<ILogger<App>>());
-        foreach (var deviceClass in Ioc.Default.GetRequiredService<ISettingsService>().Current.RegisterDeviceClasses)
-        {
-            // Register device class if it exists as a GcDevice-derived class in GcLibrary or application, using Reflection.
-            var deviceType = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(assembly => assembly.GetTypes())
-                .FirstOrDefault(type => type.IsSubclassOf(typeof(GcDevice)) && type.Name == deviceClass);
-            if (deviceType != null)
+        // Parse command line arguments to register device classes in GcLibrary.
+        var result = Parser.Default.ParseArguments<Options>(Environment.GetCommandLineArgs())
+            .WithParsed(o =>
             {
-                var registerMethod = typeof(GcLibrary).GetMethod(nameof(GcLibrary.Register))?.MakeGenericMethod(deviceType);
-                registerMethod?.Invoke(null, null);
-            }
-            else
-            {
-                Log.Warning(new ArgumentException("Invalid device class specified in application settings"), "Unable to register device class of type {DeviceClass}", deviceClass);
-            }
-        }
+                if (o.RegisterDeviceClasses == null || !o.RegisterDeviceClasses.Any())
+                {
+                    GcLibrary.Init(true, Ioc.Default.GetService<ILogger<App>>());
+                }
+                else
+                {
+                    GcLibrary.Init(false, Ioc.Default.GetService<ILogger<App>>());
+
+                    foreach (var deviceClass in o.RegisterDeviceClasses)
+                    {
+                        try
+                        {
+                            // Register device class if it exists as a GcDevice-derived class in GcLibrary or application, using Reflection.
+                            var deviceType = AppDomain.CurrentDomain.GetAssemblies()
+                                .SelectMany(assembly => assembly.GetTypes())
+                                .FirstOrDefault(type => type.IsSubclassOf(typeof(GcDevice)) && type.Name == deviceClass);
+                            if (deviceType != null)
+                            {
+                                var registerMethod = typeof(GcLibrary).GetMethod("Register")?.MakeGenericMethod(deviceType);
+                                registerMethod?.Invoke(null, null);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            Log.Error($"Unable to register device class {deviceClass}");
+                        }
+                    }
+                }
+            });
+        //.WithNotParsed(HandleParseError);
     }
 
     /// <summary>
