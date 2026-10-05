@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using CommandLine;
@@ -30,7 +31,7 @@ public partial class App : Application
     /// </summary>
     public static bool IsLoggingEnabled { get; set; }
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
@@ -94,9 +95,27 @@ public partial class App : Application
 
         // Parse path to configuration file if specified in command line arguments.
         string filePath = Parser.Default.ParseArguments<Options>(e.Args)
-            .MapResult(o => o.InputFile, _ => string.Empty);
+            .MapResult(o => o.ConfigurationFilePath, _ => string.Empty);
 
-        // Start GUI with configuration file loaded (if provided).
+        // Start GUI with configuration file loaded and acquisition started (if provided).
+        if (!string.IsNullOrEmpty(filePath))
+        {
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    await Ioc.Default.GetRequiredService<IConfigurationService>().RestoreAsync(filePath, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to restore configuration.");
+                }
+
+                // Start acquisition.
+                await Ioc.Default.GetRequiredService<AcquisitionViewModel>().PlayCommand.ExecuteAsync(null);
+            }
+            else Log.Warning("Configuration file '{FilePath}' not found.", filePath);
+        }
 
         // Shut down all child windows on main window closing.
         Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
@@ -189,7 +208,7 @@ public partial class App : Application
                     }
                 }
             });
-        //.WithNotParsed(HandleParseError);
+            //.WithNotParsed(e => HandleParseError(e));
     }
 
     /// <summary>
