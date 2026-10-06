@@ -179,7 +179,7 @@ public partial class App : Application
         var result = Parser.Default.ParseArguments<Options>(Environment.GetCommandLineArgs())
             .WithParsed(o =>
             {
-                if (o.RegisterDeviceClasses == null || !o.RegisterDeviceClasses.Any())
+                if (o.DeviceClasses == null || !o.DeviceClasses.Any())
                 {
                     GcLibrary.Init(true, Ioc.Default.GetService<ILogger<App>>());
                 }
@@ -187,7 +187,7 @@ public partial class App : Application
                 {
                     GcLibrary.Init(false, Ioc.Default.GetService<ILogger<App>>());
 
-                    foreach (var deviceClass in o.RegisterDeviceClasses)
+                    foreach (var deviceClass in o.DeviceClasses)
                     {
                         try
                         {
@@ -199,6 +199,10 @@ public partial class App : Application
                             {
                                 var registerMethod = typeof(GcLibrary).GetMethod("Register")?.MakeGenericMethod(deviceType);
                                 registerMethod?.Invoke(null, null);
+                            }
+                            else
+                            {
+                                Log.Warning($"Device class {deviceClass} not found in GcLibrary or application.");
                             }
                         }
                         catch (Exception)
