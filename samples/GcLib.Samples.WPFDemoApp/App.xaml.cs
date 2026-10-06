@@ -87,10 +87,6 @@ public partial class App : Application
 
         Log.Debug("Services configured");
 
-        // Restore user settings to UI.
-        Ioc.Default.GetRequiredService<ISettingsService>().Restore();
-        Log.Debug("Application settings restored");
-
         InitializeLibraries();
 
         // Parse path to configuration file if specified in command line arguments.
@@ -116,6 +112,10 @@ public partial class App : Application
             }
             else Log.Warning("Configuration file '{FilePath}' not found.", filePath);
         }
+
+        // Restore user settings to UI.
+        Ioc.Default.GetRequiredService<ISettingsService>().Restore();
+        Log.Debug("Application settings restored");
 
         // Shut down all child windows on main window closing.
         Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
