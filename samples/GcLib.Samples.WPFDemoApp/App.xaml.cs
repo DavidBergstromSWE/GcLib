@@ -101,14 +101,12 @@ public partial class App : Application
                 try
                 {
                     await Ioc.Default.GetRequiredService<IConfigurationService>().RestoreAsync(filePath, CancellationToken.None);
+                    await Ioc.Default.GetRequiredService<AcquisitionViewModel>().PlayCommand.ExecuteAsync(null);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Failed to restore configuration.");
+                    Log.Error(ex, $"Failed to restore configuration in '{filePath}'{ex.Message}");
                 }
-
-                // Start acquisition.
-                await Ioc.Default.GetRequiredService<AcquisitionViewModel>().PlayCommand.ExecuteAsync(null);
             }
             else Log.Warning("Configuration file '{FilePath}' not found.", filePath);
         }
@@ -191,23 +189,29 @@ public partial class App : Application
                     {
                         try
                         {
-                            // Register device class if it exists as a GcDevice-derived class in GcLibrary or application, using Reflection.
-                            var deviceType = AppDomain.CurrentDomain.GetAssemblies()
+                            // Get all valid device classes in GcLibrary, which are derived from GcDevice and implement IDeviceEnumerator and IDeviceClassDescriptor.
+                            var validDeviceClasses = AppDomain.CurrentDomain.GetAssemblies()
                                 .SelectMany(assembly => assembly.GetTypes())
-                                .FirstOrDefault(type => type.IsSubclassOf(typeof(GcDevice)) && type.Name == deviceClass);
+                                .Where(type => typeof(GcDevice).IsAssignableFrom(type) &&
+                                               typeof(IDeviceEnumerator).IsAssignableFrom(type) &&
+                                               typeof(IDeviceClassDescriptor).IsAssignableFrom(type))
+                                .ToList();
+
+                            // Register device class if it is valid, otherwise log an error message.
+                            var deviceType = validDeviceClasses.FirstOrDefault(type => type.Name == deviceClass);
                             if (deviceType != null)
                             {
-                                var registerMethod = typeof(GcLibrary).GetMethod("Register")?.MakeGenericMethod(deviceType);
+                                var registerMethod = typeof(GcLibrary).GetMethod(nameof(GcLibrary.Register))?.MakeGenericMethod(deviceType);
                                 registerMethod?.Invoke(null, null);
                             }
                             else
                             {
-                                Log.Warning($"Device class {deviceClass} not found in GcLibrary or application.");
+                                Log.Error($"Unable to register device class {deviceClass} (specified as a command line argument)\nValid classes are: {string.Join(", ", validDeviceClasses.Select(type => type.Name))}");
                             }
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
-                            Log.Error($"Unable to register device class {deviceClass}");
+                            Log.Debug(ex, $"Failed to register device class {deviceClass}");
                         }
                     }
                 }

@@ -83,6 +83,11 @@
                   AutoGenerateColumns="False" 
                   CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False" 
                   CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Style.Triggers>
@@ -103,7 +108,7 @@
                         </DataTrigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter Property="Background" Value="{x:Null}" />
-                            <Setter Property="BorderBrush" Value="{x:Null}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.DataGrid.Selection.BorderBrush.Focus}" />
                         </Trigger>
                     </Style.Triggers>
                 </Style>
