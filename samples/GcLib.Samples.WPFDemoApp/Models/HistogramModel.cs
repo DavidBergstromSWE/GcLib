@@ -1,7 +1,7 @@
-﻿namespace WPFDemoApp;
+﻿namespace WPFDemoApp.Models;
 
 /// <summary>
-/// Stores data for an image histogram.
+/// Represents data of an image histogram.
 /// </summary>
 /// <remarks>
 /// Creates a new image histogram.
@@ -9,7 +9,7 @@
 /// <param name="data">Histogram data.</param>
 /// <param name="maximum">Maximum intensity value.</param>
 /// <param name="numChannels">Number of image channels.</param>
-public class ImageHistogram(double[,] data, uint maximum, uint numChannels)
+public class HistogramModel(double[,] data, uint maximum, uint numChannels)
 {
     /// <summary>
     /// Histogram data, stored as a two-dimensional array with image channel as first dimension (BGR) and histogram data as second dimension.

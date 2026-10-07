@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using ScottPlot;
+using WPFDemoApp.Models;
 using WPFDemoApp.Utilities.Imaging;
 using Theme = WPFDemoApp.Utilities.Themes.Theme;
 
@@ -97,7 +98,7 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
 
     #region Public fields
 
-    public static readonly DependencyProperty HistogramProperty = DependencyProperty.Register(nameof(Histogram), typeof(ImageHistogram), typeof(HistogramViewer), new PropertyMetadata(null, OnHistogramChanged));
+    public static readonly DependencyProperty HistogramProperty = DependencyProperty.Register(nameof(Histogram), typeof(HistogramModel), typeof(HistogramViewer), new PropertyMetadata(null, OnHistogramChanged));
     public static readonly DependencyProperty ShowGridProperty = DependencyProperty.Register(nameof(ShowGrid), typeof(bool), typeof(HistogramViewer), new PropertyMetadata(true, OnShowGridChanged));
     public static readonly DependencyProperty SelectedPlotTypeProperty = DependencyProperty.Register(nameof(SelectedPlotType), typeof(HistogramPlotType), typeof(HistogramViewer), new PropertyMetadata(HistogramPlotType.Fill, OnPlotSettingsChanged));
     public static readonly DependencyProperty SelectedHistSizeProperty = DependencyProperty.Register(nameof(SelectedHistSize), typeof(int), typeof(HistogramViewer), new PropertyMetadata(64, OnPlotSettingsChanged));
@@ -110,9 +111,9 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
     /// <summary>
     /// Image histogram.
     /// </summary>
-    public ImageHistogram Histogram
+    public HistogramModel Histogram
     {
-        get { return (ImageHistogram)GetValue(HistogramProperty); }
+        get { return (HistogramModel)GetValue(HistogramProperty); }
         set { SetValue(HistogramProperty, value); }
     }
 
@@ -411,7 +412,7 @@ public partial class HistogramViewer : UserControl, INotifyPropertyChanged
         if (control.IsEnabled == false || e.NewValue == e.OldValue)
             return;
 
-        var histogram = (ImageHistogram)e.NewValue;
+        var histogram = (HistogramModel)e.NewValue;
 
         // Update data for plotting.
         control._histogramData = histogram.Data;

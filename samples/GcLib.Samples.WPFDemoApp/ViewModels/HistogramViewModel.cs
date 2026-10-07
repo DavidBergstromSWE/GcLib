@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using GcLib;
 using GcLib.Utilities.Imaging;
+using WPFDemoApp.Models;
 using WPFDemoApp.UserControls;
 using WPFDemoApp.Utilities.Messages;
 
@@ -119,7 +120,7 @@ internal sealed partial class HistogramViewModel : ObservableRecipient
     /// Image histogram to be displayed.
     /// </summary>
     [ObservableProperty]
-    public partial ImageHistogram Histogram { get; private set; }
+    public partial HistogramModel Histogram { get; private set; }
 
     #endregion
 
@@ -174,7 +175,7 @@ internal sealed partial class HistogramViewModel : ObservableRecipient
         buffer.ToMat().CalculateHistogram(bins: SelectedHistogramSize, maximumValue: buffer.PixelDynamicRangeMax, histogramData: ref _histogramData);
 
         // Update displayed histogram.
-        Histogram = new ImageHistogram(_histogramData, buffer.PixelDynamicRangeMax, buffer.NumChannels);
+        Histogram = new HistogramModel(_histogramData, buffer.PixelDynamicRangeMax, buffer.NumChannels);
     }
 
     protected override void OnActivated()

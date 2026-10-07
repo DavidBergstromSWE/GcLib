@@ -12,7 +12,7 @@ namespace WPFDemoApp;
 /// <param name="TimeStamp">Timestamp of log event.</param>
 /// <param name="LogEventLevel">Importance level of log event.</param>
 /// <param name="Message">Log event message.</param>
-internal record LogEvent(DateTime TimeStamp, LogEventLevel LogEventLevel, string Message)
+internal record struct LogEvent(DateTime TimeStamp, LogEventLevel LogEventLevel, string Message)
 {
     /// <summary>
     /// Timestamp of log event.

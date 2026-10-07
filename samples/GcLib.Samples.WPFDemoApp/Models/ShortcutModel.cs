@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace WPFDemoApp;
+namespace WPFDemoApp.Models;
 
 /// <summary>
 /// Represents a keyboard shortcut in the application.
@@ -11,7 +11,7 @@ namespace WPFDemoApp;
 /// <param name="keyGesture">Key and modifier of shortcut.</param>
 /// <param name="category">Category for shortcut.</param>
 /// <param name="description">Description of shortcut.</param>
-internal readonly struct Shortcut(KeyGesture keyGesture, string category, string description)
+internal readonly struct ShortcutModel(KeyGesture keyGesture, string category, string description)
 {
     /// <summary>
     /// Description of keyboard shortcut.
