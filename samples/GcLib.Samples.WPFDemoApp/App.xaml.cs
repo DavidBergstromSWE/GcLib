@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using WPFDemoApp.Models;
+using WPFDemoApp.Utilities.Strings;
 using WPFDemoApp.Utilities.IO;
 using WPFDemoApp.Utilities.Logging;
 using WPFDemoApp.Utilities.Services;
@@ -206,7 +207,7 @@ public partial class App : Application
                             }
                             else
                             {
-                                Log.Error($"Unable to register device class {deviceClass} (specified as a command line argument)\nValid classes are: {string.Join(", ", validDeviceClasses.Select(type => type.Name))}");
+                                Log.Error($"Unable to register device class {deviceClass} (specified as a command line argument)\nValid classes are: {StringHelper.JoinWithAnd(validDeviceClasses.Select(type => type.Name))}");
                             }
                         }
                         catch (Exception ex)
