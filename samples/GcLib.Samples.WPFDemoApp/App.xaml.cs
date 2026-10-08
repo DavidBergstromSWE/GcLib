@@ -207,7 +207,7 @@ public partial class App : Application
                             }
                             else
                             {
-                                Log.Error($"Unable to register device class {deviceClass} (specified as a command line argument)\nValid classes are: {StringHelper.JoinWithAnd(validDeviceClasses.Select(type => type.Name))}");
+                                Log.Error($"Unable to register device class {deviceClass} (specified as command line argument)\nValid classes are: {StringHelper.JoinWithAnd(validDeviceClasses.Select(type => type.Name))}");
                             }
                         }
                         catch (Exception ex)

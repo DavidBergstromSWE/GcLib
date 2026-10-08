@@ -83,11 +83,13 @@
                   AutoGenerateColumns="False" 
                   CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False" 
                   CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False">
-            <DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Copy" Command="ApplicationCommands.Copy" />
+            <DataGrid.Resources>
+                <ContextMenu x:Key="DataGridContextMenu">
+                    <ContextMenu.Items>
+                        <MenuItem Header="Copy" Command="ApplicationCommands.Copy"/>
+                    </ContextMenu.Items>
                 </ContextMenu>
-            </DataGrid.ContextMenu>
+            </DataGrid.Resources>
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Style.Triggers>
@@ -113,6 +115,11 @@
                     </Style.Triggers>
                 </Style>
             </DataGrid.CellStyle>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                    <Setter Property="ContextMenu" Value="{StaticResource DataGridContextMenu}" />
+                </Style>
+            </DataGrid.RowStyle>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat=HH:mm:sss.fff}" Width="80">
                     <DataGridTextColumn.HeaderStyle>
