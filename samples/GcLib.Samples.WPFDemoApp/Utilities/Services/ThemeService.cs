@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Media;
 using ControlzEx.Theming;
 
-namespace WPFDemoApp.Utilities.Themes;
+namespace WPFDemoApp.Utilities.Services;
 
 /// <summary>
 /// Service providing themes for the user interface.
@@ -28,11 +28,11 @@ internal sealed class ThemeService : IThemeService
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Theme> Themes => [.. _themeManager.Themes.Select(a => new Theme(schemeColor: a.ColorScheme,
-                                                                                     name: a.Name,
-                                                                                     baseColor: a.BaseColorScheme,
-                                                                                     brush: a.ShowcaseBrush,
-                                                                                     foregroundBrush: a.Resources["MahApps.Brushes.ThemeForeground"] as SolidColorBrush,
-                                                                                     backgroundBrush: a.Resources["MahApps.Brushes.ThemeBackground"] as SolidColorBrush))];
+                                                                                               name: a.Name,
+                                                                                               baseColor: a.BaseColorScheme,
+                                                                                               brush: a.ShowcaseBrush,
+                                                                                               foregroundBrush: a.Resources["MahApps.Brushes.ThemeForeground"] as SolidColorBrush,
+                                                                                               backgroundBrush: a.Resources["MahApps.Brushes.ThemeBackground"] as SolidColorBrush))];
 
     /// <inheritdoc/>
     public Theme? GetTheme()

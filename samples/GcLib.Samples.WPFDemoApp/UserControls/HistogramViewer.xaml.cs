@@ -10,7 +10,6 @@ using System.Windows.Threading;
 using ScottPlot;
 using WPFDemoApp.Models;
 using WPFDemoApp.Utilities.Imaging;
-using Theme = WPFDemoApp.Utilities.Themes.Theme;
 
 namespace WPFDemoApp.UserControls;
 

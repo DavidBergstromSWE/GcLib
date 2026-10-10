@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using WPFDemoApp.Utilities.Messages;
 using WPFDemoApp.Utilities.Services;
-using WPFDemoApp.Utilities.Themes;
 
 namespace WPFDemoApp.ViewModels;
 

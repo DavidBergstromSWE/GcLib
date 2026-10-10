@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 
-namespace WPFDemoApp.Utilities.Themes;
+namespace WPFDemoApp;
 
 /// <summary>
 /// Stores data about a theme for the user interface.

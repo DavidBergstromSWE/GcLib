@@ -17,7 +17,6 @@ using WPFDemoApp.Utilities.Strings;
 using WPFDemoApp.Utilities.IO;
 using WPFDemoApp.Utilities.Logging;
 using WPFDemoApp.Utilities.Services;
-using WPFDemoApp.Utilities.Themes;
 using WPFDemoApp.ViewModels;
 
 namespace WPFDemoApp;
@@ -61,6 +60,11 @@ public partial class App : Application
 
         Log.Information("{App} started (v{version})", MainWindowViewModel.Title, MainWindowViewModel.MajorMinorVersion);
 
+        // Restore user settings to UI.
+        var settingsService = new SettingsService();
+        settingsService.Restore();
+        Log.Debug("Application settings restored");
+
         // Configure services for dependency injection.
         Ioc.Default.ConfigureServices(
             new ServiceCollection()
@@ -68,7 +72,7 @@ public partial class App : Application
             .AddTransient<IThemeService, ThemeService>()
             .AddScoped<IMetroWindowService, MetroWindowService>()
             .AddSingleton<IConfigurationService, ConfigurationService>()
-            .AddSingleton<ISettingsService, SettingsService>()
+            .AddSingleton<ISettingsService, SettingsService>((p) => settingsService)
             .AddScoped<MainWindowViewModel>()
             .AddScoped<ImageProcessingViewModel>()
             .AddScoped<ImageDisplayViewModel>()
@@ -111,10 +115,6 @@ public partial class App : Application
             }
             else Log.Warning("Configuration file '{FilePath}' not found.", filePath);
         }
-
-        // Restore user settings to UI.
-        Ioc.Default.GetRequiredService<ISettingsService>().Restore();
-        Log.Debug("Application settings restored");
 
         // Shut down all child windows on main window closing.
         Current.ShutdownMode = ShutdownMode.OnMainWindowClose;

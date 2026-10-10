@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WPFDemoApp.Utilities.Themes;
+namespace WPFDemoApp.Utilities.Services;
 
 /// <summary>
 /// Interface for a service providing themes for the user interface of the application.
