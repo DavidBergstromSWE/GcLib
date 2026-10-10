@@ -13,10 +13,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using WPFDemoApp.Models;
-using WPFDemoApp.Utilities.Strings;
 using WPFDemoApp.Utilities.IO;
 using WPFDemoApp.Utilities.Logging;
 using WPFDemoApp.Utilities.Services;
+using WPFDemoApp.Utilities.Strings;
 using WPFDemoApp.ViewModels;
 
 namespace WPFDemoApp;
@@ -60,11 +60,6 @@ public partial class App : Application
 
         Log.Information("{App} started (v{version})", MainWindowViewModel.Title, MainWindowViewModel.MajorMinorVersion);
 
-        // Restore user settings to UI.
-        var settingsService = new SettingsService();
-        settingsService.Restore();
-        Log.Debug("Application settings restored");
-
         // Configure services for dependency injection.
         Ioc.Default.ConfigureServices(
             new ServiceCollection()
@@ -72,7 +67,7 @@ public partial class App : Application
             .AddTransient<IThemeService, ThemeService>()
             .AddScoped<IMetroWindowService, MetroWindowService>()
             .AddSingleton<IConfigurationService, ConfigurationService>()
-            .AddSingleton<ISettingsService, SettingsService>((p) => settingsService)
+            .AddSingleton<ISettingsService, SettingsService>()
             .AddScoped<MainWindowViewModel>()
             .AddScoped<ImageProcessingViewModel>()
             .AddScoped<ImageDisplayViewModel>()
@@ -93,6 +88,10 @@ public partial class App : Application
         Log.Debug("Services configured");
 
         InitializeLibraries();
+
+        // Restore user settings to UI before main window is created, so that the UI can be initialized with the restored settings.
+        Ioc.Default.GetRequiredService<ISettingsService>().Restore();
+        Log.Debug("Application settings restored");
 
         // Parse path to configuration file if specified in command line arguments.
         string filePath = Parser.Default.ParseArguments<Options>(e.Args)
@@ -217,7 +216,7 @@ public partial class App : Application
                     }
                 }
             });
-            //.WithNotParsed(e => HandleParseError(e));
+        //.WithNotParsed(e => HandleParseError(e));
     }
 
     /// <summary>
