@@ -17,7 +17,7 @@
                 d:DataContext="{d:DesignInstance viewmodels:MainWindowViewModel}"
                 Name="mainView"
                 FontSize="18" FontFamily="Segoe UI"
-                d:Title="IMAGEVIEWER" TitleCharacterCasing="Normal"
+                d:Title="WPFDemoApp" TitleCharacterCasing="Normal"
                 MinWidth="1400" MinHeight="800" d:Width="1400"
                 ResizeMode="CanResizeWithGrip"
                 WindowState="Maximized" WindowStartupLocation="CenterScreen"

@@ -36,7 +36,7 @@ internal sealed partial class MainWindowViewModel : ObservableRecipient
     /// <summary>
     /// Application title.
     /// </summary>
-    public static string Title => "ImageViewer";
+    public static string Title => "WPFDemoApp";
 
     /// <summary>
     /// Application version string.

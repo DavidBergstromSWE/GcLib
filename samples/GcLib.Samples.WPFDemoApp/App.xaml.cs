@@ -22,7 +22,7 @@ using WPFDemoApp.ViewModels;
 namespace WPFDemoApp;
 
 /// <summary>
-/// ImageViewer is a demo app for the <see cref="GcLib"/> library. The app demonstrates how to connect to devices, change device parameter settings and display live image streams. The app also provide some elementary recording and playback functionality.
+/// WPF demo app for the <see cref="GcLib"/> library. The app demonstrates how to connect to devices, change device parameter settings and display live image streams. The app also provide some elementary recording and playback functionality.
 /// </summary>
 public partial class App : Application
 {
