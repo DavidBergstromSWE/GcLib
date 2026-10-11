@@ -174,7 +174,7 @@ public partial class App : Application
             throw new InvalidOperationException("Emgu CV could not be initialized!");
 
         // Parse command line arguments to register device classes in GcLibrary.
-        var result = Parser.Default.ParseArguments<Options>(Environment.GetCommandLineArgs())
+        var parser = new Parser(with => with.AllowMultiInstance = true).ParseArguments<Options>(Environment.GetCommandLineArgs())
             .WithParsed(o =>
             {
                 if (o.DeviceClasses == null || !o.DeviceClasses.Any())
