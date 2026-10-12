@@ -13,10 +13,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using WPFDemoApp.Models;
+using WPFDemoApp.Utilities.Helpers;
 using WPFDemoApp.Utilities.IO;
 using WPFDemoApp.Utilities.Logging;
 using WPFDemoApp.Utilities.Services;
-using WPFDemoApp.Utilities.Strings;
 using WPFDemoApp.ViewModels;
 
 namespace WPFDemoApp;
@@ -195,12 +195,7 @@ public partial class App : Application
                         try
                         {
                             // Get all valid device classes in GcLibrary, which are derived from GcDevice and implement IDeviceEnumerator and IDeviceClassDescriptor.
-                            var validDeviceClasses = AppDomain.CurrentDomain.GetAssemblies()
-                                .SelectMany(assembly => assembly.GetTypes())
-                                .Where(type => typeof(GcDevice).IsAssignableFrom(type) &&
-                                               typeof(IDeviceEnumerator).IsAssignableFrom(type) &&
-                                               typeof(IDeviceClassDescriptor).IsAssignableFrom(type))
-                                .ToList();
+                            var validDeviceClasses = GcLibraryHelper.GetValidDeviceClasses();
 
                             // Register device class if it is valid, otherwise log an error message.
                             var deviceType = validDeviceClasses.FirstOrDefault(type => type.Name == deviceClass);

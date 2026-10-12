@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace WPFDemoApp.Utilities.Strings;
+namespace WPFDemoApp.Utilities.Helpers;
 
 /// <summary>
 /// Helper class for string operations.
