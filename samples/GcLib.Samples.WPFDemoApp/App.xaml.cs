@@ -200,14 +200,8 @@ public partial class App : Application
                             // Register device class if it is valid, otherwise log an error message.
                             var deviceType = validDeviceClasses.FirstOrDefault(type => type.Name == deviceClass);
                             if (deviceType != null)
-                            {
-                                var registerMethod = typeof(GcLibrary).GetMethod(nameof(GcLibrary.Register))?.MakeGenericMethod(deviceType);
-                                registerMethod?.Invoke(null, null);
-                            }
-                            else
-                            {
-                                Log.Error($"Unable to register device class {deviceClass} (specified as command line argument)\nValid classes are: {StringHelper.JoinWithAnd(validDeviceClasses.Select(type => type.Name))}");
-                            }
+                                GcLibrary.Register(deviceType);
+                            else Log.Error($"Unable to register device class {deviceClass} (specified as command line argument)\nValid classes are: {StringHelper.JoinWithAnd(validDeviceClasses.Select(type => type.Name))}");
                         }
                         catch (Exception ex)
                         {
