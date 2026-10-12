@@ -11,6 +11,7 @@
     <Content Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Basler.Pylon.NET8.x64" Version="11.2.1.755" />
     <PackageReference Include="Cyotek.CircularBuffer" Version="2.0.0" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="5.0.0.6584" />
     <PackageReference Include="IDSImaging.Peak.API" Version="1.17.0" />
