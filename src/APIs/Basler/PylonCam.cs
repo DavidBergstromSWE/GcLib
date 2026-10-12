@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Basler.Pylon;
-using GcLib.Utilities.FileIO;
 
 namespace GcLib;
 
@@ -125,8 +124,9 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        var cameraInfos = CameraFinder.Enumerate();
-        return cameraInfos.Select(GetDeviceInfo).ToList();
+        Environment.SetEnvironmentVariable("PYLON_CAMEMU", "1"); // Enable camera emulation (for testing purposes).
+        var cameraInfos = CameraFinder.Enumerate(DeviceType.CameraEmulator); // Enumerate all available camera emulators (for testing purposes).
+        return [.. cameraInfos.Select(GetDeviceInfo)];
     }
 
     #endregion
