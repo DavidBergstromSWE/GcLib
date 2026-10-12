@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using CommandLine;
-using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Emgu.CV;
 using GcLib;
@@ -30,6 +29,16 @@ public partial class App : Application
     /// Parser for command line arguments.
     /// </summary>
     private readonly Parser _parser = new(with => with.AllowMultiInstance = true);
+
+    /// <summary>
+    /// Service provider for the application.
+    /// </summary>
+    public IServiceProvider Services { get; private set; }
+
+    /// <summary>
+    /// The current <see cref="App"/> instance in use.
+    /// </summary>
+    public new static App Current => (App)Application.Current;
 
     /// <summary>
     /// Enables and disables logging of application events. 
@@ -66,8 +75,7 @@ public partial class App : Application
         Log.Information("{App} started (v{version})", MainWindowViewModel.Title, MainWindowViewModel.MajorMinorVersion);
 
         // Configure services for dependency injection.
-        Ioc.Default.ConfigureServices(
-            new ServiceCollection()
+        Services = new ServiceCollection()
             .AddTransient<IDispatcherService, DispatcherService>()
             .AddTransient<IThemeService, ThemeService>()
             .AddScoped<IMetroWindowService, MetroWindowService>()
@@ -88,14 +96,14 @@ public partial class App : Application
             .AddSingleton(new DeviceModel())
             .AddSingleton<IDeviceProvider, GcSystem>()
             .AddLogging(loggingBuilder => loggingBuilder.AddSerilog())
-            .BuildServiceProvider());
+            .BuildServiceProvider();
 
         Log.Debug("Services configured");
 
         InitializeLibraries();
 
         // Restore user settings to UI before main window is created, so that the UI can be initialized with the restored settings.
-        Ioc.Default.GetRequiredService<ISettingsService>().Restore();
+        Services.GetRequiredService<ISettingsService>().Restore();
         Log.Debug("Application settings restored");
 
         // Parse path to configuration file if specified in command line arguments.
@@ -109,8 +117,8 @@ public partial class App : Application
             {
                 try
                 {
-                    await Ioc.Default.GetRequiredService<IConfigurationService>().RestoreAsync(filePath, CancellationToken.None);
-                    await Ioc.Default.GetRequiredService<AcquisitionViewModel>().PlayCommand.ExecuteAsync(null);
+                    await Services.GetRequiredService<IConfigurationService>().RestoreAsync(filePath, CancellationToken.None);
+                    await Services.GetRequiredService<AcquisitionViewModel>().PlayCommand.ExecuteAsync(null);
                 }
                 catch (Exception ex)
                 {
@@ -157,7 +165,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         // Persist user settings.
-        Ioc.Default.GetRequiredService<ISettingsService>().Store();
+        Services.GetRequiredService<ISettingsService>().Store();
         Log.Debug("Application settings stored");
 
         // Close libraries.
@@ -184,11 +192,11 @@ public partial class App : Application
             {
                 if (o.DeviceClasses == null || !o.DeviceClasses.Any())
                 {
-                    GcLibrary.Init(true, Ioc.Default.GetService<ILogger<App>>());
+                    GcLibrary.Init(true, Services.GetService<ILogger<App>>());
                 }
                 else
                 {
-                    GcLibrary.Init(false, Ioc.Default.GetService<ILogger<App>>());
+                    GcLibrary.Init(false, Services.GetService<ILogger<App>>());
 
                     foreach (var deviceClass in o.DeviceClasses)
                     {
@@ -216,10 +224,10 @@ public partial class App : Application
     /// <summary>
     /// Close libraries used in the application.
     /// </summary>
-    private static void CloseLibraries()
+    private void CloseLibraries()
     {
         // Dispose system level in GcLib.
-        var system = Ioc.Default.GetRequiredService<IDeviceProvider>() as GcSystem;
+        var system = Services.GetRequiredService<IDeviceProvider>() as GcSystem;
         system?.Dispose();
 
         // Close GcLib.
