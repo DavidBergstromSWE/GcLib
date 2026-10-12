@@ -1,10 +1,12 @@
 using System;
+using GcLib.UnitTests.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GcLib.UnitTests.Library;
 
 [TestClass]
 [DoNotParallelize]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Category", "CA2263:RuleId", Justification = "Unit testing")]
 public class GcLibraryTests
 {
     #region TestConfiguration
@@ -35,7 +37,7 @@ public class GcLibraryTests
 
     #endregion
 
-    #region MethodTests
+    #region InitTests
 
     [TestMethod]
     public void Init_UnInitialized_IsInitializedIsTrue()
@@ -77,6 +79,10 @@ public class GcLibraryTests
         Assert.IsEmpty(GcLibrary.GetRegisteredDeviceClasses());
     }
 
+    #endregion
+
+    #region GetDeviceClassInfoTests
+
     [TestMethod]
     public void GetDeviceClassInfo_ValidType_ReturnsInfo()
     {
@@ -88,15 +94,19 @@ public class GcLibraryTests
         Assert.AreEqual(nameof(VirtualCam), classInfo.Name);
     }
 
+    #endregion
+
+    #region RegisterTests
+
     [TestMethod]
-    public void Register_IsNotInitialized_ThrowsInvalidOperationException()
+    public void RegisterGeneric_IsNotInitialized_ThrowsInvalidOperationException()
     {
         // Act/Assert
         Assert.Throws<InvalidOperationException>(() => GcLibrary.Register<VirtualCam>());
     }
 
     [TestMethod]
-    public void Register_DeviceClassIsNotRegistered_DeviceClassIsRegistered()
+    public void RegisterGeneric_DeviceClassIsNotRegistered_DeviceClassIsRegistered()
     {
         // Arrange
         GcLibrary.Init(false);
@@ -110,7 +120,20 @@ public class GcLibraryTests
     }
 
     [TestMethod]
-    public void Register_DeviceClassIsRegistered_ThrowsArgumentException()
+    public void RegisterGeneric_DeviceClassIsNotAvailable_IsNotAddedToAvailableDeviceClasses()
+    {
+        // Arrange     
+        GcLibrary.Init(false);
+
+        // Act
+        GcLibrary.Register<UnavailableCam>();
+
+        // Assert
+        Assert.DoesNotContain(UnavailableCam.DeviceClassInfo, GcLibrary.GetAvailableDeviceClasses());
+    }
+
+    [TestMethod]
+    public void RegisterGeneric_DeviceClassIsRegistered_ThrowsArgumentException()
     {
         // Arrange
         GcLibrary.Init(false);
@@ -121,14 +144,73 @@ public class GcLibraryTests
     }
 
     [TestMethod]
-    public void Unregister_IsNotInitialized_ThrowsInvalidOperationException()
+    public void RegisterNonGeneric_IsNotInitialized_ThrowsInvalidOperationException()
     {
         // Act/Assert
-        Assert.Throws<InvalidOperationException>(() => GcLibrary.Unregister<VirtualCam>());
+        Assert.Throws<InvalidOperationException>(() => GcLibrary.Register(typeof(VirtualCam)));
     }
 
     [TestMethod]
-    public void Unregister_DeviceClassIsRegistered_DeviceClassIsNotRegistered()
+    public void RegisterNonGeneric_DeviceClassIsNotRegistered_DeviceClassIsRegistered()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+
+        // Act
+        GcLibrary.Register(typeof(VirtualCam));
+
+        // Assert
+        Assert.Contains(VirtualCam.DeviceClassInfo, GcLibrary.GetAvailableDeviceClasses());
+        Assert.Contains(VirtualCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
+    }
+
+    [TestMethod]
+    public void RegisterNonGeneric_DeviceClassIsRegistered_ThrowsArgumentException()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        GcLibrary.Register(typeof(VirtualCam));
+
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => GcLibrary.Register(typeof(VirtualCam)));
+    }
+
+    [TestMethod]
+    public void RegisterNonGeneric_DeviceClassIsNotAvailable_IsNotAddedToAvailableDeviceClasses()
+    {
+        // Arrange     
+        GcLibrary.Init(false);
+
+        // Act
+        GcLibrary.Register(typeof(UnavailableCam));
+
+        // Assert
+        Assert.DoesNotContain(UnavailableCam.DeviceClassInfo, GcLibrary.GetAvailableDeviceClasses());
+    }
+
+    [TestMethod]
+    public void RegisterNonGeneric_TypeIsNotDeviceClass_ThrowsArgumentException()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => GcLibrary.Register(typeof(string)));
+    }
+
+    #endregion
+
+    #region UnregisterTests
+
+    [TestMethod]
+    public void UnregisterGeneric_IsNotInitialized_ThrowsInvalidOperationException()
+    {
+        // Act/Assert
+        Assert.Throws<InvalidOperationException>(GcLibrary.Unregister<VirtualCam>);
+    }
+
+    [TestMethod]
+    public void UnregisterGeneric_DeviceClassIsRegistered_DeviceClassIsNotRegistered()
     {
         // Arrange
         GcLibrary.Init(false);
@@ -143,7 +225,7 @@ public class GcLibraryTests
     }
 
     [TestMethod]
-    public void Unregister_DeviceClassIsNotRegistered_ThrowsArgumentException()
+    public void UnregisterGeneric_DeviceClassIsNotRegistered_ThrowsArgumentException()
     {
         // Arrange
         GcLibrary.Init(false);
@@ -152,6 +234,52 @@ public class GcLibraryTests
         Assert.Throws<ArgumentException>(GcLibrary.Unregister<VirtualCam>);
 
     }
+
+    [TestMethod]
+    public void UnregisterNonGeneric_IsNotInitialized_ThrowsInvalidOperationException()
+    {
+        // Act/Assert
+        Assert.Throws<InvalidOperationException>(() => GcLibrary.Unregister(typeof(VirtualCam)));
+    }
+
+    [TestMethod]
+    public void UnregisterNonGeneric_DeviceClassIsRegistered_DeviceClassIsNotRegistered()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        GcLibrary.Register(typeof(VirtualCam));
+
+        // Act
+        GcLibrary.Unregister(typeof(VirtualCam));
+
+        // Assert
+        Assert.DoesNotContain(VirtualCam.DeviceClassInfo, GcLibrary.GetAvailableDeviceClasses());
+        Assert.DoesNotContain(VirtualCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
+    }
+
+    [TestMethod]
+    public void UnregisterNonGeneric_DeviceClassIsNotRegistered_ThrowsArgumentException()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => GcLibrary.Unregister(typeof(VirtualCam)));
+    }
+
+    [TestMethod]
+    public void UnregisterNonGeneric_TypeIsNotDeviceClass_ThrowsArgumentException()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => GcLibrary.Unregister(typeof(string)));
+    }
+
+    #endregion
+
+    #region GetAvailableDeviceClassesTests
 
     [TestMethod]
     public void GetAvailableDeviceClasses_IsInitialized_ReturnsNonEmptyEnumerable()
@@ -173,6 +301,10 @@ public class GcLibraryTests
         Assert.Throws<InvalidOperationException>(GcLibrary.GetAvailableDeviceClasses);
     }
 
+    #endregion
+
+    #region GetRegisteredDeviceClassesTests
+
     [TestMethod]
     public void GetRegisteredDeviceClasses_IsInitialized_ReturnsNonEmptyEnumerable()
     {
@@ -192,6 +324,10 @@ public class GcLibraryTests
         // Act/Assert
         Assert.Throws<InvalidOperationException>(GcLibrary.GetRegisteredDeviceClasses);
     }
+
+    #endregion
+
+    #region CloseTests
 
     [TestMethod]
     public void Close_IsNotInitialized()

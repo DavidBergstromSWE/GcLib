@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -97,9 +99,11 @@ public static class GcLibrary
         if (IsInitialized == false)
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
 
+        // Check if the device class is already registered.
         if (_implementedDeviceClasses.ContainsKey(typeof(TDevice)))
             throw new ArgumentException("A device class of this type is already registered!", typeof(TDevice).Name);
 
+        // Add device class to implemented classes.
         _implementedDeviceClasses.Add(typeof(TDevice), TDevice.DeviceClassInfo);
 
         try
@@ -122,6 +126,36 @@ public static class GcLibrary
     }
 
     /// <summary>
+    /// Registers a new device class to be used in the library.
+    /// </summary>
+    /// <param name="deviceType">The type of the device class to register.</param>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    public static void Register(Type deviceType)
+    {
+        if (IsInitialized == false)
+            throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
+
+        // Validate that the provided type is a subclass of GcDevice and implements required interfaces.
+        if (!typeof(GcDevice).IsAssignableFrom(deviceType) || !typeof(IDeviceEnumerator).IsAssignableFrom(deviceType) || !typeof(IDeviceClassDescriptor).IsAssignableFrom(deviceType))
+            throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice)} and implement {nameof(IDeviceEnumerator)} and {nameof(IDeviceClassDescriptor)}.", nameof(deviceType));
+        try
+        {
+            // Use reflection to invoke the generic Register<TDevice>() method with the specified deviceType.
+            typeof(GcLibrary).GetMethod(nameof(Register), BindingFlags.Public | BindingFlags.Static, binder: null, types: Type.EmptyTypes, modifiers: null).MakeGenericMethod(deviceType).Invoke(null, null);
+        }
+        catch (TargetInvocationException ex)
+        {
+            var inner = ex.InnerException;
+            if (inner != null)
+            {
+                ExceptionDispatchInfo.Capture(inner).Throw();
+            }
+            throw; // rethrow original TargetInvocationException if there's no inner exception
+        }    
+    }
+
+    /// <summary>
     /// Unregister a device class from being used in the library.
     /// </summary>
     /// <typeparam name="TDevice">Device type.</typeparam>
@@ -141,6 +175,37 @@ public static class GcLibrary
 
         if (Logger.IsEnabled(LogLevel.Debug))
             Logger.LogDebug("{DeviceType} unregistered", typeof(TDevice).Name);
+    }
+
+    /// <summary>
+    /// Unregister a device class from being used in the library.
+    /// </summary>
+    /// <param name="deviceType">The type of the device class to register.</param>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    public static void Unregister(Type deviceType)
+    {
+        if (IsInitialized == false)
+            throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
+
+        // Validate that the provided type is a subclass of GcDevice and implements required interfaces.
+        if (!typeof(GcDevice).IsAssignableFrom(deviceType) || !typeof(IDeviceEnumerator).IsAssignableFrom(deviceType) || !typeof(IDeviceClassDescriptor).IsAssignableFrom(deviceType))
+            throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice)} and implement {nameof(IDeviceEnumerator)} and {nameof(IDeviceClassDescriptor)}.", nameof(deviceType));
+
+        // Use reflection to invoke the generic Unregister<TDevice>() method with the specified deviceType.
+        try
+        {
+            typeof(GcLibrary).GetMethod(nameof(Unregister), BindingFlags.Public | BindingFlags.Static, binder: null, types: Type.EmptyTypes, modifiers: null).MakeGenericMethod(deviceType).Invoke(null, null);
+        }
+        catch (TargetInvocationException ex)
+        {
+            var inner = ex.InnerException;
+            if (inner != null)
+            {
+                ExceptionDispatchInfo.Capture(inner).Throw();
+            }
+            throw; // rethrow original TargetInvocationException if there's no inner exception
+        }       
     }
 
     /// <summary>
