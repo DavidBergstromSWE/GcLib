@@ -27,6 +27,11 @@ namespace WPFDemoApp;
 public partial class App : Application
 {
     /// <summary>
+    /// Parser for command line arguments.
+    /// </summary>
+    private readonly Parser _parser = new(with => with.AllowMultiInstance = true);
+
+    /// <summary>
     /// Enables and disables logging of application events. 
     /// </summary>
     public static bool IsLoggingEnabled { get; set; }
@@ -94,8 +99,8 @@ public partial class App : Application
         Log.Debug("Application settings restored");
 
         // Parse path to configuration file if specified in command line arguments.
-        string filePath = Parser.Default.ParseArguments<Options>(e.Args)
-            .MapResult(o => o.ConfigurationFilePath, _ => string.Empty);
+        string filePath = _parser.ParseArguments<Options>(e.Args)
+                                 .MapResult(o => o.ConfigurationFilePath, _ => string.Empty);
 
         // Start GUI with configuration file loaded and acquisition started (if provided).
         if (!string.IsNullOrEmpty(filePath))
@@ -167,14 +172,14 @@ public partial class App : Application
     /// <summary>
     /// Initializes libraries used in the application.
     /// </summary>
-    private static void InitializeLibraries()
+    private void InitializeLibraries()
     {
         // Initialize EmguCV.
         if (CvInvoke.Init() == false)
             throw new InvalidOperationException("Emgu CV could not be initialized!");
 
         // Parse command line arguments to register device classes in GcLibrary.
-        var parser = new Parser(with => with.AllowMultiInstance = true).ParseArguments<Options>(Environment.GetCommandLineArgs())
+        var parser = _parser.ParseArguments<Options>(Environment.GetCommandLineArgs())
             .WithParsed(o =>
             {
                 if (o.DeviceClasses == null || !o.DeviceClasses.Any())
