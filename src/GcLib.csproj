@@ -57,6 +57,14 @@
 			<TargetPath>SC2_Cam.dll</TargetPath>
 		</ContentWithTargetPath>
 	</ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="APIs\Basler\lib\Basler.Pylon.ExternC.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Basler.Pylon.ExternC.dll</TargetPath>
+    </ContentWithTargetPath>
+    <None Include="APIs\Basler\lib\Basler.Pylon.ExternC.dll" />
+  </ItemGroup>
 	
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />
