@@ -198,13 +198,13 @@ public partial class App : Application
                 {
                     GcLibrary.Init(false, Services.GetService<ILogger<App>>());
 
+                    // Get all valid device classes in GcLibrary, which are derived from GcDevice and implement IDeviceEnumerator and IDeviceClassDescriptor.
+                    var validDeviceClasses = GcLibraryHelper.GetValidDeviceClasses();
+
                     foreach (var deviceClass in o.DeviceClasses)
                     {
                         try
                         {
-                            // Get all valid device classes in GcLibrary, which are derived from GcDevice and implement IDeviceEnumerator and IDeviceClassDescriptor.
-                            var validDeviceClasses = GcLibraryHelper.GetValidDeviceClasses();
-
                             // Register device class if it is valid, otherwise log an error message.
                             var deviceType = validDeviceClasses.FirstOrDefault(type => type.Name == deviceClass);
                             if (deviceType != null)
