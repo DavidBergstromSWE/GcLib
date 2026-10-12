@@ -134,7 +134,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     #region IDeviceClassDescriptor
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("Pylon", FileHelper.GetAssemblyFileVersion("Basler.Pylon.dll"), typeof(PylonCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("Pylon", Library.VersionInfo.ToString(), typeof(PylonCam));
 
     #endregion
 }
