@@ -11,7 +11,6 @@
     <Content Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Basler.Pylon.NET8.x64" Version="11.2.1.755" />
     <PackageReference Include="Cyotek.CircularBuffer" Version="2.0.0" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="5.0.0.6584" />
     <PackageReference Include="IDSImaging.Peak.API" Version="1.17.0" />
@@ -21,6 +20,9 @@
     <PackageReference Include="System.Drawing.Common" Version="10.0.12" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Basler.Pylon">
+      <HintPath>APIs\Basler\lib\Basler.Pylon.dll</HintPath>
+    </Reference>
     <Reference Include="pco.sdk.net">
       <HintPath>APIs\PCO\lib\pco.sdk.net.dll</HintPath>
     </Reference>

@@ -125,7 +125,8 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        return CameraFinder.Enumerate().Select(GetDeviceInfo).ToList();
+        var cameraInfos = CameraFinder.Enumerate();
+        return cameraInfos.Select(GetDeviceInfo).ToList();
     }
 
     #endregion
