@@ -38,7 +38,7 @@ internal sealed class AboutWindowViewModel : ObservableRecipient
     /// <summary>
     /// Window title.
     /// </summary>
-    public static string Title => $"About IMAGEVIEWER";
+    public static string Title => $"About {MainWindowViewModel.Title}";
 
     /// <summary>
     /// Version string.

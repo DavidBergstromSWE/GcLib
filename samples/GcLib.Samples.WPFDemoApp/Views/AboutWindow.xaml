@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewmodels:AboutWindowViewModel}"
         Name="aboutWindow"
-        Title="{Binding Title, FallbackValue='About IMAGEVIEWER v1.0.0'}" TitleCharacterCasing="Normal"
+        Title="{Binding Title, FallbackValue='About WPFDemoApp'}" TitleCharacterCasing="Normal"
         Height="265" Width="600" ResizeMode="NoResize">
 
     <mah:MetroWindow.DataContext>
@@ -61,12 +61,11 @@
                     Orientation="Vertical"
                     Margin="15 0 0 0">
             <TextBlock TextWrapping="Wrap" TextAlignment="Justify">
-                <Run Text="IMAGEVIEWER" FontWeight="Bold" />
-                <Run Text="is a WPF demo application for" />
-                <Hyperlink NavigateUri="https://dev.azure.com/MySimLabs/GcLib/" RequestNavigate="Hyperlink_RequestNavigate">
-                    GcLib
+                <Run Text="WPF demo application for" />
+                <Hyperlink NavigateUri="https://github.com/DavidBergstromSWE/GcLib" RequestNavigate="Hyperlink_RequestNavigate">
+                    GcLib,
                 </Hyperlink>
-                <Run Text=", a library for controlling settings and streaming of cameras."/>
+                <Run Text="a library for controlling settings and streaming of GenICam/GenTL-standardized cameras."/>
                 <Run Text="The OpenCV .NET wrapper"/>
                 <Hyperlink NavigateUri="https://www.emgu.com/wiki/index.php/Main_Page" RequestNavigate="Hyperlink_RequestNavigate">
                     EmguCV
@@ -78,7 +77,7 @@
                 </Hyperlink>
                 <Run Text="library." />
                 <Run Text="The application is designed and styled using the"/>
-                <Hyperlink NavigateUri="https://mahapps.com/" RequestNavigate="Hyperlink_RequestNavigate">
+                <Hyperlink NavigateUri="https://mahapps.github.io/mahapps.com/" RequestNavigate="Hyperlink_RequestNavigate">
                     MahApps.Metro
                 </Hyperlink>
                 <Run Text="UI framework, built using the"/>
