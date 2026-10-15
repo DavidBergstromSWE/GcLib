@@ -71,7 +71,10 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
         if (parameter.IsEmpty || parameter.IsReadable == false)
             return Parameters[parameterName].ToString(); // Return cached value if parameter is empty or not readable.
 
-        return parameter is IFloatParameter floatParameter ? floatParameter.GetValue().ToString(CultureInfo.CurrentCulture) // Use current culture for float formatting
+        return parameter is IIntegerParameter integerParameter ? integerParameter.GetValue().ToString()
+             : parameter is IFloatParameter floatParameter ? floatParameter.GetValue().ToString("F3", CultureInfo.CurrentCulture) // Use current culture for float formatting
+             : parameter is IStringParameter stringParameter ? stringParameter.GetValue()
+             : parameter is IEnumParameter enumParameter ? enumParameter.GetValue()
              : parameter is IBooleanParameter booleanParameter ? booleanParameter.GetValue().ToString() // pylon uses 0 and 1 for boolean values, but we want true/false
              : parameter.ToString();
     }
@@ -79,6 +82,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     /// <summary>
     /// Retrieves a (non-command) parameter from the camera using the type of the cached parameter.
     /// </summary>
+    /// <returns>The parameter from the camera, or null if the parameter type is not recognized.</returns>
     private IParameter GetTypedParameter(string parameterName)
     {
         return Parameters[parameterName].Type switch
@@ -98,7 +102,8 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
         if (Parameters[parameterName].Type == GcParameterType.Command)
         {
             var command = _camera.Parameters[(CommandName)parameterName];
-            command.Execute();
+            if (command.IsWritable)
+                command.Execute();
         }
     }
 
@@ -111,13 +116,26 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
 
         if (parameter.IsWritable)
         {
-            if (parameter is IBooleanParameter booleanParameter)
+            switch (parameter)
             {
-                booleanParameter.SetValue(bool.Parse(parameterValue));
-            }
-            else
-            {
-                parameter.ParseAndSetValue(parameterValue);
+                case IIntegerParameter integerParameter:
+                    integerParameter.SetValue(int.Parse(parameterValue), IntegerValueCorrection.Nearest);
+                    break;
+                case IFloatParameter floatParameter:
+                    floatParameter.SetValue(double.Parse(parameterValue, CultureInfo.CurrentCulture), FloatValueCorrection.ClipToRange); // Use current culture for float parsing
+                    break;
+                case IStringParameter stringParameter:
+                    stringParameter.SetValue(parameterValue);
+                    break;
+                case IEnumParameter enumParameter:
+                    enumParameter.SetValue(parameterValue);
+                    break;
+                case IBooleanParameter booleanParameter:
+                    booleanParameter.SetValue(bool.Parse(parameterValue));
+                    break;
+                default:
+                    parameter.ParseAndSetValue(parameterValue);
+                    break;
             }
         }
     }
@@ -250,6 +268,11 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
 
     #region Conversion helpers
 
+    /// <summary>
+    /// Creates a <see cref="GcInteger"/> from the specified integer parameter.
+    /// </summary>
+    /// <param name="p">The integer parameter to convert.</param>
+    /// <returns>A <see cref="GcInteger"/> representing the integer parameter.</returns>
     private static GcInteger ToGcInteger(IIntegerParameter p)
     {
         return new GcInteger(name: p.Name,
@@ -264,6 +287,11 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                              description: GetProperty(p, "Description"));
     }
 
+    /// <summary>
+    /// Creates a <see cref="GcFloat"/> from the specified float parameter.
+    /// </summary>
+    /// <param name="p">The float parameter to convert.</param>
+    /// <returns>A <see cref="GcFloat"/> representing the float parameter.</returns>
     private static GcFloat ToGcFloat(IFloatParameter p)
     {
         return new GcFloat(name: p.Name,
@@ -278,6 +306,11 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                            description: GetProperty(p, "Description"));
     }
 
+    /// <summary>
+    /// Creates a <see cref="GcString"/> from the specified string parameter.
+    /// </summary>
+    /// <param name="p">The string parameter to convert.</param>
+    /// <returns>A <see cref="GcString"/> representing the string parameter.</returns>
     private static GcString ToGcString(IStringParameter p)
     {
         return new GcString(name: p.Name,
@@ -290,6 +323,11 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                             description: GetProperty(p, "Description"));
     }
 
+    /// <summary>
+    /// Creates a <see cref="GcBoolean"/> from the specified boolean parameter.
+    /// </summary>
+    /// <param name="p">The boolean parameter to convert.</param>
+    /// <returns>A <see cref="GcBoolean"/> representing the boolean parameter.</returns>
     private static GcBoolean ToGcBoolean(IBooleanParameter p)
     {
         return new GcBoolean(name: p.Name,
@@ -301,6 +339,11 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                              description: GetProperty(p, "Description"));
     }
 
+    /// <summary>
+    /// Creates a <see cref="GcCommand"/> from the specified command parameter.
+    /// </summary>
+    /// <param name="p">The command parameter to convert.</param>
+    /// <returns>A <see cref="GcCommand"/> representing the command parameter.</returns>
     private static GcCommand ToGcCommand(ICommandParameter p)
     {
         return new GcCommand(name: p.Name,
@@ -310,6 +353,12 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                              description: GetProperty(p, "Description"));
     }
 
+    /// <summary>
+    /// Creates a <see cref="GcEnumeration"/> from a specified enumeration parameter.
+    /// </summary>
+    /// <remarks>Enumeration entries are numbered by their position in the parameter's values.</remarks>
+    /// <param name="p">The enumeration parameter to convert.</param>
+    /// <returns>An <see cref="GcEnumeration"/> representing the enumeration parameter.</returns>
     private static GcEnumeration ToGcEnumeration(IEnumParameter p)
     {
         // Pylon enumerations are string-based, so entries are numbered by their position.
