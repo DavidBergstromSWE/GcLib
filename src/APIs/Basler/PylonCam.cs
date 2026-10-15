@@ -6,7 +6,7 @@ using Basler.Pylon;
 namespace GcLib;
 
 /// <summary>
-/// Vendor-specific device class providing an interface to pylon .NET API (26.09) from Basler.
+/// Vendor-specific device class providing an interface to pylon .NET API from Basler.
 /// </summary>
 public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
 {
@@ -124,8 +124,11 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        Environment.SetEnvironmentVariable("PYLON_CAMEMU", "1"); // Enable camera emulation (for testing purposes).
+        Environment.SetEnvironmentVariable("PYLON_CAMEMU", "2"); // Enable camera emulation (for testing purposes).
         var cameraInfos = CameraFinder.Enumerate(DeviceType.CameraEmulator); // Enumerate all available camera emulators (for testing purposes).
+
+        //var cameraInfos = CameraFinder.Enumerate();
+
         return [.. cameraInfos.Select(GetDeviceInfo)];
     }
 
