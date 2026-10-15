@@ -124,7 +124,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        Environment.SetEnvironmentVariable("PYLON_CAMEMU", "2"); // Enable camera emulation (for testing purposes).
+        Environment.SetEnvironmentVariable("PYLON_CAMEMU", "1"); // Enable camera emulation (for testing purposes).
         var cameraInfos = CameraFinder.Enumerate(DeviceType.CameraEmulator); // Enumerate all available camera emulators (for testing purposes).
 
         //var cameraInfos = CameraFinder.Enumerate();
