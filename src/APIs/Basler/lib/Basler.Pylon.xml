@@ -39,6 +39,16 @@
             This device class can be used to create the corresponding Transport Layer object or when creating Devices with the Transport Layer Factory.
             </summary>
         </member>
+        <member name="F:Basler.Pylon.Internals.Constants.DeviceClass.BaslerGenTlSta">
+            <summary>
+            This device class can be used to create the corresponding Transport Layer object or when creating Devices with the Transport Layer Factory.
+            </summary>
+        </member>
+        <member name="F:Basler.Pylon.Internals.Constants.DeviceClass.BaslerGenTlStm">
+            <summary>
+            This device class can be used to create the corresponding Transport Layer object or when creating Devices with the Transport Layer Factory.
+            </summary>
+        </member>
         <member name="F:Basler.Pylon.Internals.Constants.DeviceClass.BaslerUsb">
             <summary>
             This device class can be used to create the corresponding Transport Layer object or when creating Devices with the Transport Layer Factory.
@@ -8930,6 +8940,22 @@
             Does not throw exceptions. 
             Threading: 
             This class is not thread-safe. 
+            If you access the same instance from multiple threads, you must make sure to synchronize the access accordingly.
+            </remarks>
+        </member>
+        <member name="M:Basler.Pylon.Internals.Native.PylonDataComponent.GetSourceId">
+            <summary>
+            Get the identifier of the data source that generated this component.
+            </summary>
+            <returns>
+            The unique identifier of the data source that generated this component. If the device does not provide source IDs,
+            0 is returned.
+            </returns>
+            <remarks>
+            Errors:
+            Does not throw exceptions.
+            Threading:
+            This class is not thread-safe.
             If you access the same instance from multiple threads, you must make sure to synchronize the access accordingly.
             </remarks>
         </member>
@@ -54822,6 +54848,11 @@
             The Basler GenTL Stereo ace device type.
             </summary>
         </member>
+        <member name="P:Basler.Pylon.DeviceType.BaslerGenTlStmDeviceClass">
+            <summary>
+            The Basler GenTL Stereo mini device type.
+            </summary>
+        </member>
         <member name="P:Basler.Pylon.DeviceType.CameraEmulator">
             <summary>
             The Basler Camera Emulator device type.
@@ -55054,6 +55085,11 @@
         <member name="F:Basler.Pylon.ComponentType.Intensity">
             <summary>
             Component contains intensity values.
+            </summary>
+        </member>
+        <member name="F:Basler.Pylon.ComponentType.Infrared">
+            <summary>
+            Component contains infrared values.
             </summary>
         </member>
         <member name="F:Basler.Pylon.ComponentType.Range">
@@ -59529,6 +59565,16 @@
             The vertical orientation of the pixel data stored in memory.
             </summary>
             <remarks>
+            <para><b>Preconditions:</b> The data component must be valid.</para>
+            <para><b>Error Safety:</b> Does not throw exceptions.</para>
+            </remarks>
+        </member>
+        <member name="P:Basler.Pylon.IDataComponent.SourceId">
+            <summary>
+            The identifier of the data source that generated this component.
+            </summary>
+            <remarks>
+            <para>Example when source IDs are useful: If a device has two sensors each sensor can be a source with its own identifier.</para>
             <para><b>Preconditions:</b> The data component must be valid.</para>
             <para><b>Error Safety:</b> Does not throw exceptions.</para>
             </remarks>

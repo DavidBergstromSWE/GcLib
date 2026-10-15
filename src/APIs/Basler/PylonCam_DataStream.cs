@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Basler.Pylon;
 using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
@@ -9,7 +10,20 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
 {
     #region Fields
 
+    /// <summary>
+    /// The capacity of the buffer.
+    /// </summary>
     private uint _bufferCapacity = 10;
+
+    /// <summary>
+    /// Image acquisition thread.
+    /// </summary>
+    private Thread _imageAcquisitionThread;
+
+    /// <summary>
+    /// Image acquisition thread stopping condition.
+    /// </summary>
+    private bool _threadIsRunning;
 
     #endregion
 
@@ -42,8 +56,13 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
         if (IsAcquiring)
             throw new InvalidOperationException($"Unable to start acquisition as Device {DeviceInfo.ModelName} is already acquiring!");
 
-        _camera.StreamGrabber.ImageGrabbed += OnImageGrabbed;
-        _camera.StreamGrabber.Start(GrabStrategy.OneByOne, GrabLoop.ProvidedByStreamGrabber);
+        // Start image acquisition thread.
+        _imageAcquisitionThread = new Thread(ImageAcquisitionThread) { Name = "ImageAcquisitionThread (PylonCam)" };
+        _threadIsRunning = true;
+        _imageAcquisitionThread.Start();
+
+        // Start acquisition on the device.
+        _camera.StreamGrabber.Start(strategy: GrabStrategy.OneByOne, grabLoopType: GrabLoop.ProvidedByUser);
 
         IsAcquiring = true;
 
@@ -57,8 +76,12 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
         if (IsAcquiring == false)
             return;
 
+        // Stop image acquisition thread.
+        _threadIsRunning = false;
+        _imageAcquisitionThread.Join();
+
+        // Stop acquisition on the device.
         _camera.StreamGrabber.Stop();
-        _camera.StreamGrabber.ImageGrabbed -= OnImageGrabbed;
 
         IsAcquiring = false;
 
@@ -71,32 +94,42 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     #region Private methods
 
     /// <summary>
-    /// Handles grab results delivered by the stream grabber thread.
+    /// Image acquisition thread.
     /// </summary>
-    private void OnImageGrabbed(object sender, ImageGrabbedEventArgs e)
+    private void ImageAcquisitionThread()
     {
-        using var grabResult = e.GrabResult;
+        // Log debugging info.
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) started", DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
-        try
+        while (_threadIsRunning)
         {
-            if (grabResult.GrabSucceeded == false)
+            try
             {
-                if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
-                    GcLibrary.Logger.LogWarning("Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID}): {error}", DeviceInfo.ModelName, DeviceInfo.UniqueID, grabResult.ErrorDescription);
+                // Wait for a new buffer to be available.
+                using var grabResult = _camera.StreamGrabber.RetrieveResult(3000, TimeoutHandling.ThrowException);
 
-                OnFailedBuffer();
-                return;
+                if (grabResult == null || grabResult.GrabSucceeded == false)
+                    throw new InvalidOperationException($"Failed to grab image: {grabResult.ErrorDescription}");
+
+                // Raise new buffer event.
+                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(grabResult), DateTime.Now));
             }
+            catch (Exception ex)
+            {
+                // Announce failed buffer event.
+                OnFailedBuffer();
 
-            OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(grabResult), DateTime.Now));
-        }
-        catch (Exception ex)
-        {
-            if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
-                GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
+                // Log debugging info.
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                    GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
-            OnFailedBuffer();
+            }
         }
+
+        // Log debugging info.
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
+            GcLibrary.Logger.LogTrace("Image acquisition thread in Device {ModelName} (ID: {ID}) stopped", DeviceInfo.ModelName, DeviceInfo.UniqueID);
     }
 
     /// <summary>
@@ -104,31 +137,29 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     /// </summary>
     /// <param name="grabResult">Grab result.</param>
     /// <returns>Converted <see cref="GcBuffer"/>.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the payload type or pixel type is not supported.</exception>
     private static GcBuffer ToGcBuffer(IGrabResult grabResult)
     {
-        var pixelFormat = ToPixelFormat(grabResult.PixelTypeValue);
+        // Check if the payload type is an image.
+        if (grabResult.PayloadTypeValue != PayloadType.Image)
+            throw new NotSupportedException($"Payload type {grabResult.PayloadTypeValue} is not supported!");
+
+        // Convert pixel type to GenICam pixel format.
+        var pixelFormat = (PixelFormat)(int)grabResult.PixelTypeValue;
         if (pixelFormat == PixelFormat.InvalidPixelFormat)
             throw new NotSupportedException($"Pixel type {grabResult.PixelTypeValue} is not supported!");
 
-        // Pixel data is owned by the grab result, so copy it before the result is released.
-        var data = (byte[])((byte[])grabResult.PixelData).Clone();
+        // Copy pixel data to a new byte array.
+        byte[] imageData = new byte[grabResult.PayloadSize];
+        Buffer.BlockCopy(grabResult.PixelData as byte[], 0, imageData, 0, (int)grabResult.PayloadSize);
 
-        return new GcBuffer(data, (uint)grabResult.Width, (uint)grabResult.Height, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), grabResult.ImageNumber, (ulong)DateTime.Now.Ticks);
-    }
+        // Alternative method using Marshal.Copy:
+        //Marshal.Copy(grabResult.PixelDataPointer, imageData, 0, (int)grabResult.PayloadSize);
 
-    /// <summary>
-    /// Converts pylon pixel type to <see cref="PixelFormat"/>.
-    /// </summary>
-    private static PixelFormat ToPixelFormat(PixelType pixelType)
-    {
-        var name = pixelType.ToString() switch
-        {
-            "RGB8packed" => "RGB8",
-            "BGR8packed" => "BGR8",
-            var other => other
-        };
+        // Use the timestamp from the grab result if available, otherwise use the current PC time.
+        var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp;
 
-        return Enum.TryParse(name, ignoreCase: true, out PixelFormat pixelFormat) ? pixelFormat : PixelFormat.InvalidPixelFormat;
+        return new GcBuffer(imageData, (uint)grabResult.Width, (uint)grabResult.Height, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), grabResult.ID, timeStamp);
     }
 
     #endregion

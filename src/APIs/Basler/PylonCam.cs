@@ -58,7 +58,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
         DeviceInfo.IsAccessible = false;
 
         // Retrieve collection of camera parameters.
-        Parameters = ImportParameters();
+        Parameters = ImportParameters(useReflection: false);
     }
 
     #endregion
