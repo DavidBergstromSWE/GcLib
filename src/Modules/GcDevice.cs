@@ -297,9 +297,9 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     #region Protected Methods (GenApi-related)
 
     /// <summary>
-    /// Imports parameters and features implemented by device into a parameter collection.
+    /// Imports parameters and features implemented by device.
     /// </summary>
-    /// <returns>Collection of parameters.</returns>
+    /// <returns>Collection of device parameters.</returns>
     protected abstract GcDeviceParameterCollection ImportParameters();
 
     /// <summary>

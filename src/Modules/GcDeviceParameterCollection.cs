@@ -59,11 +59,12 @@ public abstract partial class GcDevice : IBufferProducer
         #region Constructors
 
         /// <summary>
-        /// Returns a collection of parameters and features implemented by device.
+        /// Initializes a <see cref="GcDeviceParameterCollection"/> with the specified device, parameters, and failed
+        /// parameter names.
         /// </summary>
-        /// <param name="device">Camera device.</param>
+        /// <param name="device">The device associated with the parameters.</param>
         /// <param name="parameters">List of successfully imported parameters implemented by device.</param>
-        /// <param name="failedParameters">List of parameter names failed to be imported.</param>
+        /// <param name="failedParameters">The names of parameters that failed to be imported.</param>
         public GcDeviceParameterCollection(GcDevice device, List<GcParameter> parameters, List<string> failedParameters)
         {
             _device = device;

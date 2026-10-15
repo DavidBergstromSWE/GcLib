@@ -110,6 +110,9 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
             }
             catch (SpinnakerException ex)
             {
+                // Announce failed buffer event.
+                OnFailedBuffer();
+
                 // Log debugging info.
                 if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
                     GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", _camera.TLDevice.DeviceModelName, _camera.TLDevice.DeviceSerialNumber);
