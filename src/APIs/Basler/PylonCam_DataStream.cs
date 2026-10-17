@@ -121,7 +121,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                 // Raise new buffer event.
                 OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(grabResult), DateTime.Now));
 
-                // Stop acquisition immediately in SingleFrame or MultiFrame acquisition modes.
+                // Stop acquisition if using SingleFrame or MultiFrame acquisition modes and the last image has been grabbed.
                 if (_camera.Parameters.Contains(PLCamera.AcquisitionMode))
                 {
                     var acquisitionMode = _camera.Parameters[PLCamera.AcquisitionMode].GetValue();
