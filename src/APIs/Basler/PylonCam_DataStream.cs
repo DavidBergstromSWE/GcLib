@@ -59,12 +59,12 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
         // Start acquisition on the device.
         _camera.StreamGrabber.Start(strategy: GrabStrategy.OneByOne, grabLoopType: GrabLoop.ProvidedByUser);
 
+        IsAcquiring = true;
+
         // Start image acquisition thread.
         _imageAcquisitionThread = new Thread(ImageAcquisitionThread) { Name = "ImageAcquisitionThread (PylonCam)" };
         _threadIsRunning = true;
         _imageAcquisitionThread.Start();
-
-        IsAcquiring = true;
 
         // Announce event.
         OnAcquisitionStarted();
@@ -78,7 +78,10 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
 
         // Stop image acquisition thread.
         _threadIsRunning = false;
-        _imageAcquisitionThread.Join();
+
+        // Wait for the image acquisition thread to finish.
+        if (ReferenceEquals(Thread.CurrentThread, _imageAcquisitionThread) == false) // Avoid deadlock if StopAcquisition is called from the image acquisition thread.
+            _imageAcquisitionThread.Join();
 
         // Stop acquisition on the device.
         _camera.StreamGrabber.Stop();
@@ -118,16 +121,14 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                 // Raise new buffer event.
                 OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(grabResult), DateTime.Now));
 
-                // Stop acquisition if acquisition mode is SingleFrame or MultiFrame, as the camera will not continue to acquire images after a failed buffer transfer.
+                // Stop acquisition immediately in SingleFrame or MultiFrame acquisition modes.
                 if (_camera.Parameters.Contains(PLCamera.AcquisitionMode))
                 {
                     var acquisitionMode = _camera.Parameters[PLCamera.AcquisitionMode].GetValue();
                     if (acquisitionMode == AcquisitionMode.SingleFrame.ToString() && grabResult.ImageNumber == 1
-                        || acquisitionMode == AcquisitionMode.MultiFrame.ToString() && _camera.Parameters.Contains(PLCamera.AcquisitionFrameCount) && _camera.Parameters[PLCamera.AcquisitionFrameCount].GetValue() == grabResult.ImageNumber)
+                        || acquisitionMode == AcquisitionMode.MultiFrame.ToString() && _camera.Parameters.Contains(PLCamera.AcquisitionFrameCount) && grabResult.ImageNumber == _camera.Parameters[PLCamera.AcquisitionFrameCount].GetValue())
                     {
-                        _camera.StreamGrabber.Stop();
-                        IsAcquiring = false;
-                        OnAcquisitionStopped();
+                        StopAcquisition();
                         break;
                     }
                 }

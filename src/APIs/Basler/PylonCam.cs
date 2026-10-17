@@ -68,8 +68,6 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <inheritdoc/>
     public override void Close()
     {
-        base.Close();
-
         // Stop acquisition (if running).
         if (IsAcquiring)
             StopAcquisition();
@@ -80,6 +78,8 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
             _camera.Close();
 
         _camera.Dispose();
+
+        base.Close();
     }
 
     #endregion
