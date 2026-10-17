@@ -141,6 +141,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     }
 
     /// <inheritdoc/>
+    /// <exception cref="Exception">Thrown when parameter import fails.</exception>
     protected override GcDeviceParameterCollection ImportParameters()
     {
         var parameterDict = new Dictionary<string, GcParameter>();

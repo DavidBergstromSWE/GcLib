@@ -175,7 +175,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
         //Marshal.Copy(grabResult.PixelDataPointer, imageData, 0, (int)grabResult.PayloadSize);
 
         // Use the timestamp from the grab result if available, otherwise use the current PC time.
-        var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp;
+        var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp; // Convert timestamp from grabResult to PC ticks?
 
         return new GcBuffer(imageData, (uint)grabResult.Width, (uint)grabResult.Height, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), grabResult.ImageNumber, timeStamp);
     }
