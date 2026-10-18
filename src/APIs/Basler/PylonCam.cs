@@ -29,6 +29,9 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <exception cref="ArgumentException"></exception>
     public PylonCam(string deviceID = "") : base()
     {
+        // Initialize pylon runtime (if not already initialized).
+        PylonRuntime.Initialize();
+
         var cameraInfos = CameraFinder.Enumerate();
 
         ICameraInfo info;
@@ -44,6 +47,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
         {
             _camera = new Camera(info);
             _camera.ConnectionLost += OnCameraConnectionLost;
+            _camera.CameraOpened += Configuration.AcquireContinuous; // Configure camera for continuous acquisition by default.
             _camera.Open();
         }
         catch (Exception ex)
@@ -67,7 +71,6 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
             // Fallback to reflection-based import if the IParameterCollection enumerator is broken (e.g., due to a bug in the pylon .NET API).
             Parameters = ImportParameters(true);
         }
-
     }
 
     #endregion
@@ -89,6 +92,9 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
         _camera.Dispose();
 
         base.Close();
+
+        // Terminate pylon runtime (if no other cameras are open).
+        //PylonRuntime.Terminate();
     }
 
     #endregion
@@ -133,9 +139,12 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
+        // Initialize pylon runtime (if not already initialized).
+        PylonRuntime.Initialize();
+
         // Note: The following lines can be uncommented for testing purposes to enable camera emulation and enumerate camera emulators.
-        //Environment.SetEnvironmentVariable("PYLON_CAMEMU", "1"); // Enable camera emulation (for testing purposes).
-        //var cameraInfos = CameraFinder.Enumerate(DeviceType.CameraEmulator); // Enumerate all available camera emulators (for testing purposes).
+        Environment.SetEnvironmentVariable("PYLON_CAMEMU", "1"); // Enable camera emulation (for testing purposes).
+        //var cameraInfos = CameraFinder.Enumerate(DeviceType.CameraEmulator); // Only enumerate available camera emulators (for testing purposes).
 
         var cameraInfos = CameraFinder.Enumerate();
         return [.. cameraInfos.Select(GetDeviceInfo)];
