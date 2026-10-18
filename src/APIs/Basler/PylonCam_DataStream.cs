@@ -110,11 +110,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
             try
             {
                 // Wait for a new buffer to be available.
-                using var grabResult = _camera.StreamGrabber.RetrieveResult(3000, TimeoutHandling.ThrowException);
-
-                if (grabResult == null)
-                    throw new InvalidOperationException("Failed to retrieve grab result!");
-
+                using var grabResult = _camera.StreamGrabber.RetrieveResult(3000, TimeoutHandling.ThrowException) ?? throw new InvalidOperationException("Failed to retrieve grab result!");
                 if (grabResult.GrabSucceeded == false)
                     throw new InvalidOperationException($"Failed to grab image: {grabResult.ErrorDescription}");
 
@@ -168,14 +164,16 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
             throw new NotSupportedException($"Pixel type {grabResult.PixelTypeValue} is not supported!");
 
         // Copy pixel data to a new byte array.
-        byte[] imageData = new byte[grabResult.PayloadSize];
-        Buffer.BlockCopy(grabResult.PixelData as byte[], 0, imageData, 0, (int)grabResult.PayloadSize);
+        var pixelData = (byte[])grabResult.PixelData; // Get the pixel data from the grab result
+        byte[] imageData = new byte[pixelData.Length]; // Allocate a new byte array to hold the image data
+        Buffer.BlockCopy(pixelData, 0, imageData, 0, pixelData.Length); // Copy the pixel data to the new byte array
 
         // Alternative method using Marshal.Copy:
         //Marshal.Copy(grabResult.PixelDataPointer, imageData, 0, (int)grabResult.PayloadSize);
 
         // Use the timestamp from the grab result if available, otherwise use the current PC time.
-        var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp; // Convert timestamp from grabResult to PC ticks?
+        // ToDo: Convert timestamp from camera specific ticks to PC ticks
+        var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp;
 
         return new GcBuffer(imageData, (uint)grabResult.Width, (uint)grabResult.Height, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), grabResult.ImageNumber, timeStamp);
     }

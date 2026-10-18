@@ -147,7 +147,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
         var parameterDict = new Dictionary<string, GcParameter>();
         var failedParameterList = new List<string>();
 
-        
+
         // The parameter collection enumerates all user-visible parameters of the camera. 
         foreach (var parameter in _camera.Parameters)
         {
@@ -212,7 +212,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
             switch (value)
             {
                 case IntegerName integerName:
-                    if (parameters.Contains(GetPropertyName(integerName.Name)))
+                    if (parameters.Contains(GetNameFromPath(integerName.Name)))
                     {
                         IParameter parameter = parameters[integerName];
                         if (parameter != null && !parameter.IsEmpty && parameter.IsReadable)
@@ -220,7 +220,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                     }
                     break;
                 case FloatName floatName:
-                    if (parameters.Contains(GetPropertyName(floatName.Name)))
+                    if (parameters.Contains(GetNameFromPath(floatName.Name)))
                     {
                         IParameter parameter = parameters[floatName];
                         if (parameter != null && !parameter.IsEmpty && parameter.IsReadable)
@@ -228,7 +228,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                     }
                     break;
                 case StringName stringName:
-                    if (parameters.Contains(GetPropertyName(stringName.Name)))
+                    if (parameters.Contains(GetNameFromPath(stringName.Name)))
                     {
                         IParameter parameter = parameters[stringName];
                         if (parameter != null && !parameter.IsEmpty && parameter.IsReadable)
@@ -236,7 +236,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                     }
                     break;
                 case EnumName enumName:
-                    if (parameters.Contains(GetPropertyName(enumName.Name)))
+                    if (parameters.Contains(GetNameFromPath(enumName.Name)))
                     {
                         IParameter parameter = parameters[enumName];
                         if (parameter != null && !parameter.IsEmpty && parameter.IsReadable)
@@ -244,7 +244,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                     }
                     break;
                 case BooleanName booleanName:
-                    if (parameters.Contains(GetPropertyName(booleanName.Name)))
+                    if (parameters.Contains(GetNameFromPath(booleanName.Name)))
                     {
                         IParameter parameter = parameters[booleanName];
                         if (parameter != null && !parameter.IsEmpty && parameter.IsReadable)
@@ -252,7 +252,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
                     }
                     break;
                 case CommandName commandName:
-                    if (parameters.Contains(GetPropertyName(commandName.Name)))
+                    if (parameters.Contains(GetNameFromPath(commandName.Name)))
                     {
                         IParameter parameter = parameters[commandName];
                         if (parameter != null && parameter.IsEmpty == false)
@@ -274,10 +274,10 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     /// </summary>
     /// <param name="p">The integer parameter to convert.</param>
     /// <returns>A <see cref="GcInteger"/> representing the integer parameter.</returns>
-    private static GcInteger ToGcInteger(IIntegerParameter p)
+    private GcInteger ToGcInteger(IIntegerParameter p)
     {
         return new GcInteger(name: p.Name,
-                             category: GetCategory(p),
+                             category: GetCategory(p.FullName),
                              value: p.GetValue(),
                              min: p.GetMinimum(),
                              max: p.GetMaximum(),
@@ -293,14 +293,14 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     /// </summary>
     /// <param name="p">The float parameter to convert.</param>
     /// <returns>A <see cref="GcFloat"/> representing the float parameter.</returns>
-    private static GcFloat ToGcFloat(IFloatParameter p)
+    private GcFloat ToGcFloat(IFloatParameter p)
     {
         return new GcFloat(name: p.Name,
-                           category: GetCategory(p),
+                           category: GetCategory(p.FullName),
                            value: p.GetValue(),
                            min: p.GetMinimum(),
                            max: p.GetMaximum(),
-                           increment: (double)(p.GetIncrement() != null? p.GetIncrement() : 0),
+                           increment: (double)(p.GetIncrement() != null ? p.GetIncrement() : 0),
                            isReadable: p.IsReadable,
                            isWritable: p.IsWritable,
                            visibility: GetVisibility(p),
@@ -312,10 +312,10 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     /// </summary>
     /// <param name="p">The string parameter to convert.</param>
     /// <returns>A <see cref="GcString"/> representing the string parameter.</returns>
-    private static GcString ToGcString(IStringParameter p)
+    private GcString ToGcString(IStringParameter p)
     {
         return new GcString(name: p.Name,
-                            category: GetCategory(p),
+                            category: GetCategory(p.FullName),
                             value: p.GetValue(),
                             maxLength: p.GetMaxLength(),
                             isReadable: p.IsReadable,
@@ -329,10 +329,10 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     /// </summary>
     /// <param name="p">The boolean parameter to convert.</param>
     /// <returns>A <see cref="GcBoolean"/> representing the boolean parameter.</returns>
-    private static GcBoolean ToGcBoolean(IBooleanParameter p)
+    private GcBoolean ToGcBoolean(IBooleanParameter p)
     {
         return new GcBoolean(name: p.Name,
-                             category: GetCategory(p),
+                             category: GetCategory(p.FullName),
                              value: p.GetValue(),
                              isReadable: p.IsReadable,
                              isWritable: p.IsWritable,
@@ -345,10 +345,10 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     /// </summary>
     /// <param name="p">The command parameter to convert.</param>
     /// <returns>A <see cref="GcCommand"/> representing the command parameter.</returns>
-    private static GcCommand ToGcCommand(ICommandParameter p)
+    private GcCommand ToGcCommand(ICommandParameter p)
     {
         return new GcCommand(name: p.Name,
-                             category: GetCategory(p),
+                             category: GetCategory(p.FullName),
                              method: p.Execute,
                              visibility: GetVisibility(p),
                              description: GetProperty(p, "Description"));
@@ -360,7 +360,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     /// <remarks>Enumeration entries are numbered by their position in the parameter's values.</remarks>
     /// <param name="p">The enumeration parameter to convert.</param>
     /// <returns>An <see cref="GcEnumeration"/> representing the enumeration parameter.</returns>
-    private static GcEnumeration ToGcEnumeration(IEnumParameter p)
+    private GcEnumeration ToGcEnumeration(IEnumParameter p)
     {
         // Pylon enumerations are string-based, so entries are numbered by their position.
         var entries = p.GetAllValues().Select((symbolic, index) => new GcEnumEntry(symbolic, index)).ToList();
@@ -368,7 +368,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
         var currentEntry = entries.FirstOrDefault(e => e.ValueString == current) ?? new GcEnumEntry(current, -1);
 
         return new GcEnumeration(name: p.Name,
-                                 category: GetCategory(p),
+                                 category: GetCategory(p.FullName),
                                  gcEnumEntry: currentEntry,
                                  gcEnumEntries: entries,
                                  isReadable: p.IsReadable,
@@ -378,12 +378,12 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     }
 
     /// <summary>
-    /// Gets the property name from a slash-separated name.
+    /// Gets property/category name from a slash-separated path.
     /// </summary>
-    /// <param name="fullName">The full name to extract the property name from.</param>
+    /// <param name="fullName">The full name path to extract name from.</param>
     /// <returns>The last non-empty component of <paramref name="fullName"/>, or <paramref name="fullName"/> if it contains no
     /// non-empty components.</returns>
-    private static string GetPropertyName(string fullName)
+    private static string GetNameFromPath(string fullName)
     {
         var parts = fullName.Split('/', StringSplitOptions.RemoveEmptyEntries);
         return parts.Length > 0 ? parts[^1] : fullName;
@@ -401,16 +401,26 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
     }
 
     /// <summary>
-    /// Gets the category of a parameter.
+    /// Gets the category associated with a parameter.
     /// </summary>
-    /// <param name="parameter">The parameter whose category is retrieved.</param>
-    /// <returns>The parameter's category, or "Root" if no category is specified.</returns>
-    private static string GetCategory(IParameter parameter)
+    /// <param name="parameterName">The parameter name to find the category for.</param>
+    /// <returns>The category name, or "Root" if no category is found.</returns>
+    private string GetCategory(string parameterName)
     {
-        var parts = parameter.FullName.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        IEnumerable<string> enumlst = _camera.Parameters.GetParameterRelation(name: "Root", relation: ParameterRelation.ParameterIsCategoryOf, filterInternalParameters: true);
+        foreach (string e in enumlst)
+        {
+            IEnumerable<string> catlst = _camera.Parameters.GetParameterRelation(e, ParameterRelation.ParameterIsCategoryOf, true);
+            foreach (string ce in catlst)
+            {
+                if (ce == parameterName)
+                    return GetNameFromPath(e);
+            }
+        }
 
-        // The last segment is the parameter name, the one before it is its category.
-        return parts.Length >= 2 ? parts[^2].Substring(1) : "Root";
+        // If no category is found, return the second-to-last segment of the parameter name, or "Root" if there are fewer than two segments.
+        var parts = parameterName.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2 ? parts[^2][1..] : "Root";
     }
 
     /// <summary>

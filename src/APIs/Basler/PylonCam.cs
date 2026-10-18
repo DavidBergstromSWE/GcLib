@@ -133,11 +133,11 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        Environment.SetEnvironmentVariable("PYLON_CAMEMU", "1"); // Enable camera emulation (for testing purposes).
-        var cameraInfos = CameraFinder.Enumerate(DeviceType.CameraEmulator); // Enumerate all available camera emulators (for testing purposes).
+        // Note: The following lines can be uncommented for testing purposes to enable camera emulation and enumerate camera emulators.
+        //Environment.SetEnvironmentVariable("PYLON_CAMEMU", "1"); // Enable camera emulation (for testing purposes).
+        //var cameraInfos = CameraFinder.Enumerate(DeviceType.CameraEmulator); // Enumerate all available camera emulators (for testing purposes).
 
-        //var cameraInfos = CameraFinder.Enumerate();
-
+        var cameraInfos = CameraFinder.Enumerate();
         return [.. cameraInfos.Select(GetDeviceInfo)];
     }
 
@@ -149,15 +149,4 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("Pylon", Library.VersionInfo.ToString(), typeof(PylonCam));
 
     #endregion
-}
-
-internal static class CameraInfoExtensions
-{
-    /// <summary>
-    /// Gets the value of a camera info key, or a default value if the key is not available.
-    /// </summary>
-    public static string GetValueOrDefault(this ICameraInfo info, string key, string defaultValue)
-    {
-        return info.ContainsKey(key) ? info[key] : defaultValue;
-    }
 }
