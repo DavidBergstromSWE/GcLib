@@ -79,8 +79,6 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
     /// <inheritdoc/>
     public override void Close()
     {
-        base.Close();
-
         // Stop connection checking timer and dispose of it.
         _checkConnectionTimer.Stop();
         try
@@ -100,6 +98,8 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
         _camera.DeInit();
 
         _camera.Dispose();
+
+        base.Close();
     }
 
     #endregion

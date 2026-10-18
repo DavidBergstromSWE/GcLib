@@ -162,8 +162,6 @@ public sealed partial class PvCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
     /// <inheritdoc/>
     public override void Close()
     {
-        base.Close();
-
         _pvAcquisitionStateManager?.OnAcquisitionStateChanged -= OnAcquisitionStateChanged;
 
         if (_pvPipeline != null)
@@ -194,6 +192,8 @@ public sealed partial class PvCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
 
         _pvDeviceInfo.Dispose();
         _pvSystem.Dispose();
+
+        base.Close();
     }
 
     #endregion

@@ -111,8 +111,6 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
     /// <inheritdoc/>
     public override void Close()
     {
-        base.Close();
-
         // Stop connection checking timer and dispose of it.
         _checkConnectionTimer.Stop();
         try
@@ -123,6 +121,8 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
 
         // Close device.
         _device.Dispose();
+
+        base.Close();
     }
 
     #endregion

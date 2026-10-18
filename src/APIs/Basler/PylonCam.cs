@@ -89,9 +89,6 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
         _camera.Dispose();
 
         base.Close();
-
-        // Terminate pylon runtime (if no other cameras are open).
-        //PylonRuntime.Terminate();
     }
 
     #endregion
