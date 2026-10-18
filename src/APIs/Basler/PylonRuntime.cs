@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using Basler.Pylon;
@@ -20,11 +21,15 @@ internal static class PylonRuntime
     /// <summary>
     /// Initializes the Pylon runtime.
     /// </summary>
+    /// <exception cref="FileNotFoundException">Thrown if the assembly containing the global type is not found.</exception>
+    /// <exception cref="TypeLoadException">Thrown if the global type cannot be loaded.</exception>
     private static readonly Action InitializeRuntime = GetGlobalMethod("PylonInitialize").CreateDelegate<Action>();
 
     /// <summary>
     /// Terminates the Pylon runtime when invoked.
     /// </summary>
+    /// <exception cref="FileNotFoundException">Thrown if the assembly containing the global type is not found.</exception>
+    /// <exception cref="TypeLoadException">Thrown if the global type cannot be loaded.</exception>
     private static readonly Action<bool> TerminateRuntime = GetGlobalMethod("PylonTerminate").CreateDelegate<Action<bool>>();
 
     /// <summary>
@@ -36,6 +41,8 @@ internal static class PylonRuntime
     /// Initializes the Pylon runtime once.
     /// </summary>
     /// <remarks>Subsequent calls have no effect.</remarks>
+    /// <exception cref="FileNotFoundException">Thrown if the assembly containing the global type is not found.</exception>
+    /// <exception cref="TypeLoadException">Thrown if the global type cannot be loaded.</exception>
     internal static void Initialize()
     {
         lock (SyncRoot)
@@ -51,6 +58,8 @@ internal static class PylonRuntime
     /// <summary>
     /// Terminates the runtime if it is initialized; otherwise, does nothing.
     /// </summary>
+    /// <exception cref="FileNotFoundException">Thrown if the assembly containing the global type is not found.</exception>
+    /// <exception cref="TypeLoadException">Thrown if the global type cannot be loaded.</exception>
     internal static void Terminate()
     {
         lock (SyncRoot)
@@ -68,7 +77,8 @@ internal static class PylonRuntime
     /// </summary>
     /// <param name="methodName">The name of the method to retrieve.</param>
     /// <returns>The requested method.</returns>
-    /// <exception cref="MissingMethodException">The global type does not contain a public static method named <paramref name="methodName"/>.</exception>
+    /// <exception cref="FileNotFoundException">Thrown if the assembly containing the global type is not found.</exception>
+    /// <exception cref="TypeLoadException">Thrown if the global type cannot be loaded.</exception>
     private static MethodInfo GetGlobalMethod(string methodName)
     {
         // This SDK exposes the required lifecycle methods on a public method of an internal type.

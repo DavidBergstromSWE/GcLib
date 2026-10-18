@@ -29,9 +29,6 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <exception cref="ArgumentException"></exception>
     public PylonCam(string deviceID = "") : base()
     {
-        // Initialize pylon runtime (if not already initialized).
-        PylonRuntime.Initialize();
-
         var cameraInfos = CameraFinder.Enumerate();
 
         ICameraInfo info;

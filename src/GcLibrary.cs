@@ -237,7 +237,11 @@ public static class GcLibrary
     public static void Close()
     {
         // Terminate Pylon runtime (if initialized).
-        PylonRuntime.Terminate();
+        try
+        {
+            PylonRuntime.Terminate();
+        }
+        catch { }
 
         _availableDeviceClasses.Clear();
         _implementedDeviceClasses.Clear();
