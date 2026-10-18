@@ -309,7 +309,8 @@ public class GcLibraryTests
     public void GetRegisteredDeviceClasses_IsInitialized_ReturnsNonEmptyEnumerable()
     {
         // Arrange
-        GcLibrary.Init();
+        GcLibrary.Init(false);
+        GcLibrary.Register<VirtualCam>();
 
         // Act
         var types = GcLibrary.GetRegisteredDeviceClasses();
