@@ -20,6 +20,9 @@
     <PackageReference Include="System.Drawing.Common" Version="10.0.12" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Basler.Pylon">
+      <HintPath>APIs\Basler\lib\Basler.Pylon.dll</HintPath>
+    </Reference>
     <Reference Include="pco.sdk.net">
       <HintPath>APIs\PCO\lib\pco.sdk.net.dll</HintPath>
     </Reference>
@@ -56,6 +59,14 @@
 			<TargetPath>SC2_Cam.dll</TargetPath>
 		</ContentWithTargetPath>
 	</ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="APIs\Basler\lib\Basler.Pylon.ExternC.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Basler.Pylon.ExternC.dll</TargetPath>
+    </ContentWithTargetPath>
+    <None Include="APIs\Basler\lib\Basler.Pylon.ExternC.dll" />
+  </ItemGroup>
 	
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />

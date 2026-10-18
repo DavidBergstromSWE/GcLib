@@ -71,6 +71,7 @@ public static class GcLibrary
             Register<XiCam>();
             Register<SpinCam>();
             Register<IdsCam>();
+            Register<PylonCam>();
 
             // add more device classes as they are implemented...
         }
@@ -152,7 +153,7 @@ public static class GcLibrary
                 ExceptionDispatchInfo.Capture(inner).Throw();
             }
             throw; // rethrow original TargetInvocationException if there's no inner exception
-        }    
+        }
     }
 
     /// <summary>
@@ -205,7 +206,7 @@ public static class GcLibrary
                 ExceptionDispatchInfo.Capture(inner).Throw();
             }
             throw; // rethrow original TargetInvocationException if there's no inner exception
-        }       
+        }
     }
 
     /// <summary>
