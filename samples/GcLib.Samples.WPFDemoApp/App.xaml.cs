@@ -190,7 +190,7 @@ public partial class App : Application
         var parser = _parser.ParseArguments<Options>(Environment.GetCommandLineArgs())
             .WithParsed(o =>
             {
-                if (o.DeviceClasses == null || !o.DeviceClasses.Any())
+                if (o.DeviceClasses == null || o.DeviceClasses.Any() == false)
                 {
                     GcLibrary.Init(true, Services.GetService<ILogger<App>>());
                 }
@@ -199,7 +199,7 @@ public partial class App : Application
                     GcLibrary.Init(false, Services.GetService<ILogger<App>>());
 
                     // Get all valid device classes in GcLibrary, which are derived from GcDevice and implement IDeviceEnumerator and IDeviceClassDescriptor.
-                    var validDeviceClasses = GcLibraryHelper.GetValidDeviceClasses();
+                    var validDeviceClasses = GcLibrary.GetImplementedDeviceClasses();
 
                     foreach (var deviceClass in o.DeviceClasses)
                     {
