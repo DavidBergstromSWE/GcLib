@@ -47,7 +47,7 @@ public static class GcLibrary
     /// </summary>
     /// <param name="autoRegister">If <see langword="true"/>, all built-in device classes available on the current system are registered. If <see langword="false"/>, registration has to be done manually.</param>
     /// <param name="logger">(Optional) Logger to use for logging events in the library.</param>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown if the library has already been initialized.</exception>
     public static void Init(bool autoRegister = true, ILogger logger = null)
     {
         if (IsInitialized)
@@ -61,15 +61,8 @@ public static class GcLibrary
         // Register all implemented device classes in the library.
         if (autoRegister)
         {
-            Register<VirtualCam>();
-            Register<PcoCam>();
-            Register<PvCam>();
-            Register<XiCam>();
-            Register<SpinCam>();
-            Register<IdsCam>();
-            Register<PylonCam>();
-
-            // add more device classes as they are implemented...
+            foreach (var deviceType in GetImplementedDeviceClasses())
+                Register(deviceType);
         }
 
         Logger.LogDebug("GcLib initialized");
@@ -80,6 +73,7 @@ public static class GcLibrary
     /// </summary>
     /// <typeparam name="TDevice"><see cref="GcDevice"/>-derived type.</typeparam>
     /// <returns>Device class information.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
     public static GcDeviceClassInfo GetDeviceClassInfo<TDevice>() where TDevice : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
     {
         return IsInitialized ? TDevice.DeviceClassInfo : throw new InvalidOperationException("Library needs to be initialized before this information can be retrieved!");
@@ -89,8 +83,8 @@ public static class GcLibrary
     /// Registers a new device class to be used in the library.
     /// </summary>
     /// <typeparam name="TDevice">Device type.</typeparam>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
+    /// <exception cref="ArgumentException">Thrown if the device class is already registered.</exception>
     public static void Register<TDevice>() where TDevice : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
     {
         if (IsInitialized == false)
@@ -123,8 +117,8 @@ public static class GcLibrary
     /// Registers a new device class to be used in the library.
     /// </summary>
     /// <param name="deviceType">The type of the device class to register.</param>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
+    /// <exception cref="ArgumentException">Thrown if the device class is already registered or the type is invalid.</exception>
     public static void Register(Type deviceType)
     {
         if (IsInitialized == false)
@@ -153,8 +147,8 @@ public static class GcLibrary
     /// Unregister a device class from being used in the library.
     /// </summary>
     /// <typeparam name="TDevice">Device type.</typeparam>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
+    /// <exception cref="ArgumentException">Thrown if the device class is not registered.</exception>
     public static void Unregister<TDevice>() where TDevice : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
     {
         if (IsInitialized == false)
@@ -172,8 +166,8 @@ public static class GcLibrary
     /// Unregister a device class from being used in the library.
     /// </summary>
     /// <param name="deviceType">The type of the device class to register.</param>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
+    /// <exception cref="ArgumentException">Thrown if the device class is not registered or the type is invalid.</exception>
     public static void Unregister(Type deviceType)
     {
         if (IsInitialized == false)
@@ -222,11 +216,10 @@ public static class GcLibrary
     }
 
     /// <summary>
-    /// Retrieves device classes registered in the library. 
+    /// Retrieves device classes registered in the library. Only device classes that have been successfully registered can be discovered, enumerated and used.
     /// </summary>
-    /// <remarks>Note: All of the returned classes may not be available on the current system, due to missing drivers, assemblies etc. To check available classes use <see cref="GetAvailableDeviceClasses"/>.</remarks>
     /// <returns>Device classes registered.</returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
     public static IReadOnlyCollection<GcDeviceClassInfo> GetRegisteredDeviceClasses()
     {
         // throw if not initialized?
