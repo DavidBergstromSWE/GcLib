@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Logging;
@@ -15,14 +16,9 @@ public static class GcLibrary
     #region Fields
 
     /// <summary>
-    /// Dictionary storing the device classes implemented in the library (as keys) and their class info (as values).
+    /// Device classes registered on the current system.
     /// </summary>
-    private static readonly Dictionary<Type, GcDeviceClassInfo> _implementedDeviceClasses = [];
-
-    /// <summary>
-    /// Device classes available on the current system (may not be the same as the implemented, due to missing drivers etc).
-    /// </summary>
-    private static readonly List<GcDeviceClassInfo> _availableDeviceClasses = [];
+    private static readonly Dictionary<Type, GcDeviceClassInfo> _registeredDeviceClasses = [];
 
     #endregion
 
@@ -86,7 +82,7 @@ public static class GcLibrary
     /// <returns>Device class information.</returns>
     public static GcDeviceClassInfo GetDeviceClassInfo<TDevice>() where TDevice : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
     {
-        return TDevice.DeviceClassInfo;
+        return IsInitialized ? TDevice.DeviceClassInfo : throw new InvalidOperationException("Library needs to be initialized before this information can be retrieved!");
     }
 
     /// <summary>
@@ -101,11 +97,8 @@ public static class GcLibrary
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
 
         // Check if the device class is already registered.
-        if (_implementedDeviceClasses.ContainsKey(typeof(TDevice)))
+        if (_registeredDeviceClasses.ContainsKey(typeof(TDevice)))
             throw new ArgumentException("A device class of this type is already registered!", typeof(TDevice).Name);
-
-        // Add device class to implemented classes.
-        _implementedDeviceClasses.Add(typeof(TDevice), TDevice.DeviceClassInfo);
 
         try
         {
@@ -113,10 +106,10 @@ public static class GcLibrary
             TDevice.EnumerateDevices();
 
             // Add detected devices to list.
-            _availableDeviceClasses.Add(_implementedDeviceClasses[typeof(TDevice)]);
+            _registeredDeviceClasses.Add(typeof(TDevice), TDevice.DeviceClassInfo);
 
             if (Logger.IsEnabled(LogLevel.Debug))
-                Logger.LogDebug("{DeviceType} registered ({API} v{Version})", _implementedDeviceClasses[typeof(TDevice)].DeviceType.Name, _implementedDeviceClasses[typeof(TDevice)].Name, _implementedDeviceClasses[typeof(TDevice)].Version);
+                Logger.LogDebug("{DeviceType} registered ({API} v{Version})", TDevice.DeviceClassInfo.DeviceType.Name, TDevice.DeviceClassInfo.Name, TDevice.DeviceClassInfo.Version);
         }
         catch (Exception ex)
         {
@@ -167,12 +160,9 @@ public static class GcLibrary
         if (IsInitialized == false)
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
 
-        if (_implementedDeviceClasses.ContainsKey(typeof(TDevice)) == false)
-            throw new ArgumentException("Device class is not registered!", typeof(TDevice).Name);
-
-        if (_availableDeviceClasses.Contains(_implementedDeviceClasses[typeof(TDevice)]))
-            _availableDeviceClasses.Remove(_implementedDeviceClasses[typeof(TDevice)]);
-        _implementedDeviceClasses.Remove(typeof(TDevice));
+        if (_registeredDeviceClasses.ContainsKey(typeof(TDevice)))
+            _registeredDeviceClasses.Remove(typeof(TDevice));
+        else throw new ArgumentException("Device class is not registered!", typeof(TDevice).Name);
 
         if (Logger.IsEnabled(LogLevel.Debug))
             Logger.LogDebug("{DeviceType} unregistered", typeof(TDevice).Name);
@@ -210,13 +200,25 @@ public static class GcLibrary
     }
 
     /// <summary>
-    /// Retrieves device classes in the library which are available on the current system.
+    /// Finds all types in the current application domain that implement <see cref="GcDevice"/>, <see cref="IDeviceEnumerator"/>, and <see cref="IDeviceClassDescriptor"/>.
     /// </summary>
-    /// <returns>Device classes available.</returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public static IReadOnlyCollection<GcDeviceClassInfo> GetAvailableDeviceClasses()
+    /// <returns>A list of Type objects for the discovered device classes.</returns>
+    public static List<Type> GetImplementedDeviceClasses()
     {
-        return IsInitialized ? _availableDeviceClasses : throw new InvalidOperationException("Library needs to be initialized before inquiring this info!");
+        // Use reflection to find all types in the current application domain that implement GcDevice, IDeviceEnumerator, and IDeviceClassDescriptor.
+        return [.. AppDomain.CurrentDomain.GetAssemblies()
+                                          .SelectMany(assembly =>
+                                          {
+                                              try
+                                              {
+                                                  return assembly.GetTypes();
+                                              }
+                                              catch (ReflectionTypeLoadException ex)
+                                              {
+                                                  return ex.Types.Where(t => t != null); // Return only the types that were successfully loaded
+                                              }
+                                          })
+                                          .Where(type => typeof(GcDevice).IsAssignableFrom(type) && typeof(IDeviceEnumerator).IsAssignableFrom(type) && typeof(IDeviceClassDescriptor).IsAssignableFrom(type))]; // Return only the types that implement all three interfaces
     }
 
     /// <summary>
@@ -228,7 +230,7 @@ public static class GcLibrary
     public static IReadOnlyCollection<GcDeviceClassInfo> GetRegisteredDeviceClasses()
     {
         // throw if not initialized?
-        return IsInitialized ? _implementedDeviceClasses.Values : throw new InvalidOperationException("Library needs to be initialized before inquiring this info!");
+        return IsInitialized ? _registeredDeviceClasses.Values : throw new InvalidOperationException("Library needs to be initialized before inquiring this info!");
     }
 
     /// <summary>
@@ -243,8 +245,7 @@ public static class GcLibrary
         }
         catch { }
 
-        _availableDeviceClasses.Clear();
-        _implementedDeviceClasses.Clear();
+        _registeredDeviceClasses.Clear();
 
         IsInitialized = false;
 

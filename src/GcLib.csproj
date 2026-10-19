@@ -39,7 +39,7 @@
 	
 	<ItemGroup>
 		<ContentWithTargetPath Include="APIs\Spinnaker\lib\Spinnaker_v140.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 			<TargetPath>Spinnaker_v140.dll</TargetPath>
 		</ContentWithTargetPath>
 		<None Include="APIs\Spinnaker\lib\Spinnaker_v140.dll" />
@@ -47,7 +47,7 @@
 
 	<ItemGroup>
 		<ContentWithTargetPath Include="APIs\Ximea\lib\xiapi64.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 			<TargetPath>xiapi64.dll</TargetPath>
 		</ContentWithTargetPath>
 		<None Include="APIs\Ximea\lib\xiapi64.dll" />
@@ -55,14 +55,14 @@
 
 	<ItemGroup>
 		<ContentWithTargetPath Include="APIs\PCO\lib\SC2_Cam.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 			<TargetPath>SC2_Cam.dll</TargetPath>
 		</ContentWithTargetPath>
 	</ItemGroup>
 
   <ItemGroup>
     <ContentWithTargetPath Include="APIs\Basler\lib\Basler.Pylon.ExternC.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <TargetPath>Basler.Pylon.ExternC.dll</TargetPath>
     </ContentWithTargetPath>
     <None Include="APIs\Basler\lib\Basler.Pylon.ExternC.dll" />
