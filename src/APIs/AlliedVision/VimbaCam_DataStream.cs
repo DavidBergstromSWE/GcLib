@@ -8,10 +8,16 @@ namespace GcLib;
 
 public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
 {
+    #region Fields
+
     /// <summary>
     /// Stores the acquisition service instance.
     /// </summary>
     private IAcquisition _acquisition;
+
+    #endregion
+
+    #region Public Methods
 
     /// <inheritdoc/>
     public override void StartAcquisition()
@@ -51,6 +57,10 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
         // Notify that acquisition has stopped.
         OnAcquisitionStopped();
     }
+
+    #endregion
+
+    #region Private Methods
 
     /// <summary>
     /// Processes a received frame, validates completion status and pixel format, copies image data into a managed
@@ -99,4 +109,6 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
                 GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
         }
     }
+
+    #endregion
 }

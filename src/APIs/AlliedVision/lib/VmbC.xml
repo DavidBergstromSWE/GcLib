@@ -1,0 +1,150 @@
+<?xml version="1.0" standalone="no" ?>
+<Settings>
+    <Logging>
+        <!--
+        Log Levels
+            - Trace
+            - Debug
+            - Info
+            - Warning
+            - Error
+            - Fatal
+        -->
+        <Level>Warning</Level>
+
+        <!--
+        Formats
+            - AVT_Default       - Allied Visions logging format
+            - Spdlog            - spdlog default format
+            - Syslog_RFC5424    - Syslog (RFC 5424) Not used for syslog sink. Use this for writing syslog protocol to files or sockets.
+            - CEF               - ArcSight Common Event Format.
+            - JSON              - JavaScript Object Notation format, single-line
+            - JSON_Pretty       - JSON, multi-line and indented
+            - GELF              - Graylog Extended Log Format, single-line
+            - GELF_Pretty       - GELF, multi-line and indented
+            - LEEF              - IBM Log Event Extended Format
+            - LEEF_NoSysLog     - LEEF without optional syslog header
+            - ECS               - Elastic Common Schema, single-line
+            - ECS_Pretty        - ECS, multi-line and indented
+            - LTSV              - Labeled Tab-separated Values
+            - Logfmt            - logfmt, recommended format for Splunk
+            - Custom1           - custom format, as specified in CustomFormat1
+            - Custom2           - custom format, as specified in CustomFormat2
+
+            If no Format is specified a default value will be chosen
+        -->
+        <Sinks>
+            <!-- <Sink type="Terminal" format="AVT_Default"/> -->
+            <!-- <Sink type="TerminalColored" format="AVT_Default"/> -->
+            <!-- <Sink type="File" file-path="VmbC.log" format="AVT_Default" mode="Truncate"/> --> <!-- modes: Append, Truncate -->
+            <!-- <Sink type="Syslog"/> -->
+            <!-- <Sink type="SystemdJournal"/> -->
+            <!-- <Sink type="WinEventLog"/> -->
+            <!-- <Sink type="WinDebugConsole" format="AVT_Default"/> -->
+            <!-- <Sink type="TCP" address="127.0.0.1" port="5530" format="JSON"/> -->
+            <!-- <Sink type="UDP" address="127.0.0.1" port="5140" format="Syslog_RFC5424"/> -->
+            <!-- <Sink type="Memento"/> -->
+        </Sinks>
+        <!-- For defining custom patterns use spdlog syntax
+             See: https://github.com/gabime/spdlog/wiki/Custom-formatting
+             Source flags (%@, %s, %g, %#) are not supported.
+             Additionally the following pattern flags are available:
+                %*  Diagnostic Context Data (recommended)
+                %N  Numerical log level
+                %/  Hostname
+        -->
+        <CustomFormat1>%T - VmbC on %/ with severity: [%-8l] - Message: %v - Context: %*</CustomFormat1>
+        <CustomFormat2>[%n] [%^%l%$] %v %*</CustomFormat2>
+    </Logging>
+
+    <TlLoading>
+        <!--
+            Use this to specify paths and directories where VmbC should look for .cti files.
+            If this element is used Vimba X will NOT evaluate the GENICAM_GENTL64_PATH or
+            GENICAM_GENTL32_PATH variable.
+            If this element is missing or empty the values from GENICAM_GENTL64_PATH or
+            GENICAM_GENTL32_PATH are used. The paths listed there are not required though.
+            If the "required" attribute for a path is set to "true" the VmbC initialization will fail in case
+            that path does not contain a transport layer.
+        -->
+        <CtiPaths>
+            <!-- <Path required="false">.</Path> -->
+        </CtiPaths>
+
+        <!--
+            Transport layer rules for filtering certain vendors and interfaces. The rules will be applied from top
+            to bottom until a matching rule is found. Subsequent rules will be ignored then. The rules will be always
+            be applied to all input paths (even if the transport layer is placed next to the VmbC library).
+            vendor-type: Vendor (short) name. Can also be set to wildcard *. If vendor-type is not specified it will be replaced by *.
+            interface-type: Transport layer interface type. Can also be set to wildcard *. If interface-type is not specified it will be replaced by *.
+               Valid interface-types are: GEV, CL, IIDC, UVC, CXP, CLHS, U3V, Custom
+            rule: "allow" or "deny". If the rule attribute is missing the TlRule will be discarded.
+            In case no TlRule element exists only AVT and NET transport layers are enabled.
+        -->
+        <TlRule vendor-type="SVS" interface-type="GEV" rule="deny"/>
+        <TlRule vendor-type="SVS" interface-type="U3V" rule="allow"/>
+        <TlRule vendor-type="EUR" interface-type="*" rule="allow"/>
+        <TlRule vendor-type="AVT" interface-type="*" rule="allow"/>
+        <TlRule vendor-type="NET" interface-type="*" rule="allow"/>
+        <TlRule rule="deny"/>
+
+        <!--
+            Poll for interfaces every XXX ms
+            Default behavior if omitted:    2500 ms
+        -->
+        <InterfacePollingPeriod>2000</InterfacePollingPeriod>
+
+        <!--
+            Polling periods in ms for devices selected by interface type and vendor type.
+            Default behavior if omitted:    2500 ms
+        -->
+		<!-- <DevicePollingPeriod tl-vendor="NET" interface-type="GEV">20</DevicePollingPeriod> -->
+		<DevicePollingPeriod tl-vendor="EUR" interface-type="CL">40000</DevicePollingPeriod>
+
+        <!--
+            Timeout in ms used for updating the interface list
+            Default behavior if omitted:    No timeout used
+        -->
+        <!-- <UpdateDeviceListTimeout tl-vendor="NET" interface-type="GEV">50</UpdateDeviceListTimeout> -->
+
+    </TlLoading>
+
+    <!--
+    Overwrite settings for the legacy support mode for older AVT camera series.
+
+    Attributes:
+    camera-id   Specifies the camera to which the overwrite setting applies.
+                If no camera-id attribute is provided the mode is used as default for all cameras
+                without an explicitly defined rule. This setting is case-sensitive.
+    mode        Auto*   VmbC automatically determines if legacy support is required by evaluation of the
+                        cameras features.
+                On      Legacy support is enforced regardless of the detected camera features.
+                Off     Disables the legacy support.
+                This setting is case-insensitive.
+
+    Default behavior if omitted: Auto-mode
+    -->
+    <!--
+    <LegacyChunkEventMode>
+        <ModeRule camera-id="DEV_123456ABC043" mode="off" />
+        <ModeRule camera-id="DEV_2345678BCEF0" mode="on" />
+        <ModeRule camera-id="DEV_806CBC3018ED" mode="auto" />
+        <ModeRule mode="auto"/>
+    </LegacyChunkEventMode>
+    -->
+	
+	<ThreadScheduling>
+		<!--
+			Enable real-time thread scheduling.
+			
+			Real-time scheduling requires the following conditions to be met:
+			1. This is a Linux operating system build.
+			2. The user is configured for real-time scheduling.
+			3. This value is true.
+			
+            Default behavior if omitted:    false
+		-->
+		<!-- <EnableLinuxRealTimeSchedulingPolicies>false</EnableLinuxRealTimeSchedulingPolicies> -->
+	</ThreadScheduling>
+
+</Settings>

@@ -8,6 +8,8 @@ namespace GcLib;
 
 public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
 {
+    #region Protected Methods
+
     /// <inheritdoc/>
     protected override GcBoolean GetBoolean(string parameterName)
     {
@@ -155,6 +157,10 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
 
         return new GcDeviceParameterCollection(this, parameters, failedParameters);
     }
+
+    #endregion
+
+    #region Private Methods
 
     /// <summary>
     /// Gets the camera feature identified by the specified parameter name.
@@ -322,4 +328,6 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
             _ => throw new Exception($"Unknown visibility value: {feature.Visibility}")
         };
     }
+
+    #endregion
 }

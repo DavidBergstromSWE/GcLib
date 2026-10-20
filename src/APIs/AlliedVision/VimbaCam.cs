@@ -10,6 +10,8 @@ namespace GcLib;
 /// </summary>
 public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
 {
+    #region Fields
+
     /// <summary>
     /// Provides access to camera operations through an <see cref="IOpenCamera"/> implementation.
     /// </summary>
@@ -24,6 +26,10 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// Stores the shared Vmb system instance.
     /// </summary>
     private static IVmbSystem _vmbSystem;
+
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Opens an Allied Vision camera identified by its VmbNET ID or serial number.
@@ -49,6 +55,10 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
         Parameters = ImportParameters();
     }
 
+    #endregion
+
+    #region Properties
+
     /// <inheritdoc/>
     public override uint PayloadSize => _camera.Stream.PayloadSize;
 
@@ -66,6 +76,13 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
     }
 
     /// <inheritdoc/>
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("VmbNET", IVmbSystem.VmbCVersion, typeof(VimbaCam));
+
+    #endregion
+
+    #region Public methods
+
+    /// <inheritdoc/>
     public override void Close()
     {
         if (IsAcquiring)
@@ -79,18 +96,9 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
         base.Close();
     }
 
-    /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("VmbNET", IVmbSystem.VmbCVersion, typeof(VimbaCam));
+    #endregion
 
-    /// <inheritdoc/>
-    public static List<GcDeviceInfo> EnumerateDevices()
-    {
-        // Initialize the Vmb system if it hasn't been initialized yet.
-        _vmbSystem = IVmbSystem.Startup();
-
-        // Enumerate all discovered cameras and return their device info.
-        return [.. _vmbSystem.GetCameras().Select(GetDeviceInfo)];
-    }
+    #region Private methods
 
     /// <summary>
     /// Creates top-level device information from the specified camera metadata.
@@ -110,4 +118,20 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
                                 deviceClass: DeviceClassInfo,
                                 isAccessible: isAccessible);
     }
+
+    #endregion
+
+    #region IDeviceEnumerator
+
+    /// <inheritdoc/>
+    public static List<GcDeviceInfo> EnumerateDevices()
+    {
+        // Initialize the Vmb system if it hasn't been initialized yet.
+        _vmbSystem = IVmbSystem.Startup();
+
+        // Enumerate all discovered cameras and return their device info.
+        return [.. _vmbSystem.GetCameras().Select(GetDeviceInfo)];
+    }
+
+    #endregion
 }
