@@ -10,9 +10,20 @@ namespace GcLib;
 /// </summary>
 public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
 {
-    private readonly IVmbSystem _vmbSystem;
+    /// <summary>
+    /// Provides access to camera operations through an <see cref="IOpenCamera"/> implementation.
+    /// </summary>
     private readonly IOpenCamera _camera;
+
+    /// <summary>
+    /// The capacity of the buffer.
+    /// </summary>
     private uint _bufferCapacity = 4;
+
+    /// <summary>
+    /// Stores the shared Vmb system instance.
+    /// </summary>
+    private static IVmbSystem _vmbSystem;
 
     /// <summary>
     /// Opens an Allied Vision camera identified by its VmbNET ID or serial number.
@@ -20,39 +31,22 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <param name="deviceID">Optional unique camera ID or serial number.</param>
     public VimbaCam(string deviceID = "") : base()
     {
-        _vmbSystem = IVmbSystem.Startup();
-        IOpenCamera camera = null;
+        // Initialize Vmb system if not already done.
+        var cameraInfo = _vmbSystem.GetCameras().FirstOrDefault(camera => string.IsNullOrEmpty(deviceID) // If no device ID is provided, select the first available camera.
+                                                                          || string.Equals(camera.Id, deviceID, StringComparison.OrdinalIgnoreCase) // If a device ID is provided, match it against the camera's VmbNET ID.
+                                                                          || string.Equals(camera.Serial, deviceID, StringComparison.OrdinalIgnoreCase)) // If a device ID is provided, match it against the camera's serial number.
+            ?? throw new ArgumentException("No camera found!", nameof(deviceID)); // Throw an exception if no matching camera is found.
 
-        try
-        {
-            var cameraInfo = _vmbSystem.GetCameras().FirstOrDefault(camera =>
-                string.IsNullOrEmpty(deviceID)
-                || string.Equals(camera.Id, deviceID, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(camera.Serial, deviceID, StringComparison.OrdinalIgnoreCase));
+        // Open the camera.
+        _camera = cameraInfo.Open();
 
-            if (cameraInfo == null)
-                throw new ArgumentException("No camera found!", nameof(deviceID));
+        // Update device info.
+        DeviceInfo = GetDeviceInfo(cameraInfo);
+        DeviceInfo.IsOpen = true;
+        DeviceInfo.IsAccessible = false;
 
-            camera = cameraInfo.Open();
-            _camera = camera;
-            DeviceInfo = GetDeviceInfo(cameraInfo);
-            DeviceInfo.IsOpen = true;
-            DeviceInfo.IsAccessible = false;
-
-            Parameters = ImportParameters();
-        }
-        catch
-        {
-            try
-            {
-                camera?.Dispose();
-            }
-            finally
-            {
-                _vmbSystem.Dispose();
-            }
-            throw;
-        }
+        // Import parameters from the camera.
+        Parameters = ImportParameters();
     }
 
     /// <inheritdoc/>
@@ -77,15 +71,12 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
         if (IsAcquiring)
             StopAcquisition();
 
+        // Dispose unmanaged resources of the camera.
+        _camera?.Dispose();
+
+        //_vmbSystem.Dispose();
+
         base.Close();
-        try
-        {
-            _camera.Dispose();
-        }
-        finally
-        {
-            _vmbSystem.Dispose();
-        }
     }
 
     /// <inheritdoc/>
@@ -94,10 +85,18 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        using var vmbSystem = IVmbSystem.Startup();
-        return [.. vmbSystem.GetCameras().Select(GetDeviceInfo)];
+        // Initialize the Vmb system if it hasn't been initialized yet.
+        _vmbSystem = IVmbSystem.Startup();
+
+        // Enumerate all discovered cameras and return their device info.
+        return [.. _vmbSystem.GetCameras().Select(GetDeviceInfo)];
     }
 
+    /// <summary>
+    /// Creates top-level device information from the specified camera metadata.
+    /// </summary>
+    /// <param name="camera">Camera metadata.</param>
+    /// <returns>A populated <see cref="GcDeviceInfo"/> for the camera, including whether full or exclusive access is available.</returns>
     private static GcDeviceInfo GetDeviceInfo(ICameraInfo camera)
     {
         bool isAccessible = camera.AccessModes.Contains(ICameraInfo.AccessModeValue.Full)
@@ -106,7 +105,7 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
         return new GcDeviceInfo(vendorName: "Allied Vision",
                                 modelName: camera.ModelName ?? string.Empty,
                                 serialNumber: camera.Serial ?? string.Empty,
-                                uniqueID: camera.Id,
+                                uniqueID: camera.Id ?? string.Empty,
                                 userDefinedName: camera.Name ?? string.Empty,
                                 deviceClass: DeviceClassInfo,
                                 isAccessible: isAccessible);
