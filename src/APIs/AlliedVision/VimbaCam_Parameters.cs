@@ -57,7 +57,7 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
             return null; // Return null if the feature is not found or not a string feature.
         return feature.IsReadable() ? ToGcString(feature) : Parameters[parameterName] as GcString;
     }
-    
+
     /// <inheritdoc/>
     protected override string GetParameterValue(string parameterName)
     {
@@ -281,7 +281,7 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
     private static GcEnumeration ToGcEnumeration(IEnumFeature feature)
     {
         // Create a list of GcEnumEntry instances for each available enumeration entry in the feature.
-        var entries = feature.EnumEntriesByName.Values 
+        var entries = feature.EnumEntriesByName.Values
             .Where(entry => entry.IsAvailable) // Filter only available entries
             .Select(entry => new GcEnumEntry(entry.Name, entry.IntValue))
             .ToList();

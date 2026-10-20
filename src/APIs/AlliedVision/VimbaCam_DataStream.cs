@@ -1,8 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
-using VmbNET;
 using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
+using VmbNET;
 
 namespace GcLib;
 
@@ -51,7 +51,7 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
 
         // Unsubscribe from frame received event.
         _camera.FrameReceived -= OnFrameReceived;
-        
+
         IsAcquiring = false;
 
         // Notify that acquisition has stopped.
