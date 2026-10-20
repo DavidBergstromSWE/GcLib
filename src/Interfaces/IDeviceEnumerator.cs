@@ -13,4 +13,9 @@ public interface IDeviceEnumerator
     /// </summary>
     /// <returns>List of available devices.</returns>
     static abstract List<GcDeviceInfo> EnumerateDevices();
+
+    /// <summary>
+    /// Releases resources held by the implementing type (API).
+    /// </summary>
+    static virtual void Dispose() { }
 }

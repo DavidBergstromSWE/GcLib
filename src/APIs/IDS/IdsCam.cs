@@ -152,6 +152,17 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         return devices;
     }
 
+    /// <inheritdoc/>
+    public static void Dispose()
+    {
+        // Close IDS Peak API library.
+        try
+        {
+            Library.Close();
+        }
+        catch { }
+    }
+
     #endregion
 
     #region Private methods

@@ -260,6 +260,11 @@ public sealed partial class PvCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
         return deviceList;
     }
 
+    public static void Dispose()
+    {
+        // No specific cleanup required for eBUS SDK.
+    }
+
     #endregion
 
     #region IDeviceClassDescriptor

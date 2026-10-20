@@ -154,8 +154,14 @@ public static class GcLibrary
         if (IsInitialized == false)
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
 
-        if (_registeredDeviceClasses.ContainsKey(typeof(TDevice)))
+        if (IsRegistered<TDevice>())
+        {
+            // Dispose resources used by API.
+            TDevice.Dispose();
+
+            // Remove device class from list.
             _registeredDeviceClasses.Remove(typeof(TDevice));
+        }
         else throw new ArgumentException("Device class is not registered!", typeof(TDevice).Name);
 
         if (Logger.IsEnabled(LogLevel.Debug))
@@ -227,18 +233,37 @@ public static class GcLibrary
     }
 
     /// <summary>
+    /// Determines whether the specified device class is registered for being used in the library.
+    /// </summary>
+    /// <typeparam name="TDevice">The device class to check.</typeparam>
+    /// <returns><see langword="true"/> if the type is registered; otherwise, <see langword="false"/>.</returns>
+    public static bool IsRegistered<TDevice>() where TDevice : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+    {
+        return _registeredDeviceClasses.ContainsKey(typeof(TDevice));
+    }
+
+    /// <summary>
+    /// Determines whether a specific device class is registered for being used in the library.
+    /// </summary>
+    /// <param name="deviceType">The device class to check.</param>
+    /// <returns><see langword="true"/> if the type is registered; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentException">The type does not derive from <see cref="GcDevice"/> or does not implement <see cref="IDeviceEnumerator"/> and
+    /// <see cref="IDeviceClassDescriptor"/>.</exception>
+    public static bool IsRegistered(Type deviceType)
+    {
+        // Validate that the provided type is a subclass of GcDevice and implements required interfaces.
+        if (!typeof(GcDevice).IsAssignableFrom(deviceType) || !typeof(IDeviceEnumerator).IsAssignableFrom(deviceType) || !typeof(IDeviceClassDescriptor).IsAssignableFrom(deviceType))
+            throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice)} and implement {nameof(IDeviceEnumerator)} and {nameof(IDeviceClassDescriptor)}.", nameof(deviceType));
+        return _registeredDeviceClasses.ContainsKey(deviceType);
+    }
+
+    /// <summary>
     /// Closes library, by cleaning up resources set during initialization. To use the library again it needs to be re-initialized.
     /// </summary>
     public static void Close()
     {
-        // Terminate Pylon runtime (if initialized).
-        try
-        {
-            PylonRuntime.Terminate();
-        }
-        catch { }
-
-        _registeredDeviceClasses.Clear();
+        foreach (var deviceType in GetRegisteredDeviceClasses())
+            Unregister(deviceType.DeviceType);
 
         IsInitialized = false;
 
