@@ -181,6 +181,11 @@ public sealed partial class XiCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
         return deviceList;
     }
 
+    public static void Dispose()
+    {
+        // No specific cleanup required for xiAPI.NET
+    }
+
     #endregion
 
     #region IDeviceClassDescriptor

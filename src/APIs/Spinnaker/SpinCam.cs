@@ -151,6 +151,12 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
         return deviceList;
     }
 
+    /// <inheritdoc/>
+    public static void Dispose()
+    {
+        // SpinnakerNET does not require explicit disposal of the system, as it is managed by the library itself.
+    }
+
     #endregion
 
     #region IDeviceClassDescriptor

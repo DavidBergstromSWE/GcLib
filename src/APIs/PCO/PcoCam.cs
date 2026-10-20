@@ -160,6 +160,16 @@ public sealed partial class PcoCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         return deviceList;
     }
 
+    public static void Dispose()
+    {
+        // Close PCO SDK library.
+        // ToDo: Check if this is necessary (or if it is already closed by the SDK).
+        try
+        {
+            //LibWrapper.PCO_CloseLib();
+        }
+        catch { }
+    }
 
     #endregion
 

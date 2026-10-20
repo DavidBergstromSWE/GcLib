@@ -95,6 +95,12 @@ public sealed partial class VirtualCam : GcDevice, IDeviceEnumerator, IDeviceCla
         return [GetDeviceInfo("VirtualCam1"), GetDeviceInfo("VirtualCam2")];
     }
 
+    /// <inheritdoc/>
+    public static void Dispose()
+    {
+        // No specific cleanup required for VirtualCam.
+    }
+
     #endregion
 
     #region IDeviceClassDescriptor

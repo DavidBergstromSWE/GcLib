@@ -144,6 +144,13 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
         return [.. cameraInfos.Select(GetDeviceInfo)];
     }
 
+    /// <inheritdoc/>
+    public static void Dispose()
+    {
+        // Terminate pylon runtime (if initialized).
+        PylonRuntime.Terminate();
+    }
+
     #endregion
 
     #region IDeviceClassDescriptor

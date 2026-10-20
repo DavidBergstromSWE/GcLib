@@ -91,8 +91,6 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
         // Dispose unmanaged resources of the camera.
         _camera?.Dispose();
 
-        //_vmbSystem.Dispose();
-
         base.Close();
     }
 
@@ -131,6 +129,14 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
 
         // Enumerate all discovered cameras and return their device info.
         return [.. _vmbSystem.GetCameras().Select(GetDeviceInfo)];
+    }
+
+    /// <inheritdoc/>
+    public static void Dispose()
+    {
+        // Dispose unmanaged resources of the API.
+        _vmbSystem?.Dispose();
+        _vmbSystem?.Shutdown();
     }
 
     #endregion
