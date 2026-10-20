@@ -6,8 +6,9 @@ Currently supported APIs are:
 [Ximea xiAPI.NET](https://www.ximea.com/support/wiki/apis/xiAPINET) (v4.33),
 [FLIR Spinnaker SDK](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) (v4.3),
 [IDS Peak](https://en.ids-imaging.com/ids-peak.html) (v1.17),
-[PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (v1.35) and
-[Basler Pylon](https://www.baslerweb.com/en/software/pylon/sdk/) (v.12.2)
+[PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (v1.35),
+[Basler Pylon](https://www.baslerweb.com/en/software/pylon/sdk/) (v.12.2) and
+[Allied Vision Vimba](https://www.alliedvision.com/en/support/software-downloads/vimba-x-sdk/vimba-x)) (v1.3.4).
 
 > [!NOTE]
 > Please note that some APIs may require a license and driver installation.
