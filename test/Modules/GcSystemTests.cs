@@ -82,6 +82,23 @@ public class GcSystemTests
     }
 
     [TestMethod]
+    public void UpdateDeviceList_RegisteredDevices_EnumeratedDevicesAreAddedToDeviceList()
+    {
+        // Arrange
+        _system = new GcSystem();
+        VirtualCam.NumberOfAvailableDevices = 2;
+
+        // Act
+        _system.UpdateDeviceList();
+        var devices = _system.GetDeviceList();
+
+        // Assert
+        Assert.HasCount(2, devices);
+        Assert.AreEqual("VirtualCam1", devices[0].UniqueID);
+        Assert.AreEqual("VirtualCam2", devices[1].UniqueID);
+    }
+
+    [TestMethod]
     public void UpdateDeviceList_SecondTime_DeviceListIsNotChanged()
     {
         // Arrange

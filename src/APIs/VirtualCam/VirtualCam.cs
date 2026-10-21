@@ -23,6 +23,11 @@ public sealed partial class VirtualCam : GcDevice, IDeviceFactory<VirtualCam>
     /// </summary>
     public static int DeviceConnectionDelay { get; set; } = 0;
 
+    /// <summary>
+    /// Gets or sets the number of devices that will be discovered when <see cref="EnumerateDevices"/> is called.
+    /// </summary>
+    public static uint NumberOfAvailableDevices { get; set; } = 2;
+
     #endregion
 
     #region Constructors
@@ -91,8 +96,12 @@ public sealed partial class VirtualCam : GcDevice, IDeviceFactory<VirtualCam>
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        // Create two available devices.
-        return [GetDeviceInfo("VirtualCam1"), GetDeviceInfo("VirtualCam2")];
+        // Create available devices.
+        var devices = new List<GcDeviceInfo>();
+        for (uint i = 1; i <= NumberOfAvailableDevices; i++)
+            devices.Add(GetDeviceInfo($"VirtualCam{i}"));
+
+        return devices;
     }
 
     /// <inheritdoc/>

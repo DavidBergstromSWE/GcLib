@@ -5,8 +5,8 @@ namespace GcLib;
 /// <summary>
 /// Factory for creating devices of a specific type derived from <see cref="GcDevice"/>.
 /// </summary>
-/// <typeparam name="T">The device type created by the factory; must derive from <see cref="GcDevice"/>.</typeparam>
-public interface IDeviceFactory<T> where T : GcDevice
+/// <typeparam name="TDevice">The device type created by the factory; must derive from <see cref="GcDevice"/>.</typeparam>
+public interface IDeviceFactory<TDevice> where TDevice : GcDevice
 {
     /// <summary>
     /// Gets the device class information for the implementing device type.
@@ -18,7 +18,7 @@ public interface IDeviceFactory<T> where T : GcDevice
     /// </summary>
     /// <param name="deviceInfo">Information used to create the device.</param>
     /// <returns>The created device.</returns>
-    static abstract T CreateDevice(GcDeviceInfo deviceInfo);
+    static abstract TDevice CreateDevice(GcDeviceInfo deviceInfo);
 
     /// <summary>
     /// Enumerates all available devices of the implementing device type.

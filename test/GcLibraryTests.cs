@@ -286,6 +286,74 @@ public class GcLibraryTests
 
     #endregion
 
+    #region IsRegisteredTests
+
+    [TestMethod]
+    public void IsRegisteredGeneric_DeviceClassIsNotRegistered_ReturnsFalse()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+
+        // Act
+        bool isRegistered = GcLibrary.IsRegistered<VirtualCam>();
+
+        // Assert
+        Assert.IsFalse(isRegistered);
+    }
+
+    [TestMethod]
+    public void IsRegisteredGeneric_DeviceClassIsRegistered_ReturnsTrue()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        GcLibrary.Register<VirtualCam>();
+
+        // Act
+        bool isRegistered = GcLibrary.IsRegistered<VirtualCam>();
+
+        // Assert
+        Assert.IsTrue(isRegistered);
+    }
+
+    [TestMethod]
+    public void IsRegisteredNonGeneric_DeviceClassIsNotRegistered_ReturnsFalse()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+
+        // Act
+        bool isRegistered = GcLibrary.IsRegistered(typeof(VirtualCam));
+
+        // Assert
+        Assert.IsFalse(isRegistered);
+    }
+
+    [TestMethod]
+    public void IsRegisteredNonGeneric_DeviceClassIsRegistered_ReturnsTrue()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        GcLibrary.Register<VirtualCam>();
+
+        // Act
+        bool isRegistered = GcLibrary.IsRegistered(typeof(VirtualCam));
+
+        // Assert
+        Assert.IsTrue(isRegistered);
+    }
+
+    [TestMethod]
+    public void IsRegisteredNonGeneric_TypeIsNotDeviceClass_ThrowsArgumentException()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => GcLibrary.IsRegistered(typeof(string)));
+    }
+
+    #endregion
+
     #region GetImplementedDeviceClassesTests
 
     [TestMethod]
@@ -338,6 +406,21 @@ public class GcLibraryTests
 
         // Assert
         Assert.IsFalse(GcLibrary.IsInitialized);
+    }
+
+    [TestMethod]
+    public void Close_RegisteredDeviceClass_IsUnregistered()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        GcLibrary.Register<VirtualCam>();
+
+        // Act
+        GcLibrary.Close();
+
+        // Assert
+        Assert.IsFalse(GcLibrary.IsInitialized);
+        Assert.IsFalse(GcLibrary.IsRegistered<VirtualCam>());
     }
 
     [TestMethod]
