@@ -65,11 +65,18 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         // Create new empty device list.
         var deviceList = new List<GcDeviceInfo>();
 
-        // Enumerate devices detected of all registered classes.
-        foreach (var factory in GcLibrary.GetDeviceFactories().ToList())
+        // Retrieve device classes registered.
+        var registeredDeviceClasses = new List<GcDeviceClassInfo>(GcLibrary.GetRegisteredDeviceClasses());
+
+        // Enumerate devices detected of all available classes.
+        foreach (Type type in registeredDeviceClasses.Select(item => item.DeviceType))
         {
+            // Invoke device enumeration for device class.
+            var devices = (List<GcDeviceInfo>)type.GetMethod(nameof(IDeviceFactory<>.EnumerateDevices))
+                                                  .Invoke(type, null);
+
             // Add detected devices to list.
-            deviceList.AddRange(factory.EnumerateDevices());
+            deviceList.AddRange(devices);
         }
 
         // Check connected device list for overlapping or missing items (devices already connected may or may not be discoverable, depending on API).
@@ -201,7 +208,7 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     /// </summary>
     private static GcDevice CreateDevice(GcDeviceInfo deviceInfo)
     {
-        return GcLibrary.GetDeviceFactory(deviceInfo.DeviceClassInfo.DeviceType).CreateDevice(deviceInfo);
+        return GcLibrary.GetDeviceFactory(deviceInfo.DeviceClassInfo.DeviceType)(deviceInfo);
     }
 
     /// <summary>

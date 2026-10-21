@@ -21,9 +21,9 @@ public static class GcLibrary
     private static readonly Dictionary<Type, GcDeviceClassInfo> _registeredDeviceClasses = [];
 
     /// <summary>
-    /// Factories of registered device classes, used for creating and enumerating devices.
+    /// Factory methods of registered device classes.
     /// </summary>
-    private static readonly Dictionary<Type, IDeviceClassFactory> _deviceFactories = [];
+    private static readonly Dictionary<Type, Func<GcDeviceInfo, GcDevice>> _deviceFactories = [];
 
     #endregion
 
@@ -107,8 +107,8 @@ public static class GcLibrary
             // Add detected devices to list.
             _registeredDeviceClasses.Add(typeof(TDevice), TDevice.DeviceClassInfo);
 
-            // Add factory for creating and enumerating devices of this class.
-            _deviceFactories.Add(typeof(TDevice), new DeviceClassFactory<TDevice>());
+            // Add factory method for creating devices of this class.
+            _deviceFactories.Add(typeof(TDevice), TDevice.CreateDevice);
 
             if (Logger.IsEnabled(LogLevel.Debug))
                 Logger.LogDebug("{DeviceType} registered ({API} v{Version})", TDevice.DeviceClassInfo.DeviceType.Name, TDevice.DeviceClassInfo.Name, TDevice.DeviceClassInfo.Version);
@@ -170,7 +170,7 @@ public static class GcLibrary
             // Remove device class from list.
             _registeredDeviceClasses.Remove(typeof(TDevice));
 
-            // Remove factory of this device class.
+            // Remove factory method for creating devices of this class.
             _deviceFactories.Remove(typeof(TDevice));
         }
         else throw new ArgumentException("Device class is not registered!", typeof(TDevice).Name);
@@ -243,21 +243,12 @@ public static class GcLibrary
     }
 
     /// <summary>
-    /// Retrieves the factories of all registered device classes.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
-    internal static IReadOnlyCollection<IDeviceClassFactory> GetDeviceFactories()
-    {
-        return IsInitialized ? _deviceFactories.Values : throw new InvalidOperationException("Library needs to be initialized before inquiring this info!");
-    }
-
-    /// <summary>
-    /// Retrieves the factory of a registered device class.
+    /// Retrieves the factory method of a registered device class.
     /// </summary>
     /// <param name="deviceType">The registered device class.</param>
-    /// <returns>Factory of the device class.</returns>
+    /// <returns>Factory method creating devices of the class.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the device class is not registered.</exception>
-    internal static IDeviceClassFactory GetDeviceFactory(Type deviceType)
+    internal static Func<GcDeviceInfo, GcDevice> GetDeviceFactory(Type deviceType)
     {
         return _deviceFactories.TryGetValue(deviceType, out var factory) ? factory : throw new InvalidOperationException($"Device class {deviceType.Name} is not registered!");
     }
