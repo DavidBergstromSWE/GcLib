@@ -69,11 +69,10 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         var registeredDeviceClasses = new List<GcDeviceClassInfo>(GcLibrary.GetRegisteredDeviceClasses());
 
         // Enumerate devices detected of all available classes.
-        foreach (Type type in registeredDeviceClasses.Select(item => item.DeviceType))
+        foreach (GcDeviceClassInfo deviceClassInfo in registeredDeviceClasses)
         {
             // Invoke device enumeration for device class.
-            var devices = (List<GcDeviceInfo>)type.GetMethod(nameof(IDeviceFactory<>.EnumerateDevices))
-                                                  .Invoke(type, null);
+            var devices = GcLibrary.GetDeviceEnumerator(deviceClassInfo.DeviceType)();
 
             // Add detected devices to list.
             deviceList.AddRange(devices);

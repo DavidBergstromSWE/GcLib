@@ -25,6 +25,11 @@ public static class GcLibrary
     /// </summary>
     private static readonly Dictionary<Type, Func<GcDeviceInfo, GcDevice>> _deviceFactories = [];
 
+    /// <summary>
+    /// Device enumeration methods of registered device classes.
+    /// </summary>
+    private static readonly Dictionary<Type, Func<List<GcDeviceInfo>>> _deviceEnumerators = [];
+
     #endregion
 
     #region Properties
@@ -107,8 +112,9 @@ public static class GcLibrary
             // Add detected devices to list.
             _registeredDeviceClasses.Add(typeof(TDevice), TDevice.DeviceClassInfo);
 
-            // Add factory method for creating devices of this class.
+            // Add factory and enumeration methods for this device class.
             _deviceFactories.Add(typeof(TDevice), TDevice.CreateDevice);
+            _deviceEnumerators.Add(typeof(TDevice), TDevice.EnumerateDevices);
 
             if (Logger.IsEnabled(LogLevel.Debug))
                 Logger.LogDebug("{DeviceType} registered ({API} v{Version})", TDevice.DeviceClassInfo.DeviceType.Name, TDevice.DeviceClassInfo.Name, TDevice.DeviceClassInfo.Version);
@@ -170,8 +176,9 @@ public static class GcLibrary
             // Remove device class from list.
             _registeredDeviceClasses.Remove(typeof(TDevice));
 
-            // Remove factory method for creating devices of this class.
+            // Remove factory and enumeration methods for this device class.
             _deviceFactories.Remove(typeof(TDevice));
+            _deviceEnumerators.Remove(typeof(TDevice));
         }
         else throw new ArgumentException("Device class is not registered!", typeof(TDevice).Name);
 
@@ -251,6 +258,17 @@ public static class GcLibrary
     internal static Func<GcDeviceInfo, GcDevice> GetDeviceFactory(Type deviceType)
     {
         return _deviceFactories.TryGetValue(deviceType, out var factory) ? factory : throw new InvalidOperationException($"Device class {deviceType.Name} is not registered!");
+    }
+
+    /// <summary>
+    /// Retrieves the enumeration method of a registered device class.
+    /// </summary>
+    /// <param name="deviceType">The registered device class.</param>
+    /// <returns>A method enumerating devices of the class.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the device class is not registered.</exception>
+    internal static Func<List<GcDeviceInfo>> GetDeviceEnumerator(Type deviceType)
+    {
+        return _deviceEnumerators.TryGetValue(deviceType, out var enumerate) ? enumerate : throw new InvalidOperationException($"Device class {deviceType.Name} is not registered!");
     }
 
     /// <summary>
