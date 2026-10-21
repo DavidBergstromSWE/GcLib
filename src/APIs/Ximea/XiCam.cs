@@ -10,7 +10,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to xiAPI.NET from Ximea GmbH.
 /// </summary>
-public sealed partial class XiCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+public sealed partial class XiCam : GcDevice, IDeviceFactory<XiCam>
 {
     #region Fields
 
@@ -156,12 +156,12 @@ public sealed partial class XiCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
 
     #endregion
 
-    #region IDeviceEnumerator
+    #region IDeviceFactory
 
-    /// <summary>
-    /// Enumerates and returns a list of available devices of type <see cref="XiCam"/>.
-    /// </summary>
-    /// <returns>List of available devices.</returns>
+    /// <inheritdoc/>
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("xiApi.NET", FileHelper.GetAssemblyFileVersion("xiApi.NETX64.dll"), typeof(XiCam));
+
+    /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
         var xiCamEnum = new xiCamEnum();
@@ -181,17 +181,17 @@ public sealed partial class XiCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
         return deviceList;
     }
 
+    /// <inheritdoc/>
+    public static XiCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new XiCam(deviceInfo.UniqueID);
+    }
+
+    /// <inheritdoc/>
     public static void Dispose()
     {
         // No specific cleanup required for xiAPI.NET
     }
-
-    #endregion
-
-    #region IDeviceClassDescriptor
-
-    /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("xiApi.NET", FileHelper.GetAssemblyFileVersion("xiApi.NETX64.dll"), typeof(XiCam));
 
     #endregion
 }

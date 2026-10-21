@@ -7,7 +7,7 @@ using Basler.Pylon;
 
 namespace GcLib;
 
-public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
+public sealed partial class PylonCam
 {
     /// <inheritdoc/>
     protected override GcBoolean GetBoolean(string parameterName)

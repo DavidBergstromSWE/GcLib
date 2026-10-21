@@ -9,7 +9,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to the IDS Peak API from IDS Imaging Development Systems.
 /// </summary>
-public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+public sealed partial class IdsCam : GcDevice, IDeviceFactory<IdsCam>
 {
     #region Private fields
 
@@ -127,19 +127,12 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
 
     #endregion
 
-    #region IDeviceClassDescriptor
+    #region IDeviceFactory
 
     /// <inheritdoc/>
     public static GcDeviceClassInfo DeviceClassInfo { get; }
 
-    #endregion
-
-    #region IDeviceEnumerator
-
-    /// <summary>
-    /// Enumerates and returns a list of available devices of type <see cref="IdsCam"/>.
-    /// </summary>
-    /// <returns>List of available devices.</returns>
+    /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
         var deviceManager = DeviceManager.Instance();
@@ -150,6 +143,12 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
             devices.Add(GetDeviceInfo(deviceManager.Devices()[i]));
 
         return devices;
+    }
+
+    /// <inheritdoc/>
+    public static IdsCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new IdsCam(deviceInfo.UniqueID);
     }
 
     /// <inheritdoc/>
@@ -209,5 +208,5 @@ public sealed partial class IdsCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         OnConnectionLost();
     }
 
-    #endregion 
+    #endregion
 }

@@ -9,7 +9,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to the PCO SDK from PCO Imaging (PCO AG).
 /// </summary>
-public sealed partial class PcoCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+public sealed partial class PcoCam : GcDevice, IDeviceFactory<PcoCam>
 {
     #region Fields
 
@@ -120,12 +120,12 @@ public sealed partial class PcoCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
 
     #endregion
 
-    #region IDeviceEnumerator
+    #region IDeviceFactory
 
-    /// <summary>
-    /// Enumerates and returns a list of available devices of type <see cref="PcoCam"/>.
-    /// </summary>
-    /// <returns>List of available devices.</returns>
+    /// <inheritdoc/>
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("pco.sdk.net", FileHelper.GetAssemblyFileVersion("SC2_Cam.dll"), typeof(PcoCam));
+
+    /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
         var deviceList = new List<GcDeviceInfo>();
@@ -160,23 +160,23 @@ public sealed partial class PcoCam : GcDevice, IDeviceEnumerator, IDeviceClassDe
         return deviceList;
     }
 
+    /// <inheritdoc/>
+    public static PcoCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new PcoCam(deviceInfo.UniqueID);
+    }
+
+    /// <inheritdoc/>
     public static void Dispose()
     {
         // Close PCO SDK library.
         // ToDo: Check if this is necessary (or if it is already closed by the SDK).
         try
         {
-            //LibWrapper.PCO_CloseLib();
+            //LibWrapper.PCO_CloseLib(); // needs to be added to the PCO SDK wrapper (currently not available)
         }
         catch { }
     }
-
-    #endregion
-
-    #region IDeviceClassDescriptor
-
-    /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("pco.sdk.net", FileHelper.GetAssemblyFileVersion("SC2_Cam.dll"), typeof(PcoCam));
 
     #endregion
 }

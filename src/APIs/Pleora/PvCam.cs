@@ -8,7 +8,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to the eBUS SDK from Pleora Technologies.
 /// </summary>
-public sealed partial class PvCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+public sealed partial class PvCam : GcDevice, IDeviceFactory<PvCam>
 {
     #region Fields
 
@@ -219,12 +219,12 @@ public sealed partial class PvCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
 
     #endregion
 
-    #region IDeviceEnumerator
+    #region IDeviceFactory
 
-    /// <summary>
-    /// Enumerates and returns a list of available devices of type <see cref="PvCam"/>.
-    /// </summary>
-    /// <returns>List of available devices.</returns>
+    /// <inheritdoc/>
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("eBUS SDK", FileHelper.GetAssemblyFileVersion("PvDotNet.dll"), typeof(PvCam));
+
+    /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
         var deviceList = new List<GcDeviceInfo>();
@@ -260,17 +260,17 @@ public sealed partial class PvCam : GcDevice, IDeviceEnumerator, IDeviceClassDes
         return deviceList;
     }
 
+    /// <inheritdoc/>
+    public static PvCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new PvCam(deviceInfo.UniqueID);
+    }
+
+    /// <inheritdoc/>
     public static void Dispose()
     {
         // No specific cleanup required for eBUS SDK.
     }
-
-    #endregion
-
-    #region IDeviceClassDescriptor
-
-    /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("eBUS SDK", FileHelper.GetAssemblyFileVersion("PvDotNet.dll"), typeof(PvCam));
 
     #endregion
 }

@@ -8,7 +8,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to Allied Vision's Vimba X SDK.
 /// </summary>
-public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+public sealed partial class VimbaCam : GcDevice, IDeviceFactory<VimbaCam>
 {
     #region Fields
 
@@ -75,9 +75,6 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
         }
     }
 
-    /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("VmbNET", IVmbSystem.VmbCVersion, typeof(VimbaCam));
-
     #endregion
 
     #region Public methods
@@ -119,7 +116,10 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
 
     #endregion
 
-    #region IDeviceEnumerator
+    #region IDeviceFactory
+
+    /// <inheritdoc/>
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("VmbNET", IVmbSystem.VmbCVersion, typeof(VimbaCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
@@ -137,6 +137,12 @@ public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClass
         // Dispose unmanaged resources of the API.
         _vmbSystem?.Dispose();
         _vmbSystem?.Shutdown();
+    }
+
+    /// <inheritdoc/>
+    public static VimbaCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new VimbaCam(deviceInfo.UniqueID);
     }
 
     #endregion

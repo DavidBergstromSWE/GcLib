@@ -65,18 +65,11 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         // Create new empty device list.
         var deviceList = new List<GcDeviceInfo>();
 
-        // Retrieve device classes registered.
-        var registeredDeviceClasses = new List<GcDeviceClassInfo>(GcLibrary.GetRegisteredDeviceClasses());
-
-        // Enumerate devices detected of all available classes.
-        foreach (Type type in registeredDeviceClasses.Select(item => item.DeviceType))
+        // Enumerate devices detected of all registered classes.
+        foreach (var factory in GcLibrary.GetDeviceFactories().ToList())
         {
-            // Invoke device enumeration for device class.
-            var devices = (List<GcDeviceInfo>)type.GetMethod(nameof(IDeviceEnumerator.EnumerateDevices))
-                                                  .Invoke(type, null);
-
             // Add detected devices to list.
-            deviceList.AddRange(devices);
+            deviceList.AddRange(factory.EnumerateDevices());
         }
 
         // Check connected device list for overlapping or missing items (devices already connected may or may not be discoverable, depending on API).
@@ -148,8 +141,8 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         if (_connectedDevices.Any(device => device.DeviceInfo.UniqueID == deviceInfo.UniqueID))
             throw new InvalidOperationException($"Device {deviceInfo.ModelName} of ID {deviceInfo.UniqueID} is already open!");
 
-        // Instantiate new device (will throw TargetInvocatonException if constructor fails).
-        device = (GcDevice)Activator.CreateInstance(deviceInfo.DeviceClassInfo.DeviceType, uniqueID);
+        // Instantiate using factory method of the device class.
+        device = CreateDevice(deviceInfo);
 
         // Log information.
         if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
@@ -202,6 +195,14 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     #endregion
 
     #region Private methods
+
+    /// <summary>
+    /// Creates a device using the factory method of its registered device class.
+    /// </summary>
+    private static GcDevice CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return GcLibrary.GetDeviceFactory(deviceInfo.DeviceClassInfo.DeviceType).CreateDevice(deviceInfo);
+    }
 
     /// <summary>
     /// Eventhandling method to <see cref="GcDevice.Closed"/> events, removing the device from the list of connected devices.

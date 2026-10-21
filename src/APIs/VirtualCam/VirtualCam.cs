@@ -5,7 +5,7 @@ namespace GcLib;
 /// <summary>
 /// Virtual device class, for a software simulation of a physical camera.
 /// </summary>
-public sealed partial class VirtualCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+public sealed partial class VirtualCam : GcDevice, IDeviceFactory<VirtualCam>
 {
     #region Fields
 
@@ -83,12 +83,12 @@ public sealed partial class VirtualCam : GcDevice, IDeviceEnumerator, IDeviceCla
 
     #endregion
 
-    #region IDeviceEnumerator
+    #region IDeviceFactory
 
-    /// <summary>
-    /// Enumerates and returns a list of available devices of type <see cref="VirtualCam"/>.
-    /// </summary>
-    /// <returns>List of available devices.</returns>
+    /// <inheritdoc/>
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new(nameof(VirtualCam), "1.0", typeof(VirtualCam));
+
+    /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
         // Create two available devices.
@@ -96,17 +96,16 @@ public sealed partial class VirtualCam : GcDevice, IDeviceEnumerator, IDeviceCla
     }
 
     /// <inheritdoc/>
+    public static VirtualCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new VirtualCam(deviceInfo.UniqueID);
+    }
+
+    /// <inheritdoc/>
     public static void Dispose()
     {
         // No specific cleanup required for VirtualCam.
     }
-
-    #endregion
-
-    #region IDeviceClassDescriptor
-
-    /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new(nameof(VirtualCam), "1.0", typeof(VirtualCam));
 
     #endregion
 }

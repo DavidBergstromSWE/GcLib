@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GcLib;
 
-public sealed partial class PylonCam : GcDevice, IDeviceEnumerator
+public sealed partial class PylonCam
 {
     #region Fields
 

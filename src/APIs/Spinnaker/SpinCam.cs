@@ -10,7 +10,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to Spinnaker.NET from Teledyne FLIR.
 /// </summary>
-public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+public sealed partial class SpinCam : GcDevice, IDeviceFactory<SpinCam>
 {
     #region Fields
 
@@ -136,7 +136,10 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
 
     #endregion
 
-    #region IDeviceEnumerator
+    #region IDeviceFactory
+
+    /// <inheritdoc/>
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("SpinnakerNet", FileHelper.GetAssemblyFileVersion("SpinnakerNET_v140.dll"), typeof(SpinCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
@@ -152,17 +155,16 @@ public sealed partial class SpinCam : GcDevice, IDeviceEnumerator, IDeviceClassD
     }
 
     /// <inheritdoc/>
+    public static SpinCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new SpinCam(deviceInfo.UniqueID);
+    }
+
+    /// <inheritdoc/>
     public static void Dispose()
     {
         // SpinnakerNET does not require explicit disposal of the system, as it is managed by the library itself.
     }
-
-    #endregion
-
-    #region IDeviceClassDescriptor
-
-    /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("SpinnakerNet", FileHelper.GetAssemblyFileVersion("SpinnakerNET_v140.dll"), typeof(SpinCam));
 
     #endregion
 }

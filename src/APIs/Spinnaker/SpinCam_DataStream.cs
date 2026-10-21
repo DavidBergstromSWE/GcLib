@@ -7,7 +7,7 @@ using SpinnakerNET.GenApi;
 
 namespace GcLib;
 
-public sealed partial class SpinCam : GcDevice, IDeviceEnumerator
+public sealed partial class SpinCam
 {
     #region Fields
 

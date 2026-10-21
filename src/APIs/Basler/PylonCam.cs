@@ -8,7 +8,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to pylon .NET API from Basler.
 /// </summary>
-public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+public sealed partial class PylonCam : GcDevice, IDeviceFactory<PylonCam>
 {
     #region Fields
 
@@ -128,7 +128,10 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
 
     #endregion
 
-    #region IDeviceEnumerator
+    #region IDeviceFactory
+
+    /// <inheritdoc/>
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("Pylon", Library.VersionInfo.ToString(), typeof(PylonCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
@@ -145,18 +148,17 @@ public sealed partial class PylonCam : GcDevice, IDeviceEnumerator, IDeviceClass
     }
 
     /// <inheritdoc/>
+    public static PylonCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new PylonCam(deviceInfo.UniqueID);
+    }
+
+    /// <inheritdoc/>
     public static void Dispose()
     {
         // Terminate pylon runtime (if initialized).
         PylonRuntime.Terminate();
     }
-
-    #endregion
-
-    #region IDeviceClassDescriptor
-
-    /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("Pylon", Library.VersionInfo.ToString(), typeof(PylonCam));
 
     #endregion
 }

@@ -5,7 +5,7 @@ namespace GcLib.UnitTests.Utilities;
 /// <summary>
 /// Represents a camera device that is unavailable (due to missing drivers or licensing issues) for unit testing purposes.
 /// </summary>
-internal class UnavailableCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+internal class UnavailableCam : GcDevice, IDeviceFactory<UnavailableCam>
 {
     public static GcDeviceClassInfo DeviceClassInfo => new("UnavailableCam", "1.0", typeof(UnavailableCam));
 
@@ -13,9 +13,20 @@ internal class UnavailableCam : GcDevice, IDeviceEnumerator, IDeviceClassDescrip
 
     public override uint BufferCapacity { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
 
+    public static UnavailableCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new UnavailableCam();
+    }
+
     public static List<GcDeviceInfo> EnumerateDevices()
     {
+        // This mock implementation simulates an unavailable camera, so it throws a NotImplementedException to indicate that device enumeration is not supported.
         throw new System.NotImplementedException();
+    }
+
+    static void IDeviceFactory<UnavailableCam>.Dispose()
+    {
+        // No resources to dispose for this mock implementation.
     }
 
     public override void StartAcquisition()

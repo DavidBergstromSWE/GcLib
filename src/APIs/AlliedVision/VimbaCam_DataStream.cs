@@ -6,7 +6,7 @@ using VmbNET;
 
 namespace GcLib;
 
-public sealed partial class VimbaCam : GcDevice, IDeviceEnumerator, IDeviceClassDescriptor
+public sealed partial class VimbaCam
 {
     #region Fields
 
