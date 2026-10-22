@@ -3,89 +3,140 @@
 namespace GcLib.UnitTests.Utilities;
 
 /// <summary>
-/// Represents a camera device that is unavailable (due to missing drivers or licensing issues) for unit testing purposes.
+/// Represents a device type for unit testing purposes. It simulates various failure modes to test error handling and recovery mechanisms in applications that interact with camera devices.
 /// </summary>
-internal class UnavailableCam : GcDevice, IDeviceFactory<UnavailableCam>
+/// <remarks>
+/// The class can be configured to simulate various failure modes, such as enumeration failure, device creation failure, acquisition failure, parameter access failure and release failure. 
+/// </remarks>
+internal class FailingCam : GcDevice, IDeviceFactory<FailingCam>
 {
-    public static GcDeviceClassInfo DeviceClassInfo => new("UnavailableCam", "1.0", typeof(UnavailableCam));
-
-    public override uint PayloadSize => throw new System.NotImplementedException();
-
-    public override uint BufferCapacity { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
-
-    public static UnavailableCam CreateDevice(GcDeviceInfo deviceInfo)
+    public enum FailureMode
     {
-        return new UnavailableCam();
+        None,
+        EnumerationFailure,
+        DeviceCreationFailure,
+        AcquisitionFailure,
+        ParameterAccessFailure,
+        ReleaseFailure
+    }
+
+    public FailingCam()
+    {
+        if (CurrentFailureMode == FailureMode.DeviceCreationFailure)
+            throw new System.Exception("Simulated device creation failure.");
+    }
+
+    public static FailureMode CurrentFailureMode { get; set; } = FailureMode.None;
+
+    public static GcDeviceClassInfo DeviceClassInfo => new("UnavailableCam", "1.0", typeof(FailingCam));
+
+    public override uint PayloadSize { get; }
+
+    public override uint BufferCapacity { get; set; }
+
+    public static FailingCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        if (CurrentFailureMode == FailureMode.DeviceCreationFailure)
+            throw new System.Exception("Simulated device creation failure.");
+        else return new FailingCam();
     }
 
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        // This mock implementation simulates an unavailable camera, so it throws a NotImplementedException to indicate that device enumeration is not supported.
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.EnumerationFailure)
+            throw new System.Exception("Simulated enumeration failure.");
+        else
+        {
+            var devices = new List<GcDeviceInfo>();
+            for (uint i = 1; i <= 3; i++)
+                devices.Add(new GcDeviceInfo("GcLib", "FailingCam", "1.0", $"FailingCam{i}", DeviceClassInfo));
+            return devices;
+        }
     }
 
-    static void IDeviceFactory<UnavailableCam>.Release()
+    static void IDeviceFactory<FailingCam>.Release()
     {
-        // No resources to release for this mock implementation.
+        if (CurrentFailureMode == FailureMode.ReleaseFailure)
+            throw new System.Exception("Simulated release failure.");
     }
 
     public override void StartAcquisition()
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.AcquisitionFailure)
+            throw new System.Exception("Simulated acquisition failure.");
     }
 
     public override void StopAcquisition()
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.AcquisitionFailure)
+            throw new System.Exception("Simulated acquisition failure.");
     }
 
     protected override void ExecuteParameterCommand(string parameterName)
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
     }
 
     protected override GcBoolean GetBoolean(string parameterName)
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
+        else return new GcBoolean(parameterName);
     }
 
     protected override GcCommand GetCommand(string parameterName)
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
+        else return new GcCommand(parameterName);
     }
 
     protected override GcEnumeration GetEnumeration(string parameterName)
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
+        else return new GcEnumeration(parameterName);
     }
 
     protected override GcFloat GetFloat(string parameterName)
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
+        else return new GcFloat(parameterName);
     }
 
     protected override GcInteger GetInteger(string parameterName)
     {
-        throw new System.NotImplementedException();
-    }
-
-    protected override string GetParameterValue(string parameterName)
-    {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
+        else return new GcInteger(parameterName);
     }
 
     protected override GcString GetString(string parameterName)
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
+        else return new GcString(parameterName);
     }
 
-    protected override GcDeviceParameterCollection ImportParameters()
+    protected override string GetParameterValue(string parameterName)
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
+        else return parameterName;
     }
 
     protected override void SetParameterValue(string parameterName, string parameterValue)
     {
-        throw new System.NotImplementedException();
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
+    }
+
+    protected override GcDeviceParameterCollection ImportParameters()
+    {
+        if (CurrentFailureMode == FailureMode.ParameterAccessFailure)
+            throw new System.Exception("Simulated parameter access failure.");
+        else return new GcDeviceParameterCollection(this, [], []);
     }
 }

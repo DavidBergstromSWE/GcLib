@@ -23,6 +23,9 @@ public class GcLibraryTests
     {
         if (GcLibrary.IsInitialized)
             GcLibrary.Close();
+
+        // Reset the failure mode of FailingCam to None after each test
+        FailingCam.CurrentFailureMode = FailingCam.FailureMode.None;
     }
 
     #endregion
@@ -141,16 +144,17 @@ public class GcLibraryTests
     }
 
     [TestMethod]
-    public void RegisterGeneric_DeviceClassIsNotImplemented_IsNotAddedToRegisteredDeviceClasses()
+    public void RegisterGeneric_ThrowsAtEnumeration_IsNotAddedToRegisteredDeviceClasses()
     {
         // Arrange     
         GcLibrary.Init(false);
+        FailingCam.CurrentFailureMode = FailingCam.FailureMode.EnumerationFailure;
 
         // Act
-        GcLibrary.Register<UnavailableCam>();
+        GcLibrary.Register<FailingCam>();
 
         // Assert
-        Assert.DoesNotContain(UnavailableCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
+        Assert.DoesNotContain(FailingCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
     }
 
     [TestMethod]
@@ -185,16 +189,17 @@ public class GcLibraryTests
     }
 
     [TestMethod]
-    public void RegisterNonGeneric_DeviceClassIsNotImplemented_IsNotAddedToRegisteredDeviceClasses()
+    public void RegisterNonGeneric_ThrowsAtEnumeration_IsNotAddedToRegisteredDeviceClasses()
     {
         // Arrange     
         GcLibrary.Init(false);
+        FailingCam.CurrentFailureMode = FailingCam.FailureMode.EnumerationFailure;
 
         // Act
-        GcLibrary.Register(typeof(UnavailableCam));
+        GcLibrary.Register(typeof(FailingCam));
 
         // Assert
-        Assert.DoesNotContain(UnavailableCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
+        Assert.DoesNotContain(FailingCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
     }
 
     [TestMethod]
@@ -229,6 +234,7 @@ public class GcLibraryTests
         GcLibrary.Unregister<VirtualCam>();
 
         // Assert
+        Assert.IsFalse(GcLibrary.IsRegistered<VirtualCam>());
         Assert.DoesNotContain(VirtualCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
     }
 
@@ -241,6 +247,22 @@ public class GcLibraryTests
         // Act/Assert
         Assert.Throws<ArgumentException>(GcLibrary.Unregister<VirtualCam>);
 
+    }
+
+    [TestMethod]
+    public void UnregisterGeneric_ThrowsAtRelease_DeviceClassIsNotRegistered()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        FailingCam.CurrentFailureMode = FailingCam.FailureMode.ReleaseFailure;
+        GcLibrary.Register<FailingCam>();
+
+        // Act/Assert
+        GcLibrary.Unregister<FailingCam>();
+
+        // Assert
+        Assert.IsFalse(GcLibrary.IsRegistered<FailingCam>());
+        Assert.DoesNotContain(FailingCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
     }
 
     [TestMethod]
@@ -363,7 +385,7 @@ public class GcLibraryTests
 
         Assert.IsNotEmpty(implementedDeviceClasses);
         Assert.Contains(typeof(VirtualCam), implementedDeviceClasses);
-        Assert.Contains(typeof(UnavailableCam), implementedDeviceClasses);
+        Assert.Contains(typeof(FailingCam), implementedDeviceClasses);
     }
 
     #endregion

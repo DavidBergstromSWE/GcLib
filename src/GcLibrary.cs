@@ -143,7 +143,7 @@ public static class GcLibrary
             throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice)} and implement {nameof(IDeviceFactory<>)}.", nameof(deviceType));
         try
         {
-            // Use reflection to invoke the generic Register<TDevice>() method with the specified deviceType.
+            // Use reflection to invoke the generic Register<TDevice>() method.
             typeof(GcLibrary).GetMethod(nameof(Register), BindingFlags.Public | BindingFlags.Static, binder: null, types: Type.EmptyTypes, modifiers: null).MakeGenericMethod(deviceType).Invoke(null, null);
         }
         catch (TargetInvocationException ex)
@@ -170,8 +170,16 @@ public static class GcLibrary
 
         if (IsRegistered<TDevice>())
         {
-            // Release resources used by API.
-            TDevice.Release();
+            try
+            {
+                // Release resources used by API.
+                TDevice.Release();
+            }
+            catch (Exception ex)
+            {
+                if (Logger.IsEnabled(LogLevel.Debug))
+                    Logger.LogDebug(ex, "Failed to release resources for {DeviceType}", typeof(TDevice).Name);
+            }
 
             // Remove device class from list.
             _registeredDeviceClasses.Remove(typeof(TDevice));
@@ -201,7 +209,7 @@ public static class GcLibrary
         if (!typeof(GcDevice).IsAssignableFrom(deviceType) || !typeof(IDeviceFactory<>).MakeGenericType(deviceType).IsAssignableFrom(deviceType))
             throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice)} and implement {nameof(IDeviceFactory<>)}.", nameof(deviceType));
 
-        // Use reflection to invoke the generic Unregister<TDevice>() method with the specified deviceType.
+        // Use reflection to invoke the generic Unregister<TDevice>() method.
         try
         {
             typeof(GcLibrary).GetMethod(nameof(Unregister), BindingFlags.Public | BindingFlags.Static, binder: null, types: Type.EmptyTypes, modifiers: null).MakeGenericMethod(deviceType).Invoke(null, null);
@@ -239,28 +247,6 @@ public static class GcLibrary
     }
 
     /// <summary>
-    /// Retrieves the factory method of a registered device class.
-    /// </summary>
-    /// <param name="deviceType">The registered device class.</param>
-    /// <returns>Factory method creating devices of the class.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the device class is not registered.</exception>
-    internal static Func<GcDeviceInfo, GcDevice> GetDeviceFactory(Type deviceType)
-    {
-        return _deviceFactories.TryGetValue(deviceType, out var factory) ? factory : throw new InvalidOperationException($"Device class {deviceType.Name} is not registered!");
-    }
-
-    /// <summary>
-    /// Retrieves the enumeration method of a registered device class.
-    /// </summary>
-    /// <param name="deviceType">The registered device class.</param>
-    /// <returns>A method enumerating devices of the class.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the device class is not registered.</exception>
-    internal static Func<List<GcDeviceInfo>> GetDeviceEnumerator(Type deviceType)
-    {
-        return _deviceEnumerators.TryGetValue(deviceType, out var enumerate) ? enumerate : throw new InvalidOperationException($"Device class {deviceType.Name} is not registered!");
-    }
-
-    /// <summary>
     /// Determines whether the specified device class is registered for being used in the library.
     /// </summary>
     /// <typeparam name="TDevice">The device class to check.</typeparam>
@@ -289,12 +275,38 @@ public static class GcLibrary
     /// </summary>
     public static void Close()
     {
-        foreach (var deviceType in GetRegisteredDeviceClasses())
+        foreach (var deviceType in _registeredDeviceClasses.Values)
             Unregister(deviceType.DeviceType);
 
         IsInitialized = false;
 
         Logger.LogDebug("GcLib closed");
+    }
+
+    #endregion
+
+    #region Internal methods
+
+    /// <summary>
+    /// Retrieves the factory method of a registered device class.
+    /// </summary>
+    /// <param name="deviceType">The registered device class.</param>
+    /// <returns>Factory method creating devices of the class.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the device class is not registered.</exception>
+    internal static Func<GcDeviceInfo, GcDevice> GetDeviceFactory(Type deviceType)
+    {
+        return _deviceFactories.TryGetValue(deviceType, out var factory) ? factory : throw new InvalidOperationException($"Device class {deviceType.Name} is not registered!");
+    }
+
+    /// <summary>
+    /// Retrieves the enumeration method of a registered device class.
+    /// </summary>
+    /// <param name="deviceType">The registered device class.</param>
+    /// <returns>A method enumerating devices of the class.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the device class is not registered.</exception>
+    internal static Func<List<GcDeviceInfo>> GetDeviceEnumerator(Type deviceType)
+    {
+        return _deviceEnumerators.TryGetValue(deviceType, out var enumerate) ? enumerate : throw new InvalidOperationException($"Device class {deviceType.Name} is not registered!");
     }
 
     #endregion
