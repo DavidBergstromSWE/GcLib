@@ -8,7 +8,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to the eBUS SDK from Pleora Technologies.
 /// </summary>
-public sealed partial class PvCam : GcDevice, IDeviceFactory<PvCam>
+public sealed partial class PvCam : GcDevice<PvCam>, IDeviceFactory<PvCam>
 {
     #region Fields
 

@@ -8,7 +8,7 @@ namespace GcLib.UnitTests.Utilities;
 /// <remarks>
 /// The class can be configured to simulate various failure modes, such as failure occuring during device enumeration, device creation, acquisition, parameter access and release operations. 
 /// </remarks>
-internal class FailingCam : GcDevice, IDeviceFactory<FailingCam>
+internal class FailingCam : GcDevice<FailingCam>, IDeviceFactory<FailingCam>
 {
     /// <summary>
     /// Represents the outcome of an operation by identifying the stage where a failure occurred.

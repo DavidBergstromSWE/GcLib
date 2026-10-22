@@ -9,7 +9,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to the IDS Peak API from IDS Imaging Development Systems.
 /// </summary>
-public sealed partial class IdsCam : GcDevice, IDeviceFactory<IdsCam>
+public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
 {
     #region Private fields
 

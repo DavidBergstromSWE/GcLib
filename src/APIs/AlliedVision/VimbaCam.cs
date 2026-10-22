@@ -8,7 +8,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to Allied Vision's Vimba X SDK.
 /// </summary>
-public sealed partial class VimbaCam : GcDevice, IDeviceFactory<VimbaCam>
+public sealed partial class VimbaCam : GcDevice<VimbaCam>, IDeviceFactory<VimbaCam>
 {
     #region Fields
 

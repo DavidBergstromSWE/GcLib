@@ -86,7 +86,7 @@ public static class GcLibrary
     /// </summary>
     /// <typeparam name="TDevice"><see cref="GcDevice"/>-derived type.</typeparam>
     /// <returns>Device class information.</returns>
-    public static GcDeviceClassInfo GetDeviceClassInfo<TDevice>() where TDevice : GcDevice, IDeviceFactory<TDevice>
+    public static GcDeviceClassInfo GetDeviceClassInfo<TDevice>() where TDevice : GcDevice<TDevice>, IDeviceFactory<TDevice>
     {
         return TDevice.DeviceClassInfo;
     }
@@ -97,7 +97,7 @@ public static class GcLibrary
     /// <typeparam name="TDevice">Device type.</typeparam>
     /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
     /// <exception cref="ArgumentException">Thrown if the device class is already registered.</exception>
-    public static void Register<TDevice>() where TDevice : GcDevice, IDeviceFactory<TDevice>
+    public static void Register<TDevice>() where TDevice : GcDevice<TDevice>, IDeviceFactory<TDevice>
     {
         if (IsInitialized == false)
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
@@ -141,7 +141,7 @@ public static class GcLibrary
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
 
         // Validate that the provided type is a subclass of GcDevice and implements required interfaces.
-        if (!typeof(GcDevice).IsAssignableFrom(deviceType) || !typeof(IDeviceFactory<>).MakeGenericType(deviceType).IsAssignableFrom(deviceType))
+        if (!IsDeviceType(deviceType))
             throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice)} and implement {nameof(IDeviceFactory<>)}.", nameof(deviceType));
         try
         {
@@ -165,7 +165,7 @@ public static class GcLibrary
     /// <typeparam name="TDevice">Device type.</typeparam>
     /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
     /// <exception cref="ArgumentException">Thrown if the device class is not registered.</exception>
-    public static void Unregister<TDevice>() where TDevice : GcDevice, IDeviceFactory<TDevice>
+    public static void Unregister<TDevice>() where TDevice : GcDevice<TDevice>, IDeviceFactory<TDevice>
     {
         if (IsInitialized == false)
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
@@ -208,7 +208,7 @@ public static class GcLibrary
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
 
         // Validate that the provided type is a subclass of GcDevice and implements required interfaces.
-        if (!typeof(GcDevice).IsAssignableFrom(deviceType) || !typeof(IDeviceFactory<>).MakeGenericType(deviceType).IsAssignableFrom(deviceType))
+        if (!IsDeviceType(deviceType))
             throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice)} and implement {nameof(IDeviceFactory<>)}.", nameof(deviceType));
 
         // Use reflection to invoke the generic Unregister<TDevice>() method.
@@ -235,7 +235,17 @@ public static class GcLibrary
     {
         return [.. AppDomain.CurrentDomain.GetAssemblies()
                                           .SelectMany(assembly => { try { return assembly.GetTypes(); } catch (ReflectionTypeLoadException ex) { return ex.Types.Where(t => t != null); }}) // Return only types that were successfully loaded
-                                          .Where(type => typeof(GcDevice).IsAssignableFrom(type) && typeof(IDeviceFactory<>).MakeGenericType(type).IsAssignableFrom(type))]; // Return only the types that implement GcDevice and IDeviceFactory<T>
+                                          .Where(IsDeviceType)]; // Return only the types that derive from GcDevice<T> and implement IDeviceFactory<T>
+    }
+
+    private static bool IsDeviceType(Type type)
+    {
+        for (var baseType = type.BaseType; baseType is not null; baseType = baseType.BaseType)
+        {
+            if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(GcDevice<>) && baseType.GetGenericArguments()[0] == type)
+                return type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDeviceFactory<>) && i.GetGenericArguments()[0] == type);
+        }
+        return false;
     }
 
     /// <summary>
@@ -254,7 +264,7 @@ public static class GcLibrary
     /// <remarks>Only device classes that have been successfully registered can be discovered, enumerated and created in the library.</remarks>
     /// <typeparam name="TDevice">The device class to check.</typeparam>
     /// <returns><see langword="true"/> if the type is registered; otherwise, <see langword="false"/>.</returns>
-    public static bool IsRegistered<TDevice>() where TDevice : GcDevice, IDeviceFactory<TDevice>
+    public static bool IsRegistered<TDevice>() where TDevice : GcDevice<TDevice>, IDeviceFactory<TDevice>
     {
         return _registeredDeviceClasses.ContainsKey(typeof(TDevice));
     }

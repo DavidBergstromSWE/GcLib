@@ -10,7 +10,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to Spinnaker.NET from Teledyne FLIR.
 /// </summary>
-public sealed partial class SpinCam : GcDevice, IDeviceFactory<SpinCam>
+public sealed partial class SpinCam : GcDevice<SpinCam>, IDeviceFactory<SpinCam>
 {
     #region Fields
 

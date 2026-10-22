@@ -8,7 +8,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to pylon .NET API from Basler.
 /// </summary>
-public sealed partial class PylonCam : GcDevice, IDeviceFactory<PylonCam>
+public sealed partial class PylonCam : GcDevice<PylonCam>, IDeviceFactory<PylonCam>
 {
     #region Fields
 

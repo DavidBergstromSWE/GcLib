@@ -5,7 +5,7 @@ namespace GcLib;
 /// <summary>
 /// Virtual device class, for a software simulation of a physical camera.
 /// </summary>
-public sealed partial class VirtualCam : GcDevice, IDeviceFactory<VirtualCam>
+public sealed partial class VirtualCam : GcDevice<VirtualCam>, IDeviceFactory<VirtualCam>
 {
     #region Fields
 

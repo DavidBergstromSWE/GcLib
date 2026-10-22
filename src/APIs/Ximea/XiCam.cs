@@ -10,7 +10,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to xiAPI.NET from Ximea GmbH.
 /// </summary>
-public sealed partial class XiCam : GcDevice, IDeviceFactory<XiCam>
+public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
 {
     #region Fields
 

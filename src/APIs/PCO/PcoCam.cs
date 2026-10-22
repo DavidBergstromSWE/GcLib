@@ -9,7 +9,7 @@ namespace GcLib;
 /// <summary>
 /// Vendor-specific device class providing an interface to the PCO SDK from PCO Imaging (PCO AG).
 /// </summary>
-public sealed partial class PcoCam : GcDevice, IDeviceFactory<PcoCam>
+public sealed partial class PcoCam : GcDevice<PcoCam>, IDeviceFactory<PcoCam>
 {
     #region Fields
 
