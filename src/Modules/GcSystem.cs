@@ -188,6 +188,7 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         foreach (var device in _connectedDevices.ToList())
         {
             device.Close();
+            device.Closed -= Device_Closed;
             UpdateListWithUpdatedDeviceInfo(device.DeviceInfo);
         }
 
@@ -207,7 +208,9 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     /// </summary>
     private static GcDevice CreateDevice(GcDeviceInfo deviceInfo)
     {
-        return GcLibrary.GetDeviceFactory(deviceInfo.DeviceClassInfo.DeviceType)(deviceInfo);
+        // Retrieve factory method for device class.
+        var deviceFactory = GcLibrary.GetDeviceFactory(deviceInfo.DeviceClassInfo.DeviceType);
+        return deviceFactory(deviceInfo);
     }
 
     /// <summary>

@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+
+[assembly: InternalsVisibleTo("GcLib.UnitTests")]
 
 namespace GcLib;
 
@@ -83,10 +86,9 @@ public static class GcLibrary
     /// </summary>
     /// <typeparam name="TDevice"><see cref="GcDevice"/>-derived type.</typeparam>
     /// <returns>Device class information.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
     public static GcDeviceClassInfo GetDeviceClassInfo<TDevice>() where TDevice : GcDevice, IDeviceFactory<TDevice>
     {
-        return IsInitialized ? TDevice.DeviceClassInfo : throw new InvalidOperationException("Library needs to be initialized before this information can be retrieved!");
+        return TDevice.DeviceClassInfo;
     }
 
     /// <summary>
@@ -237,18 +239,19 @@ public static class GcLibrary
     }
 
     /// <summary>
-    /// Retrieves device classes registered in the library. Only device classes that have been successfully registered can be discovered, enumerated and used.
+    /// Retrieves device classes registered in the library.
     /// </summary>
+    /// <remarks>Only device classes that have been successfully registered can be discovered, enumerated and created in the library.</remarks>
     /// <returns>Device classes registered.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
     public static IReadOnlyCollection<GcDeviceClassInfo> GetRegisteredDeviceClasses()
     {
-        return IsInitialized ? _registeredDeviceClasses.Values : throw new InvalidOperationException("Library needs to be initialized before inquiring this info!");
+        return _registeredDeviceClasses.Values;
     }
 
     /// <summary>
-    /// Determines whether the specified device class is registered for being used in the library.
+    /// Determines whether the specified device class is registered in the library.
     /// </summary>
+    /// <remarks>Only device classes that have been successfully registered can be discovered, enumerated and created in the library.</remarks>
     /// <typeparam name="TDevice">The device class to check.</typeparam>
     /// <returns><see langword="true"/> if the type is registered; otherwise, <see langword="false"/>.</returns>
     public static bool IsRegistered<TDevice>() where TDevice : GcDevice, IDeviceFactory<TDevice>
@@ -259,14 +262,12 @@ public static class GcLibrary
     /// <summary>
     /// Determines whether a specific device class is registered for being used in the library.
     /// </summary>
+    /// <remarks>Only device classes that have been successfully registered can be discovered, enumerated and created in the library.</remarks>
     /// <param name="deviceType">The device class to check.</param>
     /// <returns><see langword="true"/> if the type is registered; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentException">The type does not derive from <see cref="GcDevice"/> or does not implement <see cref="IDeviceFactory{T}"/>.</exception>
     public static bool IsRegistered(Type deviceType)
     {
-        // Validate that the provided type is a subclass of GcDevice and implements required interfaces.
-        if (!typeof(GcDevice).IsAssignableFrom(deviceType) || !typeof(IDeviceFactory<>).MakeGenericType(deviceType).IsAssignableFrom(deviceType))
-            throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice)} and implement {nameof(IDeviceFactory<>)}.", nameof(deviceType));
         return _registeredDeviceClasses.ContainsKey(deviceType);
     }
 
@@ -292,10 +293,10 @@ public static class GcLibrary
     /// </summary>
     /// <param name="deviceType">The registered device class.</param>
     /// <returns>Factory method creating devices of the class.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the device class is not registered.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown if the device class is not registered.</exception>
     internal static Func<GcDeviceInfo, GcDevice> GetDeviceFactory(Type deviceType)
     {
-        return _deviceFactories.TryGetValue(deviceType, out var factory) ? factory : throw new InvalidOperationException($"Device class {deviceType.Name} is not registered!");
+        return _deviceFactories.TryGetValue(deviceType, out var factory) ? factory : throw new KeyNotFoundException($"Device class {deviceType.Name} is not registered!");
     }
 
     /// <summary>
@@ -303,10 +304,10 @@ public static class GcLibrary
     /// </summary>
     /// <param name="deviceType">The registered device class.</param>
     /// <returns>A method enumerating devices of the class.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the device class is not registered.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown if the device class is not registered.</exception>
     internal static Func<List<GcDeviceInfo>> GetDeviceEnumerator(Type deviceType)
     {
-        return _deviceEnumerators.TryGetValue(deviceType, out var enumerate) ? enumerate : throw new InvalidOperationException($"Device class {deviceType.Name} is not registered!");
+        return _deviceEnumerators.TryGetValue(deviceType, out var enumerate) ? enumerate : throw new KeyNotFoundException($"Device class {deviceType.Name} is not registered!");
     }
 
     #endregion

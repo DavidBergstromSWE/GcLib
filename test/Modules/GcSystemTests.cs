@@ -1,4 +1,5 @@
 ﻿using System;
+using GcLib.UnitTests.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [assembly: Parallelize(Workers = 0, Scope = ExecutionScope.MethodLevel)]
@@ -168,7 +169,6 @@ public class GcSystemTests
         Assert.Throws<ArgumentException>(() => _system.OpenDevice("FakeID"));
     }
 
-
     [TestMethod]
     public void OpenDevice_DeviceIsNotAccessible_ThrowsInvalidOperationException()
     {
@@ -180,6 +180,23 @@ public class GcSystemTests
 
         // Act/Assert
         Assert.Throws<InvalidOperationException>(() => _system.OpenDevice(devices[0]));
+    }
+
+
+    [TestMethod]
+    public void OpenDevice_DeviceIsNotCreatable_ThrowsException()
+    {
+        // Arrange
+        FailingCam.CurrentFailureMode = FailingCam.FailureMode.DeviceCreationFailure;
+        GcLibrary.Register<FailingCam>();
+        _system = new GcSystem();
+        _system.UpdateDeviceList();
+        
+        // Act/Assert
+        Assert.Throws<Exception>(() => _system.OpenDevice("FailingCam1"));
+
+        // Cleanup
+        GcLibrary.Unregister<FailingCam>();
     }
 
     [TestMethod]

@@ -6,29 +6,59 @@ namespace GcLib.UnitTests.Utilities;
 /// Represents a device type for unit testing purposes. It simulates various failure modes to test error handling and recovery mechanisms in applications that interact with camera devices.
 /// </summary>
 /// <remarks>
-/// The class can be configured to simulate various failure modes, such as enumeration failure, device creation failure, acquisition failure, parameter access failure and release failure. 
+/// The class can be configured to simulate various failure modes, such as failure occuring during device enumeration, device creation, acquisition, parameter access and release operations. 
 /// </remarks>
 internal class FailingCam : GcDevice, IDeviceFactory<FailingCam>
 {
+    /// <summary>
+    /// Represents the outcome of an operation by identifying the stage where a failure occurred.
+    /// </summary>
+    /// <remarks>Use these values to classify and report failures consistently across device enumeration,
+    /// creation, acquisition, parameter access, and release operations.</remarks>
     public enum FailureMode
     {
+        /// <summary>
+        /// No failure occurred.
+        /// </summary>
         None,
+        /// <summary>
+        /// Represents a failure that occurred while enumerating devices.
+        /// </summary>
         EnumerationFailure,
+        /// <summary>
+        /// Indicates that device creation failed.
+        /// </summary>
         DeviceCreationFailure,
+        /// <summary>
+        /// Indicates that an acquisition operation failed.
+        /// </summary>
         AcquisitionFailure,
+        /// <summary>
+        /// Indicates that an attempt to access a parameter failed.
+        /// </summary>
         ParameterAccessFailure,
+        /// <summary>
+        /// Represents a failed release operation.
+        /// </summary>
         ReleaseFailure
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FailingCam"/> class.
+    /// </summary>
+    /// <exception cref="System.Exception">Thrown when <see cref="CurrentFailureMode"/> is <see cref="FailureMode.DeviceCreationFailure"/>.</exception>
     public FailingCam()
     {
         if (CurrentFailureMode == FailureMode.DeviceCreationFailure)
             throw new System.Exception("Simulated device creation failure.");
     }
 
+    /// <summary>
+    /// Gets or sets the current failure mode.
+    /// </summary>
     public static FailureMode CurrentFailureMode { get; set; } = FailureMode.None;
 
-    public static GcDeviceClassInfo DeviceClassInfo => new("UnavailableCam", "1.0", typeof(FailingCam));
+    public static GcDeviceClassInfo DeviceClassInfo => new("FailingCam", "1.0", typeof(FailingCam));
 
     public override uint PayloadSize { get; }
 
