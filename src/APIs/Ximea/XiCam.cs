@@ -98,10 +98,10 @@ public sealed partial class XiCam : GcDevice, IDeviceFactory<XiCam>
 
     #endregion
 
-    #region Public methods
+    #region Protected methods
 
     /// <inheritdoc/>
-    public override void Close()
+    protected override void OnDeviceClosed()
     {
         // Stop connection checking timer and dispose of it.
         _checkConnectionTimer.Stop();
@@ -113,9 +113,6 @@ public sealed partial class XiCam : GcDevice, IDeviceFactory<XiCam>
         {
             //
         }
-
-        // Stops active acquisitions on device and closes datastream.
-        base.Close();
 
         // Close device (will take long time if connection was lost! show dialog?).
         _xiCam.CloseDevice();

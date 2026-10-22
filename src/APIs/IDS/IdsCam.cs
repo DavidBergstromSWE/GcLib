@@ -106,10 +106,10 @@ public sealed partial class IdsCam : GcDevice, IDeviceFactory<IdsCam>
 
     #endregion
 
-    #region Public methods
+    #region Protected methods
 
     /// <inheritdoc/>
-    public override void Close()
+    protected override void OnDeviceClosed()
     {
         // Stop connection checking timer and dispose of it.
         _checkConnectionTimer.Stop();
@@ -121,8 +121,6 @@ public sealed partial class IdsCam : GcDevice, IDeviceFactory<IdsCam>
 
         // Close device.
         _device.Dispose();
-
-        base.Close();
     }
 
     #endregion

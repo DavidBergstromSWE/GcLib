@@ -159,7 +159,6 @@ public class GcDeviceTests
     {
         // Arrange
         _device = new Mock<GcDevice>();
-        _device.Setup(d => d.Close()).CallBase();
         _device.Object.OpenDataStream();
 
         // Act

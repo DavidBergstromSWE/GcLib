@@ -170,6 +170,13 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
         Closed?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// When overridden in a derived class, performs post-close operations for the device.
+    /// </summary>
+    /// <remarks>Implementations should release device-specific resources and update closure-related
+    /// state.</remarks>
+    protected abstract void OnDeviceClosed();
+
     #endregion
 
     #region Public Methods
@@ -201,8 +208,11 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// <summary>
     /// Close device by shutting down all opened datastreams.
     /// </summary>
-    public virtual void Close()
+    public void Close()
     {
+        // Perform device-specific closure operations.
+        OnDeviceClosed();
+
         // Close all open datastreams.
         foreach (var dataStream in _dataStreamList.Values)
         {

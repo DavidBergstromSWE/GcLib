@@ -169,4 +169,10 @@ internal class FailingCam : GcDevice, IDeviceFactory<FailingCam>
             throw new System.Exception("Simulated parameter access failure.");
         else return new GcDeviceParameterCollection(this, [], []);
     }
+
+    protected override void OnDeviceClosed()
+    {
+        // No special cleanup required for this simulated device.
+        CurrentFailureMode = FailureMode.None; // Reset failure mode on close for testing purposes.
+    }
 }

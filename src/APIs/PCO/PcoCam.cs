@@ -66,18 +66,16 @@ public sealed partial class PcoCam : GcDevice, IDeviceFactory<PcoCam>
 
     #endregion
 
-    #region Public methods
+    #region Protected methods
 
     /// <inheritdoc/>
-    public override void Close()
+    protected override void OnDeviceClosed()
     {
         // Stop connection checking timer and dispose of it.
         _checkConnectionTimer?.Stop();
         _checkConnectionTimer?.Dispose();
 
         _genApi?.Dispose();
-
-        base.Close();
     }
 
     #endregion

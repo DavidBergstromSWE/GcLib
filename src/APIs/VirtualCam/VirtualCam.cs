@@ -57,14 +57,12 @@ public sealed partial class VirtualCam : GcDevice, IDeviceFactory<VirtualCam>
 
     #endregion
 
-    #region Public methods
+    #region Protected methods
 
     /// <inheritdoc/>
-    public override void Close()
+    protected override void OnDeviceClosed()
     {
         _genApi?.Dispose();
-
-        base.Close();
     }
 
     #endregion

@@ -157,10 +157,10 @@ public sealed partial class PvCam : GcDevice, IDeviceFactory<PvCam>
 
     #endregion
 
-    #region Public methods
+    #region Protected methods
 
     /// <inheritdoc/>
-    public override void Close()
+    protected override void OnDeviceClosed()
     {
         _pvAcquisitionStateManager?.OnAcquisitionStateChanged -= OnAcquisitionStateChanged;
 
@@ -192,8 +192,6 @@ public sealed partial class PvCam : GcDevice, IDeviceFactory<PvCam>
 
         _pvDeviceInfo.Dispose();
         _pvSystem.Dispose();
-
-        base.Close();
     }
 
     #endregion

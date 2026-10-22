@@ -77,18 +77,16 @@ public sealed partial class VimbaCam : GcDevice, IDeviceFactory<VimbaCam>
 
     #endregion
 
-    #region Public methods
+    #region Protected methods
 
     /// <inheritdoc/>
-    public override void Close()
+    protected override void OnDeviceClosed()
     {
         if (IsAcquiring)
             StopAcquisition();
 
         // Dispose unmanaged resources of the camera.
         _camera?.Dispose();
-
-        base.Close();
     }
 
     #endregion

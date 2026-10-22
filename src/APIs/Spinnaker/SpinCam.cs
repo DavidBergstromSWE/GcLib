@@ -74,10 +74,10 @@ public sealed partial class SpinCam : GcDevice, IDeviceFactory<SpinCam>
 
     #endregion
 
-    #region Public methods
+    #region Protected methods
 
     /// <inheritdoc/>
-    public override void Close()
+    protected override void OnDeviceClosed()
     {
         // Stop connection checking timer and dispose of it.
         _checkConnectionTimer.Stop();
@@ -98,8 +98,6 @@ public sealed partial class SpinCam : GcDevice, IDeviceFactory<SpinCam>
         _camera.DeInit();
 
         _camera.Dispose();
-
-        base.Close();
     }
 
     #endregion
