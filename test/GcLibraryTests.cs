@@ -499,5 +499,29 @@ public class GcLibraryTests
         Assert.Throws<KeyNotFoundException>(() => GcLibrary.GetDeviceFactory(typeof(VirtualCam)));
     }
 
+    [TestMethod]
+    public void GetDeviceEnumerator_DeviceTypeIsRegistered_ReturnsDelegate()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        GcLibrary.Register<VirtualCam>();
+
+        // Act
+        var enumerator = GcLibrary.GetDeviceEnumerator(typeof(VirtualCam));
+
+        // Assert
+        Assert.IsNotNull(enumerator);
+    }
+
+    [TestMethod]
+    public void GetDeviceEnumerator_DeviceTypeIsNotRegistered_ThrowsKeyNotFoundException()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+
+        // Act & Assert
+        Assert.Throws<KeyNotFoundException>(() => GcLibrary.GetDeviceEnumerator(typeof(VirtualCam)));
+    }
+
     #endregion
 }
