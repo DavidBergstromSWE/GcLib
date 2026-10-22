@@ -55,7 +55,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// <summary>
     /// Base class constructor, initializes a new empty list of datastreams on the device.
     /// </summary>
-    protected GcDevice()
+    private protected GcDevice()
     {
         _dataStreamList = [];
     }

@@ -1,5 +1,6 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GcLib.UnitTests.Utilities;
 using Moq;
 
 namespace GcLib.UnitTests.Devices;
@@ -10,7 +11,7 @@ public class GcDeviceClassInfoTests
     /// <summary>
     /// Mocked device for unit testing.
     /// </summary>
-    private readonly Mock<GcDevice> _device = new();
+    private readonly Mock<MockableCam> _device = new();
 
     [TestMethod]
     public void Constructor_WithSubclass_SetsProperties()

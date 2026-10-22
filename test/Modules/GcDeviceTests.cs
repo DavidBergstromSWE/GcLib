@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GcLib.UnitTests.Utilities;
 using Moq;
 
 namespace GcLib.UnitTests.Modules;
@@ -14,7 +15,7 @@ public class GcDeviceTests
     /// <summary>
     /// Mocked device to be instantiated for unit testing.
     /// </summary>
-    private Mock<GcDevice> _device;
+    private Mock<MockableCam> _device;
 
     #endregion
 
@@ -34,7 +35,7 @@ public class GcDeviceTests
     public void GcDevice_ValidateInitialization()
     {
         // Act
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
 
         // Assert
         Assert.AreEqual<uint>(0, _device.Object.PayloadSize);
@@ -52,7 +53,7 @@ public class GcDeviceTests
     public void OpenDataStream_NoIDProvided_ReturnsNewStream()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
 
         // Act
         var dataStream = _device.Object.OpenDataStream();
@@ -65,7 +66,7 @@ public class GcDeviceTests
     public void OpenDataStream_NonExistingIDProvided_ReturnsNewStream()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
 
         // Act
         var dataStream = _device.Object.OpenDataStream("DataStream123");
@@ -78,7 +79,7 @@ public class GcDeviceTests
     public void OpenDataStream_ExistingIDProvided_ReturnsSameStream()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
         var firstStream = _device.Object.OpenDataStream("DataStream123");
 
         // Act
@@ -92,7 +93,7 @@ public class GcDeviceTests
     public void GetNumDataStreams_NoDataStreamOpened_CountIsZero()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
 
         // Act
         uint count = _device.Object.GetNumDataStreams();
@@ -104,7 +105,7 @@ public class GcDeviceTests
     public void GetNumDataStreams_MultipleDataStreamsOpened_ReturnsExpectedNumber()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
         for (int i = 0; i < 3; i++)
             _device.Object.OpenDataStream();
 
@@ -119,7 +120,7 @@ public class GcDeviceTests
     public void GetDataStreamID_NoIDProvided_ReturnsValidGuidAsID()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
 
         // Act
         _device.Object.OpenDataStream();
@@ -133,7 +134,7 @@ public class GcDeviceTests
     public void GetDataStreamID_ValidID_ReturnsExpectedID()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
         var expectedID = "Stream1";
         _device.Object.OpenDataStream(expectedID);
 
@@ -146,7 +147,7 @@ public class GcDeviceTests
     public void GetDataStreamID_IDOutofRange_ThrowsArgumentOutOfRangeException()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
         for (int i = 0; i < 3; i++)
             _device.Object.OpenDataStream();
 
@@ -158,7 +159,7 @@ public class GcDeviceTests
     public void Close_GetNumDataStreams_ReturnsZero()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
         _device.Object.OpenDataStream();
 
         // Act
@@ -172,7 +173,7 @@ public class GcDeviceTests
     public void Close_ClosedEvent_IsRaised()
     {
         // Arrange
-        _device = new Mock<GcDevice> { CallBase = true };
+        _device = new Mock<MockableCam> { CallBase = true };
         int eventCounter = 0;
         _device.Object.Closed += (s, e) => { eventCounter++; };
 
@@ -187,7 +188,7 @@ public class GcDeviceTests
     public void FetchImage_ReturnsNull()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
 
         // Act
         var success = _device.Object.FetchImage(out GcBuffer buffer, 100);
@@ -205,7 +206,7 @@ public class GcDeviceTests
     public void IEnumerable_EnumerateDataStreams()
     {
         // Arrange
-        _device = new Mock<GcDevice>();
+        _device = new Mock<MockableCam>();
         _device.Object.OpenDataStream();
 
         // Act/Assert
