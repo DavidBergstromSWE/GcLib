@@ -154,7 +154,7 @@ public sealed partial class PylonCam : GcDevice, IDeviceFactory<PylonCam>
     }
 
     /// <inheritdoc/>
-    public static void Dispose()
+    public static void Release()
     {
         // Terminate pylon runtime (if initialized).
         PylonRuntime.Terminate();

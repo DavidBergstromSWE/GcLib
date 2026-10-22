@@ -24,9 +24,9 @@ internal class UnavailableCam : GcDevice, IDeviceFactory<UnavailableCam>
         throw new System.NotImplementedException();
     }
 
-    static void IDeviceFactory<UnavailableCam>.Dispose()
+    static void IDeviceFactory<UnavailableCam>.Release()
     {
-        // No resources to dispose for this mock implementation.
+        // No resources to release for this mock implementation.
     }
 
     public override void StartAcquisition()

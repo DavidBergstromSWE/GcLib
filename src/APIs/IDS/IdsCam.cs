@@ -152,7 +152,7 @@ public sealed partial class IdsCam : GcDevice, IDeviceFactory<IdsCam>
     }
 
     /// <inheritdoc/>
-    public static void Dispose()
+    public static void Release()
     {
         // Close IDS Peak API library.
         try

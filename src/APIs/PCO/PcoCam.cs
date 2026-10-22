@@ -167,7 +167,7 @@ public sealed partial class PcoCam : GcDevice, IDeviceFactory<PcoCam>
     }
 
     /// <inheritdoc/>
-    public static void Dispose()
+    public static void Release()
     {
         // Close PCO SDK library.
         // ToDo: Check if this is necessary (or if it is already closed by the SDK).

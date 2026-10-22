@@ -170,8 +170,8 @@ public static class GcLibrary
 
         if (IsRegistered<TDevice>())
         {
-            // Dispose resources used by API.
-            TDevice.Dispose();
+            // Release resources used by API.
+            TDevice.Release();
 
             // Remove device class from list.
             _registeredDeviceClasses.Remove(typeof(TDevice));
@@ -224,18 +224,8 @@ public static class GcLibrary
     public static List<Type> GetImplementedDeviceClasses()
     {
         return [.. AppDomain.CurrentDomain.GetAssemblies()
-                                          .SelectMany(assembly =>
-                                          {
-                                              try
-                                              {
-                                                  return assembly.GetTypes();
-                                              }
-                                              catch (ReflectionTypeLoadException ex)
-                                              {
-                                                  return ex.Types.Where(t => t != null); // Return only the types that were successfully loaded
-                                              }
-                                          })
-                                          .Where(type => typeof(GcDevice).IsAssignableFrom(type) && typeof(IDeviceFactory<>).MakeGenericType(type).IsAssignableFrom(type))]; // Return only the types that implement all three interfaces
+                                          .SelectMany(assembly => { try { return assembly.GetTypes(); } catch (ReflectionTypeLoadException ex) { return ex.Types.Where(t => t != null); }}) // Return only types that were successfully loaded
+                                          .Where(type => typeof(GcDevice).IsAssignableFrom(type) && typeof(IDeviceFactory<>).MakeGenericType(type).IsAssignableFrom(type))]; // Return only the types that implement GcDevice and IDeviceFactory<T>
     }
 
     /// <summary>
@@ -245,7 +235,6 @@ public static class GcLibrary
     /// <exception cref="InvalidOperationException">Thrown if the library is not initialized.</exception>
     public static IReadOnlyCollection<GcDeviceClassInfo> GetRegisteredDeviceClasses()
     {
-        // throw if not initialized?
         return IsInitialized ? _registeredDeviceClasses.Values : throw new InvalidOperationException("Library needs to be initialized before inquiring this info!");
     }
 

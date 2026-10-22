@@ -267,7 +267,7 @@ public sealed partial class PvCam : GcDevice, IDeviceFactory<PvCam>
     }
 
     /// <inheritdoc/>
-    public static void Dispose()
+    public static void Release()
     {
         // No specific cleanup required for eBUS SDK.
     }

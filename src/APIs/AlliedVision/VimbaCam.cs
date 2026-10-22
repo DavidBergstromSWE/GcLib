@@ -132,9 +132,9 @@ public sealed partial class VimbaCam : GcDevice, IDeviceFactory<VimbaCam>
     }
 
     /// <inheritdoc/>
-    public static void Dispose()
+    public static void Release()
     {
-        // Dispose unmanaged resources of the API.
+        // Release unmanaged resources of the API.
         _vmbSystem?.Dispose();
         _vmbSystem?.Shutdown();
     }

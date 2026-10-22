@@ -161,9 +161,9 @@ public sealed partial class SpinCam : GcDevice, IDeviceFactory<SpinCam>
     }
 
     /// <inheritdoc/>
-    public static void Dispose()
+    public static void Release()
     {
-        // SpinnakerNET does not require explicit disposal of the system, as it is managed by the library itself.
+        // SpinnakerNET does not require explicit release of the system, as it is managed by the library itself.
     }
 
     #endregion

@@ -9,15 +9,15 @@ namespace GcLib;
 public interface IDeviceFactory<TDevice> where TDevice : GcDevice
 {
     /// <summary>
-    /// Gets the device class information for the implementing device type.
+    /// Provides information about the implementing device type and its API implementation.
     /// </summary>
     static abstract GcDeviceClassInfo DeviceClassInfo { get; }
 
     /// <summary>
-    /// Creates a device from the specified device information.
+    /// Creates an instance of the implementing device type, from the specified top-level device information.
     /// </summary>
-    /// <param name="deviceInfo">Information used to create the device.</param>
-    /// <returns>The created device.</returns>
+    /// <param name="deviceInfo">Top-level information of the device.</param>
+    /// <returns> An instance of <see cref="TDevice"/>.</returns>
     static abstract TDevice CreateDevice(GcDeviceInfo deviceInfo);
 
     /// <summary>
@@ -27,7 +27,7 @@ public interface IDeviceFactory<TDevice> where TDevice : GcDevice
     static abstract List<GcDeviceInfo> EnumerateDevices();
 
     /// <summary>
-    /// Releases resources held by the implementing type.
+    /// Releases shared resources held by the implementing device type and its API implementation.
     /// </summary>
-    static abstract void Dispose();
+    static abstract void Release();
 }

@@ -111,7 +111,7 @@ public sealed partial class VirtualCam : GcDevice, IDeviceFactory<VirtualCam>
     }
 
     /// <inheritdoc/>
-    public static void Dispose()
+    public static void Release()
     {
         // No specific cleanup required for VirtualCam.
     }

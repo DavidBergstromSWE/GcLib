@@ -188,7 +188,7 @@ public sealed partial class XiCam : GcDevice, IDeviceFactory<XiCam>
     }
 
     /// <inheritdoc/>
-    public static void Dispose()
+    public static void Release()
     {
         // No specific cleanup required for xiAPI.NET
     }
