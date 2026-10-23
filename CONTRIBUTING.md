@@ -9,8 +9,9 @@ Contributors are welcome to add new APIs to the library as well as improving exi
 > public sealed class MyCam : GcDevice<MyCam>, IDeviceFactory<MyCam>
 > ```
 >
-> - Deriving directly from the non-generic base class [GcDevice](src/Modules/GcDevice.cs) is not possible, as its constructor is not accessible outside the library. Intermediate non-generic base classes are not supported, since `TDevice` must be the concrete device class itself.
-> - `IDeviceFactory<TDevice>` replaces the former `IDeviceEnumerator` and `IDeviceClassDescriptor` interfaces. It is implemented through static abstract members: `Initialize` (API initialization), `DeviceClassInfo` (device class information), `CreateDevice` (device instantiation), `EnumerateDevices` (device discovery and enumeration) and `Release` (resource cleanup).
-> - Device classes are discovered and registered automatically by `GcLibrary` when loaded in the current AppDomain. `Initialize` is called when the class is registered, and `Release` is called when the class is unregistered.
+> - [GcDevice&lt;TDevice&gt;](src/Modules/GcDeviceOfT.cs) derives from the non-generic base class [GcDevice](src/Modules/GcDevice.cs), in which the common functionality for all device classes, including GenApi parameter access and image streaming is implemented. 
+> - Deriving directly from [GcDevice](src/Modules/GcDevice.cs) is not possible, as its constructor is inaccessible outside the library. Intermediate non-generic base classes are also not supported. The generic base class [GcDevice&lt;TDevice&gt;](src/Modules/GcDeviceOfT.cs) is used in order to provide a strongly typed interface when deriving concrete device classes.
+> - `IDeviceFactory<TDevice>` replaces the former `IDeviceEnumerator` and `IDeviceClassDescriptor` interfaces. It is implemented through static abstract members that control the lifetime of the device class API: `Initialize` (API initialization), `DeviceClassInfo` (API information), `CreateDevice` (device instantiation), `EnumerateDevices` (device discovery and enumeration) and `Release` (cleanup of API resources).
+> - Device classes are discovered automatically by `GcLibrary` when loaded in the current AppDomain. `Initialize` is called when the class is registered, and `Release` is called when the class is unregistered.
 
 For development purposes the library offers [VirtualCam](src/APIs/VirtualCam) - a virtual camera simulator emulating a physical device and enabling interaction with its GenApi parameters and streaming of image buffers.
