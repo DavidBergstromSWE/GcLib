@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace GcLib;
 
@@ -31,20 +32,36 @@ public record GcDeviceClassInfo
     /// <exception cref="ArgumentException"></exception>
     public GcDeviceClassInfo(string name, string version, Type deviceType)
     {
-        if (deviceType.IsSubclassOf(typeof(GcDevice)))
-        {
-            Name = name;
-            Version = version;
-            DeviceType = deviceType;
-        }
-        else
-        {
-            throw new ArgumentException($"Type {deviceType} is not a subclass of {nameof(GcDevice)} as required!");
-        }
+        ArgumentNullException.ThrowIfNull(deviceType);
+
+        if (IsDeviceType(deviceType) == false)
+            throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice<>)} and implement {nameof(IDeviceFactory<>)}.", nameof(deviceType));
+
+        Name = name;
+        Version = version;
+        DeviceType = deviceType;
     }
 
     public override string ToString()
     {
         return DeviceType.ToString();
+    }
+
+    /// <summary>
+    /// Determines whether the specified type follows the device pattern.
+    /// </summary>
+    /// <remarks>Abstract types are allowed (e.g. mockable test devices).</remarks>
+    /// <param name="type">The type to evaluate.</param>
+    /// <returns>true if the type derives from <see cref="GcDevice{T}"/> with itself as T and implements <see cref="IDeviceFactory{T}"/>;
+    /// otherwise, false.</returns>
+    internal static bool IsDeviceType(Type type)
+    {
+        for (var baseType = type.BaseType; baseType is not null; baseType = baseType.BaseType)
+        {
+            if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(GcDevice<>) && baseType.GetGenericArguments()[0] == type)
+                return type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDeviceFactory<>) && i.GetGenericArguments()[0] == type);
+        }
+
+        return false;
     }
 }

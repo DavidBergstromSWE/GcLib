@@ -17,13 +17,13 @@ public class GcDeviceClassInfoTests
     public void Constructor_WithSubclass_SetsProperties()
     {
         // Arrange/Act
-        var info = new GcDeviceClassInfo("MyApi", "1.2.3", _device.Object.GetType());
+        var info = new GcDeviceClassInfo("MyApi", "1.2.3", typeof(MockableCam));
 
         // Assert
         Assert.AreEqual("MyApi", info.Name);
         Assert.AreEqual("1.2.3", info.Version);
         Assert.IsInstanceOfType<GcDevice>(_device.Object);
-        Assert.AreEqual(_device.Object.GetType(), info.DeviceType);
+        Assert.AreEqual(typeof(MockableCam), info.DeviceType);
     }
 
     [TestMethod]
@@ -37,9 +37,9 @@ public class GcDeviceClassInfoTests
     public void ToString_ReturnsDeviceTypeToString()
     {
         // Arrange
-        var info = new GcDeviceClassInfo("X", "Y", _device.Object.GetType());
+        var info = new GcDeviceClassInfo("X", "Y", typeof(MockableCam));
 
         // Act/Assert
-        Assert.AreEqual(_device.Object.GetType().ToString(), info.ToString());
+        Assert.AreEqual(typeof(MockableCam).ToString(), info.ToString());
     }
 }

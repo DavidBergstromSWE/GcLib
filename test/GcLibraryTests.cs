@@ -145,6 +145,20 @@ public class GcLibraryTests
     }
 
     [TestMethod]
+    public void RegisterGeneric_MismatchedDeviceClassInfo_IsNotAddedToRegisteredDeviceClasses()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        FailingCam.CurrentFailureMode = FailingCam.FailureMode.DeviceClassInfoMismatch;
+
+        // Act
+        GcLibrary.Register<FailingCam>();
+
+        // Assert
+        Assert.IsFalse(GcLibrary.IsRegistered<FailingCam>());
+    }
+
+    [TestMethod]
     public void RegisterGeneric_ThrowsAtInitialization_IsNotAddedToRegisteredDeviceClasses()
     {
         // Arrange

@@ -119,18 +119,23 @@ public static class GcLibrary
             // Initialize device class, which may include loading and initializing the underlying API.
             TDevice.Initialize();
 
+            // Validate that the device class info matches the device type.
+            var deviceClassInfo = TDevice.DeviceClassInfo;
+            if (deviceClassInfo.DeviceType != typeof(TDevice))
+                throw new InvalidOperationException($"Device class info for {typeof(TDevice).Name} identifies {deviceClassInfo.DeviceType.Name}.");
+
             // Add device class if devices can be enumerated (is there a better test of dll functionality?).
             TDevice.EnumerateDevices();
 
             // Add detected devices to list.
-            _registeredDeviceClasses.Add(typeof(TDevice), TDevice.DeviceClassInfo);
+            _registeredDeviceClasses.Add(typeof(TDevice), deviceClassInfo);
 
             // Add factory and enumeration methods for this device class.
             _deviceFactories.Add(typeof(TDevice), TDevice.CreateDevice);
             _deviceEnumerators.Add(typeof(TDevice), TDevice.EnumerateDevices);
 
             if (Logger.IsEnabled(LogLevel.Debug))
-                Logger.LogDebug("{DeviceType} registered ({API} v{Version})", TDevice.DeviceClassInfo.DeviceType.Name, TDevice.DeviceClassInfo.Name, TDevice.DeviceClassInfo.Version);
+                Logger.LogDebug("{DeviceType} registered ({API} v{Version})", deviceClassInfo.DeviceType.Name, deviceClassInfo.Name, deviceClassInfo.Version);
         }
         catch (Exception ex)
         {
@@ -346,15 +351,8 @@ public static class GcLibrary
     /// <returns><see langword="true"/> if <paramref name="type"/> is a valid device type; otherwise <see langword="false"/>.</returns>
     private static bool IsDeviceType(Type type)
     {
-        if (type.IsAbstract) // Abstract classes cannot be instantiated, so they cannot be valid device types.
-            return false;
-
-        for (var baseType = type.BaseType; baseType is not null; baseType = baseType.BaseType)
-        {
-            if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(GcDevice<>) && baseType.GetGenericArguments()[0] == type) // Check if the base class is GcDevice<T> and if T is the same as the type being checked.
-                return type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDeviceFactory<>) && i.GetGenericArguments()[0] == type); // Check if the type implements IDeviceFactory<T> where T is the same as the type being checked.
-        }
-        return false;
+        // Abstract classes cannot be instantiated, so they cannot be valid device types.
+        return type.IsAbstract == false && GcDeviceClassInfo.IsDeviceType(type);
     }
 
     #endregion

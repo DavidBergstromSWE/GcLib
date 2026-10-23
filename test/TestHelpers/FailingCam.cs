@@ -24,6 +24,10 @@ internal class FailingCam : GcDevice<FailingCam>, IDeviceFactory<FailingCam>
         /// </summary>
         None,
         /// <summary>
+        /// Reports metadata for a different device type.
+        /// </summary>
+        DeviceClassInfoMismatch,
+        /// <summary>
         /// Indicates that initialization failed.
         /// </summary>
         InitializationFailure,
@@ -58,7 +62,9 @@ internal class FailingCam : GcDevice<FailingCam>, IDeviceFactory<FailingCam>
     /// </summary>
     public static FailureMode CurrentFailureMode { get; set; } = FailureMode.None;
 
-    public static GcDeviceClassInfo DeviceClassInfo => new("FailingCam", "1.0", typeof(FailingCam));
+    public static GcDeviceClassInfo DeviceClassInfo => CurrentFailureMode == FailureMode.DeviceClassInfoMismatch
+        ? new GcDeviceClassInfo("FailingCam", "1.0", typeof(VirtualCam))
+        : new GcDeviceClassInfo("FailingCam", "1.0", typeof(FailingCam));
 
     public override uint PayloadSize { get; }
 
