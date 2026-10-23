@@ -12,16 +12,15 @@ Contributors are welcome to add new APIs to the library as well as improving exi
 
 Some important notes regarding the device class design:
 - [GcDevice&lt;TDevice&gt;](src/Modules/GcDeviceOfT.cs) derives from the non-generic base class [GcDevice](src/Modules/GcDevice.cs), which provides the GenICam functionality including GenApi parameter access and GenTL device discovery and image data streaming. 
-- Deriving directly from [GcDevice](src/Modules/GcDevice.cs) is not possible, as its constructor is inaccessible outside the library. Intermediate non-generic base classes are also not supported. The generic base class [GcDevice&lt;TDevice&gt;](src/Modules/GcDeviceOfT.cs) has been introduced to provide a strongly typed interface when deriving concrete device classes, ensuring type safety and proper integration with the library's device management system.
-- `IDeviceFactory<TDevice>` is implemented through static abstract members that control the lifetime of the device class API:  and `Release` (cleanup of API resources).
-	- `Initialize` and `Release` can be used for API initialization and resource cleanup. `Initialize` will be called when the class is registered in the library (`GcLibrary.Register`) and `Release` when the class is unregistered (`GcLibrary.Unregister`). They may not be necessary for all APIs, leave them empty if not needed. 
+- Deriving directly from non-generic [GcDevice](src/Modules/GcDevice.cs) is not possible, as its constructor is inaccessible outside the library. Intermediate non-generic base classes are also not supported. The generic base class [GcDevice&lt;TDevice&gt;](src/Modules/GcDeviceOfT.cs) has been introduced to provide a strongly typed interface when deriving concrete device classes, ensuring type safety and proper integration with the library's device management system.
+- `IDeviceFactory<TDevice>` is implemented through static abstract members that control the lifetime of the device class API:
+	- `Initialize` and `Release` is to be used for initialization and resource cleanup of the device class API (they may not be necessary for all APIs, leave them empty if not needed). `Initialize` will be called when the class is registered in the library and `Release` when it is unregistered.
 	- `DeviceClassInfo` presents metadata about the device class API. Make sure it is readable without `Initialize` has been called, e.g. by using a static initializer.
-	- `EnumerateDevices` enables discovery and enumeration and `CreateDevice` enables instantiation of devices using the device class API. These methods can only be expected to work after a successful registration, otherwise calling of these may result in exceptions being thrown.
-- When device classes are properly designed, they will be discovered automatically by `GcLibrary` when loaded in the current AppDomain and be listed in e.g. `GcLibrary.GetImplementedDeviceClasses`.
-- Device classes can be registered automatically during library initialization (`GcLibrary.Init`) and unregistered automatically when the library is closed (`GcLibrary.Close`).
-- If control of the lifetime of a device class API is needed, device class APIs can be registered and unregistered explicitly using `GcLibrary.Register` and `GcLibrary.Unregister`.
+	- `EnumerateDevices` and `CreateDevice` enables discovery/enumeration and instantiation of devices using the device class API. These methods can only be expected to work after a successful registration, otherwise they may result in exceptions being thrown.
+- When device classes are properly designed, they will be discovered automatically by `GcLibrary` when loaded in the current AppDomain and will be found in e.g. `GcLibrary.GetImplementedDeviceClasses`.
+- Device classes can be registered automatically during library initialization (`GcLibrary.Init`) and unregistered automatically when the library is closed (`GcLibrary.Close`). If control of lifetime of a device class API is needed, device classes can be registered and unregistered explicitly using `GcLibrary.Register` and `GcLibrary.Unregister`.
 
-Before requesting a PR, please run tests to verify that your device class is working correctly (if available, add them to verify your implementation). The unit tests provided in [unit test project](tests/GcLib.Tests) only verify functionality of the library itself.
+Before requesting a PR, please run tests to verify that your device class is working correctly (if available, add them to verify your implementation). The unit tests provided in [unit test project](tests/GcLib.Tests) currently only verify functionality of the library itself.
 
 Make sure third-party binaries allow distribution before adding them to the repository!
 
