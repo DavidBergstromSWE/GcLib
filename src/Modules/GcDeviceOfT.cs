@@ -8,11 +8,6 @@ namespace GcLib;
 public abstract class GcDevice<TDevice> : GcDevice where TDevice : GcDevice<TDevice>, IDeviceFactory<TDevice>
 {
     /// <summary>
-    /// Provides information about the device type and its API implementation.
-    /// </summary>
-    public static GcDeviceClassInfo ClassInfo => TDevice.DeviceClassInfo;
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="GcDevice{TDevice}"/> class.
     /// </summary>
     protected GcDevice() : base()

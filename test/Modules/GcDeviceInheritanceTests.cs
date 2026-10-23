@@ -7,6 +7,10 @@ namespace GcLib.UnitTests.Modules;
 [TestClass]
 public class GcDeviceInheritanceTests
 {
+    /// <summary>
+    /// Verifies that no type in the library assembly derives directly from <see cref="GcDevice"/> except <see
+    /// cref="GcDevice{TDevice}"/>.
+    /// </summary>
     [TestMethod]
     public void LibraryAssembly_NoTypeDerivesDirectlyFromNonGenericGcDevice()
     {
@@ -16,9 +20,12 @@ public class GcDeviceInheritanceTests
             .ToList();
 
         // GcDevice<TDevice> is the only permitted direct subclass; device classes must derive from it.
-        CollectionAssert.AreEqual(Array.Empty<string>(), offendingTypes, $"Types deriving directly from GcDevice: {string.Join(", ", offendingTypes)}");
+        Assert.AreSequenceEqual([], offendingTypes, $"Types deriving directly from GcDevice: {string.Join(", ", offendingTypes)}");
     }
 
+    /// <summary>
+    /// Verifies that GcDevice<T> is the only direct subclass of GcDevice.
+    /// </summary>
     [TestMethod]
     public void GcDeviceOfT_IsTheOnlyDirectSubclassOfGcDevice()
     {
@@ -30,6 +37,9 @@ public class GcDeviceInheritanceTests
         Assert.AreEqual(typeof(GcDevice<>), directSubclasses[0]);
     }
 
+    /// <summary>
+    /// Verifies that each type deriving from <see cref="GcDevice{T}"/> passes itself as the generic type argument.
+    /// </summary>
     [TestMethod]
     public void DevicesDerivingFromGcDeviceOfT_PassThemselvesAsTypeArgument()
     {
@@ -41,6 +51,6 @@ public class GcDeviceInheritanceTests
             .Select(type => type.FullName)
             .ToList();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offendingTypes, $"Types not passing themselves to GcDevice<T>: {string.Join(", ", offendingTypes)}");
+        Assert.AreSequenceEqual([], offendingTypes, $"Types not passing themselves to GcDevice<T>: {string.Join(", ", offendingTypes)}");
     }
 }

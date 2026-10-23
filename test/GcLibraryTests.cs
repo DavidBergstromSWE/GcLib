@@ -392,8 +392,18 @@ public class GcLibraryTests
         var implementedDeviceClasses = GcLibrary.GetImplementedDeviceClasses();
 
         Assert.IsNotEmpty(implementedDeviceClasses);
-        Assert.Contains(typeof(VirtualCam), implementedDeviceClasses);
-        Assert.Contains(typeof(FailingCam), implementedDeviceClasses);
+        Assert.Contains(typeof(VirtualCam), implementedDeviceClasses); // Ensure that VirtualCam (device class in the same assembly) is included in the implemented device classes
+        Assert.Contains(typeof(FailingCam), implementedDeviceClasses); // Ensure that FailingCam (device class in an external assembly) is also included in the implemented device classes
+    }
+
+    [TestMethod]
+    public void GetImplementedDeviceClasses_ExcludesNonDeviceTypes()
+    {
+        var implementedDeviceClasses = GcLibrary.GetImplementedDeviceClasses();
+
+        Assert.DoesNotContain(typeof(GcDevice), implementedDeviceClasses); // Ensure that the base GcDevice class is not included in the implemented device classes
+        Assert.DoesNotContain(typeof(GcDevice<>), implementedDeviceClasses); // Ensure that the generic GcDevice<T> class is not included in the implemented device classes
+        Assert.DoesNotContain(typeof(string), implementedDeviceClasses); // Ensure that a non-device type (e.g., string) is not included in the implemented device classes
     }
 
     #endregion
