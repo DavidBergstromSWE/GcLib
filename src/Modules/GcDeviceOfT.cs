@@ -12,5 +12,6 @@ public abstract class GcDevice<TDevice> : GcDevice where TDevice : GcDevice<TDev
     /// </summary>
     protected GcDevice() : base()
     {
+
     }
 }

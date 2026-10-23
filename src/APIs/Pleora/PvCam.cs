@@ -220,6 +220,12 @@ public sealed partial class PvCam : GcDevice<PvCam>, IDeviceFactory<PvCam>
     #region IDeviceFactory
 
     /// <inheritdoc/>
+    public static void Initialize()
+    {
+        // No specific initialization required for eBUS SDK.
+    }
+
+    /// <inheritdoc/>
     public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("eBUS SDK", FileHelper.GetAssemblyFileVersion("PvDotNet.dll"), typeof(PvCam));
 
     /// <inheritdoc/>

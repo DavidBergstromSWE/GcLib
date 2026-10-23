@@ -28,18 +28,6 @@ public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
     #region Constructors
 
     /// <summary>
-    /// Static constructor. Initializes IDS Peak API library and registers device class info for this device type.
-    /// </summary>
-    static IdsCam()
-    {
-        // Initialize IDS Peak API library.
-        Library.Initialize();
-
-        // Register device class info for this device type.
-        DeviceClassInfo = new GcDeviceClassInfo("IDS Peak", Library.Version().ToString(), typeof(IdsCam));
-    }
-
-    /// <summary>
     /// Constructor. Connects to device with specified unique ID and retrieves camera parameters. If no unique ID is provided, it will attempt to connect to the first available device.
     /// </summary>
     /// <param name="deviceID">(Optional) Unique string identifier for device.</param>
@@ -128,7 +116,14 @@ public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
     #region IDeviceFactory
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; }
+    public static void Initialize()
+    {
+        // Initialize IDS Peak API library.
+        Library.Initialize();
+    }
+
+    /// <inheritdoc/>
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("IDS Peak", typeof(Library).Assembly.GetName().Version.ToString(), typeof(IdsCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()

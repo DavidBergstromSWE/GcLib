@@ -137,6 +137,12 @@ public sealed partial class SpinCam : GcDevice<SpinCam>, IDeviceFactory<SpinCam>
     #region IDeviceFactory
 
     /// <inheritdoc/>
+    public static void Initialize()
+    {
+        // No specific initialization required for SpinnakerNET.
+    }
+
+    /// <inheritdoc/>
     public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("SpinnakerNet", FileHelper.GetAssemblyFileVersion("SpinnakerNET_v140.dll"), typeof(SpinCam));
 
     /// <inheritdoc/>

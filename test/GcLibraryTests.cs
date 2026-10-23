@@ -88,7 +88,7 @@ public class GcLibraryTests
     #region GetDeviceClassInfoTests
 
     [TestMethod]
-    public void GetDeviceClassInfo_IsInitialized_ReturnsInfo()
+    public void GetDeviceClassInfo_IsRegistered_ReturnsInfo()
     {
         // Arrange
         GcLibrary.Init(false);
@@ -103,14 +103,10 @@ public class GcLibraryTests
     }
 
     [TestMethod]
-    public void GetDeviceClassInfo_IsNotInitialized_StillReturnsInfo()
+    public void GetDeviceClassInfo_IsNotRegistered_ThrowsArgumentException()
     {
-        // Act
-        var classInfo = GcLibrary.GetDeviceClassInfo<VirtualCam>();
-
-        // Assert
-        Assert.AreEqual(typeof(VirtualCam), classInfo.DeviceType);
-        Assert.AreEqual(nameof(VirtualCam), classInfo.Name);
+        // Act/Assert
+        Assert.Throws<ArgumentException>(GcLibrary.GetDeviceClassInfo<VirtualCam>);
     }
 
     #endregion
@@ -146,6 +142,20 @@ public class GcLibraryTests
 
         // Assert
         Assert.Contains(VirtualCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
+    }
+
+    [TestMethod]
+    public void RegisterGeneric_ThrowsAtInitialization_IsNotAddedToRegisteredDeviceClasses()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        FailingCam.CurrentFailureMode = FailingCam.FailureMode.InitializationFailure;
+
+        // Act
+        GcLibrary.Register<FailingCam>();
+
+        // Assert
+        Assert.DoesNotContain(FailingCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
     }
 
     [TestMethod]
@@ -191,6 +201,20 @@ public class GcLibraryTests
 
         // Assert
         Assert.Contains(VirtualCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
+    }
+
+    [TestMethod]
+    public void RegisterNonGeneric_ThrowsAtInitialization_IsNotAddedToRegisteredDeviceClasses()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        FailingCam.CurrentFailureMode = FailingCam.FailureMode.InitializationFailure;
+
+        // Act
+        GcLibrary.Register(typeof(FailingCam));
+
+        // Assert
+        Assert.DoesNotContain(FailingCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
     }
 
     [TestMethod]
@@ -403,6 +427,7 @@ public class GcLibraryTests
 
         Assert.DoesNotContain(typeof(GcDevice), implementedDeviceClasses); // Ensure that the base GcDevice class is not included in the implemented device classes
         Assert.DoesNotContain(typeof(GcDevice<>), implementedDeviceClasses); // Ensure that the generic GcDevice<T> class is not included in the implemented device classes
+        Assert.DoesNotContain(typeof(MockableCam), implementedDeviceClasses); // Abstract device bases are not concrete device classes
         Assert.DoesNotContain(typeof(string), implementedDeviceClasses); // Ensure that a non-device type (e.g., string) is not included in the implemented device classes
     }
 

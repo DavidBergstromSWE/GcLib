@@ -121,6 +121,14 @@ public sealed partial class PcoCam : GcDevice<PcoCam>, IDeviceFactory<PcoCam>
     #region IDeviceFactory
 
     /// <inheritdoc/>
+    public static void Initialize()
+    {
+        // Initialize PCO SDK library
+        // ToDo: Check if this is necessary
+        //LibWrapper.PCO_InitializeLib(); // needs to be added to the PCO SDK wrapper (currently not available)
+    }
+
+    /// <inheritdoc/>
     public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("pco.sdk.net", FileHelper.GetAssemblyFileVersion("SC2_Cam.dll"), typeof(PcoCam));
 
     /// <inheritdoc/>
@@ -167,13 +175,9 @@ public sealed partial class PcoCam : GcDevice<PcoCam>, IDeviceFactory<PcoCam>
     /// <inheritdoc/>
     public static void Release()
     {
-        // Close PCO SDK library.
-        // ToDo: Check if this is necessary (or if it is already closed by the SDK).
-        try
-        {
-            //LibWrapper.PCO_CloseLib(); // needs to be added to the PCO SDK wrapper (currently not available)
-        }
-        catch { }
+        // Close PCO SDK library
+        // ToDo: Check if this is necessary
+        //LibWrapper.PCO_CloseLib(); // needs to be added to the PCO SDK wrapper (currently not available)
     }
 
     #endregion

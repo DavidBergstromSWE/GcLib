@@ -10,6 +10,8 @@ namespace GcLib.UnitTests.Utilities;
 /// </remarks>
 internal class FailingCam : GcDevice<FailingCam>, IDeviceFactory<FailingCam>
 {
+    #region Enums
+
     /// <summary>
     /// Represents the outcome of an operation by identifying the stage where a failure occurred.
     /// </summary>
@@ -21,6 +23,10 @@ internal class FailingCam : GcDevice<FailingCam>, IDeviceFactory<FailingCam>
         /// No failure occurred.
         /// </summary>
         None,
+        /// <summary>
+        /// Indicates that initialization failed.
+        /// </summary>
+        InitializationFailure,
         /// <summary>
         /// Represents a failure that occurred while enumerating devices.
         /// </summary>
@@ -43,15 +49,9 @@ internal class FailingCam : GcDevice<FailingCam>, IDeviceFactory<FailingCam>
         ReleaseFailure
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FailingCam"/> class.
-    /// </summary>
-    /// <exception cref="System.Exception">Thrown when <see cref="CurrentFailureMode"/> is <see cref="FailureMode.DeviceCreationFailure"/>.</exception>
-    public FailingCam()
-    {
-        if (CurrentFailureMode == FailureMode.DeviceCreationFailure)
-            throw new System.Exception("Simulated device creation failure.");
-    }
+    #endregion
+
+    #region Properties
 
     /// <summary>
     /// Gets or sets the current failure mode.
@@ -64,31 +64,23 @@ internal class FailingCam : GcDevice<FailingCam>, IDeviceFactory<FailingCam>
 
     public override uint BufferCapacity { get; set; }
 
-    public static FailingCam CreateDevice(GcDeviceInfo deviceInfo)
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FailingCam"/> class.
+    /// </summary>
+    /// <exception cref="System.Exception">Thrown when <see cref="CurrentFailureMode"/> is <see cref="FailureMode.DeviceCreationFailure"/>.</exception>
+    public FailingCam()
     {
         if (CurrentFailureMode == FailureMode.DeviceCreationFailure)
             throw new System.Exception("Simulated device creation failure.");
-        else return new FailingCam();
     }
 
-    public static List<GcDeviceInfo> EnumerateDevices()
-    {
-        if (CurrentFailureMode == FailureMode.EnumerationFailure)
-            throw new System.Exception("Simulated enumeration failure.");
-        else
-        {
-            var devices = new List<GcDeviceInfo>();
-            for (uint i = 1; i <= 3; i++)
-                devices.Add(new GcDeviceInfo("GcLib", "FailingCam", "1.0", $"FailingCam{i}", DeviceClassInfo));
-            return devices;
-        }
-    }
+    #endregion
 
-    static void IDeviceFactory<FailingCam>.Release()
-    {
-        if (CurrentFailureMode == FailureMode.ReleaseFailure)
-            throw new System.Exception("Simulated release failure.");
-    }
+    #region Public methods
 
     public override void StartAcquisition()
     {
@@ -101,6 +93,10 @@ internal class FailingCam : GcDevice<FailingCam>, IDeviceFactory<FailingCam>
         if (CurrentFailureMode == FailureMode.AcquisitionFailure)
             throw new System.Exception("Simulated acquisition failure.");
     }
+
+    #endregion
+
+    #region Protected methods
 
     protected override void ExecuteParameterCommand(string parameterName)
     {
@@ -175,4 +171,43 @@ internal class FailingCam : GcDevice<FailingCam>, IDeviceFactory<FailingCam>
         // No special cleanup required for this simulated device.
         CurrentFailureMode = FailureMode.None; // Reset failure mode on close for testing purposes.
     }
+
+    #endregion
+
+    #region IDeviceFactory
+
+    public static void Initialize()
+    {
+        // No specific initialization required for FailingCam.
+        if (CurrentFailureMode == FailureMode.InitializationFailure)
+            throw new System.Exception("Simulated initialization failure.");
+    }
+
+    public static FailingCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        if (CurrentFailureMode == FailureMode.DeviceCreationFailure)
+            throw new System.Exception("Simulated device creation failure.");
+        else return new FailingCam();
+    }
+
+    public static List<GcDeviceInfo> EnumerateDevices()
+    {
+        if (CurrentFailureMode == FailureMode.EnumerationFailure)
+            throw new System.Exception("Simulated enumeration failure.");
+        else
+        {
+            var devices = new List<GcDeviceInfo>();
+            for (uint i = 1; i <= 3; i++)
+                devices.Add(new GcDeviceInfo("GcLib", "FailingCam", "1.0", $"FailingCam{i}", DeviceClassInfo));
+            return devices;
+        }
+    }
+
+    static void IDeviceFactory<FailingCam>.Release()
+    {
+        if (CurrentFailureMode == FailureMode.ReleaseFailure)
+            throw new System.Exception("Simulated release failure.");
+    }
+
+    #endregion
 }

@@ -117,16 +117,26 @@ public sealed partial class VimbaCam : GcDevice<VimbaCam>, IDeviceFactory<VimbaC
     #region IDeviceFactory
 
     /// <inheritdoc/>
+    public static void Initialize()
+    {
+        // Initialize the Vmb system if it hasn't been initialized yet.
+        _vmbSystem = IVmbSystem.Startup();
+    }
+
+    /// <inheritdoc/>
     public static GcDeviceClassInfo DeviceClassInfo { get; } = new("VmbNET", IVmbSystem.VmbCVersion, typeof(VimbaCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        // Initialize the Vmb system if it hasn't been initialized yet.
-        _vmbSystem = IVmbSystem.Startup();
-
         // Enumerate all discovered cameras and return their device info.
         return [.. _vmbSystem.GetCameras().Select(GetDeviceInfo)];
+    }
+
+    /// <inheritdoc/>
+    public static VimbaCam CreateDevice(GcDeviceInfo deviceInfo)
+    {
+        return new VimbaCam(deviceInfo.UniqueID);
     }
 
     /// <inheritdoc/>
@@ -135,12 +145,6 @@ public sealed partial class VimbaCam : GcDevice<VimbaCam>, IDeviceFactory<VimbaC
         // Release unmanaged resources of the API.
         _vmbSystem?.Dispose();
         _vmbSystem?.Shutdown();
-    }
-
-    /// <inheritdoc/>
-    public static VimbaCam CreateDevice(GcDeviceInfo deviceInfo)
-    {
-        return new VimbaCam(deviceInfo.UniqueID);
     }
 
     #endregion

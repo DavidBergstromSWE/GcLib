@@ -89,6 +89,12 @@ public sealed partial class VirtualCam : GcDevice<VirtualCam>, IDeviceFactory<Vi
     #region IDeviceFactory
 
     /// <inheritdoc/>
+    public static void Initialize()
+    {
+        // No specific initialization required for VirtualCam.
+    }
+
+    /// <inheritdoc/>
     public static GcDeviceClassInfo DeviceClassInfo { get; } = new(nameof(VirtualCam), "1.0", typeof(VirtualCam));
 
     /// <inheritdoc/>

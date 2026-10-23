@@ -9,6 +9,11 @@ namespace GcLib;
 public interface IDeviceFactory<TDevice> where TDevice : GcDevice
 {
     /// <summary>
+    /// Initializes the implementing device type and its API implementation.
+    /// </summary>
+    static abstract void Initialize();
+
+    /// <summary>
     /// Provides information about the implementing device type and its API implementation.
     /// </summary>
     static abstract GcDeviceClassInfo DeviceClassInfo { get; }

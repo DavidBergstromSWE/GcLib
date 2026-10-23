@@ -156,6 +156,12 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
     #region IDeviceFactory
 
     /// <inheritdoc/>
+    public static void Initialize()
+    {
+        // No specific initialization required for xiAPI.NET
+    }
+
+    /// <inheritdoc/>
     public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("xiApi.NET", FileHelper.GetAssemblyFileVersion("xiApi.NETX64.dll"), typeof(XiCam));
 
     /// <inheritdoc/>

@@ -129,14 +129,18 @@ public sealed partial class PylonCam : GcDevice<PylonCam>, IDeviceFactory<PylonC
     #region IDeviceFactory
 
     /// <inheritdoc/>
+    public static void Initialize()
+    {
+        // Initialize pylon runtime (if not already initialized).
+        PylonRuntime.Initialize();
+    }
+
+    /// <inheritdoc/>
     public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("Pylon", Library.VersionInfo.ToString(), typeof(PylonCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        // Initialize pylon runtime (if not already initialized).
-        PylonRuntime.Initialize();
-
         // Note: The following lines can be uncommented for testing purposes to enable camera emulation and enumerate camera emulators.
         //Environment.SetEnvironmentVariable("PYLON_CAMEMU", "1"); // Enable camera emulation (for testing purposes).
         //var cameraInfos = CameraFinder.Enumerate(DeviceType.CameraEmulator); // Only enumerate available camera emulators (for testing purposes).

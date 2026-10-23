@@ -14,5 +14,7 @@ public abstract class MockableCam : GcDevice<MockableCam>, IDeviceFactory<Mockab
 
     public static List<GcDeviceInfo> EnumerateDevices() => [];
 
+    public static void Initialize() { }
+
     static void IDeviceFactory<MockableCam>.Release() { }
 }
