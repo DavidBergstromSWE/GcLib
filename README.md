@@ -1,10 +1,10 @@
 # GcLib
 
-GcLib is a .NET library that provides a common interface for discovering [GenICam/GenTL](https://www.emva.org/standards-technology/genicam/) cameras, accessing their parameters, and streaming image buffers. It wraps supported provider APIs so applications can use a consistent interface across camera vendors.
+GcLib is a .NET library that provides a common interface to control settings and streaming of [GenICam/GenTL](https://www.emva.org/standards-technology/genicam/) cameras. The library wraps supported provider APIs, hiding their specific implementations so that applications can use a consistent interface across camera vendors.
 
 ## Supported camera APIs
 
-The following provider SDK versions are currently integrated in the repository:
+The following provider SDKs and versionsare currently integrated in the repository:
 
 | Provider | SDK | Integrated version |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ The following provider SDK versions are currently integrated in the repository:
 | [Basler](https://www.baslerweb.com/en/software/pylon/sdk/) | Pylon | 12.2 |
 | [Allied Vision](https://www.alliedvision.com/en/support/software-downloads/vimba-x-sdk/vimba-x) | Vimba X | 1.3.4 |
 
-These are the versions integrated in this repository, not a guarantee that every camera or SDK configuration has been tested. To use a physical camera, install the relevant provider SDK and camera driver. Some providers may also require a separate license. Check the provider's documentation for its system requirements and terms; third-party SDKs and dependencies are subject to their own licenses.
+These are the versions integrated in this repository, not a guarantee that every camera or SDK configuration has been tested. To use a physical camera, install the relevant provider SDK and camera drivers. Some providers may also require a separate license. Check the provider's documentation for its system requirements and terms; third-party SDKs and dependencies are subject to their own licenses.
 
 ## Requirements
 
@@ -25,19 +25,53 @@ These are the versions integrated in this repository, not a guarantee that every
 
 ## Quick start
 
-From the repository root, run the Console sample:
+The following example initializes the library, discovers devices, changes parameters and acquires images. It is based on the [Console sample](samples/GcLib.Samples.ConsoleApp), where a library-included camera emulator ([VirtualCam](src/APIs/VirtualCam)) is used to demonstrate the workflow.
 
-```sh
-dotnet run --project samples/GcLib.Samples.ConsoleApp
+```csharp
+using GcLib;
+
+// Initialize the library, which discovers the APIs supported on the current system (always needed before the library can be used).
+GcLibrary.Init();
+
+// Instantiate the system level, from which devices can be opened (only one system level can be used at a time).
+using var system = new GcSystem();
+
+// Enumerate available devices.
+system.UpdateDeviceList();
+var cameraList = system.GetDeviceList();
+
+// Open the first available device.
+GcDevice camera = system.OpenDevice(cameraList[0]);
+
+// Fetch a single image and save it to file (via Emgu.CV.Mat format).
+camera.FetchImage(out GcBuffer image);
+image.ToMat().Save("image1.tiff");
+
+// Update some camera parameters.
+camera.Parameters.SetParameterValue("Height", "480");
+camera.Parameters.SetParameterValue("Width", "640");
+camera.Parameters.SetParameterValue("PixelFormat", "RGB8");
+camera.Parameters.SetParameterValue("TestPattern", "FrameCounter");
+
+// Open a datastream to allow continuous acquisition and start streaming.
+GcDataStream dataStream = camera.OpenDataStream();
+dataStream.Start();
+
+// Allow at least one image to be queued up, then retrieve it from the front of the queue.
+Thread.Sleep(100);
+dataStream.RetrieveImage(out image);
+image.ToMat().Save("image2.tiff");
+
+// Close the camera (this also stops all streaming) and the library.
+camera.Close();
+GcLibrary.Close();
 ```
-
-The [Console sample source](samples/GcLib.Samples.ConsoleApp) demonstrates library initialization, device discovery, parameter changes, and image acquisition, where a library-included camera emulator ([VirtualCam](src/APIs/VirtualCam)) is used to demonstrate the workflow.
 
 ## Samples
 
 - [Console app](samples/GcLib.Samples.ConsoleApp) — a minimal example of discovery, parameter access, and image acquisition.
 - [WinForms app](samples/GcLib.Samples.WinFormsDemoApp) — a lightweight graphical demo.
-- [WPF app](samples/GcLib.Samples.WPFDemoApp) — a fuller demo for discovering devices, changing parameters, viewing live streams, and basic recording and playback.
+- [WPF app](samples/GcLib.Samples.WPFDemoApp) — a more complete demo for discovering devices, changing parameters, viewing live streams, and basic recording and playback.
 
 ![Screenshot of the GcLib WPF demo application](samples/GcLib.Samples.WPFDemoApp/Resources/Images/WFPDemoApp_screenshot.png)
 
