@@ -385,17 +385,27 @@ public sealed class GcBuffer
     public override bool Equals(object obj)
     {
         if ((obj is GcBuffer otherBuffer) == false)
-            return false;
+            return false; // Not the same type.
 
         if (otherBuffer.Width != Width || otherBuffer.Height != Height || otherBuffer.PixelFormat != PixelFormat || otherBuffer.FrameID != FrameID || otherBuffer.TimeStamp != TimeStamp || Enumerable.SequenceEqual(otherBuffer.ImageData, ImageData) == false)
-            return false;
+            return false; // Metadata or image data is not equal.
 
         return true;
     }
 
     public override int GetHashCode()
     {
-        return base.GetHashCode();
+        var imageHash = new HashCode();
+        foreach (byte value in ImageData)
+            imageHash.Add(value);
+
+        return HashCode.Combine(
+            Width,
+            Height,
+            PixelFormat,
+            FrameID,
+            TimeStamp,
+            imageHash.ToHashCode());
     }
 
     #endregion
