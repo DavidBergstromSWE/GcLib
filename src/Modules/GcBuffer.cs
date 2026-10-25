@@ -396,9 +396,8 @@ public sealed class GcBuffer
     public override int GetHashCode()
     {
         var imageHash = new HashCode();
-        foreach (byte value in ImageData)
-            imageHash.Add(value);
 
+        // Combine the hash codes of the metadata and the image data.
         return HashCode.Combine(
             Width,
             Height,
