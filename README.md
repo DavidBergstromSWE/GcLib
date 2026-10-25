@@ -4,7 +4,7 @@ GcLib is a .NET library that provides a common interface to control settings and
 
 ## Supported camera APIs
 
-The following provider SDKs and versionsare currently integrated in the repository:
+The following provider SDKs and versions are currently integrated in the repository:
 
 | Provider | SDK | Integrated version |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ The following provider SDKs and versionsare currently integrated in the reposito
 | [Basler](https://www.baslerweb.com/en/software/pylon/sdk/) | Pylon | 12.2 |
 | [Allied Vision](https://www.alliedvision.com/en/support/software-downloads/vimba-x-sdk/vimba-x) | Vimba X | 1.3.4 |
 
-These are the versions integrated in this repository, not a guarantee that every camera or SDK configuration has been tested. To use a physical camera, install the relevant provider SDK and camera drivers. Some providers may also require a separate license. Check the provider's documentation for its system requirements and terms; third-party SDKs and dependencies are subject to their own licenses.
+Please note that this is not a guarantee that every camera or SDK configuration has been tested. To use a physical camera, install the relevant provider SDK and camera drivers. Some providers may also require a separate license. Check the provider's documentation for its system requirements and terms; third-party SDKs and dependencies are subject to their own licenses.
 
 ## Requirements
 
