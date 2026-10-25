@@ -1,6 +1,6 @@
 # GcLib
 
-GcLib is a .NET library that provides a common interface for discovering [GenICam/GenTL](https://www.emva.org/standards-technology/genicam/) cameras, accessing their parameters, and streaming image buffers. It wraps supported provider APIs so applications can use a consistent interface across camera vendors; provider-specific features and requirements may still differ.
+GcLib is a .NET library that provides a common interface for discovering [GenICam/GenTL](https://www.emva.org/standards-technology/genicam/) cameras, accessing their parameters, and streaming image buffers. It wraps supported provider APIs so applications can use a consistent interface across camera vendors.
 
 ## Supported camera APIs
 
@@ -31,7 +31,7 @@ From the repository root, run the Console sample:
 dotnet run --project samples/GcLib.Samples.ConsoleApp
 ```
 
-The [Console sample source](samples/GcLib.Samples.ConsoleApp) demonstrates library initialization, device discovery, parameter changes, and image acquisition. GcLib includes the VirtualCam simulator for trying the workflow without physical hardware. The sample opens the first enumerated device, so verify the selected device if other cameras are connected. Acquired images are saved to the current working directory.
+The [Console sample source](samples/GcLib.Samples.ConsoleApp) demonstrates library initialization, device discovery, parameter changes, and image acquisition, where a library-included camera emulator (VirtualCam) is used to demonstrate the workflow.
 
 ## Samples
 
