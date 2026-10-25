@@ -31,7 +31,7 @@ From the repository root, run the Console sample:
 dotnet run --project samples/GcLib.Samples.ConsoleApp
 ```
 
-The [Console sample source](samples/GcLib.Samples.ConsoleApp) demonstrates library initialization, device discovery, parameter changes, and image acquisition, where a library-included camera emulator ([VirtualCam](samples/GcLib.Samples.ConsoleApp/VirtualCam)) is used to demonstrate the workflow.
+The [Console sample source](samples/GcLib.Samples.ConsoleApp) demonstrates library initialization, device discovery, parameter changes, and image acquisition, where a library-included camera emulator ([VirtualCam](src/APIs/VirtualCam)) is used to demonstrate the workflow.
 
 ## Samples
 
