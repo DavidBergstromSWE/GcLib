@@ -1,20 +1,50 @@
-Library providing a common interface to control settings and streaming of [GenICam/GenTL](https://www.emva.org/standards-technology/genicam/)-standardized cameras in .NET, using underlying APIs from supported third-party providers.
-GcLib essentially works like a wrapper around the external APIs, hiding their specific implementations and enabling the same code to be used regardless of the camera or vendor.
+# GcLib
 
-Currently supported APIs are: 
-[Pleora eBUS SDK](https://www.pleora.com/machine-vision-connectivity/ebus-sdk/) (v6.4),
-[Ximea xiAPI.NET](https://www.ximea.com/support/wiki/apis/xiAPINET) (v4.33),
-[FLIR Spinnaker SDK](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) (v4.3),
-[IDS Peak](https://en.ids-imaging.com/ids-peak.html) (v1.17),
-[PCO SDK](https://www.excelitas.com/product/pco-software-development-kits) (v1.35),
-[Basler Pylon](https://www.baslerweb.com/en/software/pylon/sdk/) (v.12.2) and
-[Allied Vision Vimba](https://www.alliedvision.com/en/support/software-downloads/vimba-x-sdk/vimba-x)) (v1.3.4).
+GcLib is a .NET library that provides a common interface for discovering [GenICam/GenTL](https://www.emva.org/standards-technology/genicam/) cameras, accessing their parameters, and streaming image buffers. It wraps supported provider APIs so applications can use a consistent interface across camera vendors; provider-specific features and requirements may still differ.
 
-> [!NOTE]
-> Please note that some APIs may require a license and driver installation.
+## Supported camera APIs
 
-Contributors are welcome to the project, please see this [short guide](CONTRIBUTING.md) for further info.
+The following provider SDK versions are currently integrated in the repository:
 
-Demo apps have been added to the repo to showcase the use and potential of the library. A simple [Console app](samples/GcLib.Samples.ConsoleApp) demonstrates the straightforwardness of setting up and using it. A light-weight [WinForms app](samples/GcLib.Samples.WinFormsDemoApp) and a more complete [WPF demo app](samples/GcLib.Samples.WPFDemoApp) (see screenshot below) demonstrates how to connect to devices detected, change device parameter settings and display live image streams. The demo applications also provide some elementary recording and playback functionality.
+| Provider | SDK | Integrated version |
+| --- | --- | --- |
+| [Pleora](https://www.pleora.com/machine-vision-connectivity/ebus-sdk/) | eBUS SDK | 6.4 |
+| [Ximea](https://www.ximea.com/support/wiki/apis/xiAPINET) | xiAPI.NET | 4.33 |
+| [Teledyne FLIR](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) | Spinnaker SDK | 4.3 |
+| [IDS](https://en.ids-imaging.com/ids-peak.html) | IDS Peak | 1.17 |
+| [PCO](https://www.excelitas.com/product/pco-software-development-kits) | PCO SDK | 1.35 |
+| [Basler](https://www.baslerweb.com/en/software/pylon/sdk/) | Pylon | 12.2 |
+| [Allied Vision](https://www.alliedvision.com/en/support/software-downloads/vimba-x-sdk/vimba-x) | Vimba X | 1.3.4 |
 
-![alt text](samples/GcLib.Samples.WPFDemoApp/Resources/Images/WFPDemoApp_screenshot.png)
+These are the versions integrated in this repository, not a guarantee that every camera or SDK configuration has been tested. To use a physical camera, install the relevant provider SDK and camera driver. Some providers may also require a separate license. Check the provider's documentation for its system requirements and terms; third-party SDKs and dependencies are subject to their own licenses.
+
+## Requirements
+
+- .NET 10 SDK.
+- A 64-bit Windows environment for the included samples and bundled native provider libraries. Individual provider SDKs may have additional operating system, driver, or hardware requirements.
+
+## Quick start
+
+From the repository root, run the Console sample:
+
+```sh
+dotnet run --project samples/GcLib.Samples.ConsoleApp
+```
+
+The [Console sample source](samples/GcLib.Samples.ConsoleApp) demonstrates library initialization, device discovery, parameter changes, and image acquisition. GcLib includes the VirtualCam simulator for trying the workflow without physical hardware. The sample opens the first enumerated device, so verify the selected device if other cameras are connected. Acquired images are saved to the current working directory.
+
+## Samples
+
+- [Console app](samples/GcLib.Samples.ConsoleApp) — a minimal example of discovery, parameter access, and image acquisition.
+- [WinForms app](samples/GcLib.Samples.WinFormsDemoApp) — a lightweight graphical demo.
+- [WPF app](samples/GcLib.Samples.WPFDemoApp) — a fuller demo for discovering devices, changing parameters, viewing live streams, and basic recording and playback.
+
+![Screenshot of the GcLib WPF demo application](samples/GcLib.Samples.WPFDemoApp/Resources/Images/WFPDemoApp_screenshot.png)
+
+## Contributing
+
+Contributions are welcome. See the [contribution guide](CONTRIBUTING.md) for project guidance. Before adding or distributing third-party binaries, check that their licenses allow it.
+
+## License
+
+GcLib is licensed under the GNU General Public License, version 3. See [LICENSE.md](LICENSE.md) for the full license text. Third-party SDKs and dependencies may have separate license terms.
