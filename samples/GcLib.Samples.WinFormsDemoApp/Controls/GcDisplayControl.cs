@@ -111,11 +111,11 @@ public partial class GcDisplayControl : ImageBox
         CvInvoke.ResizeForFrame(mat, mat, Size, Inter.Nearest);
 
         // Convert to 8-bit.
-        if (GenICamHelper.GetNumChannels(buffer.PixelFormat) == 1 && GenICamHelper.GetBitsPerPixelPerChannel(buffer.PixelFormat) > 8)
+        if (buffer.NumChannels == 1 && GenICamHelper.GetBitsPerPixelPerChannel(buffer.PixelFormat) > 8)
             CvInvoke.Normalize(mat, mat, 0, 255, NormType.MinMax, DepthType.Cv8U);
 
         // Convert 4-channel image to 3-channel RGB.
-        if (GenICamHelper.GetNumChannels(buffer.PixelFormat) == 4)
+        if (buffer.NumChannels == 4)
             CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Rgb);
 
         // Add timestamp to circular buffer.

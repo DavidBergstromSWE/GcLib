@@ -26,7 +26,6 @@ public class GcBufferExtensionsTests
         var height = (uint)10;
         var numChannels = GenICamHelper.GetNumChannels(packedFormat);
         var bitDepth = GenICamHelper.GetBitsPerPixelPerChannel(packedFormat);
-        var pixelDynamicRangeMax = GenICamHelper.GetPixelDynamicRangeMax(packedFormat);
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
 
@@ -47,7 +46,7 @@ public class GcBufferExtensionsTests
         Assert.AreEqual(expectedUnpackedPixelFormat, unpackedBuffer.PixelFormat, "PixelFormat should be converted by removing trailing 'p'.");
         Assert.AreEqual(width, unpackedBuffer.Width, "Width should be preserved.");
         Assert.AreEqual(height, unpackedBuffer.Height, "Height should be preserved.");
-        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(packedBuffer.PixelFormat), GenICamHelper.GetPixelDynamicRangeMax(unpackedBuffer.PixelFormat), "Pixel dynamic range max should be preserved.");
+        Assert.AreEqual(packedBuffer.PixelDynamicRangeMax, unpackedBuffer.PixelDynamicRangeMax, "Pixel dynamic range max should be preserved.");
         Assert.AreEqual(packedBuffer.FrameID, unpackedBuffer.FrameID, "FrameID should be preserved.");
         Assert.AreEqual(packedBuffer.TimeStamp, unpackedBuffer.TimeStamp, "TimeStamp should be preserved.");
         Assert.IsNotNull(unpackedBuffer.ImageData, "ImageData should not be null.");
@@ -95,7 +94,6 @@ public class GcBufferExtensionsTests
         var width = (uint)10;
         var height = (uint)10;
         var numChannels = GenICamHelper.GetNumChannels(unpackedFormat);
-        var pixelDynamicRangeMax = GenICamHelper.GetPixelDynamicRangeMax(unpackedFormat);
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
 
@@ -115,7 +113,7 @@ public class GcBufferExtensionsTests
         Assert.AreEqual(expectedPackedPixelFormat, packedBuffer.PixelFormat, "PixelFormat should be converted by appending trailing 'p'.");
         Assert.AreEqual(width, packedBuffer.Width, "Width should be preserved.");
         Assert.AreEqual(height, packedBuffer.Height, "Height should be preserved.");
-        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(unpackedBuffer.PixelFormat), GenICamHelper.GetPixelDynamicRangeMax(packedBuffer.PixelFormat), "Pixel dynamic range max should be preserved.");
+        Assert.AreEqual(unpackedBuffer.PixelDynamicRangeMax, packedBuffer.PixelDynamicRangeMax, "Pixel dynamic range max should be preserved.");
         Assert.AreEqual(unpackedBuffer.FrameID, packedBuffer.FrameID, "FrameID should be preserved.");
         Assert.AreEqual(unpackedBuffer.TimeStamp, packedBuffer.TimeStamp, "TimeStamp should be preserved.");
         Assert.IsNotNull(packedBuffer.ImageData, "ImageData should not be null.");

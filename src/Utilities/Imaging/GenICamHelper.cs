@@ -197,7 +197,6 @@ public static partial class GenICamHelper
             default:
                 throw new NotSupportedException("Pixel format is not supported!");
         }
-#pragma warning restore IDE0066 // Convert switch statement to expression
     }
 
     /// <summary>

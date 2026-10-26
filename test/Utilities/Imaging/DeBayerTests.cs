@@ -163,8 +163,8 @@ public class DeBayerTests
         Assert.AreEqual(rawBuffer.Width, outputBuffer.Width);
         Assert.AreEqual(rawBuffer.Height, outputBuffer.Height);
         Assert.AreEqual(GenICamHelper.GetBitsPerPixelPerChannel(rawBuffer.PixelFormat), GenICamHelper.GetBitsPerPixelPerChannel(outputBuffer.PixelFormat));
-        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(rawBuffer.PixelFormat), GenICamHelper.GetPixelDynamicRangeMax(outputBuffer.PixelFormat));
-        Assert.AreEqual(3, (int)GenICamHelper.GetNumChannels(outputBuffer.PixelFormat));
+        Assert.AreEqual(rawBuffer.PixelDynamicRangeMax, outputBuffer.PixelDynamicRangeMax);
+        Assert.AreEqual(3, (int)outputBuffer.NumChannels);
         Assert.Contains(outputBuffer.PixelFormat, [PixelFormat.BGR8, PixelFormat.BGR10, PixelFormat.BGR12, PixelFormat.BGR14, PixelFormat.BGR16]);
         Assert.AreEqual(rawBuffer.FrameID, outputBuffer.FrameID);
         Assert.AreEqual(rawBuffer.TimeStamp, outputBuffer.TimeStamp);
@@ -225,8 +225,8 @@ public class DeBayerTests
         Assert.AreEqual(rawBuffer.Width, outputBuffer.Width);
         Assert.AreEqual(rawBuffer.Height, outputBuffer.Height);
         Assert.AreEqual(GenICamHelper.GetBitsPerPixelPerChannel(rawBuffer.PixelFormat), GenICamHelper.GetBitsPerPixelPerChannel(outputBuffer.PixelFormat));
-        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(rawBuffer.PixelFormat), GenICamHelper.GetPixelDynamicRangeMax(outputBuffer.PixelFormat));
-        Assert.AreEqual(3, (int)GenICamHelper.GetNumChannels(outputBuffer.PixelFormat));
+        Assert.AreEqual(rawBuffer.PixelDynamicRangeMax, outputBuffer.PixelDynamicRangeMax);
+        Assert.AreEqual(3, (int)outputBuffer.NumChannels);
         Assert.Contains(outputBuffer.PixelFormat, [PixelFormat.RGB8, PixelFormat.RGB10, PixelFormat.RGB12, PixelFormat.RGB14, PixelFormat.RGB16]);
         Assert.AreEqual(rawBuffer.FrameID, outputBuffer.FrameID);
         Assert.AreEqual(rawBuffer.TimeStamp, outputBuffer.TimeStamp);

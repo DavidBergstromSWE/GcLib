@@ -60,11 +60,11 @@ public static class GcBufferExtensions
         int unpackedPixelBitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(unpackedPixelFormat);
 
         // Allocate array for unpacked image data.
-        var unpackedImageData = new byte[packedBuffer.Width * packedBuffer.Height * GenICamHelper.GetNumChannels(packedBuffer.PixelFormat) * unpackedPixelBitCount / ByteExtensions.BitsPerByte];
+        var unpackedImageData = new byte[packedBuffer.Width * packedBuffer.Height * packedBuffer.NumChannels * unpackedPixelBitCount / ByteExtensions.BitsPerByte];
 
         // Iterate through each pixel in the packed image data.
         int byteIndex = 0;
-        for (int bitNumber = 0; bitNumber < packedBuffer.Width * packedBuffer.Height * GenICamHelper.GetNumChannels(packedBuffer.PixelFormat) * GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat); bitNumber += (int)GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat))
+        for (int bitNumber = 0; bitNumber < packedBuffer.Width * packedBuffer.Height * packedBuffer.NumChannels * GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat); bitNumber += (int)GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat))
         {
             // Extract bits for each packed pixel.
             var bits = ByteExtensions.GetBitRange(source: packedBuffer.ImageData,
@@ -107,10 +107,10 @@ public static class GcBufferExtensions
         int packedPixelBitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(packedPixelFormat);
 
         // Allocate array for packed image data.
-        var packedImageData = new byte[(unpackedBuffer.Width * unpackedBuffer.Height * GenICamHelper.GetNumChannels(unpackedBuffer.PixelFormat) * packedPixelBitCount + 7) / ByteExtensions.BitsPerByte];
+        var packedImageData = new byte[(unpackedBuffer.Width * unpackedBuffer.Height * unpackedBuffer.NumChannels * packedPixelBitCount + 7) / ByteExtensions.BitsPerByte];
 
         // Iterate through each pixel in the unpacked image data.
-        for (int pixel = 0; pixel < unpackedBuffer.Width * unpackedBuffer.Height * GenICamHelper.GetNumChannels(unpackedBuffer.PixelFormat); pixel++)
+        for (int pixel = 0; pixel < unpackedBuffer.Width * unpackedBuffer.Height * unpackedBuffer.NumChannels; pixel++)
         {
             // Extract bytes for each unpacked pixel.
             var bytes = unpackedBuffer.ImageData.AsSpan(pixel * ((packedPixelBitCount + 7) / ByteExtensions.BitsPerByte), (packedPixelBitCount + 7) / ByteExtensions.BitsPerByte);

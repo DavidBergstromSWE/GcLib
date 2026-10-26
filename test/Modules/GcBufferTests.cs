@@ -53,7 +53,8 @@ public class GcBufferTests
         Assert.IsTrue(Enumerable.SequenceEqual(imageData, buffer.ImageData)); // checks element equality
         Assert.AreEqual((uint)height, buffer.Height);
         Assert.AreEqual((uint)width, buffer.Width);
-        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), GenICamHelper.GetPixelDynamicRangeMax(buffer.PixelFormat));
+        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), buffer.PixelDynamicRangeMax);
+        Assert.AreEqual(GenICamHelper.GetNumChannels(pixelFormat), buffer.NumChannels);
         Assert.AreEqual(frameID, buffer.FrameID);
         Assert.AreEqual(timeStamp, buffer.TimeStamp);
     }
@@ -146,7 +147,8 @@ public class GcBufferTests
         // Assert
         Assert.AreEqual(buffer.Width, (uint)mat.Width);
         Assert.AreEqual(buffer.Height, (uint)mat.Height);
-        Assert.AreEqual(GenICamHelper.GetNumChannels(buffer.PixelFormat), (uint)mat.NumberOfChannels);
+        Assert.AreEqual(buffer.NumChannels, (uint)mat.NumberOfChannels);
+        Assert.AreEqual(buffer.PixelDynamicRangeMax, GenICamHelper.GetPixelDynamicRangeMax(buffer.PixelFormat));
         Assert.AreEqual(GenICamHelper.GetBitsPerPixelPerChannel(buffer.PixelFormat), (uint)EmguHelper.GetBitDepth(mat.Depth));
         Assert.AreEqual(buffer.FrameID, frameID);
         Assert.AreEqual(buffer.TimeStamp, timeStamp);
@@ -217,13 +219,13 @@ public class GcBufferTests
         // Assert
         Assert.AreEqual((uint)mat.Width, buffer.Width);
         Assert.AreEqual((uint)mat.Height, buffer.Height);
-        Assert.AreEqual(GenICamHelper.GetNumChannels(pixelFormat), GenICamHelper.GetNumChannels(buffer.PixelFormat));
+        Assert.AreEqual(GenICamHelper.GetNumChannels(pixelFormat), buffer.NumChannels);
         Assert.AreEqual(GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat), GenICamHelper.GetBitsPerPixelPerChannel(buffer.PixelFormat));
         Assert.AreEqual(pixelFormat, buffer.PixelFormat);
-        Assert.AreEqual(pixelDynamicRangeMax, GenICamHelper.GetPixelDynamicRangeMax(buffer.PixelFormat));
+        Assert.AreEqual(pixelDynamicRangeMax, buffer.PixelDynamicRangeMax);
         Assert.AreEqual(frameID, buffer.FrameID);
         Assert.AreEqual(timeStamp, buffer.TimeStamp);
-        CollectionAssert.AreEqual(matData, buffer.ImageData);
+        Assert.AreSequenceEqual(matData, buffer.ImageData);
     }
 
     [TestMethod]
@@ -305,7 +307,8 @@ public class GcBufferTests
         Assert.AreEqual(originalBuffer.Width, copiedBuffer.Width);
         Assert.AreEqual(originalBuffer.Height, copiedBuffer.Height);
         Assert.AreEqual(originalBuffer.PixelFormat, copiedBuffer.PixelFormat);
-        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(originalBuffer.PixelFormat), GenICamHelper.GetPixelDynamicRangeMax(copiedBuffer.PixelFormat));
+        Assert.AreEqual(originalBuffer.PixelDynamicRangeMax, copiedBuffer.PixelDynamicRangeMax);
+        Assert.AreEqual(originalBuffer.NumChannels, copiedBuffer.NumChannels);
         Assert.AreEqual(originalBuffer.FrameID, copiedBuffer.FrameID);
         Assert.AreEqual(originalBuffer.TimeStamp, copiedBuffer.TimeStamp);
 
@@ -358,7 +361,7 @@ public class GcBufferTests
         // Assert
         Assert.AreEqual(width, mat.Width);
         Assert.AreEqual(height, mat.Height);
-        Assert.AreEqual(GenICamHelper.GetNumChannels(buffer.PixelFormat), (uint)mat.NumberOfChannels);
+        Assert.AreEqual(buffer.NumChannels, (uint)mat.NumberOfChannels);
         Assert.AreEqual(EmguHelper.GetDepthType(pixelFormat), mat.Depth);
     }
 
@@ -483,8 +486,8 @@ public class GcBufferTests
         // Act/Assert
         for (int col = 0; col < buffer.Width; col++)
             for (int row = 0; row < buffer.Height; row++)
-                for (int ch = 0; ch < GenICamHelper.GetNumChannels(buffer.PixelFormat); ch++)
-                    Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), buffer.GetPixel((uint)row, (uint)col, (uint)ch));
+                for (int ch = 0; ch < buffer.NumChannels; ch++)
+                    Assert.AreEqual(buffer.PixelDynamicRangeMax, buffer.GetPixel((uint)row, (uint)col, (uint)ch));
     }
 
     [TestMethod]
@@ -505,11 +508,11 @@ public class GcBufferTests
         // Act/Assert
         for (int col = 0; col < buffer.Width; col++)
             for (int row = 0; row < buffer.Height; row++)
-                for (int ch = 0; ch < GenICamHelper.GetNumChannels(buffer.PixelFormat); ch++)
+                for (int ch = 0; ch < buffer.NumChannels; ch++)
                 {
                     var pixelValues = buffer.GetPixel((uint)row, (uint)col);
                     foreach (var pixelValue in pixelValues)
-                        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), pixelValue);
+                        Assert.AreEqual(buffer.PixelDynamicRangeMax, pixelValue);
                 }
     }
 
@@ -575,7 +578,7 @@ public class GcBufferTests
         int counter = 0;
         for (int col = 0; col < buffer.Width; col++)
             for (int row = 0; row < buffer.Height; row++)
-                for (int ch = 0; ch < GenICamHelper.GetNumChannels(buffer.PixelFormat); ch++)
+                for (int ch = 0; ch < buffer.NumChannels; ch++)
                 {
                     buffer.SetPixel((uint)row, (uint)col, (uint)ch, counter++);
                 }
@@ -584,7 +587,7 @@ public class GcBufferTests
         counter = 0;
         for (int col = 0; col < buffer.Width; col++)
             for (int row = 0; row < buffer.Height; row++)
-                for (int ch = 0; ch < GenICamHelper.GetNumChannels(buffer.PixelFormat); ch++)
+                for (int ch = 0; ch < buffer.NumChannels; ch++)
                 {
                     Assert.AreEqual(buffer.GetPixel((uint)row, (uint)col, (uint)ch), counter++);
                 }
@@ -607,11 +610,11 @@ public class GcBufferTests
         // Act
         for (int col = 0; col < buffer.Width; col++)
             for (int row = 0; row < buffer.Height; row++)
-                for (int ch = 0; ch < GenICamHelper.GetNumChannels(buffer.PixelFormat); ch++)
+                for (int ch = 0; ch < buffer.NumChannels; ch++)
                 {
-                    var pixelValues = new double[GenICamHelper.GetNumChannels(buffer.PixelFormat)];
-                    for (int i = 0; i < GenICamHelper.GetNumChannels(buffer.PixelFormat); i++)
-                        pixelValues[i] = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+                    var pixelValues = new double[buffer.NumChannels];
+                    for (int i = 0; i < buffer.NumChannels; i++)
+                        pixelValues[i] = buffer.PixelDynamicRangeMax;
 
                     buffer.SetPixel((uint)row, (uint)col, pixelValues);
                 }
@@ -619,9 +622,9 @@ public class GcBufferTests
         // Assert
         for (int col = 0; col < buffer.Width; col++)
             for (int row = 0; row < buffer.Height; row++)
-                for (int ch = 0; ch < GenICamHelper.GetNumChannels(buffer.PixelFormat); ch++)
+                for (int ch = 0; ch < buffer.NumChannels; ch++)
                 {
-                    Assert.AreEqual(buffer.GetPixel((uint)row, (uint)col, (uint)ch), GenICamHelper.GetPixelDynamicRangeMax(pixelFormat));
+                    Assert.AreEqual(buffer.GetPixel((uint)row, (uint)col, (uint)ch), buffer.PixelDynamicRangeMax);
                 }
     }
 
@@ -796,7 +799,7 @@ public class GcBufferTests
         var pixelValues = buffer.GetPixel(2, 3);
 
         // Assert
-        Assert.AreEqual(1, pixelValues.Length);
+        Assert.HasCount(1, pixelValues);
         Assert.AreEqual(testValue, pixelValues[0], 1.0);
     }
 
@@ -826,7 +829,7 @@ public class GcBufferTests
         var pixelValues = buffer.GetPixel(3, 4);
 
         // Assert
-        Assert.AreEqual(3, pixelValues.Length);
+        Assert.HasCount(3, pixelValues);
         Assert.AreEqual(r, pixelValues[0], 1.0); // Red
         Assert.AreEqual(g, pixelValues[1], 1.0); // Green
         Assert.AreEqual(b, pixelValues[2], 1.0); // Blue
@@ -840,7 +843,6 @@ public class GcBufferTests
         // Arrange
         uint width = 8;
         uint height = 8;
-        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
 
         uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
         uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
@@ -871,7 +873,6 @@ public class GcBufferTests
         // Arrange
         uint width = 10;
         uint height = 10;
-        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
 
         uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
         uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
@@ -897,7 +898,6 @@ public class GcBufferTests
         // Arrange
         uint width = 8;
         uint height = 8;
-        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
 
         uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
         uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
@@ -912,7 +912,7 @@ public class GcBufferTests
         var result = buffer.GetPixel(5, 6);
 
         // Assert
-        Assert.AreEqual(3, result.Length);
+        Assert.HasCount(3, result);
         Assert.AreEqual(colors[0], result[0], 1.0);
         Assert.AreEqual(colors[1], result[1], 1.0);
         Assert.AreEqual(colors[2], result[2], 1.0);
@@ -928,7 +928,6 @@ public class GcBufferTests
         // Arrange
         uint width = 6;
         uint height = 6;
-        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
         uint numChannels = GenICamHelper.GetNumChannels(pixelFormat);
 
         uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
@@ -965,7 +964,6 @@ public class GcBufferTests
         // Arrange
         uint width = 10;
         uint height = 10;
-        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
 
         uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
         uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
@@ -1031,7 +1029,6 @@ public class GcBufferTests
         // Arrange
         uint width = 6;
         uint height = 6;
-        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
 
         uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
         uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;

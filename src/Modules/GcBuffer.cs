@@ -45,7 +45,7 @@ public sealed class GcBuffer
 
     #endregion
 
-    #region Metadata properties
+    #region Properties (Metadata)
 
     /// <summary>
     /// Managed byte array containing the image data.
@@ -76,6 +76,16 @@ public sealed class GcBuffer
     /// Timestamp of image (in PC ticks).
     /// </summary>
     public ulong TimeStamp { get; }
+
+    /// <summary>
+    /// Number of channels in the image.
+    /// </summary>
+    public uint NumChannels => GenICamHelper.GetNumChannels(PixelFormat);
+
+    /// <summary>
+    /// Maximum pixel value (e.g., 255 for 8-bit, 1023 for 10-bit, etc.).
+    /// </summary>
+    public uint PixelDynamicRangeMax => GenICamHelper.GetPixelDynamicRangeMax(PixelFormat);
 
     #endregion
 
