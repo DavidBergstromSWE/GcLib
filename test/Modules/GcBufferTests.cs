@@ -74,6 +74,37 @@ public class GcBufferTests
     }
 
     [TestMethod]
+    [DataRow(PixelFormat.Mono10p, 3, 3, 12)] // 90 bits -> 12 bytes (rounded up)
+    [DataRow(PixelFormat.Mono12p, 3, 3, 14)] // 108 bits -> 14 bytes (rounded up)
+    [DataRow(PixelFormat.Mono10p, 4, 4, 20)] // 160 bits -> 20 bytes (exact)
+    [DataRow(PixelFormat.RGB10p, 2, 2, 15)]  // 120 bits -> 15 bytes (exact)
+    public void GcBuffer_ByteArrayWithPackedFormatAndSufficientSize_IsNotNull(PixelFormat pixelFormat, int width, int height, int requiredBytes)
+    {
+        // Arrange
+        var imageData = new byte[requiredBytes];
+
+        // Act
+        var buffer = new GcBuffer(imageData, (uint)width, (uint)height, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+
+        // Assert
+        Assert.IsNotNull(buffer);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10p, 3, 3, 11)]
+    [DataRow(PixelFormat.Mono12p, 3, 3, 13)]
+    [DataRow(PixelFormat.Mono10p, 4, 4, 19)]
+    [DataRow(PixelFormat.RGB10p, 2, 2, 14)]
+    public void GcBuffer_ByteArrayWithPackedFormatAndInsufficientSize_ThrowsArgumentException(PixelFormat pixelFormat, int width, int height, int allocatedBytes)
+    {
+        // Arrange
+        var imageData = new byte[allocatedBytes];
+
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => new GcBuffer(imageData, (uint)width, (uint)height, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks));
+    }
+
+    [TestMethod]
     public void GcBuffer_ByteArrayWithInvalidSize_ThrowsArgumentException()
     {
         // Arrange
@@ -165,6 +196,103 @@ public class GcBufferTests
     }
 
     [TestMethod]
+    [DataRow(PixelFormat.Mono8, DepthType.Cv8U, 1)]
+    [DataRow(PixelFormat.Mono10, DepthType.Cv16U, 1)]
+    [DataRow(PixelFormat.Mono12, DepthType.Cv16U, 1)]
+    [DataRow(PixelFormat.Mono16, DepthType.Cv16U, 1)]
+    [DataRow(PixelFormat.RGB8, DepthType.Cv8U, 3)]
+    [DataRow(PixelFormat.BGR8, DepthType.Cv8U, 3)]
+    public void GcBuffer_MatAndPixelFormatWithValidInputs_PropertiesAreEqual(PixelFormat pixelFormat, DepthType depthType, int channels)
+    {
+        // Arrange
+        var mat = Mat.Eye(2, 3, depthType, channels);
+        var matData = new byte[mat.Total.ToInt32() * mat.ElementSize];
+        mat.CopyTo(matData);
+        var frameID = Random.Shared.Next();
+        var timeStamp = (ulong)DateTime.Now.Ticks;
+        var pixelDynamicRangeMax = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        // Act
+        var buffer = new GcBuffer(mat, pixelFormat, pixelDynamicRangeMax, frameID, timeStamp);
+
+        // Assert
+        Assert.AreEqual((uint)mat.Width, buffer.Width);
+        Assert.AreEqual((uint)mat.Height, buffer.Height);
+        Assert.AreEqual((uint)channels, buffer.NumChannels);
+        Assert.AreEqual(GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat), buffer.BitDepth);
+        Assert.AreEqual(pixelFormat, buffer.PixelFormat);
+        Assert.AreEqual(pixelDynamicRangeMax, buffer.PixelDynamicRangeMax);
+        Assert.AreEqual(frameID, buffer.FrameID);
+        Assert.AreEqual(timeStamp, buffer.TimeStamp);
+        CollectionAssert.AreEqual(matData, buffer.ImageData);
+    }
+
+    [TestMethod]
+    public void GcBuffer_MatAndPixelFormatWithValidInputs_AreNotSame()
+    {
+        // Arrange
+        var mat = Mat.Eye(1, 1, DepthType.Cv8U, 1);
+
+        // Act
+        var buffer = new GcBuffer(mat, PixelFormat.Mono8, GenICamHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 0, 0);
+        mat.SetTo(new MCvScalar(42));
+
+        // Assert
+        Assert.AreEqual(1, buffer.GetPixel(0, 0)[0]); // buffer is unaffected by later changes to the Mat
+    }
+
+    [TestMethod]
+    public void GcBuffer_MatAndPixelFormatWithEmptyMat_ThrowsArgumentException()
+    {
+        // Arrange
+        var mat = new Mat();
+
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => new GcBuffer(mat, PixelFormat.Mono8, 255, 42, (ulong)DateTime.Now.Ticks));
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10p, DepthType.Cv16U, 1)]
+    [DataRow(PixelFormat.Mono12p, DepthType.Cv16U, 1)]
+    [DataRow(PixelFormat.RGB10p, DepthType.Cv16U, 3)]
+    public void GcBuffer_MatAndPixelFormatWithPackedPixelFormat_ThrowsArgumentException(PixelFormat pixelFormat, DepthType depthType, int channels)
+    {
+        // Arrange
+        var mat = Mat.Eye(3, 3, depthType, channels);
+
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => new GcBuffer(mat, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks));
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono8, DepthType.Cv8U, 3)]
+    [DataRow(PixelFormat.RGB8, DepthType.Cv8U, 1)]
+    [DataRow(PixelFormat.Mono16, DepthType.Cv16U, 3)]
+    public void GcBuffer_MatAndPixelFormatWithMismatchingChannels_ThrowsArgumentException(PixelFormat pixelFormat, DepthType depthType, int channels)
+    {
+        // Arrange
+        var mat = Mat.Eye(3, 3, depthType, channels);
+
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => new GcBuffer(mat, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks));
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono16, DepthType.Cv8U, 1)]  // lower depth than pixel format
+    [DataRow(PixelFormat.Mono10, DepthType.Cv8U, 1)]
+    [DataRow(PixelFormat.Mono8, DepthType.Cv16U, 1)]  // higher depth than pixel format
+    [DataRow(PixelFormat.RGB8, DepthType.Cv16U, 3)]
+    public void GcBuffer_MatAndPixelFormatWithMismatchingBitDepth_ThrowsArgumentException(PixelFormat pixelFormat, DepthType depthType, int channels)
+    {
+        // Arrange
+        var mat = Mat.Eye(3, 3, depthType, channels);
+
+        // Act/Assert
+        var ex = Assert.Throws<ArgumentException>(() => new GcBuffer(mat, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks));
+        Assert.AreEqual("imageMat", ex.ParamName);
+    }
+
+    [TestMethod]
     public void CopyConstructor_PropertiesAreEqualButAreNotSameObjects()
     {
         // Arrange
@@ -189,7 +317,7 @@ public class GcBufferTests
 
     #endregion
 
-    #region MethodTests
+    #region ToMatTests
 
     [TestMethod]
     [DataRow(PixelFormat.Mono8)]
@@ -305,6 +433,10 @@ public class GcBufferTests
                 Assert.AreEqual(0, mat.GetPixel(row, col, 2)); // B
             }
     }
+
+    #endregion
+
+    #region GetPixelTests
 
     [TestMethod]
     [DataRow(PixelFormat.RGB8)]
@@ -423,6 +555,10 @@ public class GcBufferTests
         var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.GetPixel(2, 2, 1));
         Assert.AreEqual("channel", ex.ParamName);
     }
+
+    #endregion
+
+    #region SetPixelTests
 
     [TestMethod]
     [DataRow(PixelFormat.Mono8)]
@@ -547,6 +683,63 @@ public class GcBufferTests
         ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, [33, 2, -5]));
         Assert.AreEqual("pixelValues", ex.ParamName);
     }
+
+    [TestMethod]
+    [DataRow(PixelFormat.RGB8, 0)]
+    [DataRow(PixelFormat.RGB8, 1)]
+    [DataRow(PixelFormat.RGB8, 2)]
+    [DataRow(PixelFormat.RGB8, 4)]
+    [DataRow(PixelFormat.Mono16, 0)]
+    [DataRow(PixelFormat.Mono16, 2)]
+    public void SetPixel_WrongNumberOfValues_ThrowsArgumentOutOfRangeException(PixelFormat pixelFormat, int length)
+    {
+        // Arrange
+        var imageData = TestPatternGenerator.CreateImage(3, 3, pixelFormat, TestPattern.White);
+        var buffer = new GcBuffer(imageData, 3, 3, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), 42, (ulong)DateTime.Now.Ticks);
+
+        // Act/Assert
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(1, 1, new double[length]));
+        Assert.AreEqual("pixelValues", ex.ParamName);
+    }
+
+    [TestMethod]
+    public void SetPixel_SingleChannelNaNValue_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
+        var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+
+        // Act/Assert
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(1, 1, 0, double.NaN));
+        Assert.AreEqual("pixelValue", ex.ParamName);
+    }
+
+    [TestMethod]
+    public void SetPixel_NullValues_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
+        var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+
+        // Act/Assert
+        Assert.Throws<ArgumentNullException>(() => buffer.SetPixel(1, 1, null));
+    }
+
+    [TestMethod]
+    public void SetPixel_NaNValue_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var imageData = TestPatternGenerator.CreateImage(3, 3, PixelFormat.Mono8, TestPattern.White);
+        var buffer = new GcBuffer(imageData, 3, 3, PixelFormat.Mono8, GenICamHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), 42, (ulong)DateTime.Now.Ticks);
+
+        // Act/Assert
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(1, 1, [double.NaN]));
+        Assert.AreEqual("pixelValues", ex.ParamName);
+    }
+
+    #endregion
+
+    #region GetSizeTests
 
     [TestMethod]
     [DataRow(2, 2)]

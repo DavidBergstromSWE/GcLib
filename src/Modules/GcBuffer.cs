@@ -116,11 +116,11 @@ public sealed class GcBuffer
     /// <param name="timeStamp">Image timestamp in DateTime ticks.</param>
     public GcBuffer(byte[] imageData, uint width, uint height, PixelFormat pixelFormat, uint pixelDynamicRangeMax, long frameID, ulong timeStamp)
     {
-        // ToDo: Add check of valid pixel formats? Which ones are supported?
-
         // Validate array size.
-        if (imageData.LongLength < width * height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8)
-            throw new ArgumentException($"Allocated image data ({imageData.LongLength} bytes) is too small to fit specified {nameof(width)} ({width}), {nameof(height)} ({height}) and {nameof(pixelFormat)} ({pixelFormat})!");
+        long requiredBits = (long)width * height * GenICamHelper.GetBitsPerPixel(pixelFormat); // Total bits required for the specified image dimensions and pixel format.
+        long requiredBytes = (requiredBits + 7) / 8; // Round up to whole bytes (needed for packed formats).
+        if (imageData.LongLength < requiredBytes)
+            throw new ArgumentException($"Allocated image data ({imageData.LongLength} bytes) is too small to fit specified {nameof(width)} ({width}), {nameof(height)} ({height}) and {nameof(pixelFormat)} ({pixelFormat}), which requires {requiredBytes} bytes!");
 
         ImageData = imageData;
         Width = width;
@@ -150,11 +150,20 @@ public sealed class GcBuffer
         if (imageMat.IsEmpty)
             throw new ArgumentException($"Image data is empty!");
 
-        if (imageMat.NumberOfChannels != GenICamHelper.GetNumChannels(pixelFormat))
-            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {GenICamHelper.GetNumChannels(pixelFormat)}!");
+        // Validate that the specified pixel format is not packed, as packed pixel formats are not supported.
+        if (GenICamHelper.IsPacked(pixelFormat))
+            throw new ArgumentException($"Packed pixel formats are not supported!"); // ToDo: Implement support for packed pixel formats?
 
-        if (EmguHelper.GetBitDepth(imageMat.Depth) > (int)GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat))
-            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Bit depth of image is {EmguHelper.GetBitDepth(imageMat.Depth)} (bits), while pixel format uses {GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat)}!");
+        // Validate that the number of channels in the Mat matches the expected number of channels for the specified pixel format.
+        var expectedChannels = GenICamHelper.GetNumChannels(pixelFormat);
+        if (imageMat.NumberOfChannels != expectedChannels)
+            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {expectedChannels}!");
+
+        // Validate that the bit depth of the Mat matches the expected bit depth for the specified pixel format.
+        var expectedBitDepth = GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat);
+        var actualBitDepth = EmguHelper.GetBitDepth(imageMat.Depth);
+        if (actualBitDepth != expectedBitDepth)
+            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Mat storage depth is {actualBitDepth} bits, while pixel format requires {expectedBitDepth} bits.", nameof(imageMat));
 
         // Allocate new memory for image data.
         ImageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
@@ -164,8 +173,8 @@ public sealed class GcBuffer
 
         Width = (uint)imageMat.Width;
         Height = (uint)imageMat.Height;
-        NumChannels = (uint)imageMat.NumberOfChannels;
-        BitDepth = (uint)EmguHelper.GetBitDepth(imageMat.Depth);
+        NumChannels = expectedChannels;
+        BitDepth = expectedBitDepth;
         PixelFormat = pixelFormat;
         PixelDynamicRangeMax = pixelDynamicRangeMax;
         FrameID = frameID;
@@ -316,18 +325,21 @@ public sealed class GcBuffer
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public void SetPixel(uint row, uint col, double[] pixelValues)
     {
+        ArgumentNullException.ThrowIfNull(pixelValues);
+
         // Check that pixel coordinate falls within image boundaries.
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, Height, nameof(row));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
 
-        // Check that pixel value has valid number of elements.
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(pixelValues.Length, (int)NumChannels, nameof(pixelValues));
+        // Check that exactly one value is provided per channel.
+        if (pixelValues.Length != NumChannels)
+            throw new ArgumentOutOfRangeException(nameof(pixelValues), pixelValues.Length, $"Expected {NumChannels} values (one per channel).");
 
         // Check that pixel values fall within dynamic range.
         foreach (var value in pixelValues)
         {
-            ArgumentOutOfRangeException.ThrowIfLessThan(value, PixelDynamicRangeMin, nameof(value));
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, PixelDynamicRangeMax, nameof(value));
+            if (!(value >= PixelDynamicRangeMin && value <= PixelDynamicRangeMax)) // Negated comparison also rejects NaN.
+                throw new ArgumentOutOfRangeException(nameof(pixelValues), value, $"Pixel values must be within [{PixelDynamicRangeMin}, {PixelDynamicRangeMax}].");
         }
 
         // Allocate span of bytes large enough to hold a pixel of the buffer.
@@ -337,8 +349,9 @@ public sealed class GcBuffer
         NumericHelper.DoubleToSpan(ref bytes, pixelValues);
 
         // Update buffer with the new data.
+        long offset = ((long)row * Width + col) * (BitDepth / 8) * NumChannels;
         for (int i = 0; i < bytes.Length; i++)
-            ImageData[(row * (int)Width + col) * (int)BitDepth / 8 * (int)NumChannels + i] = bytes[i];
+            ImageData[offset + i] = bytes[i];
     }
 
     /// <summary>
@@ -359,8 +372,8 @@ public sealed class GcBuffer
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, NumChannels, nameof(channel));
 
         // Check that pixel value falls within dynamic range.
-        ArgumentOutOfRangeException.ThrowIfLessThan(pixelValue, PixelDynamicRangeMin, nameof(pixelValue));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(pixelValue, PixelDynamicRangeMax, nameof(pixelValue));
+        if (!(pixelValue >= PixelDynamicRangeMin && pixelValue <= PixelDynamicRangeMax)) // Negated comparison also rejects NaN.
+            throw new ArgumentOutOfRangeException(nameof(pixelValue), pixelValue, $"Pixel value must be within [{PixelDynamicRangeMin}, {PixelDynamicRangeMax}].");
 
         // Allocate span of bytes large enough to hold a single-channel pixel of the buffer.
         Span<byte> bytes = stackalloc byte[(int)(BitDepth / 8)];
@@ -369,8 +382,9 @@ public sealed class GcBuffer
         NumericHelper.DoubleToSpan(ref bytes, pixelValue);
 
         // Update buffer with the new data.
+        long offset = ((long)row * Width + col) * (BitDepth / 8) * NumChannels + (long)channel * (BitDepth / 8);
         for (int i = 0; i < bytes.Length; i++)
-            ImageData[(row * (int)Width + col) * (int)BitDepth / 8 * (int)NumChannels + channel * BitDepth / 8 + i] = bytes[i];
+            ImageData[offset + i] = bytes[i];
     }
 
     /// <summary>

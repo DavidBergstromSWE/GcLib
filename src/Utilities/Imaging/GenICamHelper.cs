@@ -74,6 +74,17 @@ public static partial class GenICamHelper
     }
 
     /// <summary>
+    /// Determines whether the pixel format is packed.
+    /// </summary>
+    /// <param name="pixelFormat">The pixel format to inspect.</param>
+    /// <returns>true if the pixel format is packed; otherwise, false.</returns>
+    public static bool IsPacked(PixelFormat pixelFormat)
+    {
+        // Packed pixel formats are indicated by the presence of the character 'p' in their string representation.
+        return pixelFormat.ToString().Contains('p');
+    }
+
+    /// <summary>
     /// Retrieves the number of channels contained in a specified <paramref name="pixelFormat"/>.
     /// </summary>
     /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>
