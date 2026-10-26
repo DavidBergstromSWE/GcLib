@@ -45,7 +45,7 @@ public sealed class GcBuffer
 
     #endregion
 
-    #region Properties
+    #region Metadata properties
 
     /// <summary>
     /// Managed byte array containing the image data.
@@ -63,22 +63,7 @@ public sealed class GcBuffer
     public uint Height { get; }
 
     /// <summary>
-    /// Bit depth of stored image (in bits per pixel per channel).
-    /// </summary>
-    public uint BitDepth { get; }
-
-    /// <summary>
-    /// Minimum possible pixel value (DN).
-    /// </summary>
-    public uint PixelDynamicRangeMin { get; } = 0;
-
-    /// <summary>
-    /// Maximum possible pixel value (DN).
-    /// </summary>
-    public uint PixelDynamicRangeMax { get; }
-
-    /// <summary>
-    /// Pixel format of image (GenICam-standardized).
+    /// Pixel format of image (GenICam PFNC).
     /// </summary>
     public PixelFormat PixelFormat { get; }
 
@@ -91,11 +76,6 @@ public sealed class GcBuffer
     /// Timestamp of image (in PC ticks).
     /// </summary>
     public ulong TimeStamp { get; }
-
-    /// <summary>
-    /// Number of channels in image.
-    /// </summary>
-    public uint NumChannels { get; }
 
     #endregion
 
@@ -111,10 +91,9 @@ public sealed class GcBuffer
     /// <param name="width">Width of image (in pixels).</param>
     /// <param name="height">Height of image (in pixels).</param>
     /// <param name="pixelFormat">Pixel format (GenICam-standardized).</param>
-    /// <param name="pixelDynamicRangeMax">Maximum possible (saturation) pixel value.</param>
     /// <param name="frameID">Frame ID.</param>
     /// <param name="timeStamp">Image timestamp in DateTime ticks.</param>
-    public GcBuffer(byte[] imageData, uint width, uint height, PixelFormat pixelFormat, uint pixelDynamicRangeMax, long frameID, ulong timeStamp)
+    public GcBuffer(byte[] imageData, uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timeStamp)
     {
         // Validate array size.
         long requiredBits = (long)width * height * GenICamHelper.GetBitsPerPixel(pixelFormat); // Total bits required for the specified image dimensions and pixel format.
@@ -125,10 +104,7 @@ public sealed class GcBuffer
         ImageData = imageData;
         Width = width;
         Height = height;
-        NumChannels = GenICamHelper.GetNumChannels(pixelFormat);
-        BitDepth = GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat);
         PixelFormat = pixelFormat;
-        PixelDynamicRangeMax = pixelDynamicRangeMax;
         FrameID = frameID;
         TimeStamp = timeStamp;
     }
@@ -141,11 +117,10 @@ public sealed class GcBuffer
     /// </remarks>
     /// <param name="imageMat">Image in (EmguCV) Mat format.</param>
     /// <param name="pixelFormat">Pixel format.</param>
-    /// <param name="pixelDynamicRangeMax">Maximum possible (saturation) pixel value.</param>
     /// <param name="frameID">Frame ID.</param>
     /// <param name="timeStamp">Image timestamp in DateTime ticks.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcBuffer(Mat imageMat, PixelFormat pixelFormat, uint pixelDynamicRangeMax, long frameID, ulong timeStamp)
+    public GcBuffer(Mat imageMat, PixelFormat pixelFormat, long frameID, ulong timeStamp)
     {
         if (imageMat.IsEmpty)
             throw new ArgumentException($"Image data is empty!");
@@ -173,10 +148,7 @@ public sealed class GcBuffer
 
         Width = (uint)imageMat.Width;
         Height = (uint)imageMat.Height;
-        NumChannels = expectedChannels;
-        BitDepth = expectedBitDepth;
         PixelFormat = pixelFormat;
-        PixelDynamicRangeMax = pixelDynamicRangeMax;
         FrameID = frameID;
         TimeStamp = timeStamp;
     }
@@ -190,12 +162,11 @@ public sealed class GcBuffer
     /// Note: Allocates new memory (to which image data is copied).
     /// </remarks>
     /// <param name="imageMat">Image in (EmguCV) Mat format.</param>
-    /// <param name="pixelDynamicRangeMax">Maximum possible (saturation) pixel value.</param>
     /// <param name="frameID">Frame ID.</param>
     /// <param name="timeStamp">Image timestamp in DateTime ticks.</param>
     /// <exception cref="NotSupportedException"></exception>
     /// <exception cref="ArgumentException"></exception>
-    public GcBuffer(Mat imageMat, uint pixelDynamicRangeMax, long frameID, ulong timeStamp)
+    public GcBuffer(Mat imageMat, long frameID, ulong timeStamp)
     {
         if (EmguHelper.GetPixelFormat(imageMat.Depth, imageMat.NumberOfChannels) == PixelFormat.InvalidPixelFormat)
             throw new NotSupportedException($"Pixel format is not supported!");
@@ -211,10 +182,7 @@ public sealed class GcBuffer
 
         Width = (uint)imageMat.Width;
         Height = (uint)imageMat.Height;
-        NumChannels = (uint)imageMat.NumberOfChannels;
-        BitDepth = (uint)EmguHelper.GetBitDepth(imageMat.Depth);
         PixelFormat = EmguHelper.GetPixelFormat(imageMat.Depth, imageMat.NumberOfChannels);
-        PixelDynamicRangeMax = pixelDynamicRangeMax;
         FrameID = frameID;
         TimeStamp = timeStamp;
     }
@@ -236,11 +204,7 @@ public sealed class GcBuffer
 
         Width = buffer.Width;
         Height = buffer.Height;
-        NumChannels = buffer.NumChannels;
-        BitDepth = buffer.BitDepth;
         PixelFormat = buffer.PixelFormat;
-        PixelDynamicRangeMax = buffer.PixelDynamicRangeMax;
-        PixelDynamicRangeMin = buffer.PixelDynamicRangeMin;
         FrameID = buffer.FrameID;
         TimeStamp = buffer.TimeStamp;
     }
@@ -259,7 +223,7 @@ public sealed class GcBuffer
     /// <returns><see cref="Mat"/> image.</returns>
     public Mat ToMat()
     {
-        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType((PixelSize)BitDepth), (int)NumChannels);
+        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType(GenICamHelper.GetPixelSize(PixelFormat)), (int)GenICamHelper.GetNumChannels(PixelFormat));
         mat.SetTo(ImageData);
         return mat;
     }
@@ -282,15 +246,15 @@ public sealed class GcBuffer
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, Height, nameof(row));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
 
-        double[] values = new double[NumChannels];
+        double[] values = new double[GenICamHelper.GetNumChannels(PixelFormat)];
 
         if (GenICamHelper.IsPacked(PixelFormat))
         {
             // Packed format: extract each channel separately using bit offsets
-            for (int i = 0; i < NumChannels; i++)
+            for (int i = 0; i < GenICamHelper.GetNumChannels(PixelFormat); i++)
             {
                 long bitOffset = GetPixelBitOffset(row, col, (uint)i);
-                var bits = ImageData.GetBitRange(start: (int)bitOffset, length: (int)BitDepth, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+                var bits = ImageData.GetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
                 values[i] = NumericHelper.SpanToDouble(new ReadOnlySpan<byte>(bits));
             }
         }
@@ -298,11 +262,11 @@ public sealed class GcBuffer
         {
             // Byte-aligned format: use fast path
             var bytes = new ReadOnlySpan<byte>(array: ImageData,
-                                               start: (int)((row * Width + col) * BitDepth / 8 * NumChannels),
-                                               length: (int)BitDepth / 8 * (int)NumChannels);
+                                               start: (int)((row * Width + col) * GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * GenICamHelper.GetNumChannels(PixelFormat)),
+                                               length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * (int)GenICamHelper.GetNumChannels(PixelFormat));
 
-            for (int i = 0; i < NumChannels; i++)
-                values[i] = NumericHelper.SpanToDouble(bytes.Slice(start: i * (int)BitDepth / 8, length: (int)BitDepth / 8));
+            for (int i = 0; i < GenICamHelper.GetNumChannels(PixelFormat); i++)
+                values[i] = NumericHelper.SpanToDouble(bytes.Slice(start: i * (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8));
         }
 
         return values;
@@ -328,13 +292,13 @@ public sealed class GcBuffer
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
 
         // Check that channel number falls within number of channels.
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, NumChannels, nameof(channel));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, GenICamHelper.GetNumChannels(PixelFormat), nameof(channel));
 
         if (GenICamHelper.IsPacked(PixelFormat))
         {
             // Packed format: use bit-level extraction
             long bitOffset = GetPixelBitOffset(row, col, channel);
-            var bits = ImageData.GetBitRange(start: (int)bitOffset, length: (int)BitDepth, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+            var bits = ImageData.GetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
 
             // Convert extracted bits to double
             return NumericHelper.SpanToDouble(new ReadOnlySpan<byte>(bits));
@@ -343,8 +307,8 @@ public sealed class GcBuffer
         {
             // Byte-aligned format: use fast path
             var bytes = new ReadOnlySpan<byte>(array: ImageData,
-                                               start: (int)((row * Width + col) * BitDepth / 8 * NumChannels + BitDepth / 8 * channel),
-                                               length: (int)BitDepth / 8);
+                                               start: (int)((row * Width + col) * GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * GenICamHelper.GetNumChannels(PixelFormat) + GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * channel),
+                                               length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8);
 
             return NumericHelper.SpanToDouble(bytes);
         }
@@ -371,35 +335,35 @@ public sealed class GcBuffer
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
 
         // Check that exactly one value is provided per channel.
-        if (pixelValues.Length != NumChannels)
-            throw new ArgumentOutOfRangeException(nameof(pixelValues), pixelValues.Length, $"Expected {NumChannels} values (one per channel).");
+        if (pixelValues.Length != GenICamHelper.GetNumChannels(PixelFormat))
+            throw new ArgumentOutOfRangeException(nameof(pixelValues), pixelValues.Length, $"Expected {GenICamHelper.GetNumChannels(PixelFormat)} values (one per channel).");
 
         // Check that pixel values fall within dynamic range.
         foreach (var value in pixelValues)
         {
-            if (!(value >= PixelDynamicRangeMin && value <= PixelDynamicRangeMax)) // Negated comparison also rejects NaN.
-                throw new ArgumentOutOfRangeException(nameof(pixelValues), value, $"Pixel values must be within [{PixelDynamicRangeMin}, {PixelDynamicRangeMax}].");
+            if (!(value >= 0 && value <= GenICamHelper.GetPixelDynamicRangeMax(PixelFormat))) // Negated comparison also rejects NaN.
+                throw new ArgumentOutOfRangeException(nameof(pixelValues), value, $"Pixel values must be within [0, {GenICamHelper.GetPixelDynamicRangeMax(PixelFormat)}].");
         }
 
         if (GenICamHelper.IsPacked(PixelFormat))
         {
-            Span<byte> bytes = stackalloc byte[(int)((BitDepth + 7) / 8)]; // Temporary buffer for a single channel's pixel value
+            Span<byte> bytes = stackalloc byte[(int)((GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) + 7) / 8)]; // Temporary buffer for a single channel's pixel value
 
             // Packed format: set each channel separately using bit offsets
-            for (int i = 0; i < NumChannels; i++)
+            for (int i = 0; i < GenICamHelper.GetNumChannels(PixelFormat); i++)
             {
                 NumericHelper.DoubleToSpan(ref bytes, pixelValues[i]);
                 long bitOffset = GetPixelBitOffset(row, col, (uint)i);
-                ImageData.SetBitRange(start: (int)bitOffset, length: (int)BitDepth, value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+                ImageData.SetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
             }
         }
         else
         {
             // Byte-aligned format: use fast path
-            Span<byte> bytes = stackalloc byte[(int)(BitDepth / 8 * NumChannels)];
+            Span<byte> bytes = stackalloc byte[(int)(GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * GenICamHelper.GetNumChannels(PixelFormat))];
             NumericHelper.DoubleToSpan(ref bytes, pixelValues);
 
-            long offset = ((long)row * Width + col) * (BitDepth / 8) * NumChannels;
+            long offset = ((long)row * Width + col) * (GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8) * GenICamHelper.GetNumChannels(PixelFormat);
             for (int i = 0; i < bytes.Length; i++)
                 ImageData[offset + i] = bytes[i];
         }
@@ -425,14 +389,14 @@ public sealed class GcBuffer
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
 
         // Check that channel number falls within number of channels.
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, NumChannels, nameof(channel));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, GenICamHelper.GetNumChannels(PixelFormat), nameof(channel));
 
         // Check that pixel value falls within dynamic range.
-        if (!(pixelValue >= PixelDynamicRangeMin && pixelValue <= PixelDynamicRangeMax)) // Negated comparison also rejects NaN.
-            throw new ArgumentOutOfRangeException(nameof(pixelValue), pixelValue, $"Pixel value must be within [{PixelDynamicRangeMin}, {PixelDynamicRangeMax}].");
+        if (!(pixelValue >= 0 && pixelValue <= GenICamHelper.GetPixelDynamicRangeMax(PixelFormat))) // Negated comparison also rejects NaN.
+            throw new ArgumentOutOfRangeException(nameof(pixelValue), pixelValue, $"Pixel value must be within [0, {GenICamHelper.GetPixelDynamicRangeMax(PixelFormat)}].");
 
         // Allocate span of bytes large enough to hold a single-channel pixel of the buffer.   
-        int byteCount = GenICamHelper.IsPacked(PixelFormat) ? (int)((BitDepth + 7) / 8) : (int)(BitDepth / 8); // For packed formats, we need (BitDepth + 7) / 8 bytes; for byte-aligned, BitDepth / 8.
+        int byteCount = GenICamHelper.IsPacked(PixelFormat) ? (int)((GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) + 7) / 8) : (int)(GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8); // For packed formats, we need (BitDepth + 7) / 8 bytes; for byte-aligned, BitDepth / 8.
         Span<byte> bytes = stackalloc byte[byteCount];
 
         // Convert pixel value to integral numeric type and store it in the span.
@@ -442,12 +406,12 @@ public sealed class GcBuffer
         {
             // Packed format: use bit-level insertion
             long bitOffset = GetPixelBitOffset(row, col, channel);
-            ImageData.SetBitRange(start: (int)bitOffset, length: (int)BitDepth, value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+            ImageData.SetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
         }
         else
         {
             // Byte-aligned format: use fast path
-            long offset = ((long)row * Width + col) * (BitDepth / 8) * NumChannels + (long)channel * (BitDepth / 8);
+            long offset = ((long)row * Width + col) * (GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8) * GenICamHelper.GetNumChannels(PixelFormat) + (long)channel * (GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8);
             for (int i = 0; i < bytes.Length; i++)
                 ImageData[offset + i] = bytes[i];
         }
@@ -514,8 +478,8 @@ public sealed class GcBuffer
     /// <returns>Bit offset from the start of ImageData array.</returns>
     private long GetPixelBitOffset(uint row, uint col, uint channel = 0)
     {
-        long bitDepth = BitDepth;
-        long numChannels = NumChannels;
+        long bitDepth = GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
+        long numChannels = GenICamHelper.GetNumChannels(PixelFormat);
         long pixelIndex = (long)row * Width + col;
 
         // Total bits per pixel (across all channels)
@@ -541,13 +505,14 @@ public sealed class GcBuffer
     [Obsolete]
     private dynamic CreateElement()
     {
-        if (BitDepth <= 8)
-            return new byte[NumChannels];
-        if (BitDepth <= 16)
-            return new ushort[NumChannels];
-        if (BitDepth <= 32)
-            return new uint[NumChannels];
-        return new ulong[NumChannels];
+        long bitDepth = GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
+        if (bitDepth <= 8)
+            return new byte[GenICamHelper.GetNumChannels(PixelFormat)];
+        if (bitDepth <= 16)
+            return new ushort[GenICamHelper.GetNumChannels(PixelFormat)];
+        if (bitDepth <= 32)
+            return new uint[GenICamHelper.GetNumChannels(PixelFormat)];
+        return new ulong[GenICamHelper.GetNumChannels(PixelFormat)];
     }
 
     /// <summary>
@@ -559,11 +524,12 @@ public sealed class GcBuffer
     [Obsolete]
     private dynamic ConvertType(double value)
     {
-        if (BitDepth <= 8)
+        long bitDepth = GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
+        if (bitDepth <= 8)
             return Convert.ToByte(value);
-        if (BitDepth <= 16)
+        if (bitDepth <= 16)
             return Convert.ToUInt16(value);
-        if (BitDepth <= 32)
+        if (bitDepth <= 32)
             return Convert.ToUInt32(value);
         return Convert.ToUInt64(value);
     }
@@ -586,17 +552,18 @@ public sealed class GcBuffer
         dynamic element = CreateElement();
 
         // Copy pixel bytes from buffer.
+        long bitDepth = GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
         Buffer.BlockCopy(src: ImageData,
-                         srcOffset: (int)((row * Width + col) * BitDepth / 8 * NumChannels),
+                         srcOffset: (int)((row * Width + col) * bitDepth / 8 * GenICamHelper.GetNumChannels(PixelFormat)),
                          dst: element,
                          dstOffset: 0,
-                         count: (int)(BitDepth / 8 * NumChannels));
+                         count: (int)(bitDepth / 8 * GenICamHelper.GetNumChannels(PixelFormat)));
 
         // Array to hold pixel values for all image channels.
-        double[] values = new double[NumChannels];
+        double[] values = new double[GenICamHelper.GetNumChannels(PixelFormat)];
 
         // Extract channel values.
-        for (int i = 0; i < NumChannels; i++)
+        for (int i = 0; i < GenICamHelper.GetNumChannels(PixelFormat); i++)
             values[i] = element[i];
 
         return values;
@@ -618,17 +585,17 @@ public sealed class GcBuffer
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
 
         // Check that channel number falls within number of channels.
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, NumChannels, nameof(channel));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, GenICamHelper.GetNumChannels(PixelFormat), nameof(channel));
 
         // Array to hold pixel value.
         dynamic element = CreateElement();
 
         // Copy pixel bytes from buffer.
         Buffer.BlockCopy(src: ImageData,
-                         srcOffset: (int)((row * Width + col) * BitDepth / 8 * NumChannels),
+                         srcOffset: (int)((row * Width + col) * GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * GenICamHelper.GetNumChannels(PixelFormat)),
                          dst: element,
                          dstOffset: 0,
-                         count: (int)(BitDepth / 8 * NumChannels));
+                         count: (int)(GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * GenICamHelper.GetNumChannels(PixelFormat)));
 
         return element[channel];
     }
@@ -648,16 +615,16 @@ public sealed class GcBuffer
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
 
         // Check that pixel value has valid number of elements.
-        if (pixelValues.Length > NumChannels)
+        if (pixelValues.Length > GenICamHelper.GetNumChannels(PixelFormat))
             throw new ArgumentOutOfRangeException(nameof(pixelValues));
 
         // Create storage for a single element (pixel), where type and length will be determined at runtime.
         dynamic element = CreateElement();
 
         // Copy pixel values to element.
-        for (int i = 0; i < NumChannels; i++)
+        for (int i = 0; i < GenICamHelper.GetNumChannels(PixelFormat); i++)
         {
-            if (pixelValues[i] >= 0 && pixelValues[i] <= PixelDynamicRangeMax)
+            if (pixelValues[i] >= 0 && pixelValues[i] <= GenICamHelper.GetPixelDynamicRangeMax(PixelFormat))
                 element[i] = ConvertType(pixelValues[i]);
             else throw new ArgumentOutOfRangeException(nameof(pixelValues));
         }
@@ -666,8 +633,8 @@ public sealed class GcBuffer
         Buffer.BlockCopy(src: element,
                          srcOffset: 0,
                          dst: ImageData,
-                         dstOffset: (int)((row * (int)Width + col) * (int)BitDepth / 8 * (int)NumChannels),
-                         count: (int)BitDepth / 8 * (int)NumChannels);
+                         dstOffset: (int)((row * (int)Width + col) * (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * (int)GenICamHelper.GetNumChannels(PixelFormat)),
+                         count: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * (int)GenICamHelper.GetNumChannels(PixelFormat));
     }
 
     /// <summary>
@@ -686,10 +653,10 @@ public sealed class GcBuffer
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
 
         // Check that channel number falls within number of channels.
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, NumChannels, nameof(channel));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, GenICamHelper.GetNumChannels(PixelFormat), nameof(channel));
 
         // Check that pixel value falls within dynamic range.
-        if (pixelValue < 0 || pixelValue > PixelDynamicRangeMax)
+        if (pixelValue < 0 || pixelValue > GenICamHelper.GetPixelDynamicRangeMax(PixelFormat))
             throw new ArgumentOutOfRangeException(nameof(pixelValue));
 
         // Array to hold pixel value.
@@ -700,10 +667,10 @@ public sealed class GcBuffer
 
         // Copy pixel bytes to buffer.
         Buffer.BlockCopy(src: element,
-                         srcOffset: (int)(channel * (int)BitDepth / 8),
+                         srcOffset: (int)(channel * (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8),
                          dst: ImageData,
-                         dstOffset: (int)((row * (int)Width + col) * (int)BitDepth / 8 * (int)NumChannels + channel * BitDepth / 8),
-                         count: (int)BitDepth / 8);
+                         dstOffset: (int)((row * (int)Width + col) * (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * (int)GenICamHelper.GetNumChannels(PixelFormat) + channel * GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8),
+                         count: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8);
     }
 
     #endregion

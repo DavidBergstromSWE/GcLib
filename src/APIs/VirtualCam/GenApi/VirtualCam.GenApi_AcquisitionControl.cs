@@ -191,7 +191,7 @@ public sealed partial class VirtualCam
                 {
                     // Load image from directory.
                     var mat = new Mat(_framePaths[(int)_frameCounter], Emgu.CV.CvEnum.ImreadModes.Unchanged);
-                    buffer = new GcBuffer(mat, (uint)EmguHelper.GetMax(mat.Depth), _frameCounter++, (ulong)TimeStamp.Value);
+                    buffer = new GcBuffer(mat, _frameCounter++, (ulong)TimeStamp.Value);
                 }
                 else
                 {
@@ -221,7 +221,6 @@ public sealed partial class VirtualCam
                     CvInvoke.Resize(mat, mat, new Size((int)Width.Value / (int)BinningHorizontal.Value, (int)Height.Value / (int)BinningVertical.Value));
                     buffer = new GcBuffer(imageMat: mat,
                                           pixelFormat: (PixelFormat)PixelFormat.IntValue,
-                                          pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax((PixelFormat)PixelFormat.IntValue),
                                           frameID: _frameCounter,
                                           timeStamp: (ulong)TimeStamp.Value);
                 }
@@ -229,7 +228,6 @@ public sealed partial class VirtualCam
                                            width: (uint)Width.Value,
                                            height: (uint)Height.Value,
                                            pixelFormat: (PixelFormat)PixelFormat.IntValue,
-                                           pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax((PixelFormat)PixelFormat.IntValue),
                                            frameID: _frameCounter,
                                            timeStamp: (ulong)TimeStamp.Value);
             }

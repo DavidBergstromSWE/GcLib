@@ -249,7 +249,6 @@ public sealed partial class PvCam
                             width: buffer.Image.Width,
                             height: buffer.Image.Height,
                             pixelFormat: (PixelFormat)(int)buffer.Image.PixelType,
-                            pixelDynamicRangeMax: (uint)Math.Pow(2, bitCount) - 1,
                             frameID: (long)buffer.BlockID,
                             timeStamp: timeStamp);
     }

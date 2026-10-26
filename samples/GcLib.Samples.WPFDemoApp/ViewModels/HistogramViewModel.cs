@@ -172,10 +172,10 @@ internal sealed partial class HistogramViewModel : ObservableRecipient
         }
 
         // Calculate histogram.
-        buffer.ToMat().CalculateHistogram(bins: SelectedHistogramSize, maximumValue: buffer.PixelDynamicRangeMax, histogramData: ref _histogramData);
+        buffer.ToMat().CalculateHistogram(bins: SelectedHistogramSize, maximumValue: GenICamHelper.GetPixelDynamicRangeMax(buffer.PixelFormat), histogramData: ref _histogramData);
 
         // Update displayed histogram.
-        Histogram = new HistogramModel(_histogramData, buffer.PixelDynamicRangeMax, buffer.NumChannels);
+        Histogram = new HistogramModel(_histogramData, GenICamHelper.GetPixelDynamicRangeMax(buffer.PixelFormat), GenICamHelper.GetNumChannels(buffer.PixelFormat));
     }
 
     protected override void OnActivated()

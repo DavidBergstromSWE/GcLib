@@ -175,7 +175,7 @@ public sealed partial class PylonCam
         // ToDo: Convert timestamp from camera specific ticks to PC ticks
         var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp;
 
-        return new GcBuffer(imageData, (uint)grabResult.Width, (uint)grabResult.Height, pixelFormat, GenICamHelper.GetPixelDynamicRangeMax(pixelFormat), grabResult.ImageNumber, timeStamp);
+        return new GcBuffer(imageData, (uint)grabResult.Width, (uint)grabResult.Height, pixelFormat, grabResult.ImageNumber, timeStamp);
     }
 
     #endregion

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Cyotek.Collections.Generic;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -286,11 +287,11 @@ public class VideoWriter : IDisposable
         }
 
         // Initialize new video writer (if not done already), using selected codec, fps and buffer properties.
-        _videoWriter ??= new(fileName: FilePath, apiPreference: 0, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: buffer.NumChannels > 1);
+        _videoWriter ??= new(fileName: FilePath, apiPreference: 0, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: GenICamHelper.GetNumChannels(buffer.PixelFormat) > 1);
 
         // Write buffer (converted to Mat).
         using var mat = buffer.ToMat();
-        if (buffer.NumChannels > 1)
+        if (GenICamHelper.GetNumChannels(buffer.PixelFormat) > 1)
             CvInvoke.CvtColor(src: mat, dst: mat, code: ColorConversion.Bgr2Rgb); // OpenCV assumes BGR color space.
 
         _videoWriter.Write(mat);

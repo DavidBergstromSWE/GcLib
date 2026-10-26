@@ -273,13 +273,11 @@ public sealed partial class XiCam
         PixelFormat pixelFormat = GetPixelFormat(imgParams.GetDataFormat());
         long frameNumber = imgParams.GetFrameNum();
         ulong timeStamp = _pcTime0 + (ulong)Math.Round((imgParams.GetTimestamp() * TimeSpan.TicksPerSecond) - ((double)_acquisitionStartTime / 100));
-        uint saturationValue = (uint)imgParams.GetLastImageStruct().data_saturation;
 
         return new GcBuffer(imageData: buffer,
                             width: (uint)width,
                             height: (uint)height,
                             pixelFormat: pixelFormat,
-                            pixelDynamicRangeMax: saturationValue,
                             frameID: frameNumber,
                             timeStamp: timeStamp);
     }

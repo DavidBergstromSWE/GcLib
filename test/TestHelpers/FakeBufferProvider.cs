@@ -58,7 +58,6 @@ internal static class FakeBufferProvider
                    width: width,
                    height: height,
                    pixelFormat: pixelFormat,
-                   pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(pixelFormat),
                    frameID: frameID,
                    timeStamp: (ulong)DateTime.Now.Ticks);
     }
@@ -78,7 +77,6 @@ internal static class FakeBufferProvider
                    width: width,
                    height: height,
                    pixelFormat: pixelFormat,
-                   pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(pixelFormat),
                    frameID: frameID,
                    timeStamp: timeStamp);
     }

@@ -183,7 +183,6 @@ public sealed partial class IdsCam
                             width: buffer.Width(),
                             height: buffer.Height(),
                             pixelFormat: (PixelFormat)buffer.PixelFormat(),
-                            pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax((PixelFormat)buffer.PixelFormat()),
                             frameID: (long)buffer.FrameID(),
                             timeStamp: _pcTime0 + (ulong)Math.Round(buffer.Timestamp_ns() / 100d));
     }

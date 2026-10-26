@@ -48,7 +48,7 @@ public static partial class GenICamHelper
     /// Retrieves the pixel size corresponding to a specified <paramref name="pixelFormat"/>.
     /// </summary>
     /// <remarks>
-    /// The pixel size returned by this method reflects how many bits are needed to represent the pixel data (e.g. bit depth).
+    /// The pixel size returned by this method reflects how many bits are needed to represent the pixel data (e.g. bit depth or the number of gray levels that can be represented).
     /// To retrieve the number of bits needed to store the pixel data in memory, see <see cref="GetBitsPerPixel(PixelFormat)"/> and <see cref="GetBitsPerPixelPerChannel(PixelFormat)"/> methods.
     /// </remarks>
     /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>

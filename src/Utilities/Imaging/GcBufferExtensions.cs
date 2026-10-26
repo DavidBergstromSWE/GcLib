@@ -60,16 +60,16 @@ public static class GcBufferExtensions
         int unpackedPixelBitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(unpackedPixelFormat);
 
         // Allocate array for unpacked image data.
-        var unpackedImageData = new byte[packedBuffer.Width * packedBuffer.Height * packedBuffer.NumChannels * unpackedPixelBitCount / ByteExtensions.BitsPerByte];
+        var unpackedImageData = new byte[packedBuffer.Width * packedBuffer.Height * GenICamHelper.GetNumChannels(packedBuffer.PixelFormat) * unpackedPixelBitCount / ByteExtensions.BitsPerByte];
 
         // Iterate through each pixel in the packed image data.
         int byteIndex = 0;
-        for (int bitNumber = 0; bitNumber < packedBuffer.Width * packedBuffer.Height * packedBuffer.NumChannels * packedBuffer.BitDepth; bitNumber += (int)packedBuffer.BitDepth)
+        for (int bitNumber = 0; bitNumber < packedBuffer.Width * packedBuffer.Height * GenICamHelper.GetNumChannels(packedBuffer.PixelFormat) * GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat); bitNumber += (int)GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat))
         {
             // Extract bits for each packed pixel.
             var bits = ByteExtensions.GetBitRange(source: packedBuffer.ImageData,
                                                   start: bitNumber,
-                                                  length: (int)packedBuffer.BitDepth,
+                                                  length: (int)GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat),
                                                   endianness);
 
             // Copy bits to unpacked image data.
@@ -81,7 +81,7 @@ public static class GcBufferExtensions
         }
 
         // Return new buffer instance with unpacked image data.
-        return new GcBuffer(unpackedImageData, packedBuffer.Width, packedBuffer.Height, unpackedPixelFormat, packedBuffer.PixelDynamicRangeMax, packedBuffer.FrameID, packedBuffer.TimeStamp);
+        return new GcBuffer(unpackedImageData, packedBuffer.Width, packedBuffer.Height, unpackedPixelFormat, packedBuffer.FrameID, packedBuffer.TimeStamp);
     }
 
     /// <summary>
@@ -107,10 +107,10 @@ public static class GcBufferExtensions
         int packedPixelBitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(packedPixelFormat);
 
         // Allocate array for packed image data.
-        var packedImageData = new byte[(unpackedBuffer.Width * unpackedBuffer.Height * unpackedBuffer.NumChannels * packedPixelBitCount + 7) / ByteExtensions.BitsPerByte];
+        var packedImageData = new byte[(unpackedBuffer.Width * unpackedBuffer.Height * GenICamHelper.GetNumChannels(unpackedBuffer.PixelFormat) * packedPixelBitCount + 7) / ByteExtensions.BitsPerByte];
 
         // Iterate through each pixel in the unpacked image data.
-        for (int pixel = 0; pixel < unpackedBuffer.Width * unpackedBuffer.Height * unpackedBuffer.NumChannels; pixel++)
+        for (int pixel = 0; pixel < unpackedBuffer.Width * unpackedBuffer.Height * GenICamHelper.GetNumChannels(unpackedBuffer.PixelFormat); pixel++)
         {
             // Extract bytes for each unpacked pixel.
             var bytes = unpackedBuffer.ImageData.AsSpan(pixel * ((packedPixelBitCount + 7) / ByteExtensions.BitsPerByte), (packedPixelBitCount + 7) / ByteExtensions.BitsPerByte);
@@ -127,6 +127,6 @@ public static class GcBufferExtensions
         }
 
         // Return new buffer instance with packed image data.
-        return new GcBuffer(packedImageData, unpackedBuffer.Width, unpackedBuffer.Height, packedPixelFormat, unpackedBuffer.PixelDynamicRangeMax, unpackedBuffer.FrameID, unpackedBuffer.TimeStamp);
+        return new GcBuffer(packedImageData, unpackedBuffer.Width, unpackedBuffer.Height, packedPixelFormat, unpackedBuffer.FrameID, unpackedBuffer.TimeStamp);
     }
 }

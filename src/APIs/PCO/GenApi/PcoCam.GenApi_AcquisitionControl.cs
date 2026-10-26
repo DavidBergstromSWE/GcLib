@@ -346,7 +346,6 @@ public partial class PcoCam
                                 width: (uint)Width.Value,
                                 height: (uint)Height.Value,
                                 pixelFormat: (PixelFormat)PixelFormat.IntValue,
-                                pixelDynamicRangeMax: (uint)Math.Pow(2, bitDepth) - 1,
                                 frameID: ImageHeaderHelper.GetImageNumber(imageHeader),
                                 timeStamp: ImageHeaderHelper.GetTimestamp(imageHeader));
         }

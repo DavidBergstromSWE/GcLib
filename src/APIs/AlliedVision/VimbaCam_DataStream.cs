@@ -94,7 +94,6 @@ public sealed partial class VimbaCam
                                       frame.Width,
                                       frame.Height,
                                       pixelFormat,
-                                      GenICamHelper.GetPixelDynamicRangeMax(pixelFormat),
                                       (long)frame.Id,
                                       (ulong)DateTime.Now.Ticks);
 

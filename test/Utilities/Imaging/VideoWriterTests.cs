@@ -324,7 +324,7 @@ public class VideoWriterTests
                                                        testPattern: TestPattern.GrayHorizontalRamp,
                                                        frameNumber: 42);
 
-        return new GcBuffer(imageData: data, width: width, height: height, pixelFormat: pixelFormat, pixelDynamicRangeMax: GenICamHelper.GetPixelDynamicRangeMax(PixelFormat.Mono8), frameID: n, timeStamp: (ulong)DateTime.Now.Ticks);
+        return new GcBuffer(imageData: data, width: width, height: height, pixelFormat: pixelFormat, frameID: n, timeStamp: (ulong)DateTime.Now.Ticks);
     }
 
     #endregion

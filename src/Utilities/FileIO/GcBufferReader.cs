@@ -492,7 +492,6 @@ public sealed class GcBufferReader : IDisposable
                             width: width,
                             height: height,
                             pixelFormat: pixelFormat,
-                            pixelDynamicRangeMax: pixelDynamicRangeMax,
                             frameID: frameID,
                             timeStamp: timeStamp);
     }

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 
 namespace GcLib.Utilities.FileIO;
@@ -392,7 +393,7 @@ public sealed class GcBufferWriter : IDisposable
         Buffer.BlockCopy(BitConverter.GetBytes(buffer.Width), 0, imageData, 16, 4); // width
         Buffer.BlockCopy(BitConverter.GetBytes(buffer.Height), 0, imageData, 20, 4); // height
         Buffer.BlockCopy(BitConverter.GetBytes((int)buffer.PixelFormat), 0, imageData, 24, 4); // pixel format         
-        Buffer.BlockCopy(BitConverter.GetBytes(buffer.PixelDynamicRangeMax), 0, imageData, 28, 4); // dynamic range        
+        Buffer.BlockCopy(BitConverter.GetBytes(GenICamHelper.GetPixelDynamicRangeMax(buffer.PixelFormat)), 0, imageData, 28, 4); // dynamic range        
 
         // Copy image data.
         Buffer.BlockCopy(buffer.ImageData, 0, imageData, (int)ImageHeaderSize, buffer.ImageData.Length);

@@ -8,6 +8,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.UI;
 using GcLib;
+using GcLib.Utilities.Imaging;
 
 namespace WinFormsDemoApp.Controls;
 
@@ -110,11 +111,11 @@ public partial class GcDisplayControl : ImageBox
         CvInvoke.ResizeForFrame(mat, mat, Size, Inter.Nearest);
 
         // Convert to 8-bit.
-        if (buffer.NumChannels == 1 && buffer.BitDepth > 8)
+        if (GenICamHelper.GetNumChannels(buffer.PixelFormat) == 1 && GenICamHelper.GetBitsPerPixelPerChannel(buffer.PixelFormat) > 8)
             CvInvoke.Normalize(mat, mat, 0, 255, NormType.MinMax, DepthType.Cv8U);
 
         // Convert 4-channel image to 3-channel RGB.
-        if (buffer.NumChannels == 4)
+        if (GenICamHelper.GetNumChannels(buffer.PixelFormat) == 4)
             CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Rgb);
 
         // Add timestamp to circular buffer.

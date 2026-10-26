@@ -127,7 +127,7 @@ public static class DeBayer
 
         var outputMat = ToBGR(rawMat, rawBuffer.PixelFormat);
         var outputFormat = Enum.Parse<PixelFormat>("BGR" + Regex.Match(rawBuffer.PixelFormat.ToString(), @"\d+").Value);
-        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamHelper.GetPixelDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
+        var outputBuffer = new GcBuffer(outputMat, outputFormat, rawBuffer.FrameID, rawBuffer.TimeStamp);
 
         return outputBuffer;
     }
@@ -152,7 +152,7 @@ public static class DeBayer
 
         var outputMat = ToRGB(rawMat, rawBuffer.PixelFormat);
         var outputFormat = Enum.Parse<PixelFormat>("RGB" + Regex.Match(rawBuffer.PixelFormat.ToString(), @"\d+").Value);
-        var outputBuffer = new GcBuffer(outputMat, outputFormat, GenICamHelper.GetPixelDynamicRangeMax(outputFormat), rawBuffer.FrameID, rawBuffer.TimeStamp);
+        var outputBuffer = new GcBuffer(outputMat, outputFormat, rawBuffer.FrameID, rawBuffer.TimeStamp);
 
         return outputBuffer;
     }

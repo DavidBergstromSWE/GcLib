@@ -33,7 +33,7 @@ public class GcBufferExtensionsTests
         // Provide a few bytes of packed data (zeros). Size intentionally larger than the minima to avoid constructor checks.
         var packedImageData = new byte[(width * height * numChannels * bitDepth + 7) / 8]; // all zeros
 
-        var packedBuffer = new GcBuffer(packedImageData, width, height, packedFormat, pixelDynamicRangeMax, frameId, timeStamp);
+        var packedBuffer = new GcBuffer(packedImageData, width, height, packedFormat, frameId, timeStamp);
 
         // Pre-compute expected values based on the input packed buffer
         var expectedUnpackedPixelFormat = Enum.Parse<PixelFormat>(packedBuffer.PixelFormat.ToString().Replace("p", string.Empty));
@@ -47,7 +47,7 @@ public class GcBufferExtensionsTests
         Assert.AreEqual(expectedUnpackedPixelFormat, unpackedBuffer.PixelFormat, "PixelFormat should be converted by removing trailing 'p'.");
         Assert.AreEqual(width, unpackedBuffer.Width, "Width should be preserved.");
         Assert.AreEqual(height, unpackedBuffer.Height, "Height should be preserved.");
-        Assert.AreEqual(packedBuffer.PixelDynamicRangeMax, unpackedBuffer.PixelDynamicRangeMax, "Pixel dynamic range max should be preserved.");
+        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(packedBuffer.PixelFormat), GenICamHelper.GetPixelDynamicRangeMax(unpackedBuffer.PixelFormat), "Pixel dynamic range max should be preserved.");
         Assert.AreEqual(packedBuffer.FrameID, unpackedBuffer.FrameID, "FrameID should be preserved.");
         Assert.AreEqual(packedBuffer.TimeStamp, unpackedBuffer.TimeStamp, "TimeStamp should be preserved.");
         Assert.IsNotNull(unpackedBuffer.ImageData, "ImageData should not be null.");
@@ -71,7 +71,7 @@ public class GcBufferExtensionsTests
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
         var packedImageData = new byte[width * height]; // arbitrary data
-        var packedBuffer = new GcBuffer(packedImageData, width, height, packedFormat, pixelDynamicRangeMax, frameId, timeStamp);
+        var packedBuffer = new GcBuffer(packedImageData, width, height, packedFormat, frameId, timeStamp);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => packedBuffer.Unpack());
@@ -101,7 +101,7 @@ public class GcBufferExtensionsTests
 
         // Provide a few bytes of unpacked data (zeros). Length is intentionally larger than minima to avoid constructor size checks.
         var unpackedImageData = new byte[width * height * GenICamHelper.GetBitsPerPixel(unpackedFormat) / 8]; // all zeros
-        var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, unpackedFormat, pixelDynamicRangeMax, frameId, timeStamp);
+        var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, unpackedFormat, frameId, timeStamp);
 
         // Pre-compute expected values based on the input unpacked buffer.
         var expectedPackedPixelFormat = Enum.Parse<PixelFormat>(unpackedBuffer.PixelFormat.ToString() + "p");
@@ -115,7 +115,7 @@ public class GcBufferExtensionsTests
         Assert.AreEqual(expectedPackedPixelFormat, packedBuffer.PixelFormat, "PixelFormat should be converted by appending trailing 'p'.");
         Assert.AreEqual(width, packedBuffer.Width, "Width should be preserved.");
         Assert.AreEqual(height, packedBuffer.Height, "Height should be preserved.");
-        Assert.AreEqual(unpackedBuffer.PixelDynamicRangeMax, packedBuffer.PixelDynamicRangeMax, "Pixel dynamic range max should be preserved.");
+        Assert.AreEqual(GenICamHelper.GetPixelDynamicRangeMax(unpackedBuffer.PixelFormat), GenICamHelper.GetPixelDynamicRangeMax(packedBuffer.PixelFormat), "Pixel dynamic range max should be preserved.");
         Assert.AreEqual(unpackedBuffer.FrameID, packedBuffer.FrameID, "FrameID should be preserved.");
         Assert.AreEqual(unpackedBuffer.TimeStamp, packedBuffer.TimeStamp, "TimeStamp should be preserved.");
         Assert.IsNotNull(packedBuffer.ImageData, "ImageData should not be null.");
@@ -139,7 +139,7 @@ public class GcBufferExtensionsTests
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
         var unpackedImageData = new byte[width * height]; // arbitrary data
-        var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, unpackedFormat, pixelDynamicRangeMax, frameId, timeStamp);
+        var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, unpackedFormat, frameId, timeStamp);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => unpackedBuffer.Pack());
@@ -152,7 +152,7 @@ public class GcBufferExtensionsTests
     public void UnpackBuffer_PackedBuffer_ReturnsOriginalBuffer(PixelFormat unpackedFormat)
     {
         // Arrange
-        var originalBuffer = new GcBuffer(TestPatternGenerator.CreateImage(10, 10, unpackedFormat, TestPattern.GrayVerticalRamp), 10, 10, unpackedFormat, GenICamHelper.GetPixelDynamicRangeMax(unpackedFormat), 42, (ulong)DateTime.Now.Ticks);
+        var originalBuffer = new GcBuffer(TestPatternGenerator.CreateImage(10, 10, unpackedFormat, TestPattern.GrayVerticalRamp), 10, 10, unpackedFormat, 42, (ulong)DateTime.Now.Ticks);
         var packedBuffer = originalBuffer.Pack();
 
         // Act
@@ -162,7 +162,7 @@ public class GcBufferExtensionsTests
         Assert.AreEqual(originalBuffer.PixelFormat, unpackedBuffer.PixelFormat);
         Assert.AreEqual(originalBuffer.Width, unpackedBuffer.Width);
         Assert.AreEqual(originalBuffer.Height, unpackedBuffer.Height);
-        Assert.AreEqual(originalBuffer.BitDepth, unpackedBuffer.BitDepth);
+        Assert.AreEqual(GenICamHelper.GetBitsPerPixelPerChannel(originalBuffer.PixelFormat), GenICamHelper.GetBitsPerPixelPerChannel(unpackedBuffer.PixelFormat));
         Assert.AreSequenceEqual(originalBuffer.ImageData, unpackedBuffer.ImageData);
     }
 }
