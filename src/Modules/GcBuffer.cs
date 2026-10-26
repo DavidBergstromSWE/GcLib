@@ -267,6 +267,11 @@ public sealed class GcBuffer
     /// <summary>
     /// Get pixel value(s) from specified image coordinate.
     /// </summary>
+    /// <remarks>
+    /// This method supports both packed and byte-aligned pixel formats.
+    /// For packed formats (e.g., Mono1p, RGB10p), pixel data is extracted using bit-level operations.
+    /// For byte-aligned formats, a more optimized byte-level access is used.
+    /// </remarks>
     /// <param name="row">Row number, zero-based and numbered from top to bottom.</param>
     /// <param name="col">Column number, zero-based and numbered from left to right.</param>
     /// <returns>Pixel value(s) from all image channels.</returns>
@@ -277,15 +282,28 @@ public sealed class GcBuffer
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, Height, nameof(row));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
 
-        // Create read-only span of bytes containing pixel values of all channels.
-        var bytes = new ReadOnlySpan<byte>(array: ImageData,
-                                           start: (int)((row * Width + col) * BitDepth / 8 * NumChannels),
-                                           length: (int)BitDepth / 8 * (int)NumChannels);
-
-        // Convert span to double array representing the pixel values of all channels.
         double[] values = new double[NumChannels];
-        for (int i = 0; i < NumChannels; i++)
-            values[i] = NumericHelper.SpanToDouble(bytes.Slice(start: i * (int)BitDepth / 8, length: (int)BitDepth / 8));
+
+        if (GenICamHelper.IsPacked(PixelFormat))
+        {
+            // Packed format: extract each channel separately using bit offsets
+            for (int i = 0; i < NumChannels; i++)
+            {
+                long bitOffset = GetPixelBitOffset(row, col, (uint)i);
+                var bits = ImageData.GetBitRange(start: (int)bitOffset, length: (int)BitDepth, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+                values[i] = NumericHelper.SpanToDouble(new ReadOnlySpan<byte>(bits));
+            }
+        }
+        else
+        {
+            // Byte-aligned format: use fast path
+            var bytes = new ReadOnlySpan<byte>(array: ImageData,
+                                               start: (int)((row * Width + col) * BitDepth / 8 * NumChannels),
+                                               length: (int)BitDepth / 8 * (int)NumChannels);
+
+            for (int i = 0; i < NumChannels; i++)
+                values[i] = NumericHelper.SpanToDouble(bytes.Slice(start: i * (int)BitDepth / 8, length: (int)BitDepth / 8));
+        }
 
         return values;
     }
@@ -293,6 +311,11 @@ public sealed class GcBuffer
     /// <summary>
     /// Get pixel value from specified image coordinate and image channel.
     /// </summary>
+    /// <remarks>
+    /// This method supports both packed and byte-aligned pixel formats.
+    /// For packed formats (e.g., Mono1p, Mono10p), pixel data is extracted using bit-level operations.
+    /// For byte-aligned formats, a more optimized byte-level access is used.
+    /// </remarks>
     /// <param name="row">Row number, zero-based and numbered from top to bottom.</param>
     /// <param name="col">Column number, zero-based and numbered from left to right.</param>
     /// <param name="channel">Channel index (zero-based).</param>
@@ -307,18 +330,34 @@ public sealed class GcBuffer
         // Check that channel number falls within number of channels.
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(channel, NumChannels, nameof(channel));
 
-        // Create read-only span of bytes containing pixel value of the requested channel.
-        var bytes = new ReadOnlySpan<byte>(array: ImageData,
-                                           start: (int)((row * Width + col) * BitDepth / 8 * NumChannels + BitDepth / 8 * channel),
-                                           length: (int)BitDepth / 8);
+        if (GenICamHelper.IsPacked(PixelFormat))
+        {
+            // Packed format: use bit-level extraction
+            long bitOffset = GetPixelBitOffset(row, col, channel);
+            var bits = ImageData.GetBitRange(start: (int)bitOffset, length: (int)BitDepth, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
 
-        // Return pixel value casted as a double.
-        return NumericHelper.SpanToDouble(bytes);
+            // Convert extracted bits to double
+            return NumericHelper.SpanToDouble(new ReadOnlySpan<byte>(bits));
+        }
+        else
+        {
+            // Byte-aligned format: use fast path
+            var bytes = new ReadOnlySpan<byte>(array: ImageData,
+                                               start: (int)((row * Width + col) * BitDepth / 8 * NumChannels + BitDepth / 8 * channel),
+                                               length: (int)BitDepth / 8);
+
+            return NumericHelper.SpanToDouble(bytes);
+        }
     }
 
     /// <summary>
     /// Set pixel values for multi-channeled image.
     /// </summary>
+    /// <remarks>
+    /// This method supports both packed and byte-aligned pixel formats.
+    /// For packed formats (e.g., Mono1p, RGB10p), pixel data is inserted using bit-level operations.
+    /// For byte-aligned formats, a more optimized byte-level access is used.
+    /// </remarks>
     /// <param name="row">Row number, zero-based and numbered from top to bottom.</param>
     /// <param name="col">Column number, zero-based and numbered from left to right.</param>
     /// <param name="pixelValues">Pixel values.</param>
@@ -342,21 +381,38 @@ public sealed class GcBuffer
                 throw new ArgumentOutOfRangeException(nameof(pixelValues), value, $"Pixel values must be within [{PixelDynamicRangeMin}, {PixelDynamicRangeMax}].");
         }
 
-        // Allocate span of bytes large enough to hold a pixel of the buffer.
-        Span<byte> bytes = stackalloc byte[(int)(BitDepth / 8 * NumChannels)];
+        if (GenICamHelper.IsPacked(PixelFormat))
+        {
+            Span<byte> bytes = stackalloc byte[(int)((BitDepth + 7) / 8)]; // Temporary buffer for a single channel's pixel value
 
-        // Convert pixel values to integral numeric type and store it in the span.
-        NumericHelper.DoubleToSpan(ref bytes, pixelValues);
+            // Packed format: set each channel separately using bit offsets
+            for (int i = 0; i < NumChannels; i++)
+            {
+                NumericHelper.DoubleToSpan(ref bytes, pixelValues[i]);
+                long bitOffset = GetPixelBitOffset(row, col, (uint)i);
+                ImageData.SetBitRange(start: (int)bitOffset, length: (int)BitDepth, value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+            }
+        }
+        else
+        {
+            // Byte-aligned format: use fast path
+            Span<byte> bytes = stackalloc byte[(int)(BitDepth / 8 * NumChannels)];
+            NumericHelper.DoubleToSpan(ref bytes, pixelValues);
 
-        // Update buffer with the new data.
-        long offset = ((long)row * Width + col) * (BitDepth / 8) * NumChannels;
-        for (int i = 0; i < bytes.Length; i++)
-            ImageData[offset + i] = bytes[i];
+            long offset = ((long)row * Width + col) * (BitDepth / 8) * NumChannels;
+            for (int i = 0; i < bytes.Length; i++)
+                ImageData[offset + i] = bytes[i];
+        }
     }
 
     /// <summary>
     /// Set pixel value for a specific channel.
     /// </summary>
+    /// <remarks>
+    /// This method supports both packed and byte-aligned pixel formats.
+    /// For packed formats (e.g., Mono1p, Mono10p), pixel data is inserted using bit-level operations.
+    /// For byte-aligned formats, a more optimized byte-level access is used.
+    /// </remarks>
     /// <param name="row">Row number, zero-based and numbered from top to bottom.</param>
     /// <param name="col">Column number, zero-based and numbered from left to right.</param>
     /// <param name="channel">Channel index (zero-based).</param>
@@ -375,16 +431,26 @@ public sealed class GcBuffer
         if (!(pixelValue >= PixelDynamicRangeMin && pixelValue <= PixelDynamicRangeMax)) // Negated comparison also rejects NaN.
             throw new ArgumentOutOfRangeException(nameof(pixelValue), pixelValue, $"Pixel value must be within [{PixelDynamicRangeMin}, {PixelDynamicRangeMax}].");
 
-        // Allocate span of bytes large enough to hold a single-channel pixel of the buffer.
-        Span<byte> bytes = stackalloc byte[(int)(BitDepth / 8)];
+        // Allocate span of bytes large enough to hold a single-channel pixel of the buffer.   
+        int byteCount = GenICamHelper.IsPacked(PixelFormat) ? (int)((BitDepth + 7) / 8) : (int)(BitDepth / 8); // For packed formats, we need (BitDepth + 7) / 8 bytes; for byte-aligned, BitDepth / 8.
+        Span<byte> bytes = stackalloc byte[byteCount];
 
         // Convert pixel value to integral numeric type and store it in the span.
         NumericHelper.DoubleToSpan(ref bytes, pixelValue);
 
-        // Update buffer with the new data.
-        long offset = ((long)row * Width + col) * (BitDepth / 8) * NumChannels + (long)channel * (BitDepth / 8);
-        for (int i = 0; i < bytes.Length; i++)
-            ImageData[offset + i] = bytes[i];
+        if (GenICamHelper.IsPacked(PixelFormat))
+        {
+            // Packed format: use bit-level insertion
+            long bitOffset = GetPixelBitOffset(row, col, channel);
+            ImageData.SetBitRange(start: (int)bitOffset, length: (int)BitDepth, value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+        }
+        else
+        {
+            // Byte-aligned format: use fast path
+            long offset = ((long)row * Width + col) * (BitDepth / 8) * NumChannels + (long)channel * (BitDepth / 8);
+            for (int i = 0; i < bytes.Length; i++)
+                ImageData[offset + i] = bytes[i];
+        }
     }
 
     /// <summary>
@@ -396,13 +462,20 @@ public sealed class GcBuffer
         return new Size((int)Width, (int)Height);
     }
 
+    #endregion
+
+    #region Object overrides
+
     public override bool Equals(object obj)
     {
         if ((obj is GcBuffer otherBuffer) == false)
             return false; // Not the same type.
 
-        if (otherBuffer.Width != Width || otherBuffer.Height != Height || otherBuffer.PixelFormat != PixelFormat || otherBuffer.FrameID != FrameID || otherBuffer.TimeStamp != TimeStamp || Enumerable.SequenceEqual(otherBuffer.ImageData, ImageData) == false)
-            return false; // Metadata or image data is not equal.
+        if (otherBuffer.Width != Width || otherBuffer.Height != Height || otherBuffer.PixelFormat != PixelFormat || otherBuffer.FrameID != FrameID || otherBuffer.TimeStamp != TimeStamp)
+            return false; // Metadata are not equal.
+
+        if (ImageData.AsSpan().SequenceEqual(otherBuffer.ImageData) == false)
+            return false;
 
         return true;
     }
@@ -410,6 +483,9 @@ public sealed class GcBuffer
     public override int GetHashCode()
     {
         var imageHash = new HashCode();
+
+        // Add the hash code of the image data to the hash code of the metadata.
+        imageHash.AddBytes(ImageData.AsSpan());
 
         // Combine the hash codes of the metadata and the image data.
         return HashCode.Combine(
@@ -419,6 +495,39 @@ public sealed class GcBuffer
             FrameID,
             TimeStamp,
             imageHash.ToHashCode());
+    }
+
+    #endregion
+
+    #region Private methods
+
+    /// <summary>
+    /// Calculates the bit offset (in bits, not bytes) for a pixel at the specified coordinate and channel.
+    /// </summary>
+    /// <remarks>
+    /// This helper method works for both packed and byte-aligned formats.
+    /// For packed formats, the offset may not be byte-aligned.
+    /// </remarks>
+    /// <param name="row">Row index.</param>
+    /// <param name="col">Column index.</param>
+    /// <param name="channel">Channel index (default 0).</param>
+    /// <returns>Bit offset from the start of ImageData array.</returns>
+    private long GetPixelBitOffset(uint row, uint col, uint channel = 0)
+    {
+        long bitDepth = BitDepth;
+        long numChannels = NumChannels;
+        long pixelIndex = (long)row * Width + col;
+
+        // Total bits per pixel (across all channels)
+        long bitsPerPixel = bitDepth * numChannels;
+
+        // Bit offset to the start of the pixel
+        long pixelBitOffset = pixelIndex * bitsPerPixel;
+
+        // Add channel offset
+        long channelBitOffset = channel * bitDepth;
+
+        return pixelBitOffset + channelBitOffset;
     }
 
     #endregion

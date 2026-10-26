@@ -739,6 +739,386 @@ public class GcBufferTests
 
     #endregion
 
+    #region PackedFormatPixelAccessTests
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10p)]
+    [DataRow(PixelFormat.Mono12p)]
+    [DataRow(PixelFormat.Mono14p)]
+    public void GetPixel_PackedMonochromeFormat_ReturnsCorrectValue(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 10;
+        uint height = 10;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        // Calculate required bytes for packed format
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Set some known integer values in the buffer (avoiding fractional values that would be truncated)
+        double value1 = (double)maxValue / 2;
+        double value2 = (double)maxValue / 4;
+        double value3 = maxValue;
+
+        buffer.SetPixel(0, 0, 0, value1);
+        buffer.SetPixel(5, 5, 0, value2);
+        buffer.SetPixel(9, 9, 0, value3);
+
+        // Act & Assert - Use tolerance for floating-point comparison due to integer rounding
+        Assert.AreEqual(value1, buffer.GetPixel(0, 0, 0), 1.0, "First pixel mismatch");
+        Assert.AreEqual(value2, buffer.GetPixel(5, 5, 0), 1.0, "Second pixel mismatch");
+        Assert.AreEqual(value3, buffer.GetPixel(9, 9, 0), 1.0, "Third pixel mismatch");
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10p)]
+    [DataRow(PixelFormat.Mono12p)]
+    [DataRow(PixelFormat.Mono14p)]
+    public void GetPixel_PackedMonochromeFormatAllChannels_ReturnsCorrectArray(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 5;
+        uint height = 5;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Set known integer value
+        double testValue = maxValue - 10;
+        buffer.SetPixel(2, 3, [testValue]);
+
+        // Act
+        var pixelValues = buffer.GetPixel(2, 3);
+
+        // Assert
+        Assert.AreEqual(1, pixelValues.Length);
+        Assert.AreEqual(testValue, pixelValues[0], 1.0);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.RGB10p)]
+    [DataRow(PixelFormat.RGB12p)]
+    public void GetPixel_PackedRGBFormat_ReturnCorrectMultiChannelValues(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 8;
+        uint height = 8;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Set known RGB values (use integer values to avoid fractional rounding)
+        double r = 100;
+        double g = 200;
+        double b = maxValue - 50;
+        buffer.SetPixel(3, 4, [r, g, b]);
+
+        // Act
+        var pixelValues = buffer.GetPixel(3, 4);
+
+        // Assert
+        Assert.AreEqual(3, pixelValues.Length);
+        Assert.AreEqual(r, pixelValues[0], 1.0); // Red
+        Assert.AreEqual(g, pixelValues[1], 1.0); // Green
+        Assert.AreEqual(b, pixelValues[2], 1.0); // Blue
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.RGB10p)]
+    [DataRow(PixelFormat.RGB12p)]
+    public void GetPixel_PackedRGBFormatSingleChannel_ReturnCorrectValue(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 8;
+        uint height = 8;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Set known values (use integer values to avoid fractional rounding)
+        double redValue = 100;
+        double greenValue = 200;
+        double blueValue = 300;
+
+        buffer.SetPixel(2, 2, 0, redValue);   // Red
+        buffer.SetPixel(2, 2, 1, greenValue); // Green
+        buffer.SetPixel(2, 2, 2, blueValue);  // Blue
+
+        // Act & Assert - verify each channel
+        Assert.AreEqual(redValue, buffer.GetPixel(2, 2, 0), 1.0);
+        Assert.AreEqual(greenValue, buffer.GetPixel(2, 2, 1), 1.0);
+        Assert.AreEqual(blueValue, buffer.GetPixel(2, 2, 2), 1.0);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10p)]
+    [DataRow(PixelFormat.Mono12p)]
+    public void SetPixel_PackedMonochromeFormatSingleValue_UpdatesCorrectly(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 10;
+        uint height = 10;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        double testValue = 256.0;
+
+        // Act
+        buffer.SetPixel(4, 7, 0, testValue);
+        var result = buffer.GetPixel(4, 7, 0);
+
+        // Assert
+        Assert.AreEqual(testValue, result, 1.0);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.RGB10p)]
+    [DataRow(PixelFormat.RGB12p)]
+    public void SetPixel_PackedRGBFormatMultipleValues_UpdatesCorrectly(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 8;
+        uint height = 8;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        double[] colors = [50.0, 150.0, 250.0];
+
+        // Act
+        buffer.SetPixel(5, 6, colors);
+        var result = buffer.GetPixel(5, 6);
+
+        // Assert
+        Assert.AreEqual(3, result.Length);
+        Assert.AreEqual(colors[0], result[0], 1.0);
+        Assert.AreEqual(colors[1], result[1], 1.0);
+        Assert.AreEqual(colors[2], result[2], 1.0);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10p)]
+    [DataRow(PixelFormat.Mono12p)]
+    [DataRow(PixelFormat.RGB10p)]
+    [DataRow(PixelFormat.RGB12p)]
+    public void GetSetPixel_PackedFormatIndexer_WorksCorrectly(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 6;
+        uint height = 6;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+        uint numChannels = GenICamHelper.GetNumChannels(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Act - Test single channel indexer
+        if (numChannels == 1)
+        {
+            double testValue = 128.0;
+            buffer[2, 3, 0] = testValue;
+            var result = buffer[2, 3, 0];
+            Assert.AreEqual(testValue, result, 1.0);
+        }
+        else
+        {
+            // Test multi-channel indexer
+            double[] testValues = [50.0, 150.0, 250.0];
+            buffer[3, 3] = testValues;
+            var result = buffer[3, 3];
+
+            for (int i = 0; i < numChannels; i++)
+                Assert.AreEqual(testValues[i], result[i], 1.0);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10p)]
+    [DataRow(PixelFormat.Mono12p)]
+    public void GetSetPixel_PackedFormatMultiplePixels_AllIndependent(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 10;
+        uint height = 10;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Set multiple different pixel values (using integer values)
+        var testData = new (uint row, uint col, double value)[]
+        {
+            (0, 0, 100.0),
+            (1, 1, 200.0),
+            (2, 2, 300.0),
+            (5, 5, 500.0),
+            (9, 9, 900.0),
+        };
+
+        // Act
+        foreach (var (row, col, value) in testData)
+            buffer.SetPixel(row, col, 0, value);
+
+        // Assert - verify all pixels maintained their values
+        foreach (var (row, col, expectedValue) in testData)
+            Assert.AreEqual(expectedValue, buffer.GetPixel(row, col, 0), 1.0,
+                $"Pixel at [{row},{col}] does not match expected value");
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10p)]
+    [DataRow(PixelFormat.Mono12p)]
+    public void GetSetPixel_PackedFormatBoundaryPixels_WorkCorrectly(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 5;
+        uint height = 5;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Set boundary pixels
+        double cornerValue = 256.0;
+        buffer.SetPixel(0, 0, 0, cornerValue);              // Top-left
+        buffer.SetPixel(0, width - 1, 0, 512.0);             // Top-right
+        buffer.SetPixel(height - 1, 0, 0, 768.0);            // Bottom-left
+        buffer.SetPixel(height - 1, width - 1, 0, maxValue); // Bottom-right
+
+        // Act & Assert
+        Assert.AreEqual(cornerValue, buffer.GetPixel(0, 0, 0), 1.0);
+        Assert.AreEqual(512.0, buffer.GetPixel(0, width - 1, 0), 1.0);
+        Assert.AreEqual(768.0, buffer.GetPixel(height - 1, 0, 0), 1.0);
+        Assert.AreEqual(maxValue, buffer.GetPixel(height - 1, width - 1, 0), 1.0);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.RGB10p)]
+    [DataRow(PixelFormat.RGB12p)]
+    public void GetSetPixel_PackedRGBFormatAllChannels_EachChannelIndependent(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 6;
+        uint height = 6;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        uint row = 3, col = 3;
+
+        // Act - Set and modify individual channels
+        buffer.SetPixel(row, col, 0, 100.0);  // Red
+        buffer.SetPixel(row, col, 1, 200.0);  // Green
+        buffer.SetPixel(row, col, 2, 300.0);  // Blue
+
+        // Verify initial values
+        Assert.AreEqual(100.0, buffer.GetPixel(row, col, 0), 1.0);
+        Assert.AreEqual(200.0, buffer.GetPixel(row, col, 1), 1.0);
+        Assert.AreEqual(300.0, buffer.GetPixel(row, col, 2), 1.0);
+
+        // Modify red channel
+        buffer.SetPixel(row, col, 0, 400.0);
+
+        // Assert - verify red changed but others didn't
+        Assert.AreEqual(400.0, buffer.GetPixel(row, col, 0), 1.0);
+        Assert.AreEqual(200.0, buffer.GetPixel(row, col, 1), 1.0); // Green unchanged
+        Assert.AreEqual(300.0, buffer.GetPixel(row, col, 2), 1.0); // Blue unchanged
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono10p)]
+    [DataRow(PixelFormat.Mono12p)]
+    public void SetPixel_PackedFormatInvalidValue_ThrowsArgumentOutOfRangeException(PixelFormat pixelFormat)
+    {
+        // Arrange
+        uint width = 5;
+        uint height = 5;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(pixelFormat);
+
+        uint bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+        uint requiredBytes = (width * height * bitsPerPixel + 7) / 8;
+        byte[] imageData = new byte[requiredBytes];
+
+        var buffer = new GcBuffer(imageData, width, height, pixelFormat, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Act & Assert - Value exceeds max
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, 0, maxValue + 1));
+        Assert.AreEqual("pixelValue", ex.ParamName);
+
+        // Act & Assert - Negative value
+        ex = Assert.Throws<ArgumentOutOfRangeException>(() => buffer.SetPixel(2, 2, 0, -1.0));
+        Assert.AreEqual("pixelValue", ex.ParamName);
+    }
+
+    [TestMethod]
+    public void GetSetPixel_PackedFormat_ConsistentWithUnpackedFormat()
+    {
+        // Arrange - Create packed and unpacked buffers with same data
+        uint width = 4;
+        uint height = 4;
+        uint maxValue = GenICamHelper.GetPixelDynamicRangeMax(PixelFormat.Mono10);
+
+        // Unpacked buffer
+        var unpackedImageData = TestPatternGenerator.CreateImage(width, height, PixelFormat.Mono10, TestPattern.White);
+        var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, PixelFormat.Mono10, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Packed buffer
+        uint bitsPerPixelPacked = GenICamHelper.GetBitsPerPixel(PixelFormat.Mono10p);
+        uint requiredBytesPacked = (width * height * bitsPerPixelPacked + 7) / 8;
+        byte[] packedImageData = new byte[requiredBytesPacked];
+        var packedBuffer = new GcBuffer(packedImageData, width, height, PixelFormat.Mono10p, maxValue, 42, (ulong)DateTime.Now.Ticks);
+
+        // Set same values in both
+        double testValue = maxValue * 0.75;
+        unpackedBuffer.SetPixel(1, 1, 0, testValue);
+        packedBuffer.SetPixel(1, 1, 0, testValue);
+
+        // Act & Assert
+        var unpackedResult = unpackedBuffer.GetPixel(1, 1, 0);
+        var packedResult = packedBuffer.GetPixel(1, 1, 0);
+        Assert.AreEqual(unpackedResult, packedResult);
+    }
+
+    #endregion
+
     #region GetSizeTests
 
     [TestMethod]
