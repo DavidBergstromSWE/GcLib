@@ -17,7 +17,6 @@ Some important notes regarding the device class design:
 	- `DeviceClassInfo` presents metadata about the device class API. Make sure it is readable without `Initialize` has been called, e.g. by using a static initializer.
 	- `EnumerateDevices` and `CreateDevice` enables discovery/enumeration and instantiation of devices using the device class API. These methods can only be expected to work after a successful registration, otherwise they may result in exceptions being thrown.
 - When device classes are properly designed, they will be discovered automatically by the library when loaded in the current AppDomain and should be found in e.g. `GcLibrary.GetImplementedDeviceClasses`.
-- Device classes can be registered automatically during library initialization (`GcLibrary.Init`) and unregistered automatically when the library is closed (`GcLibrary.Close`). If control of lifetime of a device class API is needed, device classes can be registered and unregistered explicitly using `GcLibrary.Register` and `GcLibrary.Unregister`.
 
 Before requesting a PR, please run tests to verify that your device class is working correctly (if available, add them to verify your implementation). The unit tests provided in [unit test project](tests/GcLib.Tests) currently only verify functionality of the library itself.
 

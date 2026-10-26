@@ -26,11 +26,11 @@ Please note that this is not a guarantee that every camera or SDK configuration 
 ## Quick start
 
 The following example initializes the library, discovers devices, changes parameters and acquires images. It is based on the [Console sample](samples/GcLib.Samples.ConsoleApp), where a library-included camera emulator ([VirtualCam](src/APIs/VirtualCam)) is used to demonstrate the workflow.
-
 ```csharp
 using GcLib;
 
-// Initialize the library, which discovers the APIs supported on the current system (always needed before the library can be used).
+// Initialize the library, which discovers the APIs supported on the current system (always needed before the library can be used). 
+// If control of lifetime of a device class API is needed, device classes can be registered and unregistered explicitly using `GcLibrary.Register` and `GcLibrary.Unregister`.
 GcLibrary.Init();
 
 // Instantiate the system level, from which devices can be opened (only one system level can be used at a time).
