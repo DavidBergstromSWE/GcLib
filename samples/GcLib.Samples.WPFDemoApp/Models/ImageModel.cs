@@ -349,19 +349,19 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();
 
-        var colorOrder = buffer.PixelFormat.ToString()[..3];
+        // Get color order of input image.
+        var colorOrder = GenICamHelper.GetColorOrder(buffer.PixelFormat);
 
+        // Convert to BGR(a) as Emgu.CV uses BGR color order by default.
         // Convert 3-channel to BGR.
-        if (mat.NumberOfChannels == 3 && colorOrder.Equals("RGB", StringComparison.OrdinalIgnoreCase))
+        if (mat.NumberOfChannels == 3 && colorOrder == ColorOrder.RGB)
             CvInvoke.CvtColor(mat, mat, ColorConversion.Rgb2Bgr);
 
-        // Convert 4-channel image to 3.
+        // Convert 4-channel image to 3 (BGR).
         if (mat.NumberOfChannels == 4)
-        {
-            if (colorOrder.Equals("BGR", StringComparison.OrdinalIgnoreCase))
-                CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);  // BGRa
-            else CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Bgr); // RGBa
-        }
+            if (colorOrder == ColorOrder.RGB)
+                CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Bgr); // Convert RGBA to BGR (skip alpha channel). 
+            else CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);  // Skip alpha channel.
 
         // Normalize (to 8 bits).
         if (EmguHelper.GetBitDepth(mat.Depth) > 8)

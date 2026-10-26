@@ -191,7 +191,7 @@ public class GcSystemTests
         GcLibrary.Register<FailingCam>();
         _system = new GcSystem();
         _system.UpdateDeviceList();
-        
+
         // Act/Assert
         Assert.Throws<Exception>(() => _system.OpenDevice("FailingCam1"));
 

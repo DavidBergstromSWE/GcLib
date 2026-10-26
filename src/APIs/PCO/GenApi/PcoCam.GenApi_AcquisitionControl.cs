@@ -301,7 +301,7 @@ public partial class PcoCam
                         nBufferError = 0;
 
                         // Raise new buffer event.
-                        _pcoCam.OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(_buffer[test], test, bitDepth), DateTime.Now));
+                        _pcoCam.OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(_buffer[test], test), DateTime.Now));
 
                         frameCounter++;
 
@@ -333,7 +333,7 @@ public partial class PcoCam
         /// </summary>
         /// <param name="bufferPtr">(Unmanaged) pointer to buffer data.</param>
         /// <returns>Image and chunkdata.</returns>
-        private unsafe GcBuffer ToGcBuffer(nuint bufferPtr, int bufferIndex, uint bitDepth)
+        private unsafe GcBuffer ToGcBuffer(nuint bufferPtr, int bufferIndex)
         {
             // Copy image data from unmanaged pointer to pre-allocated byte array in input buffer pool.
             Marshal.Copy((nint)bufferPtr.ToPointer(), _inputBufferPool[bufferIndex], 0, _inputBufferPool[bufferIndex].Length);

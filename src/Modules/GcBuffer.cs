@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using GcLib.Utilities.Imaging;
 using GcLib.Utilities.Numbers;
 
@@ -103,6 +104,7 @@ public sealed class GcBuffer
     /// <param name="pixelFormat">Pixel format (GenICam-standardized).</param>
     /// <param name="frameID">Frame ID.</param>
     /// <param name="timeStamp">Image timestamp in DateTime ticks.</param>
+    /// <exception cref="ArgumentException">Thrown when the provided byte array is too small to fit the specified dimensions and pixel format.</exception>
     public GcBuffer(byte[] imageData, uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timeStamp)
     {
         // Validate array size.
@@ -228,7 +230,7 @@ public sealed class GcBuffer
     /// Conversion allocates new memory to store the image data.
     /// </summary>
     /// <remarks>
-    /// Note: As Emgu CV assumes image data is stored in BGR(A) channel order, color conversion may be necessary (e.g. using <see cref="CvInvoke.CvtColor(Mat, Mat, Emgu.CV.CvEnum.ColorConversion)"/>).
+    /// Note: As Emgu CV assumes image data is stored in BGR(A) channel order, color conversion of output may be necessary (using <see cref="CvInvoke.CvtColor(Mat, Mat, ColorConversion)"/>).
     /// </remarks>
     /// <returns><see cref="Mat"/> image.</returns>
     public Mat ToMat()

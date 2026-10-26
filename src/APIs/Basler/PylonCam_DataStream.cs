@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using Basler.Pylon;
-using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 
 namespace GcLib;

@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 
 namespace GcLib.Utilities.FileIO;

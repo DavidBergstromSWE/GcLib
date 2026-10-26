@@ -170,7 +170,7 @@ public static class GcLibrary
 
         // Validate that the provided type is a subclass of GcDevice<TDevice> and implements IDeviceFactory<TDevice>.
         if (IsDeviceType(deviceType) == false)
-            throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice<>) } and implement {nameof(IDeviceFactory<>)}.", nameof(deviceType));
+            throw new ArgumentException($"The provided type must be a subclass of {nameof(GcDevice<>)} and implement {nameof(IDeviceFactory<>)}.", nameof(deviceType));
         try
         {
             // Use reflection to invoke the generic Register<TDevice>() method.

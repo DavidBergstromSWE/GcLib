@@ -481,7 +481,6 @@ public sealed class GcBufferReader : IDisposable
         uint width = GetWidth(imageHeader);
         uint height = GetHeight(imageHeader);
         PixelFormat pixelFormat = GetPixelFormat(imageHeader);
-        uint pixelDynamicRangeMax = GetDynamicRangeMax(imageHeader);
 
         // Copy image buffer data.
         byte[] imageData = new byte[_imageBufferSize];

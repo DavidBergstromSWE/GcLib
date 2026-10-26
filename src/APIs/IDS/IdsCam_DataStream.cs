@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using GcLib.Utilities.Imaging;
 using IDSImaging.Peak.API.Core;
 using IDSImaging.Peak.API.Core.Nodes;
 using Microsoft.Extensions.Logging;

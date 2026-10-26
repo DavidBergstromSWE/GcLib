@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 using VmbNET;
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 using SpinnakerNET;
 using SpinnakerNET.GenApi;

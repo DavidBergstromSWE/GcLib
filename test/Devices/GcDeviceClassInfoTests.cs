@@ -1,6 +1,6 @@
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GcLib.UnitTests.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 namespace GcLib.UnitTests.Devices;
