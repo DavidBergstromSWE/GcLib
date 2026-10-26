@@ -8,8 +8,9 @@ using GcLib.Utilities.Collections;
 namespace GcLib;
 
 /// <summary>
-/// Represents the device level in the GenICam/GenTL standard module hierarchy, responsible for device communication and instantiation of datastreams. All API-derived device classes need to inherit from this abstract base class.
+/// Represents the device level in the GenICam/GenTL standard module hierarchy, responsible for device communication and instantiation of datastreams.
 /// </summary>
+/// <remarks>All API-derived device classes need to inherit from this abstract base class through <see cref="GcDevice{TDevice}"/>.</remarks> 
 public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStream>
 {
     #region Fields

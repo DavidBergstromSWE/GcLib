@@ -210,7 +210,7 @@ public static partial class GenICamHelper
     }
 
     /// <summary>
-    /// Gets the channel order for a supported pixel format.
+    /// Gets the channel order (RGB or BGR) of a supported pixel format.
     /// </summary>
     /// <param name="pixelFormat">The pixel format to evaluate.</param>
     /// <returns>The corresponding color order for the specified pixel format.</returns>
