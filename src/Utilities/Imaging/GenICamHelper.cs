@@ -201,6 +201,52 @@ public static partial class GenICamHelper
     }
 
     /// <summary>
+    /// Determines whether the specified pixel format represents a color image.
+    /// </summary>
+    /// <param name="pixelFormat">The pixel format to evaluate.</param>
+    /// <returns><see langword="true"/> if the pixel format has more than one channel; otherwise, <see langword="false"/>.</returns>
+    public static bool IsColor(PixelFormat pixelFormat)
+    {
+        return GetNumChannels(pixelFormat) > 1;
+    }
+
+    /// <summary>
+    /// Gets the channel order for a supported pixel format.
+    /// </summary>
+    /// <param name="pixelFormat">The pixel format to evaluate.</param>
+    /// <returns>The corresponding color order for the specified pixel format.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the specified pixel format does not define a supported color order.</exception>
+    public static ColorOrder GetColorOrder(PixelFormat pixelFormat)
+    {
+        switch (pixelFormat)
+        {
+            case PixelFormat.RGB8:
+            case PixelFormat.RGB10:
+            case PixelFormat.RGB10p:
+            case PixelFormat.RGB10p32:
+            case PixelFormat.RGB12:
+            case PixelFormat.RGB12p:
+            case PixelFormat.RGB14:
+            case PixelFormat.RGB16:
+            case PixelFormat.RGB8_Planar:
+            case PixelFormat.RGB10_Planar:
+            case PixelFormat.RGB12_Planar:
+            case PixelFormat.RGB16_Planar:
+                return ColorOrder.RGB;
+            case PixelFormat.BGR8:
+            case PixelFormat.BGR10:
+            case PixelFormat.BGR10p:
+            case PixelFormat.BGR12:
+            case PixelFormat.BGR12p:
+            case PixelFormat.BGR14:
+            case PixelFormat.BGR16:
+                return ColorOrder.BGR;
+            default:
+                throw new NotSupportedException($"Pixel format {pixelFormat} does not have a defined color order!");
+        }
+    }
+
+    /// <summary>
     /// Retrieves the pixel color filter applied in a specified <paramref name="pixelFormat"/>.
     /// </summary>
     /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>
