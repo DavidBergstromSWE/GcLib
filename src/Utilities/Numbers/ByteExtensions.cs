@@ -10,6 +10,8 @@ namespace GcLib.Utilities.Numbers;
 /// involving low-level data manipulation, such as serialization and communication protocols.</remarks>
 public static class ByteExtensions
 {
+    // ToDo: Implement span-based versions of GetBitRange and SetBitRange for performance optimization.
+
     /// <summary>
     /// Specifies the byte order used to represent data in memory.
     /// </summary>

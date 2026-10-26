@@ -74,7 +74,7 @@ public sealed class GcBuffer
     public long FrameID { get; }
 
     /// <summary>
-    /// Timestamp of image (in PC ticks).
+    /// Timestamp of image, in <see cref="DateTime"/> ticks.
     /// </summary>
     public ulong TimeStamp { get; }
 
@@ -103,7 +103,7 @@ public sealed class GcBuffer
     /// <param name="height">Height of image (in pixels).</param>
     /// <param name="pixelFormat">Pixel format (GenICam-standardized).</param>
     /// <param name="frameID">Frame ID.</param>
-    /// <param name="timeStamp">Image timestamp in DateTime ticks.</param>
+    /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
     /// <exception cref="ArgumentException">Thrown when the provided byte array is too small to fit the specified dimensions and pixel format.</exception>
     public GcBuffer(byte[] imageData, uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timeStamp)
     {
@@ -122,35 +122,35 @@ public sealed class GcBuffer
     }
 
     /// <summary>
-    /// Creates a new data container for the storage of an image buffer. The image data is copied from the provided EmguCV <see cref="Mat"/> object.
+    /// Creates a new data container for the storage of an image buffer. The image data is copied from the provided <see cref="Mat"/>, where data is assumed to be stored in a pixel format specified in <paramref name="pixelFormat"/>.
     /// </summary>
     /// <remarks>
     /// Note: Allocates new memory (to which image data is copied).
     /// </remarks>
-    /// <param name="imageMat">Image in (EmguCV) Mat format.</param>
-    /// <param name="pixelFormat">Pixel format.</param>
+    /// <param name="imageMat">Image in <see cref="Mat"/> format.</param>
+    /// <param name="pixelFormat">Pixel format of <paramref name="imageMat"/>.</param>
     /// <param name="frameID">Frame ID.</param>
-    /// <param name="timeStamp">Image timestamp in DateTime ticks.</param>
+    /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
     /// <exception cref="ArgumentException"></exception>
     public GcBuffer(Mat imageMat, PixelFormat pixelFormat, long frameID, ulong timeStamp)
     {
         if (imageMat.IsEmpty)
-            throw new ArgumentException($"Image data is empty!");
+            throw new ArgumentException($"Image data is empty!", nameof(imageMat));
 
         // Validate that the specified pixel format is not packed, as packed pixel formats are not supported.
         if (GenICamHelper.IsPacked(pixelFormat))
-            throw new ArgumentException($"Packed pixel formats are not supported!"); // ToDo: Implement support for packed pixel formats?
+            throw new ArgumentException($"Packed pixel formats are not supported!", nameof(pixelFormat));
 
         // Validate that the number of channels in the Mat matches the expected number of channels for the specified pixel format.
         var expectedChannels = GenICamHelper.GetNumChannels(pixelFormat);
         if (imageMat.NumberOfChannels != expectedChannels)
-            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {expectedChannels}!");
+            throw new ArgumentException($"Mat image is incompatible with the specified pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {expectedChannels}!");
 
         // Validate that the bit depth of the Mat matches the expected bit depth for the specified pixel format.
         var expectedBitDepth = GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat);
         var actualBitDepth = EmguHelper.GetBitDepth(imageMat.Depth);
         if (actualBitDepth != expectedBitDepth)
-            throw new ArgumentException($"Mat image is incompatible with requested pixel format: Mat storage depth is {actualBitDepth} bits, while pixel format requires {expectedBitDepth} bits.", nameof(imageMat));
+            throw new ArgumentException($"Mat image is incompatible with the specified pixel format: Mat storage depth is {actualBitDepth} bits, while pixel format requires {expectedBitDepth} bits.");
 
         // Allocate new memory for image data.
         ImageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
@@ -166,25 +166,26 @@ public sealed class GcBuffer
     }
 
     /// <summary>
-    /// Creates a new data container for the storage of an image buffer. The image data is copied from the provided EmguCV <see cref="Mat"/> object.
-    /// Pixel format and bit depth are inferred from the <see cref="Mat"/> properties, with e.g. BGR color ordering for color images. 
+    /// Creates a new data container for the storage of an image buffer. The image data is copied from the provided <see cref="Mat"/>, 
+    /// where the pixel format and bit depth is inferred from the <see cref="Mat"/> properties. It is assumed that color ordering is BGR for color images, as this is the default in Emgu CV. 
     /// To preserve a specific pixel format (e.g. RGB8), please use the overload that accepts a <see cref="PixelFormat"/> parameter.
     /// </summary>
     /// <remarks>
     /// Note: Allocates new memory (to which image data is copied).
     /// </remarks>
-    /// <param name="imageMat">Image in (EmguCV) Mat format.</param>
+    /// <param name="imageMat">Image in <see cref="Mat"/> format.</param>
     /// <param name="frameID">Frame ID.</param>
-    /// <param name="timeStamp">Image timestamp in DateTime ticks.</param>
+    /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
     /// <exception cref="NotSupportedException"></exception>
     /// <exception cref="ArgumentException"></exception>
     public GcBuffer(Mat imageMat, long frameID, ulong timeStamp)
     {
-        if (EmguHelper.GetPixelFormat(imageMat.Depth, imageMat.NumberOfChannels) == PixelFormat.InvalidPixelFormat)
-            throw new NotSupportedException($"Pixel format is not supported!");
-
         if (imageMat.IsEmpty)
             throw new ArgumentException($"Image data is empty!");
+
+        var pixelFormat = EmguHelper.GetPixelFormat(imageMat.Depth, imageMat.NumberOfChannels);
+        if (pixelFormat == PixelFormat.InvalidPixelFormat)
+            throw new NotSupportedException($"Pixel format {pixelFormat} is not supported!");
 
         // Allocate new memory for image data.
         ImageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
@@ -194,13 +195,13 @@ public sealed class GcBuffer
 
         Width = (uint)imageMat.Width;
         Height = (uint)imageMat.Height;
-        PixelFormat = EmguHelper.GetPixelFormat(imageMat.Depth, imageMat.NumberOfChannels);
+        PixelFormat = pixelFormat;
         FrameID = frameID;
         TimeStamp = timeStamp;
     }
 
     /// <summary>
-    /// Copy constructor that creates a deep copy of an existing <see cref="GcBuffer"/> source. 
+    /// Copy constructor that creates a deep copy of an existing <see cref="GcBuffer"/>. 
     /// </summary>
     /// <remarks>
     /// Note: Allocates new memory (to which image data is copied).
@@ -226,11 +227,10 @@ public sealed class GcBuffer
     #region Public methods
 
     /// <summary>
-    /// Converts image data in buffer to Emgu CV <see cref="Mat"/> format. 
-    /// Conversion allocates new memory to store the image data.
+    /// Converts image data in buffer to <see cref="Mat"/> format. As Emgu CV assumes image data is stored in BGR(a) channel order, color conversion of output may be necessary.
     /// </summary>
     /// <remarks>
-    /// Note: As Emgu CV assumes image data is stored in BGR(A) channel order, color conversion of output may be necessary (using <see cref="CvInvoke.CvtColor(Mat, Mat, ColorConversion)"/>).
+    /// Note: Conversion allocates new memory to store the image data. 
     /// </remarks>
     /// <returns><see cref="Mat"/> image.</returns>
     public Mat ToMat()
@@ -490,18 +490,11 @@ public sealed class GcBuffer
     /// <returns>Bit offset from the start of ImageData array.</returns>
     private long GetPixelBitOffset(uint row, uint col, uint channel = 0)
     {
-        long bitDepth = GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
-        long numChannels = GenICamHelper.GetNumChannels(PixelFormat);
-        long pixelIndex = (long)row * Width + col;
-
-        // Total bits per pixel (across all channels)
-        long bitsPerPixel = bitDepth * numChannels;
-
         // Bit offset to the start of the pixel
-        long pixelBitOffset = pixelIndex * bitsPerPixel;
+        long pixelBitOffset = ((long)row * Width + col) * GenICamHelper.GetBitsPerPixel(PixelFormat);
 
         // Add channel offset
-        long channelBitOffset = channel * bitDepth;
+        long channelBitOffset = channel * GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
 
         return pixelBitOffset + channelBitOffset;
     }
