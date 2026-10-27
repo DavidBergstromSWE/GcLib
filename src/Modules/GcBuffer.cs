@@ -45,12 +45,16 @@ public sealed class GcBuffer
 
     #endregion
 
-    #region Properties (Metadata)
+    #region Properties (Image Data)
 
     /// <summary>
     /// Managed byte array containing the image data.
     /// </summary>
     public byte[] ImageData { get; }
+
+    #endregion
+
+    #region Properties (Metadata)
 
     /// <summary>
     /// Width of image (in pixels).
@@ -100,7 +104,7 @@ public sealed class GcBuffer
     /// <param name="imageData">Pre-allocated byte array containing the image data.</param>
     /// <param name="width">Width of image (in pixels).</param>
     /// <param name="height">Height of image (in pixels).</param>
-    /// <param name="pixelFormat">Pixel format (GenICam-standardized).</param>
+    /// <param name="pixelFormat">Pixel format (GenICam PFNC).</param>
     /// <param name="frameID">Frame ID.</param>
     /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
     /// <exception cref="ArgumentException">Thrown when the provided byte array is too small to fit the specified dimensions and pixel format.</exception>
@@ -127,10 +131,10 @@ public sealed class GcBuffer
     /// Note: Allocates new memory (to which image data is copied).
     /// </remarks>
     /// <param name="imageMat">Image in <see cref="Mat"/> format.</param>
-    /// <param name="pixelFormat">Pixel format of <paramref name="imageMat"/>.</param>
+    /// <param name="pixelFormat">Pixel format (GenICam PFNC) used in <paramref name="imageMat"/>.</param>
     /// <param name="frameID">Frame ID.</param>
     /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentException">Thrown if the image data is empty or if the image is incompatible with the specified pixel format.</exception>
     public GcBuffer(Mat imageMat, PixelFormat pixelFormat, long frameID, ulong timeStamp)
     {
         if (imageMat.IsEmpty)
@@ -166,8 +170,8 @@ public sealed class GcBuffer
 
     /// <summary>
     /// Creates a new data container for the storage of an image buffer. The image data is copied from the provided <see cref="Mat"/>, 
-    /// where the pixel format and bit depth is inferred from the <see cref="Mat"/> properties. It is assumed that color ordering is BGR for color images, as this is the default in Emgu CV. 
-    /// To preserve a specific pixel format (e.g. RGB8), please use the overload that accepts a <see cref="PixelFormat"/> parameter.
+    /// where the pixel format and bit depth is inferred from the <see cref="Mat"/> properties. It is assumed that color ordering is BGR for color images, as this is the default in EmguCV. 
+    /// To preserve a specific pixel format (e.g. RGB8), use overload <see cref="GcBuffer(Mat, PixelFormat, long, ulong)"/>.
     /// </summary>
     /// <remarks>
     /// Note: Allocates new memory (to which image data is copied).
@@ -175,8 +179,8 @@ public sealed class GcBuffer
     /// <param name="imageMat">Image in <see cref="Mat"/> format.</param>
     /// <param name="frameID">Frame ID.</param>
     /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
-    /// <exception cref="NotSupportedException"></exception>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="NotSupportedException">Thrown if the pixel format of the image is not supported.</exception>
+    /// <exception cref="ArgumentException">Thrown if the image data is empty.</exception>
     public GcBuffer(Mat imageMat, long frameID, ulong timeStamp)
     {
         if (imageMat.IsEmpty)
