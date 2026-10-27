@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -146,8 +147,9 @@ public static class GcLibrary
             }
             catch (Exception cleanupException)
             {
-                if (Logger.IsEnabled(LogLevel.Warning))
-                    Logger.LogWarning(cleanupException, "Failed to release resources for {DeviceType} after registration failed", typeof(TDevice).Name);
+                Debug.WriteLine($"Failed to release resources for {typeof(TDevice).Name} after registration failed: {cleanupException}");
+                //if (Logger.IsEnabled(LogLevel.Warning))
+                //    Logger.LogWarning(cleanupException, "Failed to release resources for {DeviceType} after registration failed", typeof(TDevice).Name);
             }
 
             // Log for debugging.
@@ -263,7 +265,9 @@ public static class GcLibrary
     {
         return [.. AppDomain.CurrentDomain.GetAssemblies()
                                           .SelectMany(assembly => { try { return assembly.GetTypes(); } catch (ReflectionTypeLoadException ex) { return ex.Types.Where(t => t != null); }}) // Return only types that were successfully loaded
-                                          .Where(IsDeviceType)]; // Return only the types that are valid device types
+                                          .Where(IsDeviceType) // Return only the types that are valid device types
+                                          .OrderBy(t => t == typeof(VirtualCam) ? 0 : 1) // Priority sort to ensure that VirtualCam is always first in the list.
+                                          .ToList()];
     }
 
     /// <summary>
