@@ -11,7 +11,7 @@ public interface IDeviceFactory<TDevice> where TDevice : GcDevice
     /// <summary>
     /// Initializes the implementing device type and its API implementation.
     /// </summary>
-    static abstract void Initialize();
+    static abstract void Initialize(); // ToDo: return bool instead to indicate success or failure?
 
     /// <summary>
     /// Provides information about the implementing device type and its API implementation.

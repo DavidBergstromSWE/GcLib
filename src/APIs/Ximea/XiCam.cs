@@ -158,6 +158,10 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
     /// <inheritdoc/>
     public static void Initialize()
     {
+        // Check if assembly is loaded and available.
+        if (!FileHelper.IsAssemblyAvailable("xiApi.NETX64"))
+            throw new DllNotFoundException("xiApi.NETX64.dll not found. Please ensure that the xiAPI.NET SDK is installed and the required DLLs are available in the application directory or system PATH.");
+
         // No specific initialization required for xiAPI.NET
     }
 

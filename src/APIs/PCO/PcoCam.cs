@@ -123,6 +123,10 @@ public sealed partial class PcoCam : GcDevice<PcoCam>, IDeviceFactory<PcoCam>
     /// <inheritdoc/>
     public static void Initialize()
     {
+        // Check if assembly is loaded and available.
+        if (FileHelper.IsAssemblyAvailable("PCO.SDK.NET") == false)
+            throw new DllNotFoundException("pco.sdk.net.dll not found. Please ensure that the PCO SDK is installed and the required DLLs are available in the application directory or system PATH.");
+
         // Initialize PCO SDK library
         // ToDo: Check if this is necessary
         //LibWrapper.PCO_InitializeLib(); // needs to be added to the PCO SDK wrapper (currently not available)

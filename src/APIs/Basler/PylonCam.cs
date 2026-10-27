@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Basler.Pylon;
+using GcLib.Utilities.FileIO;
 
 namespace GcLib;
 
@@ -131,6 +133,10 @@ public sealed partial class PylonCam : GcDevice<PylonCam>, IDeviceFactory<PylonC
     /// <inheritdoc/>
     public static void Initialize()
     {
+        // Check if assembly is loaded and available.
+        if (!FileHelper.IsAssemblyAvailable("Basler.Pylon"))
+            throw new DllNotFoundException("Basler.Pylon not found. Please ensure that the Basler Pylon SDK is installed and the required DLLs are available in the application directory or system PATH.");
+
         // Initialize pylon runtime (if not already initialized).
         PylonRuntime.Initialize();
     }

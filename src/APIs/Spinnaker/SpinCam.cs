@@ -139,6 +139,10 @@ public sealed partial class SpinCam : GcDevice<SpinCam>, IDeviceFactory<SpinCam>
     /// <inheritdoc/>
     public static void Initialize()
     {
+        // Check if assembly is loaded and available.
+        if (!FileHelper.IsAssemblyAvailable("SpinnakerNET"))
+            throw new DllNotFoundException("SpinnakerNET_v140.dll not found. Please ensure that the SpinnakerNET SDK is installed and the required DLLs are available in the application directory or system PATH.");
+
         // No specific initialization required for SpinnakerNET.
     }
 

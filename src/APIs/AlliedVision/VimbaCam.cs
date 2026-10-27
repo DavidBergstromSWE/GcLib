@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GcLib.Utilities.FileIO;
 using VmbNET;
 
 namespace GcLib;
@@ -119,6 +120,10 @@ public sealed partial class VimbaCam : GcDevice<VimbaCam>, IDeviceFactory<VimbaC
     /// <inheritdoc/>
     public static void Initialize()
     {
+        // Check if assembly is loaded and available.
+        if (!FileHelper.IsAssemblyAvailable("VmbNET"))
+            throw new DllNotFoundException("VmbNET not found. Please ensure that the Allied Vision Vimba SDK is installed and the required DLLs are available in the application directory or system PATH.");
+
         // Initialize the Vmb system if it hasn't been initialized yet.
         _vmbSystem = IVmbSystem.Startup();
     }

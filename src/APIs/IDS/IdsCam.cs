@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Timers;
+using GcLib.Utilities.FileIO;
 using IDSImaging.Peak.API;
 using IDSImaging.Peak.API.Core;
 
@@ -118,6 +119,10 @@ public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
     /// <inheritdoc/>
     public static void Initialize()
     {
+        // Check if assembly is loaded and available.
+        if (!FileHelper.IsAssemblyAvailable("IDSImaging.Peak.API"))
+            throw new DllNotFoundException("IDSImaging.Peak.API.IPLExtension.dll not found. Please ensure that the IDS Peak SDK is installed and the required DLLs are available in the application directory or system PATH.");
+
         // Initialize IDS Peak API library.
         Library.Initialize();
     }
