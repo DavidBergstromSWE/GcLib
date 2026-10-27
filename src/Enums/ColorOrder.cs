@@ -1,7 +1,7 @@
-﻿namespace GcLib.Utilities.Imaging;
+﻿namespace GcLib;
 
 /// <summary>
-/// Specifies the red, green and blue channel ordering used to interpret color component values.
+/// Specifies the red, green and blue channel ordering used to interpret color component values in images.
 /// </summary>
 public enum ColorOrder
 {

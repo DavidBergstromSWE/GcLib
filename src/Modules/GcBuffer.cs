@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.Linq;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using GcLib.Utilities.Imaging;
 using GcLib.Utilities.Numbers;
 
