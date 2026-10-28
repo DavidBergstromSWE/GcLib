@@ -15,6 +15,11 @@ public sealed partial class SpinCam : GcDevice<SpinCam>, IDeviceFactory<SpinCam>
     #region Fields
 
     /// <summary>
+    /// Stores the shared managed system instance.
+    /// </summary>
+    private static ManagedSystem _system;
+
+    /// <summary>
     /// Camera device.
     /// </summary>
     private readonly IManagedCamera _camera;
@@ -139,14 +144,15 @@ public sealed partial class SpinCam : GcDevice<SpinCam>, IDeviceFactory<SpinCam>
     /// <inheritdoc/>
     public static void Initialize()
     {
-        // Force assembly to load, ensuring that API is available before moving on.
-        typeof(ManagedSystem).ToString();
+        // Create a new instance of the SpinnakerNET system (forces assembly to load, ensuring that API is available before moving on)
+        _system = new ManagedSystem();
 
-        // No specific initialization required for SpinnakerNET.
+        // Update device class info with the actual version of the SpinnakerNET assembly.
+        DeviceClassInfo = new GcDeviceClassInfo("SpinnakerNet", _system.GetLibraryVersion().ToString(), typeof(SpinCam));
     }
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("SpinnakerNet", FileHelper.GetAssemblyFileVersion("SpinnakerNET_v140.dll"), typeof(SpinCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; private set; } = new GcDeviceClassInfo("SpinnakerNet", FileHelper.GetAssemblyFileVersion("SpinnakerNET_v140.dll"), typeof(SpinCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
@@ -170,7 +176,9 @@ public sealed partial class SpinCam : GcDevice<SpinCam>, IDeviceFactory<SpinCam>
     /// <inheritdoc/>
     public static void Release()
     {
-        // SpinnakerNET does not require explicit release of the system, as it is managed by the library itself.
+        // Dispose of the SpinnakerNET system.
+        _system?.Dispose();
+        _system = null;
     }
 
     #endregion

@@ -15,6 +15,11 @@ public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
     #region Private fields
 
     /// <summary>
+    /// Represents the shared device manager instance.
+    /// </summary>
+    private static DeviceManager _deviceManager;
+
+    /// <summary>
     /// Device-level class in IDS Peak API. Connects, configures and controls devices.
     /// </summary>
     private readonly Device _device;
@@ -122,6 +127,9 @@ public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
         // Initialize IDS Peak API library.
         Library.Initialize();
 
+        // Initialize device manager for enumerating devices.
+        _deviceManager = DeviceManager.Instance();
+
         // Update device class info with current version of IDS Peak API.
         DeviceClassInfo = new GcDeviceClassInfo("IDS Peak", Library.Version().ToString(), typeof(IdsCam));
     }
@@ -132,12 +140,12 @@ public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        var deviceManager = DeviceManager.Instance();
-        deviceManager.Update();
+        // Update device manager to get current list of devices.
+        _deviceManager.Update();
 
         var devices = new List<GcDeviceInfo>();
-        for (int i = 0; i < deviceManager.Devices().Count; i++)
-            devices.Add(GetDeviceInfo(deviceManager.Devices()[i]));
+        for (int i = 0; i < _deviceManager.Devices().Count; i++)
+            devices.Add(GetDeviceInfo(_deviceManager.Devices()[i]));
 
         return devices;
     }
@@ -151,12 +159,18 @@ public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
     /// <inheritdoc/>
     public static void Release()
     {
-        // Close IDS Peak API library.
+        // Dispose of the device manager.
+        _deviceManager.Dispose();
+
+        // Dispose of the IDS Peak API library.
         try
         {
             Library.Close();
         }
-        catch { }
+        catch (Exception)
+        {
+
+        }
     }
 
     #endregion

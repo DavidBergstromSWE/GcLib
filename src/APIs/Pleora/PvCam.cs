@@ -17,7 +17,7 @@ public sealed partial class PvCam : GcDevice<PvCam>, IDeviceFactory<PvCam>
     /// <summary>
     /// System-level class in eBUS SDK. Finds interfaces (network adapters and USB controlls) and devices (GigE Vision, USB3 Vision, Pleora Protocol) reachable from PC.
     /// </summary>
-    private readonly PvSystem _pvSystem;
+    private static PvSystem _pvSystem;
 
     /// <summary>
     /// Device-level class in eBUS SDK. Connects, configures and controls GigE Vision or USB3 Vision devices. 
@@ -222,29 +222,27 @@ public sealed partial class PvCam : GcDevice<PvCam>, IDeviceFactory<PvCam>
     /// <inheritdoc/>
     public static void Initialize()
     {
-        // Force assembly to load, ensuring that API is available before moving on.
-        typeof(PvDevice).ToString();
+        // Initialize system level in eBUS SDK.
+        _pvSystem = new PvSystem { DetectionTimeout = 500 }; // time to search the system for devices (ms)
 
-        // No specific initialization required for eBUS SDK.
+        // Initialize device class info.
+        DeviceClassInfo = new GcDeviceClassInfo("eBUS SDK", PvVersion.VERSION.Replace(',', '.').TrimEnd('\0').Replace(" ", ""), typeof(PvCam));
     }
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("eBUS SDK", FileHelper.GetAssemblyFileVersion("PvDotNet.dll"), typeof(PvCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; private set; } = new GcDeviceClassInfo("eBUS SDK", FileHelper.GetAssemblyFileVersion("PvDotNet.dll"), typeof(PvCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
         var deviceList = new List<GcDeviceInfo>();
 
-        // Time to search the system for devices (milliseconds).
-        var pvSystem = new PvSystem { DetectionTimeout = 500 };
-
         // Find all available cameras on all available interfaces.
-        pvSystem.Find();
-        uint cameraCount = pvSystem.DeviceCount;
+        _pvSystem.Find();
+        uint cameraCount = _pvSystem.DeviceCount;
         for (uint i = 0; i < cameraCount; i++)
         {
-            PvDeviceInfo pvDeviceInfo = pvSystem.GetDeviceInfo(i);
+            PvDeviceInfo pvDeviceInfo = _pvSystem.GetDeviceInfo(i);
 
             // Check if license is valid.
             if (pvDeviceInfo.IsLicenseValid == false)
@@ -276,7 +274,9 @@ public sealed partial class PvCam : GcDevice<PvCam>, IDeviceFactory<PvCam>
     /// <inheritdoc/>
     public static void Release()
     {
-        // No specific cleanup required for eBUS SDK.
+        // Dispose of the PvSystem.
+        _pvSystem?.Dispose();
+        _pvSystem = null;
     }
 
     #endregion

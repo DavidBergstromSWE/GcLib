@@ -15,6 +15,11 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
     #region Fields
 
     /// <summary>
+    /// Stores the shared xiCamEnum instance.
+    /// </summary>
+    private static xiCamEnum _xiCamEnum;
+
+    /// <summary>
     /// Camera device.
     /// </summary>
     private readonly xiCam _xiCam;
@@ -158,8 +163,8 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
     /// <inheritdoc/>
     public static void Initialize()
     {
-        // Force assembly to load, ensuring that API is available before moving on.
-        typeof(xiCam).ToString();
+        // Initialize device enumerator.
+        _xiCamEnum = new xiCamEnum(); // Force loading of library.
     }
 
     /// <inheritdoc/>
@@ -168,18 +173,17 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
     {
-        var xiCamEnum = new xiCamEnum();
-        int cameraCount = xiCamEnum.ReEnumerate();
+        int cameraCount = _xiCamEnum.ReEnumerate();
         var deviceList = new List<GcDeviceInfo>(cameraCount);
         for (int i = 0; i < cameraCount; i++)
         {
             // ToDo: Add method to check if camera is accessible or not (opened in another application)
 
             deviceList.Add(new GcDeviceInfo(vendorName: "Ximea",
-                                            modelName: xiCamEnum.GetDevNameById(i),
-                                            serialNumber: xiCamEnum.GetSerialNumById(i),
-                                            uniqueID: xiCamEnum.GetSerialNumById(i),
-                                            userDefinedName: xiCamEnum.GetDeviceUserIdById(i),
+                                            modelName: _xiCamEnum.GetDevNameById(i),
+                                            serialNumber: _xiCamEnum.GetSerialNumById(i),
+                                            uniqueID: _xiCamEnum.GetSerialNumById(i),
+                                            userDefinedName: _xiCamEnum.GetDeviceUserIdById(i),
                                             deviceClass: DeviceClassInfo));
         }
         return deviceList;
@@ -194,7 +198,7 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
     /// <inheritdoc/>
     public static void Release()
     {
-        // No specific cleanup required for xiAPI.NET
+        _xiCamEnum = null;
     }
 
     #endregion
