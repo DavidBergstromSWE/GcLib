@@ -128,7 +128,7 @@ public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
     }
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("IDS Peak", typeof(Library).Assembly.GetName().Version.ToString(), typeof(IdsCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("IDS Peak", FileHelper.GetAssemblyFileVersion("IDSImaging.Peak.API.IPLExtension.dll"), typeof(IdsCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()

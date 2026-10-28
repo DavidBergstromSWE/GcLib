@@ -13,7 +13,7 @@ The following provider SDKs and versions are currently integrated in the reposit
 | [Teledyne FLIR](https://www.teledynevisionsolutions.com/products/spinnaker-sdk/?model=Spinnaker%20SDK&vertical=machine%20vision&segment=iis) | Spinnaker SDK | 4.3 |
 | [IDS](https://en.ids-imaging.com/ids-peak.html) | IDS Peak | 1.17 |
 | [PCO](https://www.excelitas.com/product/pco-software-development-kits) | PCO SDK | 1.35 |
-| [Basler](https://www.baslerweb.com/en/software/pylon/sdk/) | Pylon | 12.2 |
+| [Basler](https://www.baslerweb.com/en/software/pylon/sdk/) | Pylon | 12.0 |
 | [Allied Vision](https://www.alliedvision.com/en/support/software-downloads/vimba-x-sdk/vimba-x) | Vimba X | 1.3.4 |
 
 Please note that this is not a guarantee that every camera or SDK configuration has been tested. To use a physical camera, install the relevant provider SDK and camera drivers. Some providers may also require a separate license. Check the provider's documentation for its system requirements and terms; third-party SDKs and dependencies are subject to their own licenses.

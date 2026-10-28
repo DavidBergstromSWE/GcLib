@@ -129,7 +129,7 @@ public sealed partial class VimbaCam : GcDevice<VimbaCam>, IDeviceFactory<VimbaC
     }
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("VmbNET", IVmbSystem.VmbCVersion, typeof(VimbaCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("VmbNET", FileHelper.GetAssemblyFileVersion("VmbNET.dll"), typeof(VimbaCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
