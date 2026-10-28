@@ -139,10 +139,13 @@ public sealed partial class PylonCam : GcDevice<PylonCam>, IDeviceFactory<PylonC
 
         // Initialize pylon runtime (if not already initialized).
         PylonRuntime.Initialize();
+
+        // Update device class info (with the correct version).
+        DeviceClassInfo = new GcDeviceClassInfo("Pylon", Library.VersionInfo.ToString(), typeof(PylonCam));
     }
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new GcDeviceClassInfo("Pylon", Library.VersionInfo.ToString(), typeof(PylonCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; private set; } = new GcDeviceClassInfo("Pylon", FileHelper.GetAssemblyFileVersion("Basler.Pylon.dll"), typeof(PylonCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()
