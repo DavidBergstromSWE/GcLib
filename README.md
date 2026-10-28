@@ -44,8 +44,8 @@ var cameraList = system.GetDeviceList();
 GcDevice camera = system.OpenDevice(cameraList[0]);
 
 // Fetch a single image and save it to file (via Emgu.CV.Mat format).
-camera.FetchImage(out GcBuffer image);
-image.ToMat().Save("image1.tiff");
+camera.FetchImage(out GcBuffer image1);
+image1.ToMat().Save("image1.tiff");
 
 // Update some camera parameters.
 camera.Parameters.SetParameterValue("Height", "480");
@@ -58,9 +58,8 @@ GcDataStream dataStream = camera.OpenDataStream();
 dataStream.Start();
 
 // Allow at least one image to be queued up, then retrieve it from the front of the queue.
-Thread.Sleep(100);
-dataStream.RetrieveImage(out image);
-image.ToMat().Save("image2.tiff");
+dataStream.RetrieveImage(out GcBuffer image2);
+image2.ToMat().Save("image2.tiff");
 
 // Close the camera (this also stops all streaming) and the library.
 camera.Close();
