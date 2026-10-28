@@ -119,16 +119,15 @@ public sealed partial class IdsCam : GcDevice<IdsCam>, IDeviceFactory<IdsCam>
     /// <inheritdoc/>
     public static void Initialize()
     {
-        // Check if assembly is loaded and available.
-        if (!FileHelper.IsAssemblyAvailable("IDSImaging.Peak.API"))
-            throw new DllNotFoundException("IDSImaging.Peak.API.IPLExtension.dll not found. Please ensure that the IDS Peak SDK is installed and the required DLLs are available in the application directory or system PATH.");
-
         // Initialize IDS Peak API library.
         Library.Initialize();
+
+        // Update device class info with current version of IDS Peak API.
+        DeviceClassInfo = new GcDeviceClassInfo("IDS Peak", Library.Version().ToString(), typeof(IdsCam));
     }
 
     /// <inheritdoc/>
-    public static GcDeviceClassInfo DeviceClassInfo { get; } = new("IDS Peak", FileHelper.GetAssemblyFileVersion("IDSImaging.Peak.API.IPLExtension.dll"), typeof(IdsCam));
+    public static GcDeviceClassInfo DeviceClassInfo { get; private set; } = new("IDS Peak", FileHelper.GetAssemblyFileVersion("IDSImaging.Peak.API.IPLExtension.dll"), typeof(IdsCam));
 
     /// <inheritdoc/>
     public static List<GcDeviceInfo> EnumerateDevices()

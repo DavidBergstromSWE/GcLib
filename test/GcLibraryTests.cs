@@ -71,6 +71,29 @@ public class GcLibraryTests
 
         // Assert
         Assert.IsNotEmpty(GcLibrary.GetRegisteredDeviceClasses());
+
+        // Assert all registered classes returns true for IsRegistered
+        foreach (var deviceClassInfo in GcLibrary.GetRegisteredDeviceClasses())
+            Assert.IsTrue(GcLibrary.IsRegistered(deviceClassInfo.DeviceType));
+    }
+
+    [TestMethod]
+    public void Init_AutoRegister_RegisteredDeviceClassesCanBeEnumerated()
+    {
+        // Arrange
+        GcLibrary.Init();
+        var registeredDeviceClasses = GcLibrary.GetRegisteredDeviceClasses();
+
+        // Act
+        foreach (var deviceClassInfo in registeredDeviceClasses)
+        {
+            var enumerator = GcLibrary.GetDeviceEnumerator(deviceClassInfo.DeviceType);
+            var devices = enumerator();
+
+            // Assert
+            Assert.IsNotNull(enumerator);
+            Assert.IsNotNull(devices);
+        }
     }
 
     [TestMethod]
@@ -141,6 +164,7 @@ public class GcLibraryTests
         GcLibrary.Register<VirtualCam>();
 
         // Assert
+        Assert.IsTrue(GcLibrary.IsRegistered<VirtualCam>());
         Assert.Contains(VirtualCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
     }
 

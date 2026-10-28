@@ -31,8 +31,8 @@ public static class FileHelper
     {
         try
         {
-            Assembly assembly = Assembly.Load(assemblyString);
-            return assembly != null; // If the assembly is loaded successfully, it is available.
+            Assembly.Load(assemblyString);
+            return true; // If the assembly is loaded successfully, it is available.
         }
         catch (FileNotFoundException) // The assembly is not found.
         {

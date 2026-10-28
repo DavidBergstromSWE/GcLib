@@ -222,9 +222,8 @@ public sealed partial class PvCam : GcDevice<PvCam>, IDeviceFactory<PvCam>
     /// <inheritdoc/>
     public static void Initialize()
     {
-        // Check if assembly is loaded and available.
-        if (!FileHelper.IsAssemblyAvailable("PvDotNet"))
-            throw new DllNotFoundException("PvDotNet.dll not found. Please ensure that the eBUS SDK is installed and the required DLLs are available in the application directory or system PATH.");
+        // Force assembly to load, ensuring that API is available before moving on.
+        typeof(PvDevice).ToString();
 
         // No specific initialization required for eBUS SDK.
     }

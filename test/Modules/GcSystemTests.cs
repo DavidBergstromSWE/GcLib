@@ -70,7 +70,7 @@ public class GcSystemTests
     #region MethodTests
 
     [TestMethod]
-    public void UpdateDeviceList_DeviceListIsChanged()
+    public void UpdateDeviceList_EmptyDeviceList_DeviceListIsChanged()
     {
         // Arrange
         _system = new GcSystem();

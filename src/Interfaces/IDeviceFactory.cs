@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GcLib;
 
@@ -11,7 +12,10 @@ public interface IDeviceFactory<TDevice> where TDevice : GcDevice
     /// <summary>
     /// Initializes the implementing device type and its API implementation.
     /// </summary>
-    static abstract void Initialize(); // ToDo: return bool instead to indicate success or failure?
+    /// <remarks>The method will throw if the device type or its API implementation cannot be loaded. 
+    /// The method should be called before any other static methods of the implementing device type are used.</remarks>
+    /// <exception cref="TypeLoadException">Thrown if the device type or its API implementation cannot be loaded.</exception>
+    static abstract void Initialize();
 
     /// <summary>
     /// Provides information about the implementing device type and its API implementation.
