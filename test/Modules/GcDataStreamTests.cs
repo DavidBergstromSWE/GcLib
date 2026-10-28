@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using GcLib.UnitTests.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -90,11 +91,72 @@ public class GcDataStreamTests
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
 
         // Act
-        var success = _dataStream.RetrieveImage(out GcBuffer buffer);
+        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
 
         // Assert
         Assert.IsFalse(success);
         Assert.IsNull(buffer);
+    }
+
+    [TestMethod]
+    public void RetrieveImage_QueueHasBuffer_ReturnsBuffer()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+        _dataStream.Start();
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+
+        // Act
+        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
+
+        // Assert
+        Assert.IsTrue(success);
+        Assert.IsNotNull(buffer);
+        Assert.AreSame(_testBuffer, buffer);
+        Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
+    }
+
+    [TestMethod]
+    public void RetrieveImage_NoBufferWithinTimeout_ReturnsFalseAfterTimeout()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+        const int timeout = 50;
+        var stopwatch = Stopwatch.StartNew();
+
+        // Act
+        var success = _dataStream.RetrieveImage(out GcBuffer buffer, timeout);
+        stopwatch.Stop();
+
+        // Assert
+        Assert.IsFalse(success);
+        Assert.IsNull(buffer);
+        Assert.IsTrue(stopwatch.ElapsedMilliseconds >= timeout - 5); // Allowing a small margin for timing inaccuracies
+    }
+
+    [TestMethod]
+    public void RetrieveImage_QueueHasMultipleBuffers_BuffersAreRetrievedInOrder()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+        _dataStream.Start();
+
+        var firstBuffer = FakeBufferProvider.GetFakeBuffer();
+        var secondBuffer = FakeBufferProvider.GetFakeBuffer();
+
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(firstBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(secondBuffer, DateTime.Now));
+
+        // Act
+        var firstSuccess = _dataStream.RetrieveImage(out GcBuffer retrievedFirstBuffer, 0);
+        var secondSuccess = _dataStream.RetrieveImage(out GcBuffer retrievedSecondBuffer, 0);
+
+        // Assert
+        Assert.IsTrue(firstSuccess);
+        Assert.IsTrue(secondSuccess);
+        Assert.AreSame(firstBuffer, retrievedFirstBuffer);
+        Assert.AreSame(secondBuffer, retrievedSecondBuffer);
+        Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
     }
 
     [TestMethod]
