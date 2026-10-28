@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -125,9 +124,6 @@ public static class GcLibrary
             if (deviceClassInfo.DeviceType != typeof(TDevice))
                 throw new InvalidOperationException($"Device class info for {typeof(TDevice).Name} identifies {deviceClassInfo.DeviceType.Name}.");
 
-            // Add device class if devices can be enumerated (is there a better test of dll functionality?).
-            TDevice.EnumerateDevices();
-
             // Add detected devices to list.
             _registeredDeviceClasses.Add(typeof(TDevice), deviceClassInfo);
 
@@ -140,18 +136,6 @@ public static class GcLibrary
         }
         catch (Exception ex)
         {
-            try
-            {
-                // Rollback registration if initialization fails.
-                TDevice.Release(); // Release resources used by API.
-            }
-            catch (Exception cleanupException)
-            {
-                Debug.WriteLine($"Failed to release resources for {typeof(TDevice).Name} after registration failed: {cleanupException}");
-                //if (Logger.IsEnabled(LogLevel.Warning))
-                //    Logger.LogWarning(cleanupException, "Failed to release resources for {DeviceType} after registration failed", typeof(TDevice).Name);
-            }
-
             // Log for debugging.
             if (Logger.IsEnabled(LogLevel.Warning))
                 Logger.LogWarning(ex, "Unable to register device class of type {Name}", typeof(TDevice).Name);

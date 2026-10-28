@@ -173,20 +173,6 @@ public class GcLibraryTests
     }
 
     [TestMethod]
-    public void RegisterGeneric_ThrowsAtEnumeration_IsNotAddedToRegisteredDeviceClasses()
-    {
-        // Arrange     
-        GcLibrary.Init(false);
-        FailingCam.CurrentFailureMode = FailingCam.FailureMode.EnumerationFailure;
-
-        // Act
-        GcLibrary.Register<FailingCam>();
-
-        // Assert
-        Assert.DoesNotContain(FailingCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
-    }
-
-    [TestMethod]
     public void RegisterNonGeneric_IsNotInitialized_ThrowsInvalidOperationException()
     {
         // Act/Assert
@@ -223,20 +209,6 @@ public class GcLibraryTests
         // Arrange
         GcLibrary.Init(false);
         FailingCam.CurrentFailureMode = FailingCam.FailureMode.InitializationFailure;
-
-        // Act
-        GcLibrary.Register(typeof(FailingCam));
-
-        // Assert
-        Assert.DoesNotContain(FailingCam.DeviceClassInfo, GcLibrary.GetRegisteredDeviceClasses());
-    }
-
-    [TestMethod]
-    public void RegisterNonGeneric_ThrowsAtEnumeration_IsNotAddedToRegisteredDeviceClasses()
-    {
-        // Arrange     
-        GcLibrary.Init(false);
-        FailingCam.CurrentFailureMode = FailingCam.FailureMode.EnumerationFailure;
 
         // Act
         GcLibrary.Register(typeof(FailingCam));

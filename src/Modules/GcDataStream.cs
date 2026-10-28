@@ -182,7 +182,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     /// <param name="buffer">Image buffer (or null if none is available).</param>
     /// <returns>True if buffer retrieval was successful, false if not.</returns>
-    public bool RetrieveImage(out GcBuffer buffer)
+    public bool RetrieveImage(out GcBuffer buffer) // ToDo: Consider adding timeout
     {
         buffer = null;
 
