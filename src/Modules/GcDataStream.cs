@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Cyotek.Collections.Generic;
 using GcLib.Utilities.Numbers;
 
@@ -24,6 +25,11 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// ToDo: Use own implementation for a circular buffer instead?
     /// </summary>
     private readonly CircularBuffer<GcBuffer> _outputBufferQueue = new(capacity: bufferCapacity, allowOverwrite: true);
+
+    /// <summary>
+    /// Provides a synchronization event used to block and release a waiting thread.
+    /// </summary>
+    private readonly AutoResetEvent _waitHandle = new(false);
 
     /// <summary>
     /// Index of last grabbed image (used for counting dropped images).
@@ -164,6 +170,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     public void Close()
     {
+        _waitHandle.Dispose();
+
         // Stop active acquisition and unregister from NewBuffer events.
         if (IsStreaming)
             Stop();
@@ -181,10 +189,13 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// Retrieves image buffer from beginning of output buffer queue.
     /// </summary>
     /// <param name="buffer">Image buffer (or null if none is available).</param>
+    /// <param name="timeout">Timeout in milliseconds to wait for a buffer.</param>
     /// <returns>True if buffer retrieval was successful, false if not.</returns>
-    public bool RetrieveImage(out GcBuffer buffer) // ToDo: Consider adding timeout
+    public bool RetrieveImage(out GcBuffer buffer, int timeout = 1000)
     {
         buffer = null;
+
+        _waitHandle.WaitOne(timeout);
 
         // Dequeue buffer.
         if (_outputBufferQueue.IsEmpty == false)
@@ -217,6 +228,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         // Register to events.
         _device.NewBuffer += OnNewBuffer;
         _device.FailedBuffer += OnFailedBuffer;
+
+        _waitHandle.Reset();
 
         // Start acquisition in camera.
         _device.StartAcquisition();
@@ -316,6 +329,9 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
 
         // Add image buffer to output buffer queue.
         _outputBufferQueue.Put(buffer);
+
+        // Signal that a buffer is available.
+        _waitHandle.Set();
 
         // Update datastream stats.
         UpdateStatistics(buffer.FrameID, buffer.TimeStamp);

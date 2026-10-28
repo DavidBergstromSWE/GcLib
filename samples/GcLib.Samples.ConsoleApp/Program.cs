@@ -27,8 +27,8 @@ var cameraList = system.GetDeviceList();
 GcDevice camera = system.OpenDevice(cameraList[0]);
 
 // Fetch a single image and save it to file (via Emgu.CV.Mat format). Image should be a grayscale image of a vertical ramp moving testpattern (320x240 pixels, 8-bit).
-camera.FetchImage(out GcBuffer image);
-image.ToMat().Save("image1.tiff");
+camera.FetchImage(out GcBuffer image1);
+image1.ToMat().Save("image1.tiff");
 Log.Information("image1.tiff saved to {dir}", Directory.GetCurrentDirectory());
 
 // Update some camera parameters (for a complete list of available parameters see camera.Parameters.ToList()).
@@ -43,12 +43,9 @@ GcDataStream dataStream = camera.OpenDataStream();
 // Start streaming images from the camera.
 dataStream.Start();
 
-// Suspend current thread to allow at least one image to be queued up. 
-Thread.Sleep(100);
-
-// Retrieve image from the front of the queue and save it to file. Image should be an RGB image of a frame counter testpattern with counter set to 1 (640x480, 8-bit).
-dataStream.RetrieveImage(out image); // alternatively, images can be retrieved by subscribing to the dataStream.BufferTransferred event. 
-image.ToMat().Save("image2.tiff");
+// Retrieve image from the front of the queue and save it to file. Image should be an RGB image of a frame counter testpattern with counter set to 0 (640x480, 8-bit).
+dataStream.RetrieveImage(out GcBuffer image2); // alternatively, images can be retrieved by subscribing to the dataStream.BufferTransferred event. 
+image2.ToMat().Save("image2.tiff");
 Log.Information("image2.tiff saved to {dir}", Directory.GetCurrentDirectory());
 
 // Close camera (note: this will also stop all streaming).
