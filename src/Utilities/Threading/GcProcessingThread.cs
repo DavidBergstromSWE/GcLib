@@ -279,20 +279,25 @@ public sealed class GcProcessingThread : IDisposable
     /// <param name="disposing"></param>
     private void Dispose(bool disposing)
     {
-        if (_disposed)
-            return;
+        lock (_queueLock)
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            if (disposing)
+            {
+                // Dispose managed state (managed objects).
+                _imageQueue.Clear();
+            }
+        }
 
         if (disposing)
         {
-            // Dispose managed state (managed objects).
-            lock (_queueLock)
-                _imageQueue.Clear();
-
             _fpsStabilizer.Reset();
             _waitHandle.Dispose();
         }
-
-        _disposed = true;
     }
 
     #endregion
@@ -340,7 +345,10 @@ public sealed class GcProcessingThread : IDisposable
                     }
                 }
 
-                _imageQueue.Clear(); // Clear queue to avoid processing old buffers.
+                // Clear queue to avoid processing old buffers.
+                lock (_queueLock)
+                    _imageQueue.Clear(); 
+                
                 continue;
             }
 
@@ -364,15 +372,15 @@ public sealed class GcProcessingThread : IDisposable
     /// </summary>
     private void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
-        // If the processing thread is not running, ignore the event.
-        if (_disposed || IsRunning == false)
-            return;
-
         bool overflow; // Flag indicating that the internal ring buffer was full when adding the new buffer to the queue.
 
         // Queue buffer for processing.
         lock (_queueLock)
         {
+            // If the processing thread is not running, ignore the event.
+            if (_disposed || _isRunning == false)
+                return;
+
             overflow = _imageQueue.Size == _imageQueue.Capacity; // Check if adding the buffer will cause an overflow.
             _imageQueue.Put(e.Buffer);
         }
