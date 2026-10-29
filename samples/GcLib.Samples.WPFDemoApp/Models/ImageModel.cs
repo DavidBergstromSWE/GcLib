@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -52,6 +55,21 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         PixelFormat.RGBa14,
         PixelFormat.RGBa16
     ];
+
+    /// <summary>
+    /// Queue of buffers pending processing.
+    /// </summary>
+    private readonly ConcurrentQueue<GcBuffer> _pendingBuffers = new();
+
+    /// <summary>
+    /// Flag indicating if queued buffer processing is currently running.
+    /// </summary>
+    private int _isProcessingQueue;
+
+    /// <summary>
+    /// True if incoming buffers should be accepted for asynchronous processing.
+    /// </summary>
+    private volatile bool _isBufferProcessingEnabled = true;
 
     #endregion
 
@@ -389,6 +407,69 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         mat.Dispose();
 
         return output;
+    }
+
+    /// <summary>
+    /// Handles a buffer transfer notification by queuing the transferred buffer for asynchronous processing when buffer
+    /// processing is enabled.
+    /// </summary>
+    /// <remarks>Returns without action when buffer processing is disabled or when no buffer is provided.
+    /// Starts queue processing only when no processing operation is currently running.</remarks>
+    /// <param name="sender">Source of the buffer transfer event.</param>
+    /// <param name="e">Event data that contains the transferred buffer.</param>
+    internal void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
+    {
+        if (_isBufferProcessingEnabled == false || e.Buffer == null)
+            return;
+
+        // Queue buffer for processing.
+        _pendingBuffers.Enqueue(e.Buffer);
+
+        // Start processing queue if not already running.
+        if (Interlocked.CompareExchange(ref _isProcessingQueue, 1, 0) == 0)
+            _ = Task.Run(ProcessQueuedBuffersAsync);
+    }
+
+    /// <summary>
+    /// Enables acceptance of incoming buffers for processing.
+    /// </summary>
+    internal void StartBufferProcessing()
+    {
+        _isBufferProcessingEnabled = true;
+    }
+
+    /// <summary>
+    /// Disables acceptance of incoming buffers and discards queued buffers.
+    /// </summary>
+    internal void StopBufferProcessing()
+    {
+        _isBufferProcessingEnabled = false;
+
+        while (_pendingBuffers.TryDequeue(out _))
+        {
+        }
+    }
+
+    /// <summary>
+    /// Processes queued buffers sequentially on a background worker.
+    /// </summary>
+    private void ProcessQueuedBuffersAsync()
+    {
+        try
+        {
+            // Process all queued buffers.
+            while (_isBufferProcessingEnabled && _pendingBuffers.TryDequeue(out var buffer))
+                RawImage = buffer;
+        }
+        finally
+        {
+            // Reset processing flag to allow future queue processing.
+            Interlocked.Exchange(ref _isProcessingQueue, 0);
+
+            // If new buffers were queued while processing, start processing again.
+            if (_isBufferProcessingEnabled && _pendingBuffers.IsEmpty == false && Interlocked.CompareExchange(ref _isProcessingQueue, 1, 0) == 0)
+                _ = Task.Run(ProcessQueuedBuffersAsync);
+        }
     }
 
     #endregion

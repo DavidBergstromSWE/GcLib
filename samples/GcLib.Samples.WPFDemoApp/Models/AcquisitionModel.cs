@@ -24,11 +24,6 @@ internal partial class AcquisitionModel : ObservableObject
     private GcDataStream _dataStream;
 
     /// <summary>
-    /// Thread used for grabbing images from datastream.
-    /// </summary>
-    private readonly GcProcessingThread _imageGrabbingThread;
-
-    /// <summary>
     /// Storage and processing of acquired image data.
     /// </summary>
     private readonly ImageModel _imageModel;
@@ -167,10 +162,6 @@ internal partial class AcquisitionModel : ObservableObject
 
         // Default codec.
         SelectedCodec = VideoWriter.CODEC.X264;
-
-        // Initialize grabbing thread with device ID.
-        if (deviceModel != null)
-            _imageGrabbingThread = new GcProcessingThread();
     }
 
     #endregion
@@ -196,6 +187,10 @@ internal partial class AcquisitionModel : ObservableObject
         // Hook handler to events announcing dropped frames.
         _dataStream.FrameDropped += OnFrameDropped;
 
+        // Enable and hook asynchronous image buffer processing.
+        _imageModel.StartBufferProcessing();
+        _dataStream.BufferTransferred += _imageModel.OnBufferTransferred;
+
         // Hook handlers to events announcing acquisition events in device.
         DeviceModel.Device.AcquisitionStarted += OnAcquisitionStarted;
         DeviceModel.Device.AcquisitionStopped += OnAcquisitionStopped;
@@ -207,12 +202,6 @@ internal partial class AcquisitionModel : ObservableObject
         {
             // Start acquisition.
             await Task.Run(() => _dataStream.Start());
-
-            // Hook handler to events announcing new buffers for processing.
-            _imageGrabbingThread.BufferProcess += _imageModel.OnBufferProcess;
-
-            // Start grabbing images using thread.
-            _imageGrabbingThread.Start(_dataStream);
 
             // Log information.
             Log.Debug("Acquisition started");
@@ -274,6 +263,10 @@ internal partial class AcquisitionModel : ObservableObject
         DeviceModel.Device.AcquisitionStopped -= OnAcquisitionStopped;
         DeviceModel.Device.AcquisitionAborted -= OnAcquisitionAborted;
         _dataStream.FrameDropped -= OnFrameDropped;
+        _dataStream.BufferTransferred -= _imageModel.OnBufferTransferred;
+
+        // Stop accepting transferred buffers and discard pending work.
+        _imageModel.StopBufferProcessing();
 
         // Stop recording (if writing).
         if (_bufferWriter != null && _bufferWriter.IsWriting)
@@ -281,12 +274,6 @@ internal partial class AcquisitionModel : ObservableObject
 
         if (_videoWriter != null && _videoWriter.IsWriting)
             await StopVideoWriting();
-
-        // Stop grabbing images from datastream.
-        _imageGrabbingThread.Stop();
-
-        // Unhook grabbing eventhandler.
-        _imageGrabbingThread.BufferProcess -= _imageModel.OnBufferProcess;
 
         // Stop streaming image data from device.
         _dataStream.Stop();
