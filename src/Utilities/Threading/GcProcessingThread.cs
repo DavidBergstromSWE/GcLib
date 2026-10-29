@@ -20,11 +20,17 @@ public sealed class GcProcessingThread : IDisposable
     // backing-fields
     private double _targetFPS;
     private bool _limitFPS;
+    private volatile bool _isRunning;
 
     /// <summary>
     /// Processing thread.
     /// </summary>
     private Thread _processingThread;
+
+    /// <summary>
+    /// Thread priority.
+    /// </summary>
+    private readonly ThreadPriority _priority;
 
     /// <summary>
     /// Stream of buffers.
@@ -48,6 +54,11 @@ public sealed class GcProcessingThread : IDisposable
     private readonly CircularBuffer<GcBuffer> _imageQueue;
 
     /// <summary>
+    /// Synchronization lock for queue access.
+    /// </summary>
+    private readonly Lock _queueLock = new();
+
+    /// <summary>
     /// Frame rate manager, used for stabilizing the rate of buffers processed.
     /// </summary>
     private readonly FPSStabilizer _fpsStabilizer = new();
@@ -59,17 +70,19 @@ public sealed class GcProcessingThread : IDisposable
     /// <summary>
     /// True if the processing thread is running. 
     /// </summary>
-    public bool IsRunning { get; private set; } = false;
-
-    /// <summary>
-    /// Thread priority.
-    /// </summary>
-    public ThreadPriority Priority { get; set; } = ThreadPriority.Normal;
+    public bool IsRunning => _isRunning;
 
     /// <summary>
     /// Number of buffers currently queued for processing.
     /// </summary>
-    public int QueuedCount => _imageQueue.Size;
+    public int QueuedCount
+    {
+        get
+        {
+            lock (_queueLock)
+                return _imageQueue.Size;
+        }
+    }
 
     /// <summary>
     /// If true, buffers will be silently dropped to limit the number of buffers handled per second. Use <see cref="TargetFPS"/> to set frame rate limit.
@@ -117,10 +130,12 @@ public sealed class GcProcessingThread : IDisposable
     /// <param name="bufferCapacity">Size of internal ring buffer.</param>
     /// <param name="limitFPS">Limit rate of buffers handled.</param>
     /// <param name="targetFPS">Limiting rate of buffers handled per second.</param>
+    /// <param name="priority">Thread priority.</param>
     /// <param name="ID">Thread ID.</param>
-    public GcProcessingThread(int bufferCapacity = 4, bool limitFPS = false, double targetFPS = 30.0, string ID = "")
+    public GcProcessingThread(int bufferCapacity = 4, bool limitFPS = false, double targetFPS = 30.0, ThreadPriority priority = ThreadPriority.Normal, string ID = "")
     {
         _imageQueue = new CircularBuffer<GcBuffer>(capacity: bufferCapacity, allowOverwrite: true);
+        _priority = priority;
         this.ID = ID;
         LimitFPS = limitFPS;
         TargetFPS = targetFPS;
@@ -168,19 +183,23 @@ public sealed class GcProcessingThread : IDisposable
     /// <exception cref="InvalidOperationException"></exception>
     public void Start(IBufferStream dataStream)
     {
+        // Validate arguments and state.
+        ObjectDisposedException.ThrowIf(_disposed, nameof(GcProcessingThread));
+        ArgumentNullException.ThrowIfNull(dataStream);
+
         if (IsRunning)
             throw new InvalidOperationException("Thread is already started!");
 
         _dataStream = dataStream;
 
         // Initialize thread.
-        _processingThread = new Thread(ThreadProc) { Priority = Priority };
+        _processingThread = new Thread(ThreadProc) { Priority = _priority, IsBackground = true };
 
         // Register to events in datastream.
         _dataStream.BufferTransferred += OnBufferTransferred;
 
         // Start thread.
-        IsRunning = true;
+        _isRunning = true;
         _processingThread.Start();
     }
 
@@ -190,23 +209,25 @@ public sealed class GcProcessingThread : IDisposable
     /// <param name="aWait">(Optional) If true, waits for the thread to terminate. If false you can use WaitComplete.</param>
     public void Stop(bool aWait = false)
     {
-        if (!IsRunning)
+        if (IsRunning == false)
             return;
 
         // Unregister from events.
-        _dataStream.BufferTransferred -= OnBufferTransferred;
+        _dataStream?.BufferTransferred -= OnBufferTransferred;
 
         // Stop thread.
-        IsRunning = false;
+        _isRunning = false;
 
         // Stop thread immediately (without waiting for buffer).
         _ = _waitHandle.Set();
 
-        if (aWait)
+        // Wait for thread.
+        if (aWait && _processingThread is not null && (ReferenceEquals(Thread.CurrentThread, _processingThread) == false))
             _processingThread.Join();
 
         // Discard remaining buffers.
-        _imageQueue.Clear();
+        lock (_queueLock)
+            _imageQueue.Clear();
 
         // Reset frame rate manager.
         _fpsStabilizer.Reset();
@@ -217,6 +238,13 @@ public sealed class GcProcessingThread : IDisposable
     /// </summary>
     public void WaitComplete()
     {
+        if (_processingThread is null)
+            return;
+
+        // Wait for thread to terminate, unless it is already terminated or the current thread is the processing thread.
+        if (_processingThread.IsAlive == false || ReferenceEquals(Thread.CurrentThread, _processingThread))
+            return;
+
         _processingThread.Join();
     }
 
@@ -226,7 +254,8 @@ public sealed class GcProcessingThread : IDisposable
     /// <param name="bufferCapacity">Total number of buffers that can be stored.</param>
     public void SetBufferCapacity(int bufferCapacity)
     {
-        _imageQueue.Capacity = bufferCapacity;
+        lock (_queueLock)
+            _imageQueue.Capacity = bufferCapacity;
     }
 
     /// <inheritdoc/>
@@ -234,7 +263,8 @@ public sealed class GcProcessingThread : IDisposable
     {
         // Make sure thread is stopped.
         if (IsRunning)
-            Stop();
+            Stop(aWait: true);
+        else WaitComplete();
 
         // Dispose of unmanaged resources.
         Dispose(true);
@@ -254,14 +284,13 @@ public sealed class GcProcessingThread : IDisposable
 
         if (disposing)
         {
-            // Dispose managed state (managed objects).                
-            _imageQueue.Clear();
-            _fpsStabilizer?.Reset();
-        }
+            // Dispose managed state (managed objects).
+            lock (_queueLock)
+                _imageQueue.Clear();
 
-        // Free unmanaged resources (unmanaged objects) and override a finalizer below.
-        // Set large fields to null.
-        _waitHandle?.Dispose();
+            _fpsStabilizer.Reset();
+            _waitHandle.Dispose();
+        }
 
         _disposed = true;
     }
@@ -280,34 +309,49 @@ public sealed class GcProcessingThread : IDisposable
 
         while (IsRunning)
         {
-            // Block thread until signaled that image has been queued. 
-            if (_imageQueue.IsEmpty)
-                _ = _waitHandle.WaitOne();
+            GcBuffer buffer = null;
 
-            // Retrieve image from queue and raise event that it needs to be handled.
-            if (_imageQueue.IsEmpty == false)
+            // Get next buffer from queue.
+            lock (_queueLock)
             {
-                // Check if frame rate is limited.
-                if (LimitFPS)
+                if (_imageQueue.IsEmpty == false)
+                    buffer = _imageQueue.Get();
+            }
+
+            // If no buffer is available, wait for a new buffer to be queued.
+            if (buffer is null)
+            {
+                _ = _waitHandle.WaitOne(); 
+                continue;
+            }
+
+            // If limiting FPS, check if it is time to process the buffer. If not, skip processing and clear the queue.
+            if (LimitFPS)
+            {
+                if (_fpsStabilizer.IsTimeToDisplay(TargetFPS))
                 {
-                    // Check if its time to process image.
-                    if (_fpsStabilizer.IsTimeToDisplay(TargetFPS))
+                    try
                     {
-                        // Announce buffer.
-                        OnBufferProcess(_imageQueue.Get());
+                        OnBufferProcess(buffer);
                     }
-
-                    // Drop remaining buffers in queue.
-                    _imageQueue.Clear();
-
-                    // Continue buffer acquisition.
-                    continue;
+                    catch (Exception ex)
+                    {
+                        GcLibrary.Logger.LogError(ex, "Unhandled exception while processing buffer in processing thread {ID}", _dataStream.StreamID);
+                    }
                 }
-                else // unlimited frame rate
-                {
-                    // Announce buffer.
-                    OnBufferProcess(_imageQueue.Get());
-                }
+
+                _imageQueue.Clear(); // Clear queue to avoid processing old buffers.
+                continue;
+            }
+
+            // Process buffer.
+            try
+            {
+                OnBufferProcess(buffer);
+            }
+            catch (Exception ex)
+            {
+                GcLibrary.Logger.LogError(ex, "Unhandled exception while processing buffer in processing thread {ID}", _dataStream.StreamID);
             }
         }
 
@@ -320,18 +364,32 @@ public sealed class GcProcessingThread : IDisposable
     /// </summary>
     private void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
+        // If the processing thread is not running, ignore the event.
+        if (_disposed || IsRunning == false)
+            return;
 
-        if (_imageQueue.Size == _imageQueue.Capacity)
+        bool overflow; // Flag indicating that the internal ring buffer was full when adding the new buffer to the queue.
+
+        // Queue buffer for processing.
+        lock (_queueLock)
         {
-            // Raise event that buffers will be overwritten.
-            OnBufferOverFlow();
+            overflow = _imageQueue.Size == _imageQueue.Capacity; // Check if adding the buffer will cause an overflow.
+            _imageQueue.Put(e.Buffer);
         }
 
-        // Queue buffer.
-        _imageQueue.Put(e.Buffer);
+        // Raise event if adding buffer caused an overflow of ring buffer.
+        if (overflow)
+            OnBufferOverFlow();
 
         // Unblock thread.
-        _ = _waitHandle.Set();
+        try
+        {
+            _ = _waitHandle.Set();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Ignore late event callback during disposal.
+        }
     }
 
     #endregion
