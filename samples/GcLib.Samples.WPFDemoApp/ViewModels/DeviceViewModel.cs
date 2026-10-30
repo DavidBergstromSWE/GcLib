@@ -199,14 +199,18 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
         // Update device list in background.
         _initialDeviceUpdateTask = Task.Run(() => _deviceProvider.UpdateDeviceList());
 
+        // Log status to status bar.
+        _ = Messenger.Send(new StatusBarLogMessage($"Updating device list..."));
+
         // Instantiate commands.
         OpenParameterDialogWindowCommand = new RelayCommand(() => OpenParameterDialogWindow(Device), () => IsEnabled && Device.IsConnecting == false && Device.IsConnected);
         LoadConfigurationDialogCommand = new AsyncRelayCommand(LoadConfigurationDialogAsync, () => CanLoadConfiguration);
         SaveConfigurationDialogCommand = new AsyncRelayCommand<bool>(SaveConfigurationDialogAsync, b => CanSaveConfiguration);
         ConnectCameraFromDialogCommand = new AsyncRelayCommand(ConnectCameraFromDialogAsync, () => IsEnabled && _initialDeviceUpdateTask.IsCompleted);
 
-        // Notify command of changes after initial device update task is completed.
-        _ = _initialDeviceUpdateTask.ContinueWith(_ => _dispatcherService.Invoke(() => ConnectCameraFromDialogCommand.NotifyCanExecuteChanged()), CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+        // Notify command of changes after initial device update task is completed and log number of devices found to status bar.
+        _ = _initialDeviceUpdateTask.ContinueWith(_ => _dispatcherService.Invoke(() => ConnectCameraFromDialogCommand.NotifyCanExecuteChanged()), CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default)
+                                    .ContinueWith((t) => _ = Messenger.Send(new StatusBarLogMessage($"{deviceProvider.GetNumDevices()} devices found.")));
 
         // Hook eventhandlers to device events.
         Device = device;
