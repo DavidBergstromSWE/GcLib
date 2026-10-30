@@ -628,9 +628,9 @@ public class GcBufferTests
             {
                 if (pixelFormat == PixelFormat.RGB8)
                 {
-                    Assert.AreEqual(255, mat.GetPixel(row, col, 0)); // R
+                    Assert.AreEqual(0, mat.GetPixel(row, col, 0)); // B
                     Assert.AreEqual(0, mat.GetPixel(row, col, 1)); // G
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 2)); // B
+                    Assert.AreEqual(255, mat.GetPixel(row, col, 2)); // R
                 }
                 else if (pixelFormat == PixelFormat.BGR8)
                 {
@@ -683,9 +683,9 @@ public class GcBufferTests
             {
                 if (pixelFormat == PixelFormat.RGB8)
                 {
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 0)); // R
+                    Assert.AreEqual(255, mat.GetPixel(row, col, 0)); // B
                     Assert.AreEqual(0, mat.GetPixel(row, col, 1)); // G
-                    Assert.AreEqual(255, mat.GetPixel(row, col, 2)); // B
+                    Assert.AreEqual(0, mat.GetPixel(row, col, 2)); // R
                 }
                 else if (pixelFormat == PixelFormat.BGR8)
                 {

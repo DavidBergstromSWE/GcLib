@@ -291,9 +291,6 @@ public class VideoWriter : IDisposable
 
         // Write buffer (converted to Mat).
         using var mat = buffer.ToMat();
-        if (GenICamHelper.GetNumChannels(buffer.PixelFormat) > 1)
-            CvInvoke.CvtColor(src: mat, dst: mat, code: ColorConversion.Bgr2Rgb); // OpenCV assumes BGR color space.
-
         _videoWriter.Write(mat);
 
         FramesWritten++;

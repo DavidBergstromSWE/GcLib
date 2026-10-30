@@ -367,24 +367,6 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();
 
-        // Convert to BGR(a) if necessary.
-        if (mat.NumberOfChannels > 1)
-        {
-            // Get color order of input image.
-            var colorOrder = GenICamHelper.GetColorOrder(buffer.PixelFormat);
-
-            // Convert to BGR(a) as Emgu.CV uses BGR color order by default.
-            // Convert 3-channel to BGR.
-            if (mat.NumberOfChannels == 3 && colorOrder == ColorOrder.RGB)
-                CvInvoke.CvtColor(mat, mat, ColorConversion.Rgb2Bgr);
-
-            // Convert 4-channel image to 3 (BGR).
-            if (mat.NumberOfChannels == 4)
-                if (colorOrder == ColorOrder.RGB)
-                    CvInvoke.CvtColor(mat, mat, ColorConversion.Rgba2Bgr); // Convert RGBA to BGR (skip alpha channel). 
-                else CvInvoke.CvtColor(mat, mat, ColorConversion.Bgra2Bgr);  // Skip alpha channel.
-        }
-
         // Normalize (to 8 bits).
         if (EmguHelper.GetBitDepth(mat.Depth) > 8)
             CvInvoke.Normalize(src: mat, dst: mat, alpha: 0, beta: 255, normType: NormType.MinMax, dType: DepthType.Cv8U);
@@ -401,7 +383,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
             CvInvoke.Flip(mat, mat, FlipType.Vertical);
 
         // Instantiate new output buffer (allocates new memory!).
-        var output = new GcBuffer(mat, mat.NumberOfChannels == 3 ? PixelFormat.BGR8 : PixelFormat.Mono8, buffer.FrameID, buffer.TimeStamp);
+        var output = new GcBuffer(mat, EmguHelper.GetPixelFormat(mat.Depth, mat.NumberOfChannels), buffer.FrameID, buffer.TimeStamp);
 
         // Dipose mat.
         mat.Dispose();

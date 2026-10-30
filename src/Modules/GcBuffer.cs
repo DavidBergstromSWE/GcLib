@@ -230,7 +230,7 @@ public sealed class GcBuffer
     #region Public methods
 
     /// <summary>
-    /// Converts image data in buffer to <see cref="Mat"/> format. As Emgu CV assumes image data is stored in BGR(a) channel order, color conversion of output may be necessary.
+    /// Converts image data in buffer to <see cref="Mat"/> format. The method converts image data to a BGR(a) format compatible with Emgu CV.
     /// </summary>
     /// <remarks>
     /// Note: Conversion allocates new memory to store the image data. 
@@ -238,18 +238,13 @@ public sealed class GcBuffer
     /// <returns><see cref="Mat"/> image.</returns>
     public Mat ToMat()
     {
-        // Convert to Mat (Emgu CV assumes image data is stored in BGR(a) channel order).
-        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType(GenICamHelper.GetPixelSize(PixelFormat)), (int)NumChannels);
+        // Convert to Mat.
+        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType(PixelFormat), (int)NumChannels);
         mat.SetTo(ImageData);
 
-        // If the pixel format is not BGR(a), convert to BGR(a) format for compatibility with Emgu CV.
-        //if (PixelFormat != PixelFormat.BGR8 && PixelFormat != PixelFormat.BGR10 && PixelFormat != PixelFormat.BGR12 && PixelFormat != PixelFormat.BGRa8 && PixelFormat != PixelFormat.BGRa10 && PixelFormat != PixelFormat.BGRa12)
-        //{
-        //    var targetPixelFormat = EmguHelper.GetPixelFormat(EmguHelper.GetDepthType(GenICamHelper.GetPixelSize(PixelFormat)), (int)NumChannels);
-        //    var convertedMat = EmguHelper.ConvertMat(mat, PixelFormat, targetPixelFormat);
-        //    mat.Dispose();
-        //    return convertedMat;
-        //}
+        // As Emgu CV assumes image data is stored in BGR(a) channel order, convert if necessary (preserving bit depth and number of channels).
+        if (GenICamHelper.IsColor(PixelFormat) && GenICamHelper.GetColorOrder(PixelFormat) != ColorOrder.BGR && GenICamHelper.GetColorOrder(PixelFormat) != ColorOrder.BGRa)
+            mat = EmguHelper.ConvertMat(mat, PixelFormat, EmguHelper.GetPixelFormat(mat.Depth, mat.NumberOfChannels));
 
         return mat;
     }
@@ -262,15 +257,20 @@ public sealed class GcBuffer
     /// <param name="targetPixelFormat">The pixel format for the resulting matrix.</param>
     /// <returns>An independently allocated matrix containing the image in the specified pixel format. The caller must dispose it.</returns>
     /// <exception cref="NotSupportedException">Thrown when conversion to the target pixel format is not supported.</exception>
-    public Mat ToMat(PixelFormat targetPixelFormat)
+    internal Mat ToMat(PixelFormat targetPixelFormat)
     {
-        var mat = ToMat();
+        // Convert to Mat.
+        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType(PixelFormat), (int)NumChannels);
+        mat.SetTo(ImageData);
+
+        // Convert to target pixel format.
         try
         {
             return EmguHelper.ConvertMat(mat, PixelFormat, targetPixelFormat);
         }
         catch
         {
+            // Dispose before rethrowing the exception to avoid memory leaks.
             mat.Dispose();
             throw;
         }
