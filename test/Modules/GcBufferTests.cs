@@ -320,6 +320,234 @@ public class GcBufferTests
     #region ToMatTests
 
     [TestMethod]
+    [DataRow(PixelFormat.Mono8, 1, DepthType.Cv8U, 201)]
+    [DataRow(PixelFormat.Mono12, 1, DepthType.Cv16U, 3001)]
+    [DataRow(PixelFormat.RGB16, 3, DepthType.Cv16U, 50001)]
+    [DataRow(PixelFormat.BGRa8, 4, DepthType.Cv8U, 201)]
+    public void ToMat_TargetSameFormat_ReturnsIndependentCopy(PixelFormat pixelFormat, int channels, DepthType depth, int value)
+    {
+        var buffer = new GcBuffer(new byte[2 * 3 * channels * (depth == DepthType.Cv16U ? 2 : 1)], 2, 3, pixelFormat, 42, 123);
+        buffer.SetPixel(2, 1, 0, value);
+
+        using var mat = buffer.ToMat(pixelFormat);
+
+        Assert.IsFalse(mat.IsEmpty);
+        Assert.AreEqual(2, mat.Width);
+        Assert.AreEqual(3, mat.Height);
+        Assert.AreEqual(channels, mat.NumberOfChannels);
+        Assert.AreEqual(depth, mat.Depth);
+        Assert.AreEqual(value, mat.GetPixel(2, 1, 0));
+        buffer.SetPixel(2, 1, 0, 0);
+        Assert.AreEqual(value, mat.GetPixel(2, 1, 0));
+        mat.SetPixel(0, 0, 0, value);
+        Assert.AreEqual(0.0, buffer.GetPixel(0, 0, 0));
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.RGB8, PixelFormat.BGR8, 30, 20, 10, 0)]
+    [DataRow(PixelFormat.BGR8, PixelFormat.RGB8, 30, 20, 10, 0)]
+    [DataRow(PixelFormat.RGBa8, PixelFormat.BGRa8, 30, 20, 10, 40)]
+    [DataRow(PixelFormat.BGRa8, PixelFormat.RGBa8, 30, 20, 10, 40)]
+    [DataRow(PixelFormat.RGB8, PixelFormat.RGBa8, 10, 20, 30, 255)]
+    [DataRow(PixelFormat.BGR8, PixelFormat.BGRa8, 10, 20, 30, 255)]
+    [DataRow(PixelFormat.RGB8, PixelFormat.BGRa8, 30, 20, 10, 255)]
+    [DataRow(PixelFormat.BGR8, PixelFormat.RGBa8, 30, 20, 10, 255)]
+    [DataRow(PixelFormat.RGBa8, PixelFormat.RGB8, 10, 20, 30, 0)]
+    [DataRow(PixelFormat.BGRa8, PixelFormat.BGR8, 10, 20, 30, 0)]
+    [DataRow(PixelFormat.RGBa8, PixelFormat.BGR8, 30, 20, 10, 0)]
+    [DataRow(PixelFormat.BGRa8, PixelFormat.RGB8, 30, 20, 10, 0)]
+    [DataRow(PixelFormat.RGB8, PixelFormat.Mono8, 18, 0, 0, 0)]
+    [DataRow(PixelFormat.BGR8, PixelFormat.Mono8, 22, 0, 0, 0)]
+    [DataRow(PixelFormat.RGBa8, PixelFormat.Mono8, 18, 0, 0, 0)]
+    [DataRow(PixelFormat.BGRa8, PixelFormat.Mono8, 22, 0, 0, 0)]
+    [DataRow(PixelFormat.Mono8, PixelFormat.RGB8, 10, 10, 10, 0)]
+    [DataRow(PixelFormat.Mono8, PixelFormat.BGR8, 10, 10, 10, 0)]
+    [DataRow(PixelFormat.Mono8, PixelFormat.RGBa8, 10, 10, 10, 255)]
+    [DataRow(PixelFormat.Mono8, PixelFormat.BGRa8, 10, 10, 10, 255)]
+    public void ToMat_TargetFormat_ConvertsChannels(PixelFormat sourceFormat, PixelFormat targetFormat, int first, int second, int third, int alpha)
+    {
+        byte[] imageData = new byte[2 * 3 * GenICamHelper.GetNumChannels(sourceFormat)];
+        for (int i = 0; i < imageData.Length; i++)
+            imageData[i] = (byte)((i % GenICamHelper.GetNumChannels(sourceFormat) + 1) * 10);
+        byte[] originalData = (byte[])imageData.Clone();
+        var buffer = new GcBuffer(imageData, 2, 3, sourceFormat, 42, 123);
+        double[] expected = [first, second, third, alpha];
+
+        using var mat = buffer.ToMat(targetFormat);
+
+        Assert.IsFalse(mat.IsEmpty);
+        Assert.AreEqual(2, mat.Width);
+        Assert.AreEqual(3, mat.Height);
+        Assert.AreEqual((int)GenICamHelper.GetNumChannels(targetFormat), mat.NumberOfChannels);
+        Assert.AreEqual(DepthType.Cv8U, mat.Depth);
+        for (int row = 0; row < mat.Height; row++)
+            for (int col = 0; col < mat.Width; col++)
+                for (uint channel = 0; channel < GenICamHelper.GetNumChannels(targetFormat); channel++)
+                    Assert.AreEqual(expected[channel], mat.GetPixel(row, col, channel));
+        Assert.AreSequenceEqual(originalData, buffer.ImageData);
+        Assert.AreEqual(sourceFormat, buffer.PixelFormat);
+        Assert.AreEqual(42L, buffer.FrameID);
+        Assert.AreEqual(123UL, buffer.TimeStamp);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.RGB16, PixelFormat.BGR16)]
+    [DataRow(PixelFormat.BGR16, PixelFormat.RGB16)]
+    [DataRow(PixelFormat.RGBa16, PixelFormat.BGRa16)]
+    [DataRow(PixelFormat.BGRa16, PixelFormat.RGBa16)]
+    [DataRow(PixelFormat.RGB16, PixelFormat.BGRa16)]
+    [DataRow(PixelFormat.BGRa16, PixelFormat.RGB16)]
+    public void ToMat_Target16BitFormat_PreservesSamplePrecision(PixelFormat sourceFormat, PixelFormat targetFormat)
+    {
+        var buffer = new GcBuffer(new byte[2 * 3 * GenICamHelper.GetNumChannels(sourceFormat) * sizeof(ushort)], 2, 3, sourceFormat, 42, 123);
+        double[] samples = [1000, 20000, 50000, 12345];
+        for (uint row = 0; row < buffer.Height; row++)
+            for (uint col = 0; col < buffer.Width; col++)
+                buffer.SetPixel(row, col, samples[..(int)GenICamHelper.GetNumChannels(sourceFormat)]);
+        byte[] originalData = (byte[])buffer.ImageData.Clone();
+        double[] expected = [50000, 20000, 1000, GenICamHelper.GetNumChannels(sourceFormat) == 4 ? 12345 : ushort.MaxValue];
+
+        using var mat = buffer.ToMat(targetFormat);
+
+        Assert.IsFalse(mat.IsEmpty);
+        Assert.AreEqual(2, mat.Width);
+        Assert.AreEqual(3, mat.Height);
+        Assert.AreEqual(DepthType.Cv16U, mat.Depth);
+        Assert.AreEqual((int)GenICamHelper.GetNumChannels(targetFormat), mat.NumberOfChannels);
+        for (int row = 0; row < mat.Height; row++)
+            for (int col = 0; col < mat.Width; col++)
+                for (uint channel = 0; channel < GenICamHelper.GetNumChannels(targetFormat); channel++)
+                    Assert.AreEqual(expected[channel], mat.GetPixel(row, col, channel));
+        Assert.AreSequenceEqual(originalData, buffer.ImageData);
+    }
+
+    [TestMethod]
+    public void ToMat_TargetHigherDepthColorFormat_ScalesSamplesWithoutChangingSource()
+    {
+        byte[] imageData = [0, 10, 20, 30, 40, 255];
+        var buffer = new GcBuffer(imageData, 2, 3, PixelFormat.Mono8, 42, 123);
+
+        using var mat = buffer.ToMat(PixelFormat.RGB16);
+
+        Assert.IsFalse(mat.IsEmpty);
+        Assert.AreEqual(2, mat.Width);
+        Assert.AreEqual(3, mat.Height);
+        Assert.AreEqual(DepthType.Cv16U, mat.Depth);
+        Assert.AreEqual(3, mat.NumberOfChannels);
+        for (int row = 0; row < mat.Height; row++)
+            for (int col = 0; col < mat.Width; col++)
+                for (uint channel = 0; channel < 3; channel++)
+                    Assert.AreEqual(imageData[row * mat.Width + col] * 257.0, mat.GetPixel(row, col, channel));
+        Assert.AreSequenceEqual(new byte[] { 0, 10, 20, 30, 40, 255 }, buffer.ImageData);
+        Assert.AreEqual(PixelFormat.Mono8, buffer.PixelFormat);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.RGB8, PixelFormat.RGB16, 2570)]
+    [DataRow(PixelFormat.BGR8, PixelFormat.BGR16, 2570)]
+    [DataRow(PixelFormat.RGBa8, PixelFormat.RGBa16, 2570)]
+    [DataRow(PixelFormat.BGRa8, PixelFormat.BGRa16, 2570)]
+    [DataRow(PixelFormat.RGB16, PixelFormat.RGB8, 10)]
+    [DataRow(PixelFormat.BGR16, PixelFormat.BGR8, 10)]
+    [DataRow(PixelFormat.RGBa16, PixelFormat.RGBa8, 10)]
+    [DataRow(PixelFormat.BGRa16, PixelFormat.BGRa8, 10)]
+    [DataRow(PixelFormat.RGB10, PixelFormat.RGB12, 160)]
+    public void ToMat_SameColorOrderDifferentDepth_ScalesEveryChannel(PixelFormat sourceFormat, PixelFormat targetFormat, int expectedFirst)
+    {
+        int channels = (int)GenICamHelper.GetNumChannels(sourceFormat);
+        var buffer = new GcBuffer(new byte[2 * 3 * channels * (int)GenICamHelper.GetBitsPerPixelPerChannel(sourceFormat) / 8], 2, 3, sourceFormat, 42, 123);
+        double[] samples = [10, 20, 30, 40];
+        double sourceScale = (double)GenICamHelper.GetPixelDynamicRangeMax(sourceFormat) / 255;
+        for (uint row = 0; row < buffer.Height; row++)
+            for (uint col = 0; col < buffer.Width; col++)
+                for (uint channel = 0; channel < channels; channel++)
+                    buffer.SetPixel(row, col, channel, Math.Round(samples[channel] * sourceScale));
+        byte[] originalData = (byte[])buffer.ImageData.Clone();
+
+        using var mat = buffer.ToMat(targetFormat);
+
+        Assert.AreEqual(EmguHelper.GetDepthType(targetFormat), mat.Depth);
+        Assert.AreEqual(channels, mat.NumberOfChannels);
+        double scale = (double)GenICamHelper.GetPixelDynamicRangeMax(targetFormat) / GenICamHelper.GetPixelDynamicRangeMax(sourceFormat);
+        for (int row = 0; row < mat.Height; row++)
+            for (int col = 0; col < mat.Width; col++)
+                for (uint channel = 0; channel < channels; channel++)
+                    Assert.AreEqual(Math.Round(buffer.GetPixel((uint)row, (uint)col, channel) * scale), mat.GetPixel(row, col, channel));
+        Assert.AreEqual((double)expectedFirst, mat.GetPixel(0, 0, 0));
+        Assert.AreSequenceEqual(originalData, buffer.ImageData);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.Mono8, PixelFormat.RGBa8)]
+    [DataRow(PixelFormat.Mono8, PixelFormat.BGRa16)]
+    [DataRow(PixelFormat.RGB8, PixelFormat.BGRa8)]
+    [DataRow(PixelFormat.BGR8, PixelFormat.RGBa16)]
+    [DataRow(PixelFormat.Mono8, PixelFormat.RGBa10)]
+    [DataRow(PixelFormat.Mono8, PixelFormat.BGRa12)]
+    [DataRow(PixelFormat.RGB8, PixelFormat.RGBa14)]
+    [DataRow(PixelFormat.BGR8, PixelFormat.BGRa10)]
+    [DataRow(PixelFormat.RGB8, PixelFormat.BGRa12)]
+    [DataRow(PixelFormat.BGR8, PixelFormat.RGBa14)]
+    public void ToMat_AddAlpha_UsesTargetDynamicRange(PixelFormat sourceFormat, PixelFormat targetFormat)
+    {
+        int channels = (int)GenICamHelper.GetNumChannels(sourceFormat);
+        byte[] imageData = new byte[2 * 3 * channels];
+        Array.Fill(imageData, byte.MaxValue);
+        var buffer = new GcBuffer(imageData, 2, 3, sourceFormat, 42, 123);
+
+        using var mat = buffer.ToMat(targetFormat);
+
+        Assert.AreEqual(4, mat.NumberOfChannels);
+        Assert.AreEqual(EmguHelper.GetDepthType(targetFormat), mat.Depth);
+        for (int row = 0; row < mat.Height; row++)
+            for (int col = 0; col < mat.Width; col++)
+                for (uint channel = 0; channel < 4; channel++)
+                    Assert.AreEqual((double)GenICamHelper.GetPixelDynamicRangeMax(targetFormat), mat.GetPixel(row, col, channel));
+        Assert.AreSequenceEqual(imageData, buffer.ImageData);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.BayerRG8)]
+    [DataRow(PixelFormat.BayerBG10)]
+    [DataRow(PixelFormat.BayerGR12)]
+    [DataRow(PixelFormat.BayerGB16)]
+    public void ToMat_BayerSourceOrTarget_ThrowsWithoutChangingSource(PixelFormat bayerFormat)
+    {
+        byte[] imageData = new byte[2 * 3 * (int)GenICamHelper.GetBitsPerPixelPerChannel(bayerFormat) / 8];
+        Array.Fill(imageData, (byte)10);
+        var bayer = new GcBuffer(imageData, 2, 3, bayerFormat, 42, 123);
+        var mono = new GcBuffer(new byte[6], 2, 3, PixelFormat.Mono8, 42, 123);
+        var rgb = new GcBuffer(new byte[18], 2, 3, PixelFormat.RGB8, 42, 123);
+        byte[] originalData = (byte[])imageData.Clone();
+
+        Assert.ThrowsExactly<NotSupportedException>(() => bayer.ToMat(PixelFormat.RGB8));
+        Assert.ThrowsExactly<NotSupportedException>(() => bayer.ToMat(PixelFormat.Mono8));
+        Assert.ThrowsExactly<NotSupportedException>(() => bayer.ToMat(bayerFormat));
+        Assert.ThrowsExactly<NotSupportedException>(() => mono.ToMat(bayerFormat));
+        Assert.ThrowsExactly<NotSupportedException>(() => rgb.ToMat(bayerFormat));
+
+        Assert.AreSequenceEqual(originalData, bayer.ImageData);
+        using var raw = bayer.ToMat();
+        Assert.AreEqual(1, raw.NumberOfChannels);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.InvalidPixelFormat)]
+    [DataRow(PixelFormat.Mono10p)]
+    [DataRow(PixelFormat.Mono12p)]
+    [DataRow(PixelFormat.RGB10p)]
+    public void ToMat_UnsupportedTargetFormat_ThrowsWithoutChangingSource(PixelFormat targetFormat)
+    {
+        byte[] imageData = [10, 20, 30, 40, 50, 60];
+        var buffer = new GcBuffer(imageData, 2, 3, PixelFormat.Mono8, 42, 123);
+
+        Assert.ThrowsExactly<NotSupportedException>(() => buffer.ToMat(targetFormat));
+
+        Assert.AreSequenceEqual(new byte[] { 10, 20, 30, 40, 50, 60 }, buffer.ImageData);
+        Assert.AreEqual(PixelFormat.Mono8, buffer.PixelFormat);
+    }
+
+    [TestMethod]
     [DataRow(PixelFormat.Mono8)]
     [DataRow(PixelFormat.Mono10)]
     [DataRow(PixelFormat.Mono12)]

@@ -3,15 +3,13 @@
 namespace GcLib.Utilities.Numbers;
 
 /// <summary>
-/// Provides extension methods for manipulating byte arrays, including bit extraction/insertion operations.
+/// Provides span-based extension methods for bit extraction and insertion.
 /// </summary>
 /// <remarks>This class includes methods that allow for the extraction and insertion of specific ranges of bits
-/// within byte arrays, accommodating different endianness and bit numbering conventions. It is useful in scenarios
+/// within byte spans, accommodating different endianness and bit numbering conventions. It is useful in scenarios
 /// involving low-level data manipulation, such as serialization and communication protocols.</remarks>
 public static class ByteExtensions
 {
-    // ToDo: Implement span-based versions of GetBitRange and SetBitRange for performance optimization.
-
     /// <summary>
     /// Specifies the byte order used to represent data in memory.
     /// </summary>
@@ -54,22 +52,22 @@ public static class ByteExtensions
     public const int BitsPerByte = 8;
 
     /// <summary>
-    /// Extracts a specified range of bits from a source byte array and returns them as a new byte array.
+    /// Extracts a specified range of bits from a read-only source span into a caller-provided span.
     /// </summary>
-    /// <remarks>The extracted bits are packed into the resulting array according to the specified endianness and
-    /// bit numbering scheme. The method does not modify the source array.</remarks>
-    /// <param name="source">The source byte array from which bits are to be extracted.</param>
+    /// <remarks>The extracted bits are packed into the destination according to the specified endianness and
+    /// bit numbering scheme. The source span is not modified. The destination must be large enough to hold the
+    /// extracted bits; unused bits in the last written byte are cleared.</remarks>
+    /// <param name="source">The read-only span from which bits are to be extracted.</param>
     /// <param name="start">The zero-based index, in bits, at which to begin extraction.</param>
     /// <param name="length">The number of bits to extract.</param>
-    /// <param name="endianness">Specifies the byte order to use when extracting bits from the source array.</param>
-    /// <param name="bitNumbering">Specifies the bit numbering scheme to use when extracting bits (most significant bit first or least significant
-    /// bit first).</param>
-    /// <returns>A new byte array containing the extracted bits, packed into bytes. If the number of bits is not a multiple of 8,
-    /// the last byte will be partially filled.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the source byte array.</exception>
-    public static byte[] GetBitRange(this byte[] source, int start, int length, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
+    /// <param name="destination">The span that receives the extracted bits.</param>
+    /// <param name="endianness">Specifies the byte order to use when extracting bits.</param>
+    /// <param name="bitNumbering">Specifies the bit numbering scheme to use when extracting bits.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the source span.</exception>
+    /// <exception cref="ArgumentException">Thrown when the destination span is too small to hold the extracted bits.</exception>
+    public static void GetBitRange(this ReadOnlySpan<byte> source, int start, int length, Span<byte> destination, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
     {
-        // Calculate the length of the source byte array in bits.
+        // Calculate the length of the source span in bits.
         int maxLength = source.Length * BitsPerByte;
 
         // Calculate the end index of the bit range.
@@ -83,21 +81,24 @@ public static class ByteExtensions
         if (end > maxLength)
             throw new ArgumentOutOfRangeException(nameof(length), length, $"Range length must be less than or equal to {maxLength}");
 
-        // Calculate the length of the byte array for the result.
+        // Calculate the required destination length.
         var (byteLength, remainderLength) = Math.DivRem(length, BitsPerByte);
+        int resultLength = byteLength + (remainderLength == 0 ? 0 : 1);
+        if (destination.Length < resultLength)
+            throw new ArgumentException("Destination span is too small to hold the extracted bits.", nameof(destination));
 
-        // Allocate new result array.
-        byte[] result = new byte[byteLength + (remainderLength == 0 ? 0 : 1)]; // Add extra byte if there are remaining bits.
+        Span<byte> result = destination[..resultLength];
+        result.Clear();
 
-        // Iterate through each byte in the result array.
+        // Iterate through each byte in the result span.
         for (int i = 0; i < result.Length; i++)
         {
             // Compute each of the 8 bits of the ith byte.
-            // Stop if start index >= end index (rest of the bits in the current byte will be 0 by default).
+            // Stop if start index >= end index (rest of the bits in the current byte remain 0).
             for (int j = 0; j < BitsPerByte && start < end; j++)
             {
                 // Calculate the source byte and bit indices.
-                var (sourceByteIndex, sourceBitIndex) = Math.DivRem(start++, BitsPerByte); // Note the increment(++) in start
+                var (sourceByteIndex, sourceBitIndex) = Math.DivRem(start++, BitsPerByte);
 
                 // Current bit index in the result byte.
                 int resultBitIndex = j;
@@ -105,39 +106,35 @@ public static class ByteExtensions
                 // Adjust for bit numbering.
                 if (bitNumbering is BitNumbering.Msb0)
                 {
-                    resultBitIndex = 7 - resultBitIndex; // Adjust result bit index
-                    sourceBitIndex = 7 - sourceBitIndex; // Adjust source bit index
+                    resultBitIndex = 7 - resultBitIndex;
+                    sourceBitIndex = 7 - sourceBitIndex;
                 }
 
                 // Adjust for byte ordering.
                 if (endianness is Endianness.LittleEndian)
-                    sourceByteIndex = source.Length - 1 - sourceByteIndex; // Adjust byte index of source
+                    sourceByteIndex = source.Length - 1 - sourceByteIndex;
 
                 // Set the current bit in the result byte.
-                result[i] |= (byte)(((source[sourceByteIndex] >> sourceBitIndex) & 1) << resultBitIndex); // By right shifting (>>) desired bit to position zero and masking (& 1), we can extract the bit value (0 or 1) and then left shift (<<) it to the correct position in the result byte.
+                result[i] |= (byte)(((source[sourceByteIndex] >> sourceBitIndex) & 1) << resultBitIndex);
             }
         }
-
-        return result;
     }
 
     /// <summary>
-    /// Inserts a specified range of bits into a target byte array, using the given endianness and bit numbering scheme.
+    /// Inserts bits from a read-only source span into a target span without allocating memory.
     /// </summary>
-    /// <remarks>This method modifies the contents of the target byte array in place. The bit range is set
-    /// according to the specified endianness and bit numbering scheme, which affects how bits are mapped between the
-    /// source and target arrays.</remarks>
-    /// <param name="target">The target byte array in which the bits will be set.</param>
-    /// <param name="start">The zero-based index of the first bit to set within the target byte array.</param>
-    /// <param name="length">The number of bits to set, starting from the specified start index.</param>
-    /// <param name="value">The bytes containing the bit values to set in the specified range.</param>
-    /// <param name="endianness">Specifies the endianness to use when interpreting the target byte array.</param>
-    /// <param name="bitNumbering">Specifies the bit numbering scheme to use, such as most significant bit first (Msb0) or least significant bit
-    /// first.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the target byte array.</exception>
-    public static void SetBitRange(this byte[] target, int start, int length, Span<byte> value, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
+    /// <remarks>Only the specified bits are modified. If the source contains fewer than <paramref name="length"/>
+    /// bits, only the available source bits are written. Bit offsets and byte order are relative to the target span.</remarks>
+    /// <param name="target">The span in which bits will be set.</param>
+    /// <param name="start">The zero-based index, in bits, at which to begin insertion.</param>
+    /// <param name="length">The maximum number of bits to set.</param>
+    /// <param name="value">The read-only span containing the bits to insert.</param>
+    /// <param name="endianness">Specifies the byte order of the target span.</param>
+    /// <param name="bitNumbering">Specifies the bit numbering scheme.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or the specified range exceeds the target span.</exception>
+    public static void SetBitRange(this Span<byte> target, int start, int length, ReadOnlySpan<byte> value, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
     {
-        // Calculate the length of the target byte array in bits.
+        // Calculate the length of the target span in bits.
         int maxLength = target.Length * BitsPerByte;
 
         // Calculate the end index of the bit range.
@@ -151,11 +148,11 @@ public static class ByteExtensions
         if (end > maxLength)
             throw new ArgumentOutOfRangeException(nameof(length), length, $"Range length must be less than or equal to {maxLength}");
 
-        // Iterate through each byte in the value byte array.
-        for (int i = 0; i < value.Length; i++)
+        // Iterate through the source bytes needed for the specified range.
+        for (int i = 0; i < value.Length && start < end; i++)
         {
             // Compute each of the 8 bits of the ith byte.
-            // Stop if start index >= end index (rest of the bits in the current byte will be 0 by default).
+            // Stop if start index >= end index (remaining target bits are unchanged).
             for (int j = 0; j < BitsPerByte && start < end; j++)
             {
                 // Calculate the target byte and bit indices.

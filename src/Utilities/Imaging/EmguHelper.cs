@@ -1,4 +1,5 @@
 ﻿using System;
+using Emgu.CV;
 using Emgu.CV.CvEnum;
 using GcLib.Utilities.Numbers;
 
@@ -180,5 +181,113 @@ public static class EmguHelper
             else return PixelFormat.InvalidPixelFormat;
         }
         else return PixelFormat.InvalidPixelFormat;
+    }
+
+    /// <summary>
+    /// Converts a matrix from one pixel format to another.
+    /// </summary>
+    /// <param name="mat">The matrix to convert.</param>
+    /// <param name="sourcePixelFormat">The current pixel format of <paramref name="mat"/>.</param>
+    /// <param name="targetPixelFormat">The pixel format to convert <paramref name="mat"/> to.</param>
+    /// <returns>The converted matrix. If the pixel formats are the same, returns <paramref name="mat"/> without conversion.</returns>
+    /// <exception cref="NotSupportedException">A pixel format is invalid, packed or Bayer-patterned, or the requested color conversion is unsupported.</exception>
+    internal static Mat ConvertMat(Mat mat, PixelFormat sourcePixelFormat, PixelFormat targetPixelFormat)
+    {
+        if (sourcePixelFormat == PixelFormat.InvalidPixelFormat || targetPixelFormat == PixelFormat.InvalidPixelFormat)
+            throw new NotSupportedException($"Conversion to/from an invalid pixel format is not supported.");
+
+        if (GenICamHelper.IsPacked(sourcePixelFormat) || GenICamHelper.IsPacked(targetPixelFormat))
+            throw new NotSupportedException($"Conversion of packed pixel formats is not supported.");
+
+        if (GenICamHelper.GetPixelColorFilter(sourcePixelFormat) != PixelColorFilter.None ||
+            GenICamHelper.GetPixelColorFilter(targetPixelFormat) != PixelColorFilter.None)
+            throw new NotSupportedException("Conversion to/from Bayer pixel formats is not supported.");
+
+        // If the pixel formats are the same, no conversion is needed.
+        if (sourcePixelFormat == targetPixelFormat)
+            return mat;
+
+        // Convert the matrix to the target depth type.
+        var targetMax = GenICamHelper.GetPixelDynamicRangeMax(targetPixelFormat);
+        mat.ConvertTo(mat, GetDepthType(targetPixelFormat), (double)targetMax / GenICamHelper.GetPixelDynamicRangeMax(sourcePixelFormat)); // Scale the pixel values to match the new depth type
+
+        // Determine appropriate conversion code based on the source and target pixel formats.
+        if (!GenICamHelper.IsColor(sourcePixelFormat) && !GenICamHelper.IsColor(targetPixelFormat))
+            return mat; // No color conversion needed for grayscale formats
+
+        // If both source and target are color formats with the same color order, no conversion is needed.
+        if (GenICamHelper.IsColor(sourcePixelFormat) && GenICamHelper.IsColor(targetPixelFormat) && GenICamHelper.GetColorOrder(sourcePixelFormat) == GenICamHelper.GetColorOrder(targetPixelFormat))
+            return mat;
+
+        // Determine the appropriate color conversion code based on the source and target pixel formats.
+        var conversionCode = GetConversionCode(sourcePixelFormat, targetPixelFormat);
+
+        // Perform color conversion using determined conversion code.
+        CvInvoke.CvtColor(mat, mat, conversionCode);
+
+        // OpenCV initializes new alpha to the storage maximum; correct it only for reduced-range formats.
+        if (GenICamHelper.GetNumChannels(sourcePixelFormat) < 4 && mat.NumberOfChannels == 4 && targetMax != GetMax(mat.Depth))
+        {
+            using var alpha = new Mat(mat.Rows, mat.Cols, mat.Depth, 1);
+            alpha.SetTo(new Emgu.CV.Structure.MCvScalar(targetMax));
+            CvInvoke.InsertChannel(alpha, mat, 3);
+        }
+
+        return mat;
+    }
+
+
+    /// <summary>
+    /// Gets the conversion code for grayscale or RGB/BGR pixel formats, with or without alpha.
+    /// </summary>
+    /// <param name="sourcePixelFormat">The source pixel format.</param>
+    /// <param name="targetPixelFormat">The target pixel format.</param>
+    /// <returns>The color conversion code for the specified pixel formats.</returns>
+    /// <exception cref="NotSupportedException">The conversion from the source pixel format to the target pixel format is not supported.</exception>
+    private static ColorConversion GetConversionCode(PixelFormat sourcePixelFormat, PixelFormat targetPixelFormat)
+    {
+        // If the source pixel format is not a color format, determine the appropriate conversion code based on the target pixel format's color order.
+        if (GenICamHelper.IsColor(sourcePixelFormat) == false)
+        {
+            return GenICamHelper.GetColorOrder(targetPixelFormat) switch
+            {
+                ColorOrder.BGR => ColorConversion.Gray2Bgr,
+                ColorOrder.RGB => ColorConversion.Gray2Rgb,
+                ColorOrder.BGRa => ColorConversion.Gray2Bgra,
+                ColorOrder.RGBa => ColorConversion.Gray2Rgba,
+                _ => throw new NotSupportedException($"Conversion from {sourcePixelFormat} to {targetPixelFormat} is not supported.")
+            };
+        }
+
+        // If the target pixel format is not a color format, determine the appropriate conversion code based on the source pixel format's color order.
+        if (GenICamHelper.IsColor(targetPixelFormat) == false)
+        {
+            return GenICamHelper.GetColorOrder(sourcePixelFormat) switch
+            {
+                ColorOrder.BGR => ColorConversion.Bgr2Gray,
+                ColorOrder.RGB => ColorConversion.Rgb2Gray,
+                ColorOrder.BGRa => ColorConversion.Bgra2Gray,
+                ColorOrder.RGBa => ColorConversion.Rgba2Gray,
+                _ => throw new NotSupportedException($"Conversion from {sourcePixelFormat} to {targetPixelFormat} is not supported.")
+            };
+        }
+
+        // Determine the appropriate conversion code based on the source and target pixel formats' color orders.
+        return GenICamHelper.GetColorOrder(sourcePixelFormat) switch
+        {
+            ColorOrder.BGR when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.RGB => ColorConversion.Bgr2Rgb,
+            ColorOrder.RGB when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.BGR => ColorConversion.Rgb2Bgr,
+            ColorOrder.BGR when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.BGRa => ColorConversion.Bgr2Bgra,
+            ColorOrder.BGRa when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.BGR => ColorConversion.Bgra2Bgr,
+            ColorOrder.RGB when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.RGBa => ColorConversion.Rgb2Rgba,
+            ColorOrder.RGBa when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.RGB => ColorConversion.Rgba2Rgb,
+            ColorOrder.BGRa when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.RGBa => ColorConversion.Bgra2Rgba,
+            ColorOrder.RGBa when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.BGRa => ColorConversion.Rgba2Bgra,
+            ColorOrder.BGR when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.RGBa => ColorConversion.Bgr2Rgba,
+            ColorOrder.RGBa when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.BGR => ColorConversion.Rgba2Bgr,
+            ColorOrder.RGB when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.BGRa => ColorConversion.Rgb2Bgra,
+            ColorOrder.BGRa when GenICamHelper.GetColorOrder(targetPixelFormat) == ColorOrder.RGB => ColorConversion.Bgra2Rgb,
+            _ => throw new NotSupportedException($"Conversion from {sourcePixelFormat} to {targetPixelFormat} is not supported.")
+        };
     }
 }

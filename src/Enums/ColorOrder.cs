@@ -1,7 +1,7 @@
 ﻿namespace GcLib;
 
 /// <summary>
-/// Specifies the red, green and blue channel ordering used to interpret color component values in images.
+/// Specifies the red, green, blue and alpha channel ordering used to interpret color component values in images.
 /// </summary>
 public enum ColorOrder
 {
@@ -12,5 +12,13 @@ public enum ColorOrder
     /// <summary>
     /// Represents blue-green-red channel order.
     /// </summary>
-    BGR
+    BGR,
+    /// <summary>
+    /// Represents red-blue-green-alpha channel order.
+    /// </summary>
+    RGBa,
+    /// <summary>
+    /// Represents blue-green-red-alpha channel order.
+    /// </summary>
+    BGRa
 }

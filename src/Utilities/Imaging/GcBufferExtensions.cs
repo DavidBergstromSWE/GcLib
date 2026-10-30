@@ -27,14 +27,14 @@ public static class GcBufferExtensions
         PixelFormat.BGRa12p,
         PixelFormat.RGBa10p,
         PixelFormat.RGBa12p,
-        //PixelFormat.BayerBG10p,
-        //PixelFormat.BayerBG12p,
-        //PixelFormat.BayerGB10p,
-        //PixelFormat.BayerGB12p,
-        //PixelFormat.BayerRG10p,
-        //PixelFormat.BayerRG12p,
-        //PixelFormat.BayerGR10p,
-        //PixelFormat.BayerGR12p,
+        PixelFormat.BayerBG10p,
+        PixelFormat.BayerBG12p,
+        PixelFormat.BayerGB10p,
+        PixelFormat.BayerGB12p,
+        PixelFormat.BayerRG10p,
+        PixelFormat.BayerRG12p,
+        PixelFormat.BayerGR10p,
+        PixelFormat.BayerGR12p,
     ];
 
     /// <summary>
@@ -56,28 +56,26 @@ public static class GcBufferExtensions
         // Determine the corresponding unpacked pixel format.
         var unpackedPixelFormat = Enum.Parse<PixelFormat>(packedBuffer.PixelFormat.ToString().Replace("p", string.Empty));
 
-        // Bit count per pixel per channel for unpacked pixel format.
-        int unpackedPixelBitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(unpackedPixelFormat);
+        // Number of pixels in the image buffer.
+        var numberOfPixels = packedBuffer.Width * packedBuffer.Height * packedBuffer.NumChannels;
+
+        // Number of bytes per pixel for the unpacked format.
+        int unpackedBytesPerPixel = (int)GenICamHelper.GetBitsPerPixelPerChannel(unpackedPixelFormat) / ByteExtensions.BitsPerByte;
 
         // Allocate array for unpacked image data.
-        var unpackedImageData = new byte[packedBuffer.Width * packedBuffer.Height * packedBuffer.NumChannels * unpackedPixelBitCount / ByteExtensions.BitsPerByte];
+        var unpackedImageData = new byte[numberOfPixels * unpackedBytesPerPixel];
 
-        // Iterate through each pixel in the packed image data.
-        int byteIndex = 0;
-        for (int bitNumber = 0; bitNumber < packedBuffer.Width * packedBuffer.Height * packedBuffer.NumChannels * GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat); bitNumber += (int)GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat))
+        // Bit count per pixel per channel for packed pixel format.
+        int packedBitsPerPixel = (int)GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat);
+
+        // Extract each packed pixel directly into the unpacked image data.
+        for (int pixel = 0; pixel < numberOfPixels; pixel++)
         {
-            // Extract bits for each packed pixel.
-            var bits = ByteExtensions.GetBitRange(source: packedBuffer.ImageData,
-                                                  start: bitNumber,
-                                                  length: (int)GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat),
-                                                  endianness);
-
-            // Copy bits to unpacked image data.
-            foreach (var b in bits)
-            {
-                unpackedImageData[byteIndex] = b;
-                byteIndex++;
-            }
+            ByteExtensions.GetBitRange(source: packedBuffer.ImageData.AsSpan(), // Source span to read the packed pixel data
+                                       start: pixel * packedBitsPerPixel,       // Starting bit index for the current pixel
+                                       length: packedBitsPerPixel,              // Number of bits to extract for the current pixel
+                                       destination: unpackedImageData.AsSpan(pixel * unpackedBytesPerPixel, unpackedBytesPerPixel), // Destination span for the unpacked pixel data
+                                       endianness: endianness);
         }
 
         // Return new buffer instance with unpacked image data.
@@ -103,27 +101,26 @@ public static class GcBufferExtensions
         if (!SupportedPackedPixelFormats.Contains(packedPixelFormat))
             throw new ArgumentException($"Pixel format {unpackedBuffer.PixelFormat} is not supported for packing.");
 
+        // Number of pixels in the image buffer.
+        var numberOfPixels = unpackedBuffer.Width * unpackedBuffer.Height * unpackedBuffer.NumChannels;
+
         // Bit count per pixel per channel for packed pixel format.
-        int packedPixelBitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(packedPixelFormat);
+        int packedBitsPerPixel = (int)GenICamHelper.GetBitsPerPixelPerChannel(packedPixelFormat);
 
         // Allocate array for packed image data.
-        var packedImageData = new byte[(unpackedBuffer.Width * unpackedBuffer.Height * unpackedBuffer.NumChannels * packedPixelBitCount + 7) / ByteExtensions.BitsPerByte];
+        var packedImageData = new byte[(numberOfPixels * packedBitsPerPixel + 7) / ByteExtensions.BitsPerByte]; // Round up to the nearest byte to ensure enough space for all bits.
 
-        // Iterate through each pixel in the unpacked image data.
-        for (int pixel = 0; pixel < unpackedBuffer.Width * unpackedBuffer.Height * unpackedBuffer.NumChannels; pixel++)
+        // Number of bytes per pixel for the unpacked format.
+        int unpackedBytesPerPixel = (int)GenICamHelper.GetBitsPerPixelPerChannel(unpackedBuffer.PixelFormat) / ByteExtensions.BitsPerByte;
+
+        // Extract each unpacked pixel directly into the packed image data.
+        for (int pixel = 0; pixel < numberOfPixels; pixel++)
         {
-            // Extract bytes for each unpacked pixel.
-            var bytes = unpackedBuffer.ImageData.AsSpan(pixel * ((packedPixelBitCount + 7) / ByteExtensions.BitsPerByte), (packedPixelBitCount + 7) / ByteExtensions.BitsPerByte);
-
-            // Calculate the start index for the current pixel in bits.
-            int bitStartIndex = pixel * packedPixelBitCount;
-
-            // Set bits in the packed image data.
-            ByteExtensions.SetBitRange(target: packedImageData,
-                                       start: bitStartIndex,
-                                       length: packedPixelBitCount,
-                                       value: bytes,
-                                       endianness);
+            ByteExtensions.SetBitRange(target: packedImageData.AsSpan(),       // Target span to write the packed pixel data
+                                       start: pixel * packedBitsPerPixel,      // Starting bit index for the current pixel
+                                       length: packedBitsPerPixel,             // Number of bits to set for the current pixel
+                                       value: unpackedBuffer.ImageData.AsSpan().Slice(pixel * unpackedBytesPerPixel, unpackedBytesPerPixel), // Source span for the unpacked pixel data
+                                       endianness: endianness);
         }
 
         // Return new buffer instance with packed image data.

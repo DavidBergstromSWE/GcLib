@@ -238,9 +238,42 @@ public sealed class GcBuffer
     /// <returns><see cref="Mat"/> image.</returns>
     public Mat ToMat()
     {
-        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType(GenICamHelper.GetPixelSize(PixelFormat)), (int)GenICamHelper.GetNumChannels(PixelFormat));
+        // Convert to Mat (Emgu CV assumes image data is stored in BGR(a) channel order).
+        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType(GenICamHelper.GetPixelSize(PixelFormat)), (int)NumChannels);
         mat.SetTo(ImageData);
+
+        // If the pixel format is not BGR(a), convert to BGR(a) format for compatibility with Emgu CV.
+        //if (PixelFormat != PixelFormat.BGR8 && PixelFormat != PixelFormat.BGR10 && PixelFormat != PixelFormat.BGR12 && PixelFormat != PixelFormat.BGRa8 && PixelFormat != PixelFormat.BGRa10 && PixelFormat != PixelFormat.BGRa12)
+        //{
+        //    var targetPixelFormat = EmguHelper.GetPixelFormat(EmguHelper.GetDepthType(GenICamHelper.GetPixelSize(PixelFormat)), (int)NumChannels);
+        //    var convertedMat = EmguHelper.ConvertMat(mat, PixelFormat, targetPixelFormat);
+        //    mat.Dispose();
+        //    return convertedMat;
+        //}
+
         return mat;
+    }
+
+    /// <summary>
+    /// Converts the image to a matrix in the specified pixel format.
+    /// </summary>
+    /// <remarks>Samples are scaled to the target dynamic range. Added alpha channels use the target format's maximum value.
+    /// Packed and Bayer-patterned source or target formats are not supported, including same-format requests.</remarks>
+    /// <param name="targetPixelFormat">The pixel format for the resulting matrix.</param>
+    /// <returns>An independently allocated matrix containing the image in the specified pixel format. The caller must dispose it.</returns>
+    /// <exception cref="NotSupportedException">Thrown when conversion to the target pixel format is not supported.</exception>
+    public Mat ToMat(PixelFormat targetPixelFormat)
+    {
+        var mat = ToMat();
+        try
+        {
+            return EmguHelper.ConvertMat(mat, PixelFormat, targetPixelFormat);
+        }
+        catch
+        {
+            mat.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -265,12 +298,16 @@ public sealed class GcBuffer
 
         if (GenICamHelper.IsPacked(PixelFormat))
         {
+            int bitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
+            Span<byte> bits = stackalloc byte[(bitCount + 7) / ByteExtensions.BitsPerByte];
+            ReadOnlySpan<byte> source = ImageData;
+
             // Packed format: extract each channel separately using bit offsets
-            for (int i = 0; i < GenICamHelper.GetNumChannels(PixelFormat); i++)
+            for (int i = 0; i < values.Length; i++)
             {
                 long bitOffset = GetPixelBitOffset(row, col, (uint)i);
-                var bits = ImageData.GetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
-                values[i] = NumericHelper.SpanToDouble(new ReadOnlySpan<byte>(bits));
+                source.GetBitRange(start: (int)bitOffset, length: bitCount, destination: bits, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+                values[i] = NumericHelper.SpanToDouble(bits);
             }
         }
         else
@@ -313,10 +350,13 @@ public sealed class GcBuffer
         {
             // Packed format: use bit-level extraction
             long bitOffset = GetPixelBitOffset(row, col, channel);
-            var bits = ImageData.GetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+            int bitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
+            Span<byte> bits = stackalloc byte[(bitCount + 7) / ByteExtensions.BitsPerByte];
+            ReadOnlySpan<byte> source = ImageData;
+            source.GetBitRange(start: (int)bitOffset, length: bitCount, destination: bits, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
 
             // Convert extracted bits to double
-            return NumericHelper.SpanToDouble(new ReadOnlySpan<byte>(bits));
+            return NumericHelper.SpanToDouble(bits);
         }
         else
         {
@@ -369,7 +409,7 @@ public sealed class GcBuffer
             {
                 NumericHelper.DoubleToSpan(ref bytes, pixelValues[i]);
                 long bitOffset = GetPixelBitOffset(row, col, (uint)i);
-                ImageData.SetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+                ImageData.AsSpan().SetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
             }
         }
         else
@@ -421,7 +461,7 @@ public sealed class GcBuffer
         {
             // Packed format: use bit-level insertion
             long bitOffset = GetPixelBitOffset(row, col, channel);
-            ImageData.SetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+            ImageData.AsSpan().SetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
         }
         else
         {

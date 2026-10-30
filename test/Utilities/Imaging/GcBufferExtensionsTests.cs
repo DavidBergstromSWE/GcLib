@@ -1,5 +1,6 @@
 ﻿using System;
 using GcLib.Utilities.Imaging;
+using GcLib.Utilities.Numbers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GcLib.UnitTests.Utilities;
@@ -19,6 +20,14 @@ public class GcBufferExtensionsTests
     [DataRow(PixelFormat.BGRa12p)]
     [DataRow(PixelFormat.RGBa10p)]
     [DataRow(PixelFormat.RGBa12p)]
+    [DataRow(PixelFormat.BayerBG10p)]
+    [DataRow(PixelFormat.BayerBG12p)]
+    [DataRow(PixelFormat.BayerGB10p)]
+    [DataRow(PixelFormat.BayerGB12p)]
+    [DataRow(PixelFormat.BayerRG10p)]
+    [DataRow(PixelFormat.BayerRG12p)]
+    [DataRow(PixelFormat.BayerGR10p)]
+    [DataRow(PixelFormat.BayerGR12p)]
     public void UnpackBuffer_SupportedFormat_ReturnsUnpackedBuffer(PixelFormat packedFormat)
     {
         // Arrange
@@ -88,6 +97,14 @@ public class GcBufferExtensionsTests
     [DataRow(PixelFormat.BGRa12)]
     [DataRow(PixelFormat.RGBa10)]
     [DataRow(PixelFormat.RGBa12)]
+    [DataRow(PixelFormat.BayerBG10)]
+    [DataRow(PixelFormat.BayerBG12)]
+    [DataRow(PixelFormat.BayerGB10)]
+    [DataRow(PixelFormat.BayerGB12)]
+    [DataRow(PixelFormat.BayerRG10)]
+    [DataRow(PixelFormat.BayerRG12)]
+    [DataRow(PixelFormat.BayerGR10)]
+    [DataRow(PixelFormat.BayerGR12)]
     public void PackBuffer_SupportedFormat_ReturnsPackedBuffer(PixelFormat unpackedFormat)
     {
         // Arrange
@@ -124,6 +141,29 @@ public class GcBufferExtensionsTests
         {
             Assert.AreEqual(0, packedBuffer.ImageData[i], $"Packed byte at index {i} should be 0 when unpacked data is all zeros.");
         }
+    }
+
+    [TestMethod]
+    [DataRow(ByteExtensions.Endianness.BigEndian)]
+    [DataRow(ByteExtensions.Endianness.LittleEndian)]
+    public void PackBuffer_NonzeroSamples_PreservesBitOrderAndMetadata(ByteExtensions.Endianness endianness)
+    {
+        byte[] imageData = [0x01, 0x00, 0x55, 0x01, 0xFF, 0x03, 0xAA, 0xAA];
+        var original = new GcBuffer(imageData, 3, 1, PixelFormat.Mono10, 42, 123);
+        byte[] expected = endianness == ByteExtensions.Endianness.BigEndian
+            ? [0x01, 0x54, 0xF5, 0x3F]
+            : [0x3F, 0xF5, 0x54, 0x01];
+
+        var packed = original.Pack(endianness);
+
+        Assert.AreSequenceEqual(expected, packed.ImageData);
+        Assert.AreEqual(PixelFormat.Mono10p, packed.PixelFormat);
+        Assert.AreEqual(original.Width, packed.Width);
+        Assert.AreEqual(original.Height, packed.Height);
+        Assert.AreEqual(original.FrameID, packed.FrameID);
+        Assert.AreEqual(original.TimeStamp, packed.TimeStamp);
+        Assert.AreSequenceEqual(new byte[] { 0x01, 0x00, 0x55, 0x01, 0xFF, 0x03 }, packed.Unpack(endianness).ImageData);
+        Assert.AreSequenceEqual(new byte[] { 0x01, 0x00, 0x55, 0x01, 0xFF, 0x03, 0xAA, 0xAA }, imageData);
     }
 
     [TestMethod]

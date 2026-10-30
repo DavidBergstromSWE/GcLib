@@ -240,6 +240,18 @@ public static partial class GenICamHelper
             case PixelFormat.BGR14:
             case PixelFormat.BGR16:
                 return ColorOrder.BGR;
+            case PixelFormat.RGBa8:
+            case PixelFormat.RGBa10:
+            case PixelFormat.RGBa12:
+            case PixelFormat.RGBa14:
+            case PixelFormat.RGBa16:
+                return ColorOrder.RGBa;
+            case PixelFormat.BGRa8:
+            case PixelFormat.BGRa10:
+            case PixelFormat.BGRa12:
+            case PixelFormat.BGRa14:
+            case PixelFormat.BGRa16:
+                return ColorOrder.BGRa;
             default:
                 throw new NotSupportedException($"Pixel format {pixelFormat} does not have a defined color order!");
         }
