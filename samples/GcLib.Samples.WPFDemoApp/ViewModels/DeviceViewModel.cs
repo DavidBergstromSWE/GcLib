@@ -203,7 +203,10 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
         OpenParameterDialogWindowCommand = new RelayCommand(() => OpenParameterDialogWindow(Device), () => IsEnabled && Device.IsConnecting == false && Device.IsConnected);
         LoadConfigurationDialogCommand = new AsyncRelayCommand(LoadConfigurationDialogAsync, () => CanLoadConfiguration);
         SaveConfigurationDialogCommand = new AsyncRelayCommand<bool>(SaveConfigurationDialogAsync, b => CanSaveConfiguration);
-        ConnectCameraFromDialogCommand = new AsyncRelayCommand(ConnectCameraFromDialogAsync, () => IsEnabled);
+        ConnectCameraFromDialogCommand = new AsyncRelayCommand(ConnectCameraFromDialogAsync, () => IsEnabled && _initialDeviceUpdateTask.IsCompleted);
+
+        // Notify command of changes after initial device update task is completed.
+        _ = _initialDeviceUpdateTask.ContinueWith(_ => _dispatcherService.Invoke(() => ConnectCameraFromDialogCommand.NotifyCanExecuteChanged()), CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
 
         // Hook eventhandlers to device events.
         Device = device;
