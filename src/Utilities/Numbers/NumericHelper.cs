@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Emgu.CV;
 
 namespace GcLib.Utilities.Numbers;
 
@@ -107,16 +110,24 @@ public static class NumericHelper
     }
 
     /// <summary>
-    /// Converts byte array to numeric array of type <typeparamref name="T"/>.
+    /// Converts a byte array to an array of numeric values.
     /// </summary>
-    /// <typeparam name="T">Numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
-    /// <param name="bytes">Byte array.</param>
-    /// <returns>Numeric array.</returns>
-    public static T[] ToArray<T>(byte[] bytes) where T : INumber<T>
+    /// <typeparam name="T">The unmanaged numeric type of the values.</typeparam>
+    /// <param name="bytes">The byte array to convert.</param>
+    /// <returns>An array of values converted from <paramref name="bytes"/>.</returns>
+    /// <exception cref="ArgumentException">The length of <paramref name="bytes"/> is not a multiple of the size of <typeparamref name="T"/>.</exception>
+    public static T[] ToArray<T>(byte[] bytes) where T : unmanaged, INumber<T>
     {
-        T[] values = new T[bytes.Length / Marshal.SizeOf<T>()];
-        Buffer.BlockCopy(bytes, 0, values, 0, bytes.Length);
-        return values;
+        ArgumentNullException.ThrowIfNull(bytes);
+
+        // Ensure that the byte array length is a multiple of the size of the numeric type T.
+        if (bytes.Length % Unsafe.SizeOf<T>() != 0) 
+            throw new ArgumentException("Byte count must be a multiple of the numeric type's size.", nameof(bytes));
+
+        // Create a ReadOnlySpan<T> view over the byte array without copying data.
+        ReadOnlySpan<T> values = MemoryMarshal.Cast<byte, T>(bytes.AsSpan()); 
+
+        return values.ToArray();
     }
 
     /// <summary>
