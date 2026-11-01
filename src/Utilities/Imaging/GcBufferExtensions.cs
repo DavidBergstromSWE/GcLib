@@ -47,11 +47,16 @@ public static class GcBufferExtensions
     /// <param name="endianness">The byte order used when storing the pixel data.</param>
     /// <returns>A new <see cref="GcBuffer"/> instance containing the unpacked image data.</returns>
     /// <exception cref="ArgumentException">Thrown when the pixel format of the <paramref name="packedBuffer"/> is not supported for unpacking.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="endianness"/> parameter is invalid.</exception>"
     public static GcBuffer Unpack(this GcBuffer packedBuffer, ByteExtensions.Endianness endianness = ByteExtensions.Endianness.LittleEndian)
     {
         // Validate that the pixel format is supported.
         if (!SupportedPackedPixelFormats.Contains(packedBuffer.PixelFormat))
             throw new ArgumentException($"Pixel format {packedBuffer.PixelFormat} is not supported for unpacking.");
+
+        // Validate endianness parameter.
+        if (endianness is not (ByteExtensions.Endianness.BigEndian or ByteExtensions.Endianness.LittleEndian))
+            throw new ArgumentOutOfRangeException(nameof(endianness), endianness, "Unsupported endianness.");
 
         // Determine the corresponding unpacked pixel format.
         var unpackedPixelFormat = Enum.Parse<PixelFormat>(packedBuffer.PixelFormat.ToString().Replace("p", string.Empty));
@@ -92,8 +97,13 @@ public static class GcBufferExtensions
     /// <param name="endianness">The byte order used when storing the pixel data.</param>
     /// <returns>A new <see cref="GcBuffer"/> instance containing the packed image data.</returns>
     /// <exception cref="ArgumentException">Thrown if the pixel format of the provided buffer can not be converted into a supported packed pixel format.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="endianness"/> parameter is invalid.</exception>"
     public static GcBuffer Pack(this GcBuffer unpackedBuffer, ByteExtensions.Endianness endianness = ByteExtensions.Endianness.LittleEndian)
     {
+        // Validate endianness parameter.
+        if (endianness is not (ByteExtensions.Endianness.BigEndian or ByteExtensions.Endianness.LittleEndian))
+            throw new ArgumentOutOfRangeException(nameof(endianness), endianness, "Unsupported endianness.");
+
         // Determine the corresponding packed pixel format.
         var packedPixelFormat = Enum.Parse<PixelFormat>(unpackedBuffer.PixelFormat.ToString() + "p");
 
@@ -126,4 +136,6 @@ public static class GcBufferExtensions
         // Return new buffer instance with packed image data.
         return new GcBuffer(packedImageData, unpackedBuffer.Width, unpackedBuffer.Height, packedPixelFormat, unpackedBuffer.FrameID, unpackedBuffer.TimeStamp);
     }
+
+    public static bool IsPacked(this GcBuffer buffer) => GenICamHelper.IsPacked(buffer.PixelFormat);
 }

@@ -199,7 +199,7 @@ internal sealed partial class DeviceViewModel : ObservableRecipient
         // Update device list in background.
         _initialDeviceUpdateTask = Task.Run(() => _deviceProvider.UpdateDeviceList());
 
-        // Log status to status bar.
+        // Log to status bar.
         _ = Messenger.Send(new StatusBarLogMessage($"Updating device list..."));
 
         // Instantiate commands.

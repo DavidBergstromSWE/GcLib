@@ -64,6 +64,8 @@ public static class ByteExtensions
     /// <param name="endianness">Specifies the byte order to use when extracting bits.</param>
     /// <param name="bitNumbering">Specifies the bit numbering scheme to use when extracting bits.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the source span.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="endianness"/> parameter is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="bitNumbering"/> parameter is invalid.</exception>
     /// <exception cref="ArgumentException">Thrown when the destination span is too small to hold the extracted bits.</exception>
     public static void GetBitRange(this ReadOnlySpan<byte> source, int start, int length, Span<byte> destination, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
     {
@@ -86,6 +88,14 @@ public static class ByteExtensions
         int resultLength = byteLength + (remainderLength == 0 ? 0 : 1);
         if (destination.Length < resultLength)
             throw new ArgumentException("Destination span is too small to hold the extracted bits.", nameof(destination));
+
+        // Validate endianness parameter.
+        if (endianness is not (Endianness.BigEndian or Endianness.LittleEndian))
+            throw new ArgumentOutOfRangeException(nameof(endianness), endianness, "Unsupported endianness.");
+
+        // Validate bit numbering parameter.
+        if (bitNumbering is not (BitNumbering.Lsb0 or BitNumbering.Msb0))
+            throw new ArgumentOutOfRangeException(nameof(bitNumbering), bitNumbering, "Unsupported bit numbering.");
 
         Span<byte> result = destination[..resultLength];
         result.Clear();
@@ -132,6 +142,8 @@ public static class ByteExtensions
     /// <param name="endianness">Specifies the byte order of the target span.</param>
     /// <param name="bitNumbering">Specifies the bit numbering scheme.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or the specified range exceeds the target span.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="endianness"/> parameter is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="bitNumbering"/> parameter is invalid.</exception>
     public static void SetBitRange(this Span<byte> target, int start, int length, ReadOnlySpan<byte> value, Endianness endianness = Endianness.LittleEndian, BitNumbering bitNumbering = BitNumbering.Lsb0)
     {
         // Calculate the length of the target span in bits.
@@ -147,6 +159,15 @@ public static class ByteExtensions
             throw new ArgumentOutOfRangeException(nameof(length), length, $"Length must be non-negative");
         if (end > maxLength)
             throw new ArgumentOutOfRangeException(nameof(length), length, $"Range length must be less than or equal to {maxLength}");
+
+        // Validate endianness parameter.
+        if (endianness is not (Endianness.BigEndian or Endianness.LittleEndian))
+            throw new ArgumentOutOfRangeException(nameof(endianness), endianness, "Unsupported endianness.");
+
+
+        // Validate bit numbering parameter.
+        if (bitNumbering is not (BitNumbering.Lsb0 or BitNumbering.Msb0))
+            throw new ArgumentOutOfRangeException(nameof(bitNumbering), bitNumbering, "Unsupported bit numbering.");
 
         // Iterate through the source bytes needed for the specified range.
         for (int i = 0; i < value.Length && start < end; i++)

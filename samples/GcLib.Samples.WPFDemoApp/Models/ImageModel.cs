@@ -364,6 +364,9 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         if (!SupportedPixelFormats.Contains(buffer.PixelFormat))
             throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");
 
+        //if (buffer.IsPacked())
+        //    buffer = buffer.Unpack();
+
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();
 
