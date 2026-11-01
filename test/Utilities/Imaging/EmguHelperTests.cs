@@ -3,6 +3,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using GcLib.Utilities.Imaging;
+using GcLib.Utilities.Numbers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GcLib.UnitTests.Utilities;
@@ -221,5 +222,173 @@ public class EmguHelperTests
         using var mat = new Mat(1, 1, DepthType.Cv8U, 1);
 
         Assert.Throws<NotSupportedException>(() => EmguHelper.ConvertMat(mat, source, target));
+    }
+
+    [TestMethod]
+    [DataRow(10, 1)]
+    [DataRow(12, 1)]
+    [DataRow(14, 1)]
+    [DataRow(10, 3)]
+    [DataRow(12, 4)]
+    [DataRow(1, 1)]
+    [DataRow(2, 1)]
+    [DataRow(4, 1)]
+    public void UnpackPacked_ReturnsValuesForDepthAndChannelCount(int bitDepth, int channels)
+    {
+        const int width = 2;
+        const int height = 2;
+        int samplesPerRow = width * channels;
+        int rowBytes = (samplesPerRow * bitDepth + 7) / 8;
+        ushort maxValue = (ushort)((1 << bitDepth) - 1);
+        ushort[] expectedValues = new ushort[width * height * channels];
+        byte[] packedData = new byte[rowBytes * height];
+
+        for (int i = 0; i < expectedValues.Length; i++)
+        {
+            expectedValues[i] = i % 2 == 0 ? (ushort)Math.Min(i + 1, maxValue) : maxValue;
+            int row = i / samplesPerRow;
+            int sampleInRow = i % samplesPerRow;
+            int bitOffset = sampleInRow * bitDepth;
+
+            for (int bit = 0; bit < bitDepth; bit++)
+            {
+                if ((expectedValues[i] & (1 << bit)) != 0)
+                    packedData[row * rowBytes + (bitOffset + bit) / 8] |= (byte)(1 << ((bitOffset + bit) % 8));
+            }
+        }
+
+        using var result = EmguHelper.Unpack(packedData, width, height, bitDepth, channels, ByteExtensions.Endianness.BigEndian);
+
+        Assert.AreEqual(width, result.Cols);
+        Assert.AreEqual(height, result.Rows);
+        Assert.AreEqual(channels, result.NumberOfChannels);
+        for (int i = 0; i < expectedValues.Length; i++)
+        {
+            int row = i / samplesPerRow;
+            int sampleInRow = i % samplesPerRow;
+            Assert.AreEqual(expectedValues[i], result.GetPixel(row, sampleInRow / channels, (uint)(sampleInRow % channels)), $"Sample {i}");
+        }
+    }
+
+    [TestMethod]
+    [DataRow(1, 1)]
+    [DataRow(2, 1)]
+    [DataRow(4, 1)]
+    [DataRow(10, 1)]
+    [DataRow(12, 3)]
+    [DataRow(14, 4)]
+    public void Pack_RoundTripsPackedValues(int bitDepth, int channels)
+    {
+        const int width = 2;
+        const int height = 2;
+        ushort maxValue = (ushort)((1 << bitDepth) - 1);
+        var expectedValues = new ushort[channels];
+        for (int channel = 0; channel < channels; channel++)
+            expectedValues[channel] = channel % 2 == 0 ? (ushort)(channel + 1) : maxValue;
+
+        using var mat = new Mat(height, width, DepthType.Cv16U, channels);
+        mat.SetTo(new MCvScalar(expectedValues.Length > 0 ? expectedValues[0] : 0,
+                                expectedValues.Length > 1 ? expectedValues[1] : 0,
+                                expectedValues.Length > 2 ? expectedValues[2] : 0,
+                                expectedValues.Length > 3 ? expectedValues[3] : 0));
+
+        byte[] packedData = EmguHelper.Pack(mat, bitDepth);
+        using var result = EmguHelper.Unpack(packedData, width, height, bitDepth, channels);
+
+        for (int row = 0; row < height; row++)
+        {
+            for (int col = 0; col < width; col++)
+            {
+                for (int channel = 0; channel < channels; channel++)
+                    Assert.AreEqual(expectedValues[channel], result.GetPixel(row, col, (uint)channel), $"Pixel ({row}, {col}), channel {channel}");
+            }
+        }
+    }
+
+    [TestMethod]
+    public void Pack_UsesByteOrderAcrossRowsAndPreservesSource()
+    {
+        using var mat = new Mat(2, 1, DepthType.Cv16U, 1);
+        using (var firstRow = mat.Row(0))
+            firstRow.SetTo(new MCvScalar(0x155));
+        using (var secondRow = mat.Row(1))
+            secondRow.SetTo(new MCvScalar(0x2AA));
+
+        byte[] bigEndian = EmguHelper.Pack(mat, 10, ByteExtensions.Endianness.BigEndian);
+        byte[] littleEndian = EmguHelper.Pack(mat, 10, ByteExtensions.Endianness.LittleEndian);
+        byte[] defaultEndian = EmguHelper.Pack(mat, 10);
+
+        CollectionAssert.AreEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02 }, bigEndian);
+        CollectionAssert.AreEqual(new byte[] { 0x02, 0xAA, 0x01, 0x55 }, littleEndian);
+        CollectionAssert.AreEqual(littleEndian, defaultEndian);
+        Assert.AreEqual(0x155, mat.GetPixel(0, 0, 0));
+        Assert.AreEqual(0x2AA, mat.GetPixel(1, 0, 0));
+    }
+
+    [TestMethod]
+    public void Pack_ForCv8UWithNonContiguousRows_ReturnsExactBytesAndPreservesSource()
+    {
+        using var source = new Mat(2, 3, DepthType.Cv8U, 3);
+        source.SetTo(new MCvScalar(15, 15, 15));
+        using var roi = new Mat(source, new System.Drawing.Rectangle(1, 0, 1, 2));
+        using (var firstRow = roi.Row(0))
+            firstRow.SetTo(new MCvScalar(1, 2, 3));
+        using (var secondRow = roi.Row(1))
+            secondRow.SetTo(new MCvScalar(4, 5, 6));
+
+        Assert.IsTrue(roi.Step > roi.Cols * roi.NumberOfChannels);
+        CollectionAssert.AreEqual(new byte[] { 0x21, 0x03, 0x54, 0x06 }, EmguHelper.Pack(roi, 4, ByteExtensions.Endianness.BigEndian));
+        CollectionAssert.AreEqual(new byte[] { 0x06, 0x54, 0x03, 0x21 }, EmguHelper.Pack(roi, 4));
+        CollectionAssert.AreEqual(new double[] { 1, 2, 3 }, source.GetPixel(0, 1));
+        CollectionAssert.AreEqual(new double[] { 4, 5, 6 }, source.GetPixel(1, 1));
+        for (int row = 0; row < source.Rows; row++)
+        {
+            CollectionAssert.AreEqual(new double[] { 15, 15, 15 }, source.GetPixel(row, 0));
+            CollectionAssert.AreEqual(new double[] { 15, 15, 15 }, source.GetPixel(row, 2));
+        }
+    }
+
+    [TestMethod]
+    public void Unpack_UsesByteOrderAcrossRowsAndPreservesInput()
+    {
+        byte[] bigEndian = [0x55, 0x01, 0xAA, 0x02];
+        byte[] littleEndian = [0x02, 0xAA, 0x01, 0x55];
+        byte[] originalLittleEndian = (byte[])littleEndian.Clone();
+
+        using var bigEndianResult = EmguHelper.Unpack(bigEndian, 1, 2, 10, 1, ByteExtensions.Endianness.BigEndian);
+        using var littleEndianResult = EmguHelper.Unpack(littleEndian, 1, 2, 10, 1, ByteExtensions.Endianness.LittleEndian);
+
+        Assert.AreEqual(0x155, bigEndianResult.GetPixel(0, 0, 0));
+        Assert.AreEqual(0x2AA, bigEndianResult.GetPixel(1, 0, 0));
+        Assert.AreEqual(0x155, littleEndianResult.GetPixel(0, 0, 0));
+        Assert.AreEqual(0x2AA, littleEndianResult.GetPixel(1, 0, 0));
+        CollectionAssert.AreEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02 }, bigEndian);
+        CollectionAssert.AreEqual(originalLittleEndian, littleEndian);
+    }
+
+    [TestMethod]
+    public void PackAndUnpack_ForUnsupportedEndianness_ThrowArgumentOutOfRangeException()
+    {
+        using var mat = new Mat(1, 1, DepthType.Cv16U, 1);
+        mat.SetTo(new MCvScalar(1));
+        var unsupportedEndianness = (ByteExtensions.Endianness)123;
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => EmguHelper.Pack(mat, 10, unsupportedEndianness));
+        Assert.Throws<ArgumentOutOfRangeException>(() => EmguHelper.Unpack(new byte[] { 1, 0 }, 1, 1, 10, 1, unsupportedEndianness));
+    }
+
+    [TestMethod]
+    public void Pack_ForSampleOutsideBitDepth_ThrowsArgumentException()
+    {
+        using var mat = new Mat(1, 1, DepthType.Cv16U, 1);
+        mat.SetTo(new MCvScalar(1024));
+
+        Assert.Throws<ArgumentException>(() => EmguHelper.Pack(mat, 10));
+    }
+
+    [TestMethod]
+    public void UnpackPacked_ForShortInput_ThrowsArgumentException()
+    {
+        Assert.Throws<ArgumentException>(() => EmguHelper.Unpack(new byte[1], 2, 1, 12, 1));
     }
 }

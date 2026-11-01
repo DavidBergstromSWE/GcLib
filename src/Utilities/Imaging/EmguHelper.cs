@@ -193,6 +193,8 @@ public static class EmguHelper
     /// <exception cref="NotSupportedException">A pixel format is invalid, packed or Bayer-patterned, or the requested color conversion is unsupported.</exception>
     internal static Mat ConvertMat(Mat mat, PixelFormat sourcePixelFormat, PixelFormat targetPixelFormat)
     {
+        // ToDo: Add support for packed pixel formats and Bayer-patterned pixel formats, if needed.
+
         if (sourcePixelFormat == PixelFormat.InvalidPixelFormat || targetPixelFormat == PixelFormat.InvalidPixelFormat)
             throw new NotSupportedException($"Conversion to/from an invalid pixel format is not supported.");
 
@@ -220,7 +222,7 @@ public static class EmguHelper
             return mat;
 
         // Determine the appropriate color conversion code based on the source and target pixel formats.
-        var conversionCode = GetConversionCode(sourcePixelFormat, targetPixelFormat);
+        var conversionCode = GetColorConversionCode(sourcePixelFormat, targetPixelFormat);
 
         // Perform color conversion using determined conversion code.
         CvInvoke.CvtColor(mat, mat, conversionCode);
@@ -236,6 +238,145 @@ public static class EmguHelper
         return mat;
     }
 
+    /// <summary>
+    /// Unpacks tightly bit-packed image data into a 16-bit-per-channel matrix.
+    /// </summary>
+    /// <param name="packedData">The packed image data, with each row padded to a byte boundary.</param>
+    /// <param name="width">Image width in pixels.</param>
+    /// <param name="height">Image height in pixels.</param>
+    /// <param name="bitDepth">Bits per channel; supported values are 1, 2, 4, 10, 12, and 14.</param>
+    /// <param name="channels">Channels per pixel; supported values are 1, 3, and 4.</param>
+    /// <param name="endianness">Byte ordering for the packed data. BigEndian traverses the packed array forward; LittleEndian reverses byte indices across the entire packed array without reversing bits.</param>
+    /// <returns>A matrix containing the unpacked image data.</returns>
+    /// <exception cref="ArgumentException">The packed data is too short for the specified image dimensions.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The dimensions, bit depth, channel count, or endianness are invalid.</exception>
+    public static Mat Unpack(byte[] packedData, int width, int height, int bitDepth, int channels, ByteExtensions.Endianness endianness = ByteExtensions.Endianness.LittleEndian)
+    {
+        ArgumentNullException.ThrowIfNull(packedData);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
+
+        // Validate endianness parameter.
+        if (endianness is not (ByteExtensions.Endianness.BigEndian or ByteExtensions.Endianness.LittleEndian))
+            throw new ArgumentOutOfRangeException(nameof(endianness), endianness, "Unsupported endianness.");
+
+        // Validate bit depth and channel count parameters.
+        if (bitDepth is not (1 or 2 or 4 or 10 or 12 or 14))
+            throw new ArgumentOutOfRangeException(nameof(bitDepth), bitDepth, "Bit depth must be 1, 2, 4, 10, 12, or 14.");
+        if (channels is not (1 or 3 or 4))
+            throw new ArgumentOutOfRangeException(nameof(channels), channels, "Channel count must be 1, 3, or 4.");
+
+        // Calculate the required length of the packed data based on the image dimensions, bit depth, and channel count.
+        int samplesPerRow = checked(width * channels);
+        int rowBytes = checked((int)(((long)samplesPerRow * bitDepth + 7) / 8));
+        int requiredLength = checked(rowBytes * height);
+        if (packedData.Length < requiredLength)
+            throw new ArgumentException($"Packed data must contain at least {requiredLength} bytes.", nameof(packedData));
+
+        // Create a new matrix to hold the unpacked image data, with 16 bits per channel.
+        var dst = new Mat(height, width, DepthType.Cv16U, channels);
+        uint valueMask = (1u << bitDepth) - 1; // Mask to extract the valid bits for the specified bit depth.
+
+        // Unpack the packed data into the destination matrix.
+        unsafe
+        {
+            for (int y = 0; y < height; y++)
+            {
+                int sourceRowOffset = y * rowBytes; // Offset in the packed data for the current row.
+                ushort* dstRow = (ushort*)((byte*)dst.DataPointer + (long)y * dst.Step); // Pointer to the current row in the destination matrix.
+
+                // Iterate through each sample in the current row and extract the packed bits into the destination matrix.
+                for (int sample = 0; sample < samplesPerRow; sample++)
+                {
+                    long bitOffset = (long)sample * bitDepth; // Bit offset in the packed data for the current sample.
+                    int byteOffset = (int)(bitOffset / 8); // Byte offset in the packed data for the current sample.
+                    int bitShift = (int)(bitOffset % 8); // Bit shift to align the packed value for extraction.
+                    uint packedValue = 0; // Variable to hold the packed value for the current sample.
+
+                    for (int byteIndex = 0; byteIndex < 3 && byteOffset + byteIndex < rowBytes; byteIndex++)
+                    {
+                        int sourceByteIndex = sourceRowOffset + byteOffset + byteIndex; // Index in the packed data for the current byte of the packed value.
+                        if (endianness is ByteExtensions.Endianness.LittleEndian)
+                            sourceByteIndex = packedData.Length - 1 - sourceByteIndex; // Adjust index for little-endian byte order.
+
+                        packedValue |= (uint)packedData[sourceByteIndex] << (byteIndex * 8); // Combine the bytes into a single packed value.
+                    }
+
+                    dstRow[sample] = (ushort)((packedValue >> bitShift) & valueMask); // Extract the valid bits for the current sample and store it in the destination matrix.
+                }
+            }
+        }
+
+        return dst;
+    }
+
+    /// <summary>
+    /// Packs an 8- or 16-bit unsigned-per-channel matrix into tightly bit-packed image data.
+    /// Each row is padded to a byte boundary.
+    /// </summary>
+    /// <param name="mat">The matrix containing the unpacked image data. Non-contiguous rows are supported.</param>
+    /// <param name="bitDepth">Bits per channel; supported values are 1, 2, 4, 10, 12, and 14.</param>
+    /// <param name="endianness">Byte ordering for the packed data. BigEndian traverses the packed array forward; LittleEndian reverses byte indices across the entire packed array without reversing bits.</param>
+    /// <returns>The packed image data.</returns>
+    /// <exception cref="ArgumentException">The matrix has an unsupported depth, channel count, or sample value.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The bit depth or endianness is invalid.</exception>
+    public static byte[] Pack(Mat mat, int bitDepth, ByteExtensions.Endianness endianness = ByteExtensions.Endianness.LittleEndian)
+    {
+        ArgumentNullException.ThrowIfNull(mat);
+
+        // Validate endianness parameter.
+        if (endianness is not (ByteExtensions.Endianness.BigEndian or ByteExtensions.Endianness.LittleEndian))
+            throw new ArgumentOutOfRangeException(nameof(endianness), endianness, "Unsupported endianness.");
+
+        // Validate bit depth and matrix properties.
+        if (bitDepth is not (1 or 2 or 4 or 10 or 12 or 14))
+            throw new ArgumentOutOfRangeException(nameof(bitDepth), bitDepth, "Bit depth must be 1, 2, 4, 10, 12, or 14.");
+        if (mat.NumberOfChannels is not (1 or 3 or 4))
+            throw new ArgumentException("Matrix must have 1, 3, or 4 channels.", nameof(mat));
+
+        if (mat.Depth != DepthType.Cv16U && mat.Depth != DepthType.Cv8U)
+            throw new ArgumentException("Matrix depth must be 8 or 16-bit unsigned.", nameof(mat));
+
+        if (mat.Cols <= 0 || mat.Rows <= 0)
+            throw new ArgumentException("Matrix must have non-zero dimensions.", nameof(mat));
+
+        int samplesPerRow = checked(mat.Cols * mat.NumberOfChannels);
+        int rowBytes = checked((int)(((long)samplesPerRow * bitDepth + 7) / 8));
+        var packedData = new byte[checked(rowBytes * mat.Rows)];
+        ushort valueMask = (ushort)((1 << bitDepth) - 1);
+
+        unsafe
+        {
+            for (int y = 0; y < mat.Rows; y++)
+            {
+                byte* sourceRow = (byte*)mat.DataPointer + (long)y * mat.Step;
+                int destinationRowOffset = y * rowBytes;
+
+                for (int sample = 0; sample < samplesPerRow; sample++)
+                {
+                    ushort value = mat.Depth == DepthType.Cv8U ? sourceRow[sample] : ((ushort*)sourceRow)[sample];
+                    if (value > valueMask)
+                        throw new ArgumentException($"Sample at row {y}, index {sample} exceeds the {bitDepth}-bit range.", nameof(mat));
+
+                    long bitOffset = (long)sample * bitDepth;
+                    for (int bit = 0; bit < bitDepth; bit++)
+                    {
+                        if ((value & (1 << bit)) != 0)
+                        {
+                            long destinationBit = bitOffset + bit;
+                            int destinationByteIndex = destinationRowOffset + (int)(destinationBit / 8);
+                            if (endianness is ByteExtensions.Endianness.LittleEndian)
+                                destinationByteIndex = packedData.Length - 1 - destinationByteIndex;
+
+                            packedData[destinationByteIndex] |= (byte)(1 << (int)(destinationBit % 8));
+                        }
+                    }
+                }
+            }
+        }
+
+        return packedData;
+    }
 
     /// <summary>
     /// Gets the conversion code for grayscale or RGB/BGR pixel formats, with or without alpha.
@@ -244,7 +385,7 @@ public static class EmguHelper
     /// <param name="targetPixelFormat">The target pixel format.</param>
     /// <returns>The color conversion code for the specified pixel formats.</returns>
     /// <exception cref="NotSupportedException">The conversion from the source pixel format to the target pixel format is not supported.</exception>
-    private static ColorConversion GetConversionCode(PixelFormat sourcePixelFormat, PixelFormat targetPixelFormat)
+    private static ColorConversion GetColorConversionCode(PixelFormat sourcePixelFormat, PixelFormat targetPixelFormat)
     {
         // If the source pixel format is not a color format, determine the appropriate conversion code based on the target pixel format's color order.
         if (GenICamHelper.IsColor(sourcePixelFormat) == false)
