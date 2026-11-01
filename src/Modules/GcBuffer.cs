@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Emgu.CV;
 using GcLib.Utilities.Imaging;
 using GcLib.Utilities.Numbers;
@@ -228,53 +229,6 @@ public sealed class GcBuffer
     #endregion
 
     #region Public methods
-
-    /// <summary>
-    /// Converts image data in buffer to <see cref="Mat"/> format. The method converts image data to a BGR(a) format compatible with Emgu CV.
-    /// </summary>
-    /// <remarks>
-    /// Note: Conversion allocates new memory to store the image data. 
-    /// </remarks>
-    /// <returns><see cref="Mat"/> image.</returns>
-    public Mat ToMat()
-    {
-        // Convert to Mat.
-        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType(PixelFormat), (int)NumChannels);
-        mat.SetTo(ImageData);
-
-        // As Emgu CV assumes image data is stored in BGR(a) channel order, convert if necessary (preserving bit depth and number of channels).
-        if (GenICamHelper.IsColor(PixelFormat) && GenICamHelper.GetColorOrder(PixelFormat) != ColorOrder.BGR && GenICamHelper.GetColorOrder(PixelFormat) != ColorOrder.BGRa)
-            mat = EmguHelper.ConvertMat(mat, PixelFormat, EmguHelper.GetPixelFormat(mat.Depth, mat.NumberOfChannels));
-
-        return mat;
-    }
-
-    /// <summary>
-    /// Converts the image to a matrix in the specified pixel format.
-    /// </summary>
-    /// <remarks>Samples are scaled to the target dynamic range. Added alpha channels use the target format's maximum value.
-    /// Packed and Bayer-patterned source or target formats are not supported, including same-format requests.</remarks>
-    /// <param name="targetPixelFormat">The pixel format for the resulting matrix.</param>
-    /// <returns>An independently allocated matrix containing the image in the specified pixel format. The caller must dispose it.</returns>
-    /// <exception cref="NotSupportedException">Thrown when conversion to the target pixel format is not supported.</exception>
-    internal Mat ToMat(PixelFormat targetPixelFormat)
-    {
-        // Convert to Mat.
-        var mat = new Mat(rows: (int)Height, cols: (int)Width, EmguHelper.GetDepthType(PixelFormat), (int)NumChannels);
-        mat.SetTo(ImageData);
-
-        // Convert to target pixel format.
-        try
-        {
-            return EmguHelper.ConvertMat(mat, PixelFormat, targetPixelFormat);
-        }
-        catch
-        {
-            // Dispose before rethrowing the exception to avoid memory leaks.
-            mat.Dispose();
-            throw;
-        }
-    }
 
     /// <summary>
     /// Get pixel value(s) from specified image coordinate.

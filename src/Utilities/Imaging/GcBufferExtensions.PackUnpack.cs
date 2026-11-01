@@ -5,15 +5,17 @@ using GcLib.Utilities.Numbers;
 namespace GcLib.Utilities.Imaging;
 
 /// <summary>
-/// Provides extension methods for converting buffers between unpacked and packed pixel formats.
+/// Provides extension methods for converting buffers between unpacked and packed pixel formats and exporting image data to <see cref="Emgu.CV.Mat"/> format.
 /// </summary>
-public static class GcBufferExtensions
+public static partial class GcBufferExtensions
 {
     /// <summary>
     /// Supported packed pixel formats.
     /// </summary>
     public static readonly List<PixelFormat> SupportedPackedPixelFormats =
     [
+        PixelFormat.Mono2p,
+        PixelFormat.Mono4p,
         PixelFormat.Mono10p,
         PixelFormat.Mono12p,
         PixelFormat.Mono14p,
@@ -27,14 +29,68 @@ public static class GcBufferExtensions
         PixelFormat.BGRa12p,
         PixelFormat.RGBa10p,
         PixelFormat.RGBa12p,
+        PixelFormat.BayerBG4p,
         PixelFormat.BayerBG10p,
         PixelFormat.BayerBG12p,
+        PixelFormat.BayerGB4p,
         PixelFormat.BayerGB10p,
         PixelFormat.BayerGB12p,
+        PixelFormat.BayerRG4p,
         PixelFormat.BayerRG10p,
         PixelFormat.BayerRG12p,
+        PixelFormat.BayerGR4p,
         PixelFormat.BayerGR10p,
         PixelFormat.BayerGR12p,
+    ];
+
+    public static readonly List<PixelFormat> SupportedUnpackedPixelFormats =
+    [
+        PixelFormat.Mono8,
+        PixelFormat.Mono8s,
+        PixelFormat.Mono10,
+        PixelFormat.Mono12,
+        PixelFormat.Mono14,
+        PixelFormat.Mono16,
+        PixelFormat.BGR8,
+        PixelFormat.BGR10,
+        PixelFormat.BGR12,
+        PixelFormat.BGR14,
+        PixelFormat.BGR16,
+        PixelFormat.RGB8,
+        PixelFormat.RGB10,
+        PixelFormat.RGB12,
+        PixelFormat.RGB14,
+        PixelFormat.RGB16,
+        PixelFormat.BGRa8,
+        PixelFormat.BGRa10,
+        PixelFormat.BGRa12,
+        PixelFormat.BGRa14,
+        PixelFormat.BGRa16,
+        PixelFormat.RGBa8,
+        PixelFormat.RGBa10,
+        PixelFormat.RGBa12,
+        PixelFormat.RGBa14,
+        PixelFormat.RGBa16,
+        PixelFormat.BayerBG8,
+        PixelFormat.BayerBG10,
+        PixelFormat.BayerBG12,
+        PixelFormat.BayerBG14,
+        PixelFormat.BayerBG16,
+        PixelFormat.BayerGB8,
+        PixelFormat.BayerGB10,
+        PixelFormat.BayerGB12,
+        PixelFormat.BayerGB14,
+        PixelFormat.BayerGB16,
+        PixelFormat.BayerRG8,
+        PixelFormat.BayerRG10,
+        PixelFormat.BayerRG12,
+        PixelFormat.BayerRG14,
+        PixelFormat.BayerRG16,
+        PixelFormat.BayerGR8,
+        PixelFormat.BayerGR10,
+        PixelFormat.BayerGR12,
+        PixelFormat.BayerGR14,
+        PixelFormat.BayerGR16
     ];
 
     /// <summary>
@@ -137,5 +193,10 @@ public static class GcBufferExtensions
         return new GcBuffer(packedImageData, unpackedBuffer.Width, unpackedBuffer.Height, packedPixelFormat, unpackedBuffer.FrameID, unpackedBuffer.TimeStamp);
     }
 
+    /// <summary>
+    /// Determines whether the buffer's pixel format is packed.
+    /// </summary>
+    /// <param name="buffer">The buffer to inspect.</param>
+    /// <returns>true if the buffer's pixel format is packed; otherwise, false.</returns>
     public static bool IsPacked(this GcBuffer buffer) => GenICamHelper.IsPacked(buffer.PixelFormat);
 }

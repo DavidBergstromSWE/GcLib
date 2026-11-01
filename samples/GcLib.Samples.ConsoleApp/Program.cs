@@ -1,4 +1,5 @@
 ﻿using GcLib;
+using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;

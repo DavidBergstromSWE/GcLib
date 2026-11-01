@@ -117,6 +117,8 @@ public static class DeBayer
     /// <exception cref="ArgumentException">Thrown if the pixel format of <paramref name="rawBuffer"/> is not a recognized Bayer pattern.</exception>
     public static GcBuffer ToBGR(GcBuffer rawBuffer)
     {
+        // ToDo: Convert without copying data to Mat first, if possible, to improve performance and reduce memory usage.
+
         ArgumentNullException.ThrowIfNull(rawBuffer);
 
         if (SupportedBayerFormats.Contains(rawBuffer.PixelFormat) == false)
@@ -142,6 +144,8 @@ public static class DeBayer
     /// <exception cref="ArgumentException">Thrown if the pixel format of <paramref name="rawBuffer"/> is not a recognized Bayer pattern.</exception>
     public static GcBuffer ToRGB(GcBuffer rawBuffer)
     {
+        // ToDo: Convert without copying data to Mat first, if possible, to improve performance and reduce memory usage.
+
         ArgumentNullException.ThrowIfNull(rawBuffer);
 
         if (SupportedBayerFormats.Contains(rawBuffer.PixelFormat) == false)
