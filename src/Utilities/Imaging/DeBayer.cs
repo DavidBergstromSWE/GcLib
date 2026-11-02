@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 
@@ -105,59 +104,5 @@ public static class DeBayer
             CvInvoke.CvtColor(src: rawMat, dst: rgbMat, code: ColorConversion.BayerGrbg2Rgb);
 
         return rgbMat;
-    }
-
-    /// <summary>
-    /// Converts a raw Bayer-patterned image to a 3-channel BGR image using the specified pixel format. The bit depth is preserved during the conversion.
-    /// </summary>
-    /// <remarks>This method allocates new data and returns a new <see cref="GcBuffer"/> instance.</remarks>
-    /// <param name="rawBuffer">Buffer containing image data in a supported Bayer pixel format.</param>
-    /// <returns>Buffer with image data converted to BGR format.</returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ArgumentException">Thrown if the pixel format of <paramref name="rawBuffer"/> is not a recognized Bayer pattern.</exception>
-    public static GcBuffer ToBGR(GcBuffer rawBuffer)
-    {
-        // ToDo: Convert without copying data to Mat first, if possible, to improve performance and reduce memory usage.
-
-        ArgumentNullException.ThrowIfNull(rawBuffer);
-
-        if (SupportedBayerFormats.Contains(rawBuffer.PixelFormat) == false)
-            throw new ArgumentException($"Pixel format '{rawBuffer.PixelFormat}' is not a recognized Bayer pattern.");
-
-        var rawMat = new Mat(rows: (int)rawBuffer.Height, cols: (int)rawBuffer.Width, EmguHelper.GetDepthType(rawBuffer.PixelFormat), 1);
-        rawMat.SetTo(rawBuffer.ImageData);
-
-        var outputMat = ToBGR(rawMat, rawBuffer.PixelFormat);
-        var outputFormat = Enum.Parse<PixelFormat>("BGR" + Regex.Match(rawBuffer.PixelFormat.ToString(), @"\d+").Value);
-        var outputBuffer = new GcBuffer(outputMat, outputFormat, rawBuffer.FrameID, rawBuffer.TimeStamp);
-
-        return outputBuffer;
-    }
-
-    /// <summary>
-    /// Converts a raw Bayer-patterned image to a 3-channel RGB image using the specified pixel format. The bit depth is preserved during the conversion.
-    /// </summary>
-    /// <remarks>This method allocates new data and returns a new <see cref="GcBuffer"/> instance.</remarks>
-    /// <param name="rawBuffer">Buffer containing image data in a supported Bayer pixel format.</param>
-    /// <returns>Buffer with image data converted to RGB format.</returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ArgumentException">Thrown if the pixel format of <paramref name="rawBuffer"/> is not a recognized Bayer pattern.</exception>
-    public static GcBuffer ToRGB(GcBuffer rawBuffer)
-    {
-        // ToDo: Convert without copying data to Mat first, if possible, to improve performance and reduce memory usage.
-
-        ArgumentNullException.ThrowIfNull(rawBuffer);
-
-        if (SupportedBayerFormats.Contains(rawBuffer.PixelFormat) == false)
-            throw new ArgumentException($"Pixel format '{rawBuffer.PixelFormat}' is not a recognized Bayer pattern.");
-
-        var rawMat = new Mat(rows: (int)rawBuffer.Height, cols: (int)rawBuffer.Width, EmguHelper.GetDepthType(rawBuffer.PixelFormat), 1);
-        rawMat.SetTo(rawBuffer.ImageData);
-
-        var outputMat = ToRGB(rawMat, rawBuffer.PixelFormat);
-        var outputFormat = Enum.Parse<PixelFormat>("RGB" + Regex.Match(rawBuffer.PixelFormat.ToString(), @"\d+").Value);
-        var outputBuffer = new GcBuffer(outputMat, outputFormat, rawBuffer.FrameID, rawBuffer.TimeStamp);
-
-        return outputBuffer;
     }
 }
