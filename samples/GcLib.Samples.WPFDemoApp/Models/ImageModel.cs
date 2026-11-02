@@ -429,15 +429,9 @@ internal class ImageModel : ObservableObject, IXmlSerializable
             // Process all queued buffers.
             while (_isBufferProcessingEnabled && _pendingBuffers.TryDequeue(out var buffer))
             {
-                // Unpack buffer if packed, otherwise use as is.
-                // Note: Unpacking allocates new memory to store the unpacked image data.
-                GcBuffer gcBuffer = buffer.IsPacked()? buffer.Unpack() : buffer;
-
-                // DeBayer if Bayer format, otherwise use as is.
-                // Note: DeBayering allocates new memory to store the deBayered image data.
-                gcBuffer = gcBuffer.IsBayer()? gcBuffer.DeBayer() : gcBuffer;
-
-                RawImage = gcBuffer;
+                // Unpack and debayer buffer if needed, otherwise use as is.
+                // Note: Unpacking and debayering allocates new memory to store image data.
+                RawImage = buffer.Unpack().DeBayer();
             }
         }
         finally

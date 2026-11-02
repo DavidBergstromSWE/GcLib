@@ -45,7 +45,7 @@ public static partial class GcBufferExtensions
     /// <remarks>Supports BayerBGGR, BayerGBRG, BayerRGGB, and BayerGRBG input patterns.</remarks>
     /// <param name="bayerBuffer">Buffer containing Bayer-pattern image data.</param>
     /// <param name="colorOrder">Requested output channel order. Supported values are RGB and BGR.</param>
-    /// <returns>A new <see cref="GcBuffer"/> containing the converted color image with matching metadata.</returns>
+    /// <returns>A new <see cref="GcBuffer"/> containing the converted color image with matching metadata (or the original buffer if it is not Bayer-formatted).</returns>
     /// <exception cref="ArgumentException">The provided buffer does not contain Bayer-formatted image data.</exception>
     /// <exception cref="NotSupportedException">The requested color order is not supported, or the Bayer pattern in the pixel format is not supported for
     /// conversion.</exception>
@@ -53,8 +53,9 @@ public static partial class GcBufferExtensions
     {
         ArgumentNullException.ThrowIfNull(bayerBuffer);
 
-        if (!bayerBuffer.IsBayer())
-            throw new ArgumentException("The provided buffer does not contain Bayer-formatted image data.", nameof(bayerBuffer));
+        // If the buffer is not Bayer-formatted, return it as-is.
+        if (bayerBuffer.IsBayer() == false)
+            return bayerBuffer;
 
         if (colorOrder is not (ColorOrder.RGB or ColorOrder.BGR))
             throw new NotSupportedException("Only RGB and BGR color orders are supported.");

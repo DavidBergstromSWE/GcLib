@@ -108,11 +108,17 @@ public static partial class GcBufferExtensions
     /// Byte-order interpretation used during bit extraction. <see cref="ByteExtensions.Endianness.LittleEndian"/>
     /// uses forward byte indexing; <see cref="ByteExtensions.Endianness.BigEndian"/> reverses byte indices across the packed span.
     /// </param>
-    /// <returns>A new <see cref="GcBuffer"/> containing unpacked image data.</returns>
+    /// <returns>A new <see cref="GcBuffer"/> containing unpacked image data (or the original buffer if it is not packed).</returns>
     /// <exception cref="ArgumentException">The pixel format of <paramref name="packedBuffer"/> is not supported for unpacking.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="endianness"/> value is invalid.</exception>
     public static GcBuffer Unpack(this GcBuffer packedBuffer, ByteExtensions.Endianness endianness = ByteExtensions.Endianness.LittleEndian)
     {
+        ArgumentNullException.ThrowIfNull(packedBuffer, nameof(packedBuffer));
+
+        // If the buffer is not packed, return it as-is.
+        if (packedBuffer.IsPacked() == false)
+            return packedBuffer;
+
         // Validate that the pixel format is supported.
         if (!SupportedPackedPixelFormats.Contains(packedBuffer.PixelFormat))
             throw new ArgumentException($"Pixel format {packedBuffer.PixelFormat} is not supported for unpacking.");
@@ -162,11 +168,17 @@ public static partial class GcBufferExtensions
     /// Byte-order interpretation used during bit insertion. <see cref="ByteExtensions.Endianness.LittleEndian"/>
     /// uses forward byte indexing; <see cref="ByteExtensions.Endianness.BigEndian"/> reverses byte indices across the packed span.
     /// </param>
-    /// <returns>A new <see cref="GcBuffer"/> containing packed image data.</returns>
+    /// <returns>A new <see cref="GcBuffer"/> containing packed image data (or the original buffer if it is already packed).</returns>
     /// <exception cref="ArgumentException">The pixel format of <paramref name="unpackedBuffer"/> cannot be converted to a supported packed format.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="endianness"/> value is invalid.</exception>
     public static GcBuffer Pack(this GcBuffer unpackedBuffer, ByteExtensions.Endianness endianness = ByteExtensions.Endianness.LittleEndian)
     {
+        ArgumentNullException.ThrowIfNull(unpackedBuffer, nameof(unpackedBuffer));
+
+        // If the buffer is already packed, return it as-is.
+        if (unpackedBuffer.IsPacked())
+            return unpackedBuffer;
+
         // Validate that the pixel format is supported.
         if (!SupportedUnpackedPixelFormats.Contains(unpackedBuffer.PixelFormat))
             throw new ArgumentException($"Pixel format {unpackedBuffer.PixelFormat} is not supported for packing.");

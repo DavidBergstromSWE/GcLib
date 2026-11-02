@@ -142,22 +142,16 @@ public class GcBufferExtensionsTests
     }
 
     [TestMethod]
-    public void UnpackBuffer_UnsupportedFormat_ThrowsArgumentException()
+    public void UnpackBuffer_NonPackedBuffer_ReturnsSameInstance()
     {
         // Arrange
-        var width = (uint)10;
-        var height = (uint)10;
-        var packedFormat = PixelFormat.Mono8;
-        var frameId = (long)42;
-        var timeStamp = (ulong)DateTime.Now.Ticks;
-        var packedImageData = new byte[width * height];
-        var packedBuffer = new GcBuffer(packedImageData, width, height, packedFormat, frameId, timeStamp);
+        var buffer = new GcBuffer(new byte[16], 4, 4, PixelFormat.Mono8, 42, 123);
 
         // Act
-        Action action = () => packedBuffer.Unpack();
+        var result = buffer.Unpack();
 
         // Assert
-        Assert.Throws<ArgumentException>(action);
+        Assert.AreSame(buffer, result);
     }
 
     [TestMethod]
@@ -280,22 +274,16 @@ public class GcBufferExtensionsTests
     }
 
     [TestMethod]
-    public void PackBuffer_UnsupportedFormat_ThrowsArgumentException()
+    public void PackBuffer_PackedBuffer_ReturnsSameInstance()
     {
         // Arrange
-        var width = (uint)10;
-        var height = (uint)10;
-        var unpackedFormat = PixelFormat.Mono8;
-        var frameId = (long)42;
-        var timeStamp = (ulong)DateTime.Now.Ticks;
-        var unpackedImageData = new byte[width * height];
-        var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, unpackedFormat, frameId, timeStamp);
+        var packedBuffer = new GcBuffer([136, 35, 142, 56, 226], 4, 1, PixelFormat.Mono10p, 42, 123);
 
         // Act
-        Action action = () => unpackedBuffer.Pack();
+        var result = packedBuffer.Pack();
 
         // Assert
-        Assert.Throws<ArgumentException>(action);
+        Assert.AreSame(packedBuffer, result);
     }
 
     [TestMethod]
@@ -537,16 +525,16 @@ public class GcBufferExtensionsTests
     }
 
     [TestMethod]
-    public void DeBayer_NonBayer_ThrowsArgumentException()
+    public void DeBayer_NonBayer_ReturnsSameInstance()
     {
         // Arrange
         var buffer = new GcBuffer(new byte[16], 4, 4, PixelFormat.Mono8, 42, 123);
 
         // Act
-        Action action = () => buffer.DeBayer();
+        var result = buffer.DeBayer();
 
         // Assert
-        Assert.Throws<ArgumentException>(action);
+        Assert.AreSame(buffer, result);
     }
 
     [TestMethod]
