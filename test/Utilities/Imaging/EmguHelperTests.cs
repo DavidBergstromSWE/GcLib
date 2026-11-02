@@ -235,6 +235,7 @@ public class EmguHelperTests
     [DataRow(4, 1)]
     public void UnpackPacked_ReturnsValuesForDepthAndChannelCount(int bitDepth, int channels)
     {
+        // Arrange
         const int width = 2;
         const int height = 2;
         int samplesPerRow = width * channels;
@@ -257,8 +258,10 @@ public class EmguHelperTests
             }
         }
 
+        // Act
         using var result = EmguHelper.Unpack(packedData, width, height, bitDepth, channels, ByteExtensions.Endianness.LittleEndian);
 
+        // Assert
         Assert.AreEqual(width, result.Cols);
         Assert.AreEqual(height, result.Rows);
         Assert.AreEqual(channels, result.NumberOfChannels);
@@ -308,16 +311,19 @@ public class EmguHelperTests
     [TestMethod]
     public void Pack_UsesByteOrderAcrossRowsAndPreservesSource()
     {
+        // Arrange
         using var mat = new Mat(2, 1, DepthType.Cv16U, 1);
         using (var firstRow = mat.Row(0))
             firstRow.SetTo(new MCvScalar(0x155));
         using (var secondRow = mat.Row(1))
             secondRow.SetTo(new MCvScalar(0x2AA));
 
+        // Act
         byte[] bigEndian = EmguHelper.Pack(mat, 10, ByteExtensions.Endianness.BigEndian);
         byte[] littleEndian = EmguHelper.Pack(mat, 10, ByteExtensions.Endianness.LittleEndian);
         byte[] defaultEndian = EmguHelper.Pack(mat, 10);
 
+        // Assert
         CollectionAssert.AreEqual(new byte[] { 0x02, 0xAA, 0x01, 0x55 }, bigEndian);
         CollectionAssert.AreEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02 }, littleEndian);
         CollectionAssert.AreEqual(littleEndian, defaultEndian);
@@ -351,13 +357,16 @@ public class EmguHelperTests
     [TestMethod]
     public void Unpack_UsesByteOrderAcrossRowsAndPreservesInput()
     {
+        // Arrange
         byte[] bigEndian = [0x02, 0xAA, 0x01, 0x55];
         byte[] littleEndian = [0x55, 0x01, 0xAA, 0x02];
         byte[] originalLittleEndian = (byte[])littleEndian.Clone();
 
+        // Act
         using var bigEndianResult = EmguHelper.Unpack(bigEndian, 1, 2, 10, 1, ByteExtensions.Endianness.BigEndian);
         using var littleEndianResult = EmguHelper.Unpack(littleEndian, 1, 2, 10, 1, ByteExtensions.Endianness.LittleEndian);
 
+        // Assert
         Assert.AreEqual(0x155, bigEndianResult.GetPixel(0, 0, 0));
         Assert.AreEqual(0x2AA, bigEndianResult.GetPixel(1, 0, 0));
         Assert.AreEqual(0x155, littleEndianResult.GetPixel(0, 0, 0));
@@ -369,12 +378,18 @@ public class EmguHelperTests
     [TestMethod]
     public void PackAndUnpack_ForUnsupportedEndianness_ThrowArgumentOutOfRangeException()
     {
+        // Arrange
         using var mat = new Mat(1, 1, DepthType.Cv16U, 1);
         mat.SetTo(new MCvScalar(1));
         var unsupportedEndianness = (ByteExtensions.Endianness)123;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => EmguHelper.Pack(mat, 10, unsupportedEndianness));
-        Assert.Throws<ArgumentOutOfRangeException>(() => EmguHelper.Unpack(new byte[] { 1, 0 }, 1, 1, 10, 1, unsupportedEndianness));
+        // Act
+        Action packAction = () => EmguHelper.Pack(mat, 10, unsupportedEndianness);
+        Action unpackAction = () => EmguHelper.Unpack(new byte[] { 1, 0 }, 1, 1, 10, 1, unsupportedEndianness);
+
+        // Assert
+        Assert.Throws<ArgumentOutOfRangeException>(packAction);
+        Assert.Throws<ArgumentOutOfRangeException>(unpackAction);
     }
 
     [TestMethod]

@@ -3,27 +3,29 @@
 namespace GcLib.Utilities.Numbers;
 
 /// <summary>
-/// Provides span-based extension methods for bit extraction and insertion.
+/// Provides span-based helpers for extracting and inserting bit ranges.
 /// </summary>
-/// <remarks>This class includes methods that allow for the extraction and insertion of specific ranges of bits
-/// within byte spans, accommodating different endianness and bit numbering conventions. It is useful in scenarios
-/// involving low-level data manipulation, such as serialization and communication protocols.</remarks>
+/// <remarks>
+/// These helpers operate on contiguous spans and support explicit endianness and bit-numbering rules.
+/// Endianness controls byte-index traversal, while bit numbering controls bit-index interpretation inside each byte.
+/// </remarks>
 public static class ByteExtensions
 {
     /// <summary>
-    /// Specifies the byte order used to represent data in memory.
+    /// Specifies byte traversal order for bit-range operations.
     /// </summary>
-    /// <remarks>This enumeration is commonly used in data serialization and network communication to indicate
-    /// the endianness of data. Big-endian format stores the most significant byte at the smallest memory address, while
-    /// little-endian format stores the least significant byte first.</remarks>
+    /// <remarks>
+    /// In these helpers, <see cref="LittleEndian"/> traverses bytes in forward index order.
+    /// <see cref="BigEndian"/> traverses bytes in reverse index order across the addressed span.
+    /// </remarks>
     public enum Endianness
     {
         /// <summary>
-        /// LSB (least significant byte) first.
+        /// Represents byte order where the least significant byte is stored first.
         /// </summary>
         LittleEndian,
         /// <summary>
-        /// MSB (most significant byte) first.
+        /// Represents byte order where the most significant byte is stored first.
         /// </summary>
         BigEndian
     }
@@ -54,14 +56,15 @@ public static class ByteExtensions
     /// <summary>
     /// Extracts a specified range of bits from a read-only source span into a caller-provided span.
     /// </summary>
-    /// <remarks>The extracted bits are packed into the destination according to the specified endianness and
-    /// bit numbering scheme. The source span is not modified. The destination must be large enough to hold the
-    /// extracted bits; unused bits in the last written byte are cleared.</remarks>
+    /// <remarks>
+    /// Extracted bits are packed into <paramref name="destination"/> according to the specified endianness and bit numbering rules.
+    /// The source span is not modified. Unused bits in the final written destination byte are cleared.
+    /// </remarks>
     /// <param name="source">The read-only span from which bits are to be extracted.</param>
     /// <param name="start">The zero-based index, in bits, at which to begin extraction.</param>
     /// <param name="length">The number of bits to extract.</param>
     /// <param name="destination">The span that receives the extracted bits.</param>
-    /// <param name="endianness">Specifies the byte order to use when extracting bits.</param>
+    /// <param name="endianness">Specifies byte traversal order while extracting bits.</param>
     /// <param name="bitNumbering">Specifies the bit numbering scheme to use when extracting bits.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or if the specified range exceeds the bounds of the source span.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="endianness"/> parameter is invalid.</exception>
@@ -98,7 +101,7 @@ public static class ByteExtensions
             throw new ArgumentOutOfRangeException(nameof(bitNumbering), bitNumbering, "Unsupported bit numbering.");
 
         Span<byte> result = destination[..resultLength];
-        result.Clear();
+        result.Clear(); // Clear the destination span to ensure unused bits are set to 0.
 
         // Iterate through each byte in the result span.
         for (int i = 0; i < result.Length; i++)
@@ -125,7 +128,7 @@ public static class ByteExtensions
                     sourceByteIndex = source.Length - 1 - sourceByteIndex;
 
                 // Set the current bit in the result byte.
-                result[i] |= (byte)(((source[sourceByteIndex] >> sourceBitIndex) & 1) << resultBitIndex);
+                result[i] |= (byte)(((source[sourceByteIndex] >> sourceBitIndex) & 1) << resultBitIndex); // Extract the bit from the source byte and set it in the result byte at the correct position.
             }
         }
     }
@@ -133,13 +136,15 @@ public static class ByteExtensions
     /// <summary>
     /// Inserts bits from a read-only source span into a target span without allocating memory.
     /// </summary>
-    /// <remarks>Only the specified bits are modified. If the source contains fewer than <paramref name="length"/>
-    /// bits, only the available source bits are written. Bit offsets and byte order are relative to the target span.</remarks>
+    /// <remarks>
+    /// Only the specified target range is modified. If <paramref name="value"/> contains fewer than <paramref name="length"/> bits,
+    /// only available bits are written. Bit offsets and endianness are interpreted relative to <paramref name="target"/>.
+    /// </remarks>
     /// <param name="target">The span in which bits will be set.</param>
     /// <param name="start">The zero-based index, in bits, at which to begin insertion.</param>
     /// <param name="length">The maximum number of bits to set.</param>
     /// <param name="value">The read-only span containing the bits to insert.</param>
-    /// <param name="endianness">Specifies the byte order of the target span.</param>
+    /// <param name="endianness">Specifies byte traversal order while writing bits into the target span.</param>
     /// <param name="bitNumbering">Specifies the bit numbering scheme.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the start index or length is negative, or the specified range exceeds the target span.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="endianness"/> parameter is invalid.</exception>
@@ -163,7 +168,6 @@ public static class ByteExtensions
         // Validate endianness parameter.
         if (endianness is not (Endianness.BigEndian or Endianness.LittleEndian))
             throw new ArgumentOutOfRangeException(nameof(endianness), endianness, "Unsupported endianness.");
-
 
         // Validate bit numbering parameter.
         if (bitNumbering is not (BitNumbering.Lsb0 or BitNumbering.Msb0))

@@ -5,12 +5,12 @@ using GcLib.Utilities.Numbers;
 namespace GcLib.Utilities.Imaging;
 
 /// <summary>
-/// Provides extension methods for converting buffers between unpacked and packed pixel formats and exporting image data to <see cref="Emgu.CV.Mat"/> format.
+/// Provides extension methods for converting <see cref="GcBuffer"/> instances between packed and unpacked PFNC pixel formats.
 /// </summary>
 public static partial class GcBufferExtensions
 {
     /// <summary>
-    /// Supported packed pixel formats.
+    /// Gets the list of packed pixel formats supported by <see cref="Pack(GcBuffer, ByteExtensions.Endianness)"/> and <see cref="Unpack(GcBuffer, ByteExtensions.Endianness)"/>.
     /// </summary>
     public static readonly List<PixelFormat> SupportedPackedPixelFormats =
     [
@@ -43,6 +43,9 @@ public static partial class GcBufferExtensions
         PixelFormat.BayerGR12p,
     ];
 
+    /// <summary>
+    /// Gets the list of unpacked pixel formats that can be converted to packed formats.
+    /// </summary>
     public static readonly List<PixelFormat> SupportedUnpackedPixelFormats =
     [
         PixelFormat.Mono8,
@@ -94,16 +97,20 @@ public static partial class GcBufferExtensions
     ];
 
     /// <summary>
-    /// Unpacks an image buffer where the image data is stored in a packed pixel format into an unpacked format with image data byte aligned.
+    /// Converts packed image data to a byte-aligned representation.
     /// </summary>
-    /// <remarks>This method converts packed image data into an unpacked format based on the specified pixel
-    /// format and bit depth. Ensure that the <paramref name="packedBuffer"/>'s pixel format is valid and supported before calling this
-    /// method. The method allocates a new buffer to store the unpacked image data.</remarks>
-    /// <param name="packedBuffer">The buffer containing the packed image data.</param>
-    /// <param name="endianness">The byte order used when storing the pixel data.</param>
-    /// <returns>A new <see cref="GcBuffer"/> instance containing the unpacked image data.</returns>
-    /// <exception cref="ArgumentException">Thrown when the pixel format of the <paramref name="packedBuffer"/> is not supported for unpacking.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="endianness"/> parameter is invalid.</exception>"
+    /// <remarks>
+    /// Each packed sample is expanded to its byte-aligned storage width for the corresponding unpacked PFNC format.
+    /// A new <see cref="GcBuffer"/> is allocated for the result.
+    /// </remarks>
+    /// <param name="packedBuffer">Source buffer in a supported packed PFNC format.</param>
+    /// <param name="endianness">
+    /// Byte-order interpretation used during bit extraction. <see cref="ByteExtensions.Endianness.LittleEndian"/>
+    /// uses forward byte indexing; <see cref="ByteExtensions.Endianness.BigEndian"/> reverses byte indices across the packed span.
+    /// </param>
+    /// <returns>A new <see cref="GcBuffer"/> containing unpacked image data.</returns>
+    /// <exception cref="ArgumentException">The pixel format of <paramref name="packedBuffer"/> is not supported for unpacking.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The <paramref name="endianness"/> value is invalid.</exception>
     public static GcBuffer Unpack(this GcBuffer packedBuffer, ByteExtensions.Endianness endianness = ByteExtensions.Endianness.LittleEndian)
     {
         // Validate that the pixel format is supported.
@@ -144,18 +151,26 @@ public static partial class GcBufferExtensions
     }
 
     /// <summary>
-    /// Packs an image buffer where the image data is stored in an unpacked pixel format into a compressed format suitable for storage or transmission.
+    /// Converts byte-aligned image data to packed PFNC representation.
     /// </summary>
-    /// <remarks>This method converts unpacked image data into a packed format based on the specified pixel
-    /// format and bit depth. Ensure that the pixel format of the input data can be converted into a supported packed pixel format before calling this method.
-    /// The method allocates a new buffer to store the packed image data.</remarks>
-    /// <param name="unpackedBuffer">The buffer containing the unpacked image data.</param>
-    /// <param name="endianness">The byte order used when storing the pixel data.</param>
-    /// <returns>A new <see cref="GcBuffer"/> instance containing the packed image data.</returns>
-    /// <exception cref="ArgumentException">Thrown if the pixel format of the provided buffer can not be converted into a supported packed pixel format.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="endianness"/> parameter is invalid.</exception>"
+    /// <remarks>
+    /// Each sample is compacted to the packed bit depth for the corresponding PFNC packed format.
+    /// A new <see cref="GcBuffer"/> is allocated for the result.
+    /// </remarks>
+    /// <param name="unpackedBuffer">Source buffer in an unpacked PFNC format that can be packed.</param>
+    /// <param name="endianness">
+    /// Byte-order interpretation used during bit insertion. <see cref="ByteExtensions.Endianness.LittleEndian"/>
+    /// uses forward byte indexing; <see cref="ByteExtensions.Endianness.BigEndian"/> reverses byte indices across the packed span.
+    /// </param>
+    /// <returns>A new <see cref="GcBuffer"/> containing packed image data.</returns>
+    /// <exception cref="ArgumentException">The pixel format of <paramref name="unpackedBuffer"/> cannot be converted to a supported packed format.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The <paramref name="endianness"/> value is invalid.</exception>
     public static GcBuffer Pack(this GcBuffer unpackedBuffer, ByteExtensions.Endianness endianness = ByteExtensions.Endianness.LittleEndian)
     {
+        // Validate that the pixel format is supported.
+        if (!SupportedUnpackedPixelFormats.Contains(unpackedBuffer.PixelFormat))
+            throw new ArgumentException($"Pixel format {unpackedBuffer.PixelFormat} is not supported for packing.");
+
         // Validate endianness parameter.
         if (endianness is not (ByteExtensions.Endianness.BigEndian or ByteExtensions.Endianness.LittleEndian))
             throw new ArgumentOutOfRangeException(nameof(endianness), endianness, "Unsupported endianness.");

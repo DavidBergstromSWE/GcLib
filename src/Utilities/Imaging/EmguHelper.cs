@@ -6,15 +6,15 @@ using GcLib.Utilities.Numbers;
 namespace GcLib.Utilities.Imaging;
 
 /// <summary>
-/// Utility class for <see cref="Emgu.CV"/> library (.NET wrapper for OpenCV).
+/// Provides conversion helpers between GenICam pixel metadata and <see cref="Emgu.CV"/> matrix representations.
 /// </summary>
 public static class EmguHelper
 {
     /// <summary>
-    /// Converts GenICam pixel size to EmguCV depth type.
+    /// Maps a GenICam <see cref="PixelSize"/> to the closest <see cref="DepthType"/>.
     /// </summary>
-    /// <param name="pixelSize">Pixel size (Bpp8, Bpp16, etc.).</param>
-    /// <returns>EmguCV depth type.</returns>
+    /// <param name="pixelSize">GenICam pixel size value.</param>
+    /// <returns>The corresponding <see cref="DepthType"/> when representable; otherwise <see cref="DepthType.Default"/>.</returns>
     public static DepthType GetDepthType(PixelSize pixelSize)
     {
         if ((int)pixelSize <= 8)
@@ -29,20 +29,20 @@ public static class EmguHelper
     }
 
     /// <summary>
-    /// Converts GeniCam <see cref="PixelFormat"/> to EmguCV depth type.
+    /// Maps a GenICam <see cref="PixelFormat"/> to the corresponding <see cref="DepthType"/>.
     /// </summary>
-    /// <param name="pixelFormat">Pixel format.</param>
-    /// <returns>EmguCV depth type.</returns>
+    /// <param name="pixelFormat">GenICam pixel format.</param>
+    /// <returns>The corresponding <see cref="DepthType"/>.</returns>
     public static DepthType GetDepthType(PixelFormat pixelFormat)
     {
         return GetDepthType(GenICamHelper.GetPixelSize(pixelFormat));
     }
 
     /// <summary>
-    /// Converts System.Type to EmguCV depth type.
+    /// Maps a numeric CLR <see cref="Type"/> to the corresponding <see cref="DepthType"/>.
     /// </summary>
-    /// <param name="type">System.Type.</param>
-    /// <returns>EmguCV depth type.</returns>
+    /// <param name="type">CLR type to map.</param>
+    /// <returns>The mapped <see cref="DepthType"/>; unsupported numeric types return <see cref="DepthType.Default"/>.</returns>
     public static DepthType GetDepthType(Type type)
     {
         if (!NumericHelper.IsNumericType(type))
@@ -63,10 +63,10 @@ public static class EmguHelper
 
 
     /// <summary>
-    /// Converts bit depth to EmguCV depth type.
+    /// Maps a bit depth to the nearest compatible <see cref="DepthType"/>.
     /// </summary>
-    /// <param name="bitDepth">Bit depth (number of bits).</param>
-    /// <returns>EmguCV depth type.</returns>
+    /// <param name="bitDepth">Bit depth in bits.</param>
+    /// <returns>The mapped <see cref="DepthType"/>; out-of-range values return <see cref="DepthType.Default"/>.</returns>
     public static DepthType GetDepthType(int bitDepth)
     {
         if (bitDepth <= 8)
@@ -81,10 +81,10 @@ public static class EmguHelper
     }
 
     /// <summary>
-    /// Converts EmguCV depth type to bit depth (number of bits).
+    /// Gets the nominal bit depth for an <see cref="DepthType"/>.
     /// </summary>
-    /// <param name="depthType">EmguCV depth type.</param>
-    /// <returns>Number of bits required to store depth type.</returns>
+    /// <param name="depthType">Depth type to evaluate.</param>
+    /// <returns>The number of bits used by <paramref name="depthType"/>.</returns>
     public static int GetBitDepth(DepthType depthType)
     {
         return depthType switch
@@ -99,10 +99,10 @@ public static class EmguHelper
     }
 
     /// <summary>
-    /// Retrieves maximum pixel value of DepthType.
+    /// Gets the maximum representable value for a given <see cref="DepthType"/>.
     /// </summary>
-    /// <param name="depthType">DepthType (EmguCV enum type).</param>
-    /// <returns>Maximum pixel value.</returns>
+    /// <param name="depthType">Depth type to evaluate.</param>
+    /// <returns>The maximum representable value.</returns>
     public static double GetMax(DepthType depthType)
     {
         return depthType switch
@@ -124,10 +124,10 @@ public static class EmguHelper
     }
 
     /// <summary>
-    /// Retrieves minimum pixel value of DepthType.
+    /// Gets the minimum representable value for a given <see cref="DepthType"/>.
     /// </summary>
-    /// <param name="depthType">DepthType (EmguCV enum type).</param>
-    /// <returns>Minimum pixel value.</returns>
+    /// <param name="depthType">Depth type to evaluate.</param>
+    /// <returns>The minimum representable value.</returns>
     public static double GetMin(DepthType depthType)
     {
         return depthType switch

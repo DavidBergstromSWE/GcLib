@@ -26,29 +26,27 @@ public class ByteExtensionsTests
     public void SetBitRange_SingleBitWithMsb0_TogglesFirstBit()
     {
         // Arrange
-        var bytes = new byte[1] { 0b0000_0000 }; // binary representation of 0, where MSB is 0
-        var value = new Span<byte>([0b1000_0000]); // binary representation of 128 = 1000 0000, where MSB is 1
+        var bytes = new byte[1] { 0b0000_0000 };
+        var value = new Span<byte>([0b1000_0000]);
 
         // Act
         ByteExtensions.SetBitRange(target: bytes, start: 0, length: 1, value: value, endianness: ByteExtensions.Endianness.BigEndian, bitNumbering: ByteExtensions.BitNumbering.Msb0);
 
         // Assert
         Assert.AreEqual(0b1000_0000, bytes[0]);
-        Assert.AreNotEqual(0b0000_0000, bytes[0]);
     }
 
     [TestMethod]
     public void SetBitRange_SingleBitWithLsb0_DoesNotToggleFirstBit()
     {
         // Arrange
-        var bytes = new byte[1] { 0b0000_0000 }; // binary representation of 0, where LSB is 0
-        var value = new Span<byte>([0b1000_0000]); // binary representation of 128 = 1000 0000, where LSB is 0
+        var bytes = new byte[1] { 0b0000_0000 };
+        var value = new Span<byte>([0b1000_0000]);
 
         // Act
         ByteExtensions.SetBitRange(target: bytes, start: 0, length: 1, value: value, endianness: ByteExtensions.Endianness.BigEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
 
         // Assert
-        Assert.AreNotEqual(0b1000_0000, bytes[0]);
         Assert.AreEqual(0b0000_0000, bytes[0]);
     }
 
@@ -89,34 +87,43 @@ public class ByteExtensionsTests
     [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Msb0, (byte)0xE0, (byte)0x07)]
     public void SetBitRange_TargetSpan_PreservesBitsOutsideRange(ByteExtensions.Endianness endianness, ByteExtensions.BitNumbering bitNumbering, byte first, byte second)
     {
+        // Arrange
         byte[] target = [0xAA, 0xFF, 0xFF, 0x55];
         ReadOnlySpan<byte> value = [0, 0];
 
+        // Act
         ByteExtensions.SetBitRange(target.AsSpan(1, 2), 3, 10, value, endianness, bitNumbering);
 
+        // Assert
         Assert.AreSequenceEqual(new byte[] { 0xAA, first, second, 0x55 }, target);
     }
 
     [TestMethod]
     public void SetBitRange_TargetSpan_ShortValuePreservesRemainingBits()
     {
+        // Arrange
         byte[] target = [0xFF, 0xFF];
         ReadOnlySpan<byte> value = [0];
 
+        // Act
         ByteExtensions.SetBitRange(target.AsSpan(), 0, 16, value, ByteExtensions.Endianness.BigEndian);
 
+        // Assert
         Assert.AreSequenceEqual(new byte[] { 0xFF, 0 }, target);
     }
 
     [TestMethod]
     public void GetBitRange_LengthZero_DoesNotModifyDestination()
     {
+        // Arrange
         ReadOnlySpan<byte> source = [0b1010_1010, 0b0101_0101];
         byte[] destination = [0xAA, 0x55];
 
+        // Act
         source.GetBitRange(start: 0, length: 0, destination: destination);
         source.GetBitRange(start: 0, length: 0, destination: Span<byte>.Empty);
 
+        // Assert
         Assert.AreSequenceEqual(new byte[] { 0xAA, 0x55 }, destination);
     }
 
@@ -127,11 +134,14 @@ public class ByteExtensionsTests
     [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Msb0, (byte)0x6B, (byte)0x00)]
     public void GetBitRange_DestinationSpan_ExtractsAcrossByteBoundaryAndClearsUnusedBits(ByteExtensions.Endianness endianness, ByteExtensions.BitNumbering bitNumbering, byte first, byte second)
     {
+        // Arrange
         ReadOnlySpan<byte> source = [0b1010_1101, 0b0110_0011];
         byte[] destination = [0xFF, 0xFF, 0x55];
 
+        // Act
         source.GetBitRange(start: 3, length: 11, destination: destination, endianness: endianness, bitNumbering: bitNumbering);
 
+        // Assert
         Assert.AreSequenceEqual(new byte[] { first, second, 0x55 }, destination);
     }
 
@@ -199,7 +209,7 @@ public class ByteExtensionsTests
     public void GetBitRange_BigEndian_ExtractsBitsInReversedByteOrder()
     {
         // Arrange
-        var bytes = new byte[] { 0b0000_0001, 0b0000_0010 }; // binary representations of 1 and 2
+        var bytes = new byte[] { 0b0000_0001, 0b0000_0010 };
 
         byte[] result = new byte[2];
 
@@ -208,7 +218,37 @@ public class ByteExtensionsTests
 
         // Assert
         Assert.HasCount(2, result);
-        Assert.AreEqual(0b0000_0010, result[0]); // First byte in result should be original second byte
-        Assert.AreEqual(0b0000_0001, result[1]); // Second byte in result should be original first byte
+        Assert.AreEqual(0b0000_0010, result[0]);
+        Assert.AreEqual(0b0000_0001, result[1]);
+    }
+
+    [TestMethod]
+    public void SetBitRange_InvalidEndianness_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        byte[] target = [0x00, 0x00];
+        byte[] value = [0xFF, 0xFF];
+        var invalidEndianness = (ByteExtensions.Endianness)123;
+
+        // Act
+        Action action = () => ByteExtensions.SetBitRange(target, 0, 16, value, invalidEndianness);
+
+        // Assert
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(action);
+    }
+
+    [TestMethod]
+    public void GetBitRange_InvalidEndianness_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        byte[] source = [0xFF, 0x00];
+        byte[] destination = new byte[2];
+        var invalidEndianness = (ByteExtensions.Endianness)123;
+
+        // Act
+        Action action = () => ByteExtensions.GetBitRange(source, 0, 16, destination, invalidEndianness);
+
+        // Assert
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(action);
     }
 }

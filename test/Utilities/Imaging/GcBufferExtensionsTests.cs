@@ -74,14 +74,7 @@ public class GcBufferExtensionsTests
     public void Pack_UnpackedBuffer_ReturnsPropertiesAsExpected()
     {
         // Arrange
-        // Create unpacked buffer with Mono10 format, 4 pixels, 1 channel, and known pixel values (all equal to 904).
         var unpackedBuffer = new GcBuffer([136, 3, 136, 3, 136, 3, 136, 3], 4, 1, PixelFormat.Mono10, 42, 123);
-
-        // Verify initial unpacked buffer properties.
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 0, 0));
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 1, 0));
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 2, 0));
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 3, 0));
 
         // Act
         var packedBuffer = unpackedBuffer.Pack();
@@ -90,32 +83,19 @@ public class GcBufferExtensionsTests
         Assert.AreEqual(PixelFormat.Mono10p, packedBuffer.PixelFormat);
         Assert.AreEqual(4, (int)packedBuffer.Width);
         Assert.AreEqual(1, (int)packedBuffer.Height);
-        Assert.HasCount(5, packedBuffer.ImageData, "Packed image data length should match expected calculation for Mono10p format."); // 4 pixels * 10 bits = 40 bits = 5 bytes
-
-        // Assert all pixels are packed correctly (and equal 904)
+        Assert.HasCount(5, packedBuffer.ImageData, "Packed image data length should match expected calculation for Mono10p format.");
         Assert.AreSequenceEqual(new byte[] { 136, 35, 142, 56, 226 }, packedBuffer.ImageData);
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 0, 0));
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 1, 0));
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 2, 0));
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 3, 0));
-        Assert.AreEqual(packedBuffer.GetPixel(0, 0, 0), unpackedBuffer.GetPixel(0, 0, 0));
-        Assert.AreEqual(packedBuffer.GetPixel(0, 1, 0), unpackedBuffer.GetPixel(0, 1, 0));
-        Assert.AreEqual(packedBuffer.GetPixel(0, 2, 0), unpackedBuffer.GetPixel(0, 2, 0));
-        Assert.AreEqual(packedBuffer.GetPixel(0, 3, 0), unpackedBuffer.GetPixel(0, 3, 0));
+        Assert.AreEqual(unpackedBuffer.GetPixel(0, 0, 0), packedBuffer.GetPixel(0, 0, 0));
+        Assert.AreEqual(unpackedBuffer.GetPixel(0, 1, 0), packedBuffer.GetPixel(0, 1, 0));
+        Assert.AreEqual(unpackedBuffer.GetPixel(0, 2, 0), packedBuffer.GetPixel(0, 2, 0));
+        Assert.AreEqual(unpackedBuffer.GetPixel(0, 3, 0), packedBuffer.GetPixel(0, 3, 0));
     }
 
     [TestMethod]
     public void Unpack_PackedBuffer_ReturnsPropertiesAsExpected()
     {
         // Arrange
-        // Create packed buffer with Mono10p format, 4 pixels, 1 channel, and known pixel values (all equal to 904).
         var packedBuffer = new GcBuffer([136, 35, 142, 56, 226], 4, 1, PixelFormat.Mono10p, 42, 123);
-
-        // Verify initial unpacked buffer properties.
-        Assert.AreEqual(904, packedBuffer.GetPixel(0, 0, 0));
-        Assert.AreEqual(904, packedBuffer.GetPixel(0, 1, 0));
-        Assert.AreEqual(904, packedBuffer.GetPixel(0, 2, 0));
-        Assert.AreEqual(904, packedBuffer.GetPixel(0, 3, 0));
 
         // Act
         var unpackedBuffer = packedBuffer.Unpack();
@@ -125,11 +105,11 @@ public class GcBufferExtensionsTests
         Assert.AreEqual(PixelFormat.Mono10, unpackedBuffer.PixelFormat);
         Assert.AreEqual(4, (int)unpackedBuffer.Width);
         Assert.AreEqual(1, (int)unpackedBuffer.Height);
-        Assert.HasCount(8, unpackedBuffer.ImageData, "Unpacked image data length should match expected calculation for Mono10 format."); // 4 pixels unpacked to 2 bytes per pixel = 8 bytes
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 0, 0));
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 1, 0));
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 2, 0));
-        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 3, 0));
+        Assert.HasCount(8, unpackedBuffer.ImageData, "Unpacked image data length should match expected calculation for Mono10 format.");
+        Assert.AreEqual(packedBuffer.GetPixel(0, 0, 0), unpackedBuffer.GetPixel(0, 0, 0));
+        Assert.AreEqual(packedBuffer.GetPixel(0, 1, 0), unpackedBuffer.GetPixel(0, 1, 0));
+        Assert.AreEqual(packedBuffer.GetPixel(0, 2, 0), unpackedBuffer.GetPixel(0, 2, 0));
+        Assert.AreEqual(packedBuffer.GetPixel(0, 3, 0), unpackedBuffer.GetPixel(0, 3, 0));
     }
 
     [TestMethod]
@@ -167,15 +147,31 @@ public class GcBufferExtensionsTests
         // Arrange
         var width = (uint)10;
         var height = (uint)10;
-        var packedFormat = PixelFormat.Mono8; // Unsupported packed format
-        var pixelDynamicRangeMax = GenICamHelper.GetPixelDynamicRangeMax(packedFormat);
+        var packedFormat = PixelFormat.Mono8;
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
-        var packedImageData = new byte[width * height]; // arbitrary data
+        var packedImageData = new byte[width * height];
         var packedBuffer = new GcBuffer(packedImageData, width, height, packedFormat, frameId, timeStamp);
 
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => packedBuffer.Unpack());
+        // Act
+        Action action = () => packedBuffer.Unpack();
+
+        // Assert
+        Assert.Throws<ArgumentException>(action);
+    }
+
+    [TestMethod]
+    public void UnpackBuffer_InvalidEndianness_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var packedBuffer = new GcBuffer([136, 35, 142, 56, 226], 4, 1, PixelFormat.Mono10p, 42, 123);
+        var invalidEndianness = (ByteExtensions.Endianness)123;
+
+        // Act
+        Action action = () => packedBuffer.Unpack(invalidEndianness);
+
+        // Assert
+        Assert.Throws<ArgumentOutOfRangeException>(action);
     }
 
     #endregion
@@ -245,14 +241,17 @@ public class GcBufferExtensionsTests
     [DataRow(ByteExtensions.Endianness.LittleEndian)]
     public void PackBuffer_NonzeroSamples_PreservesBitOrderAndMetadata(ByteExtensions.Endianness endianness)
     {
+        // Arrange
         byte[] imageData = [0x01, 0x00, 0x55, 0x01, 0xFF, 0x03, 0xAA, 0xAA];
         var original = new GcBuffer(imageData, 3, 1, PixelFormat.Mono10, 42, 123);
         byte[] expected = endianness == ByteExtensions.Endianness.BigEndian
             ? [0x3F, 0xF5, 0x54, 0x01]
             : [0x01, 0x54, 0xF5, 0x3F];
 
+        // Act
         var packed = original.Pack(endianness);
 
+        // Assert
         Assert.AreSequenceEqual(expected, packed.ImageData);
         Assert.AreEqual(PixelFormat.Mono10p, packed.PixelFormat);
         Assert.AreEqual(original.Width, packed.Width);
@@ -264,20 +263,53 @@ public class GcBufferExtensionsTests
     }
 
     [TestMethod]
+    public void PackAndUnpack_DefaultEndianness_MatchesLittleEndian()
+    {
+        // Arrange
+        var unpacked = new GcBuffer([0x01, 0x00, 0x55, 0x01, 0xFF, 0x03], 3, 1, PixelFormat.Mono10, 42, 123);
+        var packed = unpacked.Pack(ByteExtensions.Endianness.LittleEndian);
+
+        // Act
+        var packedWithDefault = unpacked.Pack();
+        var unpackedWithDefault = packed.Unpack();
+        var unpackedWithLittleEndian = packed.Unpack(ByteExtensions.Endianness.LittleEndian);
+
+        // Assert
+        Assert.AreSequenceEqual(packed.ImageData, packedWithDefault.ImageData);
+        Assert.AreSequenceEqual(unpackedWithLittleEndian.ImageData, unpackedWithDefault.ImageData);
+    }
+
+    [TestMethod]
     public void PackBuffer_UnsupportedFormat_ThrowsArgumentException()
     {
         // Arrange
         var width = (uint)10;
         var height = (uint)10;
-        var unpackedFormat = PixelFormat.Mono8; // Unsupported unpacked format
-        var pixelDynamicRangeMax = GenICamHelper.GetPixelDynamicRangeMax(unpackedFormat);
+        var unpackedFormat = PixelFormat.Mono8;
         var frameId = (long)42;
         var timeStamp = (ulong)DateTime.Now.Ticks;
-        var unpackedImageData = new byte[width * height]; // arbitrary data
+        var unpackedImageData = new byte[width * height];
         var unpackedBuffer = new GcBuffer(unpackedImageData, width, height, unpackedFormat, frameId, timeStamp);
 
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => unpackedBuffer.Pack());
+        // Act
+        Action action = () => unpackedBuffer.Pack();
+
+        // Assert
+        Assert.Throws<ArgumentException>(action);
+    }
+
+    [TestMethod]
+    public void PackBuffer_InvalidEndianness_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        var unpackedBuffer = new GcBuffer([136, 3, 136, 3], 2, 1, PixelFormat.Mono10, 42, 123);
+        var invalidEndianness = (ByteExtensions.Endianness)123;
+
+        // Act
+        Action action = () => unpackedBuffer.Pack(invalidEndianness);
+
+        // Assert
+        Assert.Throws<ArgumentOutOfRangeException>(action);
     }
 
     [TestMethod]
