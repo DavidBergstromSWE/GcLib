@@ -431,7 +431,13 @@ internal class ImageModel : ObservableObject, IXmlSerializable
             {
                 // Unpack buffer if packed, otherwise use as is.
                 // Note: Unpacking allocates new memory to store the unpacked image data.
-                RawImage = buffer.IsPacked() == false ? buffer : buffer.Unpack();
+                GcBuffer gcBuffer = buffer.IsPacked()? buffer.Unpack() : buffer;
+
+                // DeBayer if Bayer format, otherwise use as is.
+                // Note: DeBayering allocates new memory to store the deBayered image data.
+                gcBuffer = gcBuffer.IsBayer()? gcBuffer.DeBayer() : gcBuffer;
+
+                RawImage = gcBuffer;
             }
         }
         finally

@@ -453,4 +453,154 @@ public class GcBufferExtensionsTests
     }
 
     #endregion
+
+    #region DeBayer Tests
+
+    [TestMethod]
+    [DataRow(PixelFormat.BayerBG8)]
+    [DataRow(PixelFormat.BayerBG10)]
+    [DataRow(PixelFormat.BayerBG12)]
+    [DataRow(PixelFormat.BayerBG14)]
+    [DataRow(PixelFormat.BayerBG16)]
+    [DataRow(PixelFormat.BayerGB8)]
+    [DataRow(PixelFormat.BayerGB10)]
+    [DataRow(PixelFormat.BayerGB12)]
+    [DataRow(PixelFormat.BayerGB14)]
+    [DataRow(PixelFormat.BayerGB16)]
+    [DataRow(PixelFormat.BayerRG8)]
+    [DataRow(PixelFormat.BayerRG10)]
+    [DataRow(PixelFormat.BayerRG12)]
+    [DataRow(PixelFormat.BayerRG14)]
+    [DataRow(PixelFormat.BayerRG16)]
+    [DataRow(PixelFormat.BayerGR8)]
+    [DataRow(PixelFormat.BayerGR10)]
+    [DataRow(PixelFormat.BayerGR12)]
+    [DataRow(PixelFormat.BayerGR14)]
+    [DataRow(PixelFormat.BayerGR16)]
+    public void DeBayer_Bgr_ReturnsColorBufferWithExpectedMetadata(PixelFormat pixelFormat)
+    {
+        // Arrange
+        var bayerBuffer = CreateBayerBuffer(pixelFormat);
+
+        // Act
+        var actual = bayerBuffer.DeBayer(ColorOrder.BGR);
+        var defaultOrder = bayerBuffer.DeBayer();
+
+        // Assert
+        Assert.AreEqual(GetExpectedDeBayerFormat(pixelFormat, ColorOrder.BGR), actual.PixelFormat);
+        Assert.AreEqual(bayerBuffer.Width, actual.Width);
+        Assert.AreEqual(bayerBuffer.Height, actual.Height);
+        Assert.AreEqual(bayerBuffer.FrameID, actual.FrameID);
+        Assert.AreEqual(bayerBuffer.TimeStamp, actual.TimeStamp);
+        Assert.AreEqual((uint)3, GenICamHelper.GetNumChannels(actual.PixelFormat));
+        Assert.HasCount((int)(actual.Width * actual.Height * GenICamHelper.GetBitsPerPixel(actual.PixelFormat) / 8), actual.ImageData);
+        Assert.AreSequenceEqual(actual.ImageData, defaultOrder.ImageData);
+    }
+
+    [TestMethod]
+    [DataRow(PixelFormat.BayerBG8)]
+    [DataRow(PixelFormat.BayerBG10)]
+    [DataRow(PixelFormat.BayerBG12)]
+    [DataRow(PixelFormat.BayerBG14)]
+    [DataRow(PixelFormat.BayerBG16)]
+    [DataRow(PixelFormat.BayerGB8)]
+    [DataRow(PixelFormat.BayerGB10)]
+    [DataRow(PixelFormat.BayerGB12)]
+    [DataRow(PixelFormat.BayerGB14)]
+    [DataRow(PixelFormat.BayerGB16)]
+    [DataRow(PixelFormat.BayerRG8)]
+    [DataRow(PixelFormat.BayerRG10)]
+    [DataRow(PixelFormat.BayerRG12)]
+    [DataRow(PixelFormat.BayerRG14)]
+    [DataRow(PixelFormat.BayerRG16)]
+    [DataRow(PixelFormat.BayerGR8)]
+    [DataRow(PixelFormat.BayerGR10)]
+    [DataRow(PixelFormat.BayerGR12)]
+    [DataRow(PixelFormat.BayerGR14)]
+    [DataRow(PixelFormat.BayerGR16)]
+    public void DeBayer_Rgb_ReturnsColorBufferWithExpectedMetadata(PixelFormat pixelFormat)
+    {
+        // Arrange
+        var bayerBuffer = CreateBayerBuffer(pixelFormat);
+
+        // Act
+        var actual = bayerBuffer.DeBayer(ColorOrder.RGB);
+
+        // Assert
+        Assert.AreEqual(GetExpectedDeBayerFormat(pixelFormat, ColorOrder.RGB), actual.PixelFormat);
+        Assert.AreEqual(bayerBuffer.Width, actual.Width);
+        Assert.AreEqual(bayerBuffer.Height, actual.Height);
+        Assert.AreEqual(bayerBuffer.FrameID, actual.FrameID);
+        Assert.AreEqual(bayerBuffer.TimeStamp, actual.TimeStamp);
+        Assert.AreEqual((uint)3, GenICamHelper.GetNumChannels(actual.PixelFormat));
+        Assert.HasCount((int)(actual.Width * actual.Height * GenICamHelper.GetBitsPerPixel(actual.PixelFormat) / 8), actual.ImageData);
+    }
+
+    [TestMethod]
+    public void DeBayer_NonBayer_ThrowsArgumentException()
+    {
+        // Arrange
+        var buffer = new GcBuffer(new byte[16], 4, 4, PixelFormat.Mono8, 42, 123);
+
+        // Act
+        Action action = () => buffer.DeBayer();
+
+        // Assert
+        Assert.Throws<ArgumentException>(action);
+    }
+
+    [TestMethod]
+    public void DeBayer_UnsupportedColorOrder_ThrowsNotSupportedException()
+    {
+        // Arrange
+        var bayerBuffer = CreateBayerBuffer(PixelFormat.BayerBG8);
+        var unsupportedColorOrder = (ColorOrder)123;
+
+        // Act
+        Action action = () => bayerBuffer.DeBayer(unsupportedColorOrder);
+
+        // Assert
+        Assert.Throws<NotSupportedException>(action);
+    }
+
+    private static GcBuffer CreateBayerBuffer(PixelFormat pixelFormat)
+    {
+        uint width = 4;
+        uint height = 4;
+        int byteLength = checked((int)(width * height * GenICamHelper.GetBitsPerPixel(pixelFormat) / 8));
+        var imageData = new byte[byteLength];
+
+        for (int i = 0; i < imageData.Length; i++)
+            imageData[i] = (byte)(i % 251);
+
+        return new GcBuffer(imageData, width, height, pixelFormat, 42, 123);
+    }
+
+    private static PixelFormat GetExpectedDeBayerFormat(PixelFormat bayerFormat, ColorOrder colorOrder)
+    {
+        uint bitDepth = GenICamHelper.GetBitsPerPixelPerChannel(bayerFormat);
+
+        return colorOrder switch
+        {
+            ColorOrder.BGR => bitDepth switch
+            {
+                <= 8 => PixelFormat.BGR8,
+                <= 10 => PixelFormat.BGR10,
+                <= 12 => PixelFormat.BGR12,
+                <= 14 => PixelFormat.BGR14,
+                _ => PixelFormat.BGR16
+            },
+            ColorOrder.RGB => bitDepth switch
+            {
+                <= 8 => PixelFormat.RGB8,
+                <= 10 => PixelFormat.RGB10,
+                <= 12 => PixelFormat.RGB12,
+                <= 14 => PixelFormat.RGB14,
+                _ => PixelFormat.RGB16
+            },
+            _ => throw new NotSupportedException($"Color order '{colorOrder}' is not supported.")
+        };
+    }
+
+    #endregion
 }
