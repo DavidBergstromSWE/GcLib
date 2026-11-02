@@ -99,21 +99,32 @@ public class VirtualCamTests
         _device.Parameters.SetParameterValue("Height", "60");
         _device.Parameters.SetParameterValue("AcquisitionFrameRate", "60");
         int eventCounter = 0;
-        GcBuffer buffer = null;
-        void eventHandler(object s, NewBufferEventArgs e) { eventCounter++; buffer = e.Buffer; }
+        var firstBufferReceived = new TaskCompletionSource<GcBuffer>(TaskCreationOptions.RunContinuationsAsynchronously); // Use TaskCompletionSource to signal when the first buffer is received
+        void eventHandler(object s, NewBufferEventArgs e)
+        {
+            // Increment the event counter and set the result of the TaskCompletionSource when the first buffer is received
+            Interlocked.Increment(ref eventCounter);
+            firstBufferReceived.TrySetResult(e.Buffer);
+        }
         _device.NewBuffer += eventHandler;
 
-        // Act
-        _device.StartAcquisition();
-        await Task.Delay(300, CancellationToken.None);
+        try
+        {
+            // Act
+            _device.StartAcquisition();
+            var completedTask = await Task.WhenAny(firstBufferReceived.Task, Task.Delay(2000, CancellationToken.None)); // Wait for either the first buffer to be received or a timeout of 2 seconds
 
-        // Assert
-        Assert.IsGreaterThan(0, eventCounter);
-        Assert.IsNotNull(buffer);
-
-        // Cleanup
-        _device.StopAcquisition();
-        _device.NewBuffer -= eventHandler;
+            // Assert
+            Assert.AreSame(firstBufferReceived.Task, completedTask, "Timed out waiting for NewBuffer event.");
+            Assert.IsGreaterThan(0, eventCounter);
+            Assert.IsNotNull(firstBufferReceived.Task.Result);
+        }
+        finally
+        {
+            // Cleanup
+            _device.StopAcquisition();
+            _device.NewBuffer -= eventHandler;
+        }
     }
 
     [TestMethod]
