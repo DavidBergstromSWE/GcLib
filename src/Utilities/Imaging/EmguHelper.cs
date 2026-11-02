@@ -196,14 +196,14 @@ public static class EmguHelper
         // ToDo: Add support for packed pixel formats and Bayer-patterned pixel formats, if needed.
 
         if (sourcePixelFormat == PixelFormat.InvalidPixelFormat || targetPixelFormat == PixelFormat.InvalidPixelFormat)
-            throw new NotSupportedException($"Conversion to/from an invalid pixel format is not supported.");
+            throw new NotSupportedException($"Conversion of invalid pixel format is not supported.");
 
         if (GenICamHelper.IsPacked(sourcePixelFormat) || GenICamHelper.IsPacked(targetPixelFormat))
             throw new NotSupportedException($"Conversion of packed pixel formats is not supported.");
 
         if (GenICamHelper.GetPixelColorFilter(sourcePixelFormat) != PixelColorFilter.None ||
             GenICamHelper.GetPixelColorFilter(targetPixelFormat) != PixelColorFilter.None)
-            throw new NotSupportedException("Conversion to/from Bayer pixel formats is not supported.");
+            throw new NotSupportedException("Conversion of Bayer pixel formats is not supported.");
 
         // If the pixel formats are the same, no conversion is needed.
         if (sourcePixelFormat == targetPixelFormat)

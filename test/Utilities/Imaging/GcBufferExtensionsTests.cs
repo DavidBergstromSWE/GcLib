@@ -325,6 +325,7 @@ public class GcBufferExtensionsTests
 
     #region ToMatTests
 
+    
     [TestMethod]
     [DataRow(PixelFormat.Mono8)]
     [DataRow(PixelFormat.Mono10)]
@@ -332,7 +333,16 @@ public class GcBufferExtensionsTests
     [DataRow(PixelFormat.Mono14)]
     [DataRow(PixelFormat.Mono16)]
     [DataRow(PixelFormat.RGB8)]
+    [DataRow(PixelFormat.RGB10)]
+    [DataRow(PixelFormat.RGB12)]
+    [DataRow(PixelFormat.RGB14)]
+    [DataRow(PixelFormat.RGB16)]
     [DataRow(PixelFormat.BGR8)]
+    [DataRow(PixelFormat.BGR10)]
+    [DataRow(PixelFormat.BGR12)]
+    [DataRow(PixelFormat.BGR14)]
+    [DataRow(PixelFormat.BGR16)]
+    // ToDo: Add more pixel formats
     public void ToMat_IsNotNull(PixelFormat pixelFormat)
     {
         // Arrange
@@ -354,7 +364,15 @@ public class GcBufferExtensionsTests
     [DataRow(PixelFormat.Mono14, 2, 3)]
     [DataRow(PixelFormat.Mono16, 3, 2)]
     [DataRow(PixelFormat.RGB8, 3, 3)]
+    [DataRow(PixelFormat.RGB10, 3, 3)]
+    [DataRow(PixelFormat.RGB12, 3, 3)]
+    [DataRow(PixelFormat.RGB14, 3, 3)]
+    [DataRow(PixelFormat.RGB16, 3, 3)]
     [DataRow(PixelFormat.BGR8, 3, 3)]
+    [DataRow(PixelFormat.BGR10, 3, 3)]
+    [DataRow(PixelFormat.BGR12, 3, 3)]
+    [DataRow(PixelFormat.BGR14, 3, 3)]
+    [DataRow(PixelFormat.BGR16, 3, 3)]
     public void ToMat_PropertiesAreEqual(PixelFormat pixelFormat, int width, int height)
     {
         // Arrange
@@ -372,11 +390,17 @@ public class GcBufferExtensionsTests
     }
 
     [TestMethod]
-    public void ToMat_AreNotSame()
+    [DataRow(PixelFormat.Mono8)]
+    [DataRow(PixelFormat.Mono12)]
+    [DataRow(PixelFormat.RGB8)]
+    [DataRow(PixelFormat.RGB10)]
+    [DataRow(PixelFormat.BGR8)]
+    [DataRow(PixelFormat.BGR16)]
+    public void ToMat_AreNotSame(PixelFormat pixelFormat)
     {
         // Arrange
-        var imageData = TestPatternGenerator.CreateImage(2, 2, PixelFormat.Mono8, TestPattern.GrayHorizontalRamp);
-        var buffer = new GcBuffer(imageData, 2, 2, PixelFormat.Mono8, 42, 0);
+        var imageData = TestPatternGenerator.CreateImage(2, 2, pixelFormat, TestPattern.GrayHorizontalRamp);
+        var buffer = new GcBuffer(imageData, 2, 2, pixelFormat, 42, 0);
 
         // Act
         var mat = buffer.ToMat();
@@ -404,18 +428,9 @@ public class GcBufferExtensionsTests
         for (int col = 0; col < mat.Width; col++)
             for (int row = 0; row < mat.Height; row++)
             {
-                if (pixelFormat == PixelFormat.RGB8)
-                {
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 0)); // B
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 1)); // G
-                    Assert.AreEqual(255, mat.GetPixel(row, col, 2)); // R
-                }
-                else if (pixelFormat == PixelFormat.BGR8)
-                {
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 0)); // B
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 1)); // G
-                    Assert.AreEqual(255, mat.GetPixel(row, col, 2)); // R
-                }
+                Assert.AreEqual(0, mat.GetPixel(row, col, 0)); // B
+                Assert.AreEqual(0, mat.GetPixel(row, col, 1)); // G
+                Assert.AreEqual(255, mat.GetPixel(row, col, 2)); // R
             }
     }
 
