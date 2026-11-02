@@ -246,7 +246,7 @@ public static class EmguHelper
     /// <param name="height">Image height in pixels.</param>
     /// <param name="bitDepth">Bits per channel; supported values are 1, 2, 4, 10, 12, and 14.</param>
     /// <param name="channels">Channels per pixel; supported values are 1, 3, and 4.</param>
-    /// <param name="endianness">Byte ordering for the packed data. BigEndian traverses the packed array forward; LittleEndian reverses byte indices across the entire packed array without reversing bits.</param>
+    /// <param name="endianness">Byte ordering for the packed data. LittleEndian traverses the packed array forward; BigEndian reverses byte indices across the entire packed array without reversing bits.</param>
     /// <returns>A matrix containing the unpacked image data.</returns>
     /// <exception cref="ArgumentException">The packed data is too short for the specified image dimensions.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The dimensions, bit depth, channel count, or endianness are invalid.</exception>
@@ -296,8 +296,8 @@ public static class EmguHelper
                     for (int byteIndex = 0; byteIndex < 3 && byteOffset + byteIndex < rowBytes; byteIndex++)
                     {
                         int sourceByteIndex = sourceRowOffset + byteOffset + byteIndex; // Index in the packed data for the current byte of the packed value.
-                        if (endianness is ByteExtensions.Endianness.LittleEndian)
-                            sourceByteIndex = packedData.Length - 1 - sourceByteIndex; // Adjust index for little-endian byte order.
+                        if (endianness is ByteExtensions.Endianness.BigEndian)
+                            sourceByteIndex = packedData.Length - 1 - sourceByteIndex; // Adjust index for big-endian byte order.
 
                         packedValue |= (uint)packedData[sourceByteIndex] << (byteIndex * 8); // Combine the bytes into a single packed value.
                     }
@@ -316,7 +316,7 @@ public static class EmguHelper
     /// </summary>
     /// <param name="mat">The matrix containing the unpacked image data. Non-contiguous rows are supported.</param>
     /// <param name="bitDepth">Bits per channel; supported values are 1, 2, 4, 10, 12, and 14.</param>
-    /// <param name="endianness">Byte ordering for the packed data. BigEndian traverses the packed array forward; LittleEndian reverses byte indices across the entire packed array without reversing bits.</param>
+    /// <param name="endianness">Byte ordering for the packed data. LittleEndian traverses the packed array forward; BigEndian reverses byte indices across the entire packed array without reversing bits.</param>
     /// <returns>The packed image data.</returns>
     /// <exception cref="ArgumentException">The matrix has an unsupported depth, channel count, or sample value.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The bit depth or endianness is invalid.</exception>
@@ -365,7 +365,7 @@ public static class EmguHelper
                         {
                             long destinationBit = bitOffset + bit;
                             int destinationByteIndex = destinationRowOffset + (int)(destinationBit / 8);
-                            if (endianness is ByteExtensions.Endianness.LittleEndian)
+                            if (endianness is ByteExtensions.Endianness.BigEndian)
                                 destinationByteIndex = packedData.Length - 1 - destinationByteIndex;
 
                             packedData[destinationByteIndex] |= (byte)(1 << (int)(destinationBit % 8));

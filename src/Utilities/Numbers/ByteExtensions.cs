@@ -121,7 +121,7 @@ public static class ByteExtensions
                 }
 
                 // Adjust for byte ordering.
-                if (endianness is Endianness.LittleEndian)
+                if (endianness is Endianness.BigEndian)
                     sourceByteIndex = source.Length - 1 - sourceByteIndex;
 
                 // Set the current bit in the result byte.
@@ -190,7 +190,7 @@ public static class ByteExtensions
                 }
 
                 // Adjust for byte ordering.
-                if (endianness is Endianness.LittleEndian)
+                if (endianness is Endianness.BigEndian)
                     targetByteIndex = target.Length - 1 - targetByteIndex;
 
                 // Set the current bit in the target byte.

@@ -71,6 +71,97 @@ public class GcBufferExtensionsTests
     }
 
     [TestMethod]
+    public void Pack_UnpackedBuffer_ReturnsPropertiesAsExpected()
+    {
+        // Arrange
+        // Create unpacked buffer with Mono10 format, 4 pixels, 1 channel, and known pixel values (all equal to 904).
+        var unpackedBuffer = new GcBuffer([136, 3, 136, 3, 136, 3, 136, 3], 4, 1, PixelFormat.Mono10, 42, 123);
+
+        // Verify initial unpacked buffer properties.
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 0, 0));
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 1, 0));
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 2, 0));
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 3, 0));
+
+        // Act
+        var packedBuffer = unpackedBuffer.Pack();
+
+        // Assert
+        Assert.AreEqual(PixelFormat.Mono10p, packedBuffer.PixelFormat);
+        Assert.AreEqual(4, (int)packedBuffer.Width);
+        Assert.AreEqual(1, (int)packedBuffer.Height);
+        Assert.HasCount(5, packedBuffer.ImageData, "Packed image data length should match expected calculation for Mono10p format."); // 4 pixels * 10 bits = 40 bits = 5 bytes
+
+        // Assert all pixels are packed correctly (and equal 904)
+        Assert.AreSequenceEqual(new byte[] { 136, 35, 142, 56, 226 }, packedBuffer.ImageData);
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 0, 0));
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 1, 0));
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 2, 0));
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 3, 0));
+        Assert.AreEqual(packedBuffer.GetPixel(0, 0, 0), unpackedBuffer.GetPixel(0, 0, 0));
+        Assert.AreEqual(packedBuffer.GetPixel(0, 1, 0), unpackedBuffer.GetPixel(0, 1, 0));
+        Assert.AreEqual(packedBuffer.GetPixel(0, 2, 0), unpackedBuffer.GetPixel(0, 2, 0));
+        Assert.AreEqual(packedBuffer.GetPixel(0, 3, 0), unpackedBuffer.GetPixel(0, 3, 0));
+    }
+
+    [TestMethod]
+    public void Unpack_PackedBuffer_ReturnsPropertiesAsExpected()
+    {
+        // Arrange
+        // Create packed buffer with Mono10p format, 4 pixels, 1 channel, and known pixel values (all equal to 904).
+        var packedBuffer = new GcBuffer([136, 35, 142, 56, 226], 4, 1, PixelFormat.Mono10p, 42, 123);
+
+        // Verify initial unpacked buffer properties.
+        Assert.AreEqual(904, packedBuffer.GetPixel(0, 0, 0));
+        Assert.AreEqual(904, packedBuffer.GetPixel(0, 1, 0));
+        Assert.AreEqual(904, packedBuffer.GetPixel(0, 2, 0));
+        Assert.AreEqual(904, packedBuffer.GetPixel(0, 3, 0));
+
+        // Act
+        var unpackedBuffer = packedBuffer.Unpack();
+
+        // Assert
+        Assert.AreSequenceEqual(new byte[] { 136, 3, 136, 3, 136, 3, 136, 3 }, unpackedBuffer.ImageData);
+        Assert.AreEqual(PixelFormat.Mono10, unpackedBuffer.PixelFormat);
+        Assert.AreEqual(4, (int)unpackedBuffer.Width);
+        Assert.AreEqual(1, (int)unpackedBuffer.Height);
+        Assert.HasCount(8, unpackedBuffer.ImageData, "Unpacked image data length should match expected calculation for Mono10 format."); // 4 pixels unpacked to 2 bytes per pixel = 8 bytes
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 0, 0));
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 1, 0));
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 2, 0));
+        Assert.AreEqual(904, unpackedBuffer.GetPixel(0, 3, 0));
+    }
+
+    [TestMethod]
+    public void Pack_Mono10p_PfncByteLayout_IsExpected()
+    {
+        // Arrange (PFNC Mono10p sample layout)
+        var unpackedBuffer = new GcBuffer([136, 3, 136, 3, 136, 3, 136, 3], 4, 1, PixelFormat.Mono10, 42, 123);
+
+        // Act
+        var packedBuffer = unpackedBuffer.Pack();
+
+        // Assert (B0=P0[7:0], B1=P1[5:0]|P0[9:8], B2=P2[3:0]|P1[9:6], B3=P3[1:0]|P2[9:4], B4=P3[9:2])
+        Assert.AreSequenceEqual(new byte[] { 136, 35, 142, 56, 226 }, packedBuffer.ImageData);
+    }
+
+    [TestMethod]
+    public void Unpack_Mono12p_PfncByteLayout_IsExpected()
+    {
+        // Arrange (PFNC Mono12p sample layout)
+        // B0=P0[7:0], B1=P1[3:0]<<4 | P0[11:8], B2=P1[11:4]
+        var packedBuffer = new GcBuffer([0xBC, 0x3A, 0x12], 2, 1, PixelFormat.Mono12p, 42, 123);
+
+        // Act
+        var unpackedBuffer = packedBuffer.Unpack();
+
+        // Assert: P0=0xABC and P1=0x123 in little-endian 16-bit storage
+        Assert.AreSequenceEqual(new byte[] { 0xBC, 0x0A, 0x23, 0x01 }, unpackedBuffer.ImageData);
+        Assert.AreEqual(0xABC, unpackedBuffer.GetPixel(0, 0, 0));
+        Assert.AreEqual(0x123, unpackedBuffer.GetPixel(0, 1, 0));
+    }
+
+    [TestMethod]
     public void UnpackBuffer_UnsupportedFormat_ThrowsArgumentException()
     {
         // Arrange
@@ -157,8 +248,8 @@ public class GcBufferExtensionsTests
         byte[] imageData = [0x01, 0x00, 0x55, 0x01, 0xFF, 0x03, 0xAA, 0xAA];
         var original = new GcBuffer(imageData, 3, 1, PixelFormat.Mono10, 42, 123);
         byte[] expected = endianness == ByteExtensions.Endianness.BigEndian
-            ? [0x01, 0x54, 0xF5, 0x3F]
-            : [0x3F, 0xF5, 0x54, 0x01];
+            ? [0x3F, 0xF5, 0x54, 0x01]
+            : [0x01, 0x54, 0xF5, 0x3F];
 
         var packed = original.Pack(endianness);
 

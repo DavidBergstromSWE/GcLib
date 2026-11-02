@@ -257,7 +257,7 @@ public class EmguHelperTests
             }
         }
 
-        using var result = EmguHelper.Unpack(packedData, width, height, bitDepth, channels, ByteExtensions.Endianness.BigEndian);
+        using var result = EmguHelper.Unpack(packedData, width, height, bitDepth, channels, ByteExtensions.Endianness.LittleEndian);
 
         Assert.AreEqual(width, result.Cols);
         Assert.AreEqual(height, result.Rows);
@@ -318,8 +318,8 @@ public class EmguHelperTests
         byte[] littleEndian = EmguHelper.Pack(mat, 10, ByteExtensions.Endianness.LittleEndian);
         byte[] defaultEndian = EmguHelper.Pack(mat, 10);
 
-        CollectionAssert.AreEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02 }, bigEndian);
-        CollectionAssert.AreEqual(new byte[] { 0x02, 0xAA, 0x01, 0x55 }, littleEndian);
+        CollectionAssert.AreEqual(new byte[] { 0x02, 0xAA, 0x01, 0x55 }, bigEndian);
+        CollectionAssert.AreEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02 }, littleEndian);
         CollectionAssert.AreEqual(littleEndian, defaultEndian);
         Assert.AreEqual(0x155, mat.GetPixel(0, 0, 0));
         Assert.AreEqual(0x2AA, mat.GetPixel(1, 0, 0));
@@ -337,8 +337,8 @@ public class EmguHelperTests
             secondRow.SetTo(new MCvScalar(4, 5, 6));
 
         Assert.IsTrue(roi.Step > roi.Cols * roi.NumberOfChannels);
-        CollectionAssert.AreEqual(new byte[] { 0x21, 0x03, 0x54, 0x06 }, EmguHelper.Pack(roi, 4, ByteExtensions.Endianness.BigEndian));
-        CollectionAssert.AreEqual(new byte[] { 0x06, 0x54, 0x03, 0x21 }, EmguHelper.Pack(roi, 4));
+        CollectionAssert.AreEqual(new byte[] { 0x06, 0x54, 0x03, 0x21 }, EmguHelper.Pack(roi, 4, ByteExtensions.Endianness.BigEndian));
+        CollectionAssert.AreEqual(new byte[] { 0x21, 0x03, 0x54, 0x06 }, EmguHelper.Pack(roi, 4));
         CollectionAssert.AreEqual(new double[] { 1, 2, 3 }, source.GetPixel(0, 1));
         CollectionAssert.AreEqual(new double[] { 4, 5, 6 }, source.GetPixel(1, 1));
         for (int row = 0; row < source.Rows; row++)
@@ -351,8 +351,8 @@ public class EmguHelperTests
     [TestMethod]
     public void Unpack_UsesByteOrderAcrossRowsAndPreservesInput()
     {
-        byte[] bigEndian = [0x55, 0x01, 0xAA, 0x02];
-        byte[] littleEndian = [0x02, 0xAA, 0x01, 0x55];
+        byte[] bigEndian = [0x02, 0xAA, 0x01, 0x55];
+        byte[] littleEndian = [0x55, 0x01, 0xAA, 0x02];
         byte[] originalLittleEndian = (byte[])littleEndian.Clone();
 
         using var bigEndianResult = EmguHelper.Unpack(bigEndian, 1, 2, 10, 1, ByteExtensions.Endianness.BigEndian);
@@ -362,7 +362,7 @@ public class EmguHelperTests
         Assert.AreEqual(0x2AA, bigEndianResult.GetPixel(1, 0, 0));
         Assert.AreEqual(0x155, littleEndianResult.GetPixel(0, 0, 0));
         Assert.AreEqual(0x2AA, littleEndianResult.GetPixel(1, 0, 0));
-        CollectionAssert.AreEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02 }, bigEndian);
+        CollectionAssert.AreEqual(new byte[] { 0x02, 0xAA, 0x01, 0x55 }, bigEndian);
         CollectionAssert.AreEqual(originalLittleEndian, littleEndian);
     }
 

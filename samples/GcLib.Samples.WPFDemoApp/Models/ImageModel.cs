@@ -53,7 +53,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         PixelFormat.RGBa10,
         PixelFormat.RGBa12,
         PixelFormat.RGBa14,
-        PixelFormat.RGBa16
+        PixelFormat.RGBa16,
     ];
 
     /// <summary>
@@ -246,17 +246,6 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     }
 
     /// <summary>
-    /// Eventhandler to event raised when a buffer is ready for processing.
-    /// </summary>
-    /// <param name="sender">Processing thread.</param>
-    /// <param name="buffer">Image buffer to be processed/displayed.</param>
-    public void OnBufferProcess(object sender, GcBuffer buffer)
-    {
-        if (sender is GcProcessingThread)
-            RawImage = buffer;
-    }
-
-    /// <summary>
     /// Event announcing that an exception was thrown while processing an image.
     /// </summary>
     public event EventHandler<Exception> ProcessingException;
@@ -281,8 +270,6 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     public ImageModel()
     {
         InitializeSettings();
-
-
     }
 
     #endregion
@@ -364,9 +351,6 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         if (!SupportedPixelFormats.Contains(buffer.PixelFormat))
             throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");
 
-        //if (buffer.IsPacked())
-        //    buffer = buffer.Unpack();
-
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
         var mat = buffer.ToMat();
 
@@ -444,7 +428,11 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         {
             // Process all queued buffers.
             while (_isBufferProcessingEnabled && _pendingBuffers.TryDequeue(out var buffer))
-                RawImage = buffer;
+            {
+                // Unpack buffer if packed, otherwise use as is.
+                // Note: Unpacking allocates new memory to store the unpacked image data.
+                RawImage = buffer.IsPacked() == false ? buffer : buffer.Unpack();
+            }
         }
         finally
         {

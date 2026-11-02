@@ -53,7 +53,7 @@ public class ByteExtensionsTests
     }
 
     [TestMethod]
-    public void SetBitRange_LittleEndian_SetsBitsInReversedByteOrder()
+    public void SetBitRange_LittleEndian_SetsBitsInOriginalByteOrder()
     {
         // Arrange
         var bytes = new byte[] { 0b0000_0000, 0b0000_0000 }; // binary representations of 0
@@ -63,12 +63,12 @@ public class ByteExtensionsTests
         ByteExtensions.SetBitRange(target: bytes, start: 0, length: 16, value: value, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
 
         // Assert
-        Assert.AreEqual(0b0000_0001, bytes[0]); // First byte should be original second byte
-        Assert.AreEqual(0b1111_1111, bytes[1]); // Second byte should be original first byte
+        Assert.AreEqual(0b1111_1111, bytes[0]); // First byte should be original first byte
+        Assert.AreEqual(0b0000_0001, bytes[1]); // Second byte should be original second byte
     }
 
     [TestMethod]
-    public void SetBitRange_BigEndian_SetsBitsInOriginalByteOrder()
+    public void SetBitRange_BigEndian_SetsBitsInReversedByteOrder()
     {
         // Arrange
         var bytes = new byte[] { 0b0000_0000, 0b0000_0000 }; // binary representations of 0
@@ -78,15 +78,15 @@ public class ByteExtensionsTests
         ByteExtensions.SetBitRange(target: bytes, start: 0, length: 16, value: value, endianness: ByteExtensions.Endianness.BigEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
 
         // Assert
-        Assert.AreEqual(0b1111_1111, bytes[0]); // First byte should be original first byte
-        Assert.AreEqual(0b0000_0001, bytes[1]); // Second byte should be original second byte
+        Assert.AreEqual(0b0000_0001, bytes[0]); // First byte should be original second byte
+        Assert.AreEqual(0b1111_1111, bytes[1]); // Second byte should be original first byte
     }
 
     [TestMethod]
-    [DataRow(ByteExtensions.Endianness.BigEndian, ByteExtensions.BitNumbering.Lsb0, (byte)0x07, (byte)0xE0)]
-    [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Lsb0, (byte)0xE0, (byte)0x07)]
-    [DataRow(ByteExtensions.Endianness.BigEndian, ByteExtensions.BitNumbering.Msb0, (byte)0xE0, (byte)0x07)]
-    [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Msb0, (byte)0x07, (byte)0xE0)]
+    [DataRow(ByteExtensions.Endianness.BigEndian, ByteExtensions.BitNumbering.Lsb0, (byte)0xE0, (byte)0x07)]
+    [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Lsb0, (byte)0x07, (byte)0xE0)]
+    [DataRow(ByteExtensions.Endianness.BigEndian, ByteExtensions.BitNumbering.Msb0, (byte)0x07, (byte)0xE0)]
+    [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Msb0, (byte)0xE0, (byte)0x07)]
     public void SetBitRange_TargetSpan_PreservesBitsOutsideRange(ByteExtensions.Endianness endianness, ByteExtensions.BitNumbering bitNumbering, byte first, byte second)
     {
         byte[] target = [0xAA, 0xFF, 0xFF, 0x55];
@@ -105,7 +105,7 @@ public class ByteExtensionsTests
 
         ByteExtensions.SetBitRange(target.AsSpan(), 0, 16, value, ByteExtensions.Endianness.BigEndian);
 
-        Assert.AreSequenceEqual(new byte[] { 0, 0xFF }, target);
+        Assert.AreSequenceEqual(new byte[] { 0xFF, 0 }, target);
     }
 
     [TestMethod]
@@ -121,10 +121,10 @@ public class ByteExtensionsTests
     }
 
     [TestMethod]
-    [DataRow(ByteExtensions.Endianness.BigEndian, ByteExtensions.BitNumbering.Lsb0, (byte)0x75, (byte)0x04)]
-    [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Lsb0, (byte)0xAC, (byte)0x05)]
-    [DataRow(ByteExtensions.Endianness.BigEndian, ByteExtensions.BitNumbering.Msb0, (byte)0x6B, (byte)0x00)]
-    [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Msb0, (byte)0x1D, (byte)0x60)]
+    [DataRow(ByteExtensions.Endianness.BigEndian, ByteExtensions.BitNumbering.Lsb0, (byte)0xAC, (byte)0x05)]
+    [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Lsb0, (byte)0x75, (byte)0x04)]
+    [DataRow(ByteExtensions.Endianness.BigEndian, ByteExtensions.BitNumbering.Msb0, (byte)0x1D, (byte)0x60)]
+    [DataRow(ByteExtensions.Endianness.LittleEndian, ByteExtensions.BitNumbering.Msb0, (byte)0x6B, (byte)0x00)]
     public void GetBitRange_DestinationSpan_ExtractsAcrossByteBoundaryAndClearsUnusedBits(ByteExtensions.Endianness endianness, ByteExtensions.BitNumbering bitNumbering, byte first, byte second)
     {
         ReadOnlySpan<byte> source = [0b1010_1101, 0b0110_0011];
@@ -179,7 +179,7 @@ public class ByteExtensionsTests
     }
 
     [TestMethod]
-    public void GetBitRange_LittleEndian_ExtractsBitsInReversedByteOrder()
+    public void GetBitRange_LittleEndian_ExtractsBitsInOriginalByteOrder()
     {
         // Arrange
         var bytes = new byte[] { 0b0000_0001, 0b0000_0010 }; // binary representations of 1 and 2
@@ -191,12 +191,12 @@ public class ByteExtensionsTests
 
         // Assert
         Assert.HasCount(2, result);
-        Assert.AreEqual(0b0000_0010, result[0]); // First byte in result should be original second byte
-        Assert.AreEqual(0b0000_0001, result[1]); // Second byte in result should be original first byte
+        Assert.AreEqual(0b0000_0001, result[0]); // First byte in result should be original first byte
+        Assert.AreEqual(0b0000_0010, result[1]); // Second byte in result should be original second byte
     }
 
     [TestMethod]
-    public void GetBitRange_BigEndian_ExtractsBitsInOriginalByteOrder()
+    public void GetBitRange_BigEndian_ExtractsBitsInReversedByteOrder()
     {
         // Arrange
         var bytes = new byte[] { 0b0000_0001, 0b0000_0010 }; // binary representations of 1 and 2
@@ -208,7 +208,7 @@ public class ByteExtensionsTests
 
         // Assert
         Assert.HasCount(2, result);
-        Assert.AreEqual(0b0000_0001, result[0]); // First byte in result should be original first byte
-        Assert.AreEqual(0b0000_0010, result[1]); // Second byte in result should be original second byte
+        Assert.AreEqual(0b0000_0010, result[0]); // First byte in result should be original second byte
+        Assert.AreEqual(0b0000_0001, result[1]); // Second byte in result should be original first byte
     }
 }
