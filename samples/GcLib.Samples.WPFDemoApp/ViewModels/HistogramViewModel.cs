@@ -172,7 +172,8 @@ internal sealed partial class HistogramViewModel : ObservableRecipient
         }
 
         // Calculate histogram.
-        buffer.CalculateHistogram(bins: SelectedHistogramSize, histogramData: ref _histogramData);
+        //buffer.CalculateHistogram(bins: SelectedHistogramSize, histogramData: ref _histogramData);
+        buffer.ToMat(withConversion: false).CalculateHistogram(bins: SelectedHistogramSize, maximumValue: buffer.PixelDynamicRangeMax, histogramData: ref _histogramData);
 
         // Update displayed histogram.
         Histogram = new HistogramModel(_histogramData, buffer.PixelDynamicRangeMax, buffer.NumChannels);

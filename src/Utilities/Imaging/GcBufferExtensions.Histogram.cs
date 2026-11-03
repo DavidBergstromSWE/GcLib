@@ -32,6 +32,8 @@ public static partial class GcBufferExtensions
     /// <remarks>For 4-channel images, the alpha channel is used as a mask and only pixels with non-zero alpha are included in the histogram.</remarks>
     public static void CalculateHistogram(this GcBuffer buffer, int bins, ref double[,] histogramData, bool decimate = true)
     {
+        // ToDo: Consider using Emgu CV's CvInvoke.CalcHist for histogram calculation, which may provide performance benefits and additional features such as normalization and masking. This would require converting the GcBuffer to a Mat format compatible with Emgu CV.
+
         ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
 
         // Validate histogram bin count against buffer's pixel dynamic range.

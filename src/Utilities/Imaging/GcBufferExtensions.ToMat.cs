@@ -57,4 +57,22 @@ public static partial class GcBufferExtensions
 
         return mat;
     }
+
+    /// <summary>
+    /// Exports image data in buffer to <see cref="Mat"/> format, optionally performing pixel format conversion to ensure compatibility with <see cref="Emgu.CV"/>.
+    /// </summary>
+    /// <remarks>This method creates a new <see cref="Mat"/> instance with the same dimensions, depth, and number of channels as the source buffer. If `withConversion` is set to true, it performs pixel format conversion to ensure compatibility with Emgu CV.</remarks>
+    /// <param name="buffer">Source buffer containing image metadata and pixel data.</param>
+    /// <param name="withConversion">Optional flag, indicating whether to perform pixel format conversion.</param>
+    /// <returns>A new <see cref="Mat"/> initialized from the source buffer.</returns>
+    public static Mat ToMat(this GcBuffer buffer, bool withConversion = false)
+    {
+        if (withConversion)
+            ToMat(buffer);
+
+        // Create a new Mat with the same dimensions, depth, and number of channels as the buffer.
+        var mat = new Mat(rows: (int)buffer.Height, cols: (int)buffer.Width, EmguHelper.GetDepthType(buffer.PixelFormat), (int)buffer.NumChannels);
+        mat.SetTo(buffer.ImageData);
+        return mat;
+    }
 }
