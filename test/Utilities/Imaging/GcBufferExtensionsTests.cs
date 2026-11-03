@@ -455,6 +455,39 @@ public class GcBufferExtensionsTests
             }
     }
 
+    [TestMethod]
+    public void ToMat_PackedBuffer_ReturnsUnpackedImage()
+    {
+        // Arrange
+        var buffer = new GcBuffer([136, 35, 142, 56, 226], 4, 1, PixelFormat.Mono10p, 42, 123);
+
+        // Act
+        using var mat = buffer.ToMat();
+
+        // Assert
+        Assert.AreEqual(4, mat.Width);
+        Assert.AreEqual(1, mat.Height);
+        Assert.AreEqual(1, mat.NumberOfChannels);
+        Assert.AreEqual(EmguHelper.GetDepthType(PixelFormat.Mono10), mat.Depth);
+        Assert.IsFalse(mat.IsEmpty);
+    }
+
+    [TestMethod]
+    public void ToMat_BayerBuffer_ReturnsDebayeredImage()
+    {
+        // Arrange
+        var buffer = CreateBayerBuffer(PixelFormat.BayerBG8);
+
+        // Act
+        using var mat = buffer.ToMat();
+
+        // Assert
+        Assert.AreEqual((int)buffer.Width, mat.Width);
+        Assert.AreEqual((int)buffer.Height, mat.Height);
+        Assert.AreEqual(3, mat.NumberOfChannels);
+        Assert.IsFalse(mat.IsEmpty);
+    }
+
     #endregion
 
     #region DeBayer Tests

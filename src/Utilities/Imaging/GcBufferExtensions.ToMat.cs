@@ -17,6 +17,9 @@ public static partial class GcBufferExtensions
     /// <returns><see cref="Mat"/> image.</returns>
     public static Mat ToMat(this GcBuffer buffer)
     {
+        // Ensure the buffer is unpacked and debayered if necessary.
+        buffer = buffer.Unpack().DeBayer();
+
         // Convert to Mat with compatible depth and number of channels.
         var mat = new Mat(rows: (int)buffer.Height, cols: (int)buffer.Width, EmguHelper.GetDepthType(buffer.PixelFormat), (int)buffer.NumChannels);
 

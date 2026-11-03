@@ -12,6 +12,7 @@ using Emgu.CV.CvEnum;
 using GcLib;
 using GcLib.Utilities.Imaging;
 using GcLib.Utilities.Threading;
+using Serilog;
 
 namespace WPFDemoApp.Models;
 
@@ -65,6 +66,11 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// Flag indicating if queued buffer processing is currently running.
     /// </summary>
     private int _isProcessingQueue;
+
+    /// <summary>
+    /// Flag indicating whether the pixel format warning has been logged for the current acquisition.
+    /// </summary>
+    private int _hasLoggedPixelFormatWarning;
 
     /// <summary>
     /// True if incoming buffers should be accepted for asynchronous processing.
@@ -404,6 +410,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// </summary>
     internal void StartBufferProcessing()
     {
+        Interlocked.Exchange(ref _hasLoggedPixelFormatWarning, 0); // Reset warning flag for new acquisition.
         _isBufferProcessingEnabled = true;
     }
 
@@ -430,7 +437,10 @@ internal class ImageModel : ObservableObject, IXmlSerializable
             while (_isBufferProcessingEnabled && _pendingBuffers.TryDequeue(out var buffer))
             {
                 // Unpack and debayer buffer if needed, otherwise use as is.
-                // Note: Unpacking and debayering allocates new memory to store image data.
+                // Note: Unpacking and debayering allocates new memory to store image data and adds processing overhead, warn user if this is not desired.
+                if ((buffer.IsPacked() || buffer.IsBayer()) && Interlocked.Exchange(ref _hasLoggedPixelFormatWarning, 1) == 0) // Log warning only once per acquisition.
+                    Log.Logger.Warning("Buffer is packed or contains Bayer data. Unpacking and debayering will allocate new memory to store image data and adds processing overhead. Consider using a different pixel format.");
+
                 RawImage = buffer.Unpack().DeBayer();
             }
         }
