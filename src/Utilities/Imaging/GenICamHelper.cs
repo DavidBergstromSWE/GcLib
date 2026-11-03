@@ -85,6 +85,18 @@ public static partial class GenICamHelper
     }
 
     /// <summary>
+    /// Determines whether a pixel format is planar.
+    /// </summary>
+    /// <remarks>A planar pixel format stores each color channel in a separate plane, such as [R1 R2 R3 ... G1 G2 G3 ... B1 B2 B3 ...].</remarks>
+    /// <param name="pixelFormat">The pixel format to evaluate.</param>
+    /// <returns><see langword="true"/> if the pixel format is planar; otherwise, <see langword="false"/>.</returns>
+    public static bool IsPlanar(PixelFormat pixelFormat)
+    {
+        // Planar pixel formats are indicated by the presence of the substring "Planar" in their string representation.
+        return pixelFormat.ToString().Contains("Planar", StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Retrieves the number of channels contained in a specified <paramref name="pixelFormat"/>.
     /// </summary>
     /// <param name="pixelFormat">Pixel format, as defined in GenICam PFNC.</param>

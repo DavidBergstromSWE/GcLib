@@ -323,6 +323,107 @@ public class GcBufferExtensionsTests
 
     #endregion
 
+    #region Histogram Tests
+
+    [TestMethod]
+    public void CalculateHistogram_Mono8_ReturnsExpectedBins()
+    {
+        // Arrange
+        var buffer = new GcBuffer([0, 1, 2, 3], 4, 1, PixelFormat.Mono8, 42, 123);
+        double[,] histogramData = null;
+
+        // Act
+        buffer.CalculateHistogram(256, ref histogramData);
+
+        // Assert
+        Assert.IsNotNull(histogramData);
+        Assert.AreEqual(1, histogramData.GetLength(0));
+        Assert.AreEqual(256, histogramData.GetLength(1));
+        Assert.AreEqual(1d, histogramData[0, 0]);
+        Assert.AreEqual(1d, histogramData[0, 1]);
+        Assert.AreEqual(1d, histogramData[0, 2]);
+        Assert.AreEqual(1d, histogramData[0, 3]);
+    }
+
+    [TestMethod]
+    public void CalculateHistogram_DefaultBins_UsesPixelDynamicRangeMax()
+    {
+        // Arrange
+        var buffer = new GcBuffer([0, 1, 2, 3], 4, 1, PixelFormat.Mono8, 42, 123);
+        double[,] histogramData = null;
+
+        // Act
+        buffer.CalculateHistogram(histogramData: ref histogramData);
+
+        // Assert
+        Assert.IsNotNull(histogramData);
+        Assert.AreEqual((int)buffer.PixelDynamicRangeMax, histogramData.GetLength(1));
+    }
+
+    [TestMethod]
+    public void CalculateHistogram_Rgb8_OutputsBgrOrderedChannels()
+    {
+        // Arrange
+        var rgbImageData = new byte[]
+        {
+            10, 20, 30,
+            10, 20, 30
+        };
+        var buffer = new GcBuffer(rgbImageData, 2, 1, PixelFormat.RGB8, 42, 123);
+        double[,] histogramData = null;
+
+        // Act
+        buffer.CalculateHistogram(256, ref histogramData);
+
+        // Assert
+        Assert.IsNotNull(histogramData);
+        Assert.AreEqual(3, histogramData.GetLength(0));
+        Assert.AreEqual(2d, histogramData[0, 30]); // B
+        Assert.AreEqual(2d, histogramData[1, 20]); // G
+        Assert.AreEqual(2d, histogramData[2, 10]); // R
+    }
+
+    [TestMethod]
+    public void CalculateHistogram_Mono10p_UnpacksAndCalculatesExpectedBin()
+    {
+        // Arrange
+        var packedBuffer = new GcBuffer([136, 35, 142, 56, 226], 4, 1, PixelFormat.Mono10p, 42, 123);
+        double[,] histogramData = null;
+
+        // Act
+        packedBuffer.CalculateHistogram(1024, ref histogramData);
+
+        // Assert
+        Assert.IsNotNull(histogramData);
+        Assert.AreEqual(1, histogramData.GetLength(0));
+        Assert.AreEqual(4d, histogramData[0, 904]);
+    }
+
+    [TestMethod]
+    public void CalculateHistogram_Bgra8_UsesAlphaAsMask()
+    {
+        // Arrange
+        var bgraImageData = new byte[]
+        {
+            7, 8, 9, 0,
+            7, 8, 9, 255
+        };
+        var buffer = new GcBuffer(bgraImageData, 2, 1, PixelFormat.BGRa8, 42, 123);
+        double[,] histogramData = null;
+
+        // Act
+        buffer.CalculateHistogram(256, ref histogramData);
+
+        // Assert
+        Assert.IsNotNull(histogramData);
+        Assert.AreEqual(3, histogramData.GetLength(0));
+        Assert.AreEqual(1d, histogramData[0, 7]);
+        Assert.AreEqual(1d, histogramData[1, 8]);
+        Assert.AreEqual(1d, histogramData[2, 9]);
+    }
+
+    #endregion
+
     #region ToMatTests
 
     [TestMethod]
