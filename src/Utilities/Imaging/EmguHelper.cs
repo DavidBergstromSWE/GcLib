@@ -11,28 +11,35 @@ namespace GcLib.Utilities.Imaging;
 public static class EmguHelper
 {
     /// <summary>
-    /// Maps a GenICam <see cref="PixelSize"/> to the closest <see cref="DepthType"/>.
+    /// Gets the <see cref="DepthType"/> large enough to fit a GenICam PFNC <see cref="PixelSize"/>.
     /// </summary>
-    /// <param name="pixelSize">GenICam pixel size value.</param>
-    /// <returns>The corresponding <see cref="DepthType"/> when representable; otherwise <see cref="DepthType.Default"/>.</returns>
+    /// <param name="pixelSize">The GenICam PFNC pixel size to convert.</param>
+    /// <returns>A depth type large enough to fit the pixel size.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">The pixel size is less than 1 or greater than 64.</exception>
     public static DepthType GetDepthType(PixelSize pixelSize)
     {
+        // Validate that the pixel size is within the supported range.
+        if ((int)pixelSize < 1 || (int)pixelSize > 64)
+            throw new ArgumentOutOfRangeException(nameof(pixelSize), pixelSize, "Pixel size must be between 1 and 64 bits.");
+
+        // Map pixel size to the appropriate depth type, based on the number of bits required to represent the pixel size.
         if ((int)pixelSize <= 8)
             return DepthType.Cv8U;
         else if ((int)pixelSize <= 16)
             return DepthType.Cv16U;
         else if ((int)pixelSize <= 32)
-            return DepthType.Cv32S;
+            return DepthType.Cv32U;
         else if ((int)pixelSize <= 64)
-            return DepthType.Cv64F;
-        else return DepthType.Default;
+            return DepthType.Cv64U;
+        else throw new ArgumentOutOfRangeException(nameof(pixelSize), pixelSize, "Pixel size is out of range for supported depth types.");
     }
 
     /// <summary>
-    /// Maps a GenICam <see cref="PixelFormat"/> to the corresponding <see cref="DepthType"/>.
+    /// Maps a GenICam PFNC <see cref="PixelFormat"/> to the corresponding <see cref="DepthType"/>.
     /// </summary>
-    /// <param name="pixelFormat">GenICam pixel format.</param>
+    /// <param name="pixelFormat">GenICam PFNC pixel format.</param>
     /// <returns>The corresponding <see cref="DepthType"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the pixel size of <paramref name="pixelFormat"/> is greater than 64.</exception>
     public static DepthType GetDepthType(PixelFormat pixelFormat)
     {
         return GetDepthType(GenICamHelper.GetPixelSize(pixelFormat));
@@ -61,27 +68,8 @@ public static class EmguHelper
         };
     }
 
-
     /// <summary>
-    /// Maps a bit depth to the nearest compatible <see cref="DepthType"/>.
-    /// </summary>
-    /// <param name="bitDepth">Bit depth in bits.</param>
-    /// <returns>The mapped <see cref="DepthType"/>; out-of-range values return <see cref="DepthType.Default"/>.</returns>
-    public static DepthType GetDepthType(int bitDepth)
-    {
-        if (bitDepth <= 8)
-            return DepthType.Cv8U;
-        else if (bitDepth <= 16)
-            return DepthType.Cv16U;
-        else if (bitDepth <= 32)
-            return DepthType.Cv32S;
-        else if (bitDepth <= 64)
-            return DepthType.Cv64F;
-        else return DepthType.Default;
-    }
-
-    /// <summary>
-    /// Gets the nominal bit depth for an <see cref="DepthType"/>.
+    /// Gets the nominal bit depth (number of bits needed to represent a value) for a <see cref="DepthType"/>.
     /// </summary>
     /// <param name="depthType">Depth type to evaluate.</param>
     /// <returns>The number of bits used by <paramref name="depthType"/>.</returns>
@@ -149,11 +137,11 @@ public static class EmguHelper
     }
 
     /// <summary>
-    /// Converts EmguCV depth type and number of channels to GenICam pixel format.
+    /// Converts EmguCV depth type and number of channels to GenICam PFNC pixel format.
     /// </summary>
     /// <param name="depthType">EmguCV depth type.</param>
     /// <param name="channels">Number of channels.</param>
-    /// <returns>GenICam pixel format.</returns>
+    /// <returns>GenICam PFNC pixel format.</returns>
     public static PixelFormat GetPixelFormat(DepthType depthType, int channels)
     {
         if (channels == 1)
@@ -184,11 +172,11 @@ public static class EmguHelper
     }
 
     /// <summary>
-    /// Converts a matrix from one pixel format to another.
+    /// Converts a matrix from one GenICam PFNC pixel format to another.
     /// </summary>
     /// <param name="mat">The matrix to convert.</param>
-    /// <param name="sourcePixelFormat">The current pixel format of <paramref name="mat"/>.</param>
-    /// <param name="targetPixelFormat">The pixel format to convert <paramref name="mat"/> to.</param>
+    /// <param name="sourcePixelFormat">The original GenICam PFNC pixel format.</param>
+    /// <param name="targetPixelFormat">The targeted GenICam PFNC pixel format.</param>
     /// <returns>The converted matrix. If the pixel formats are the same, returns <paramref name="mat"/> without conversion.</returns>
     /// <exception cref="NotSupportedException">A pixel format is invalid, packed or Bayer-patterned, or the requested color conversion is unsupported.</exception>
     internal static Mat ConvertMat(Mat mat, PixelFormat sourcePixelFormat, PixelFormat targetPixelFormat)
@@ -196,30 +184,29 @@ public static class EmguHelper
         // ToDo: Add support for packed pixel formats and Bayer-patterned pixel formats, if needed.
 
         if (sourcePixelFormat == PixelFormat.InvalidPixelFormat || targetPixelFormat == PixelFormat.InvalidPixelFormat)
-            throw new NotSupportedException($"Conversion to/from an invalid pixel format is not supported.");
+            throw new NotSupportedException($"Conversion of invalid pixel format is not supported.");
 
         if (GenICamHelper.IsPacked(sourcePixelFormat) || GenICamHelper.IsPacked(targetPixelFormat))
             throw new NotSupportedException($"Conversion of packed pixel formats is not supported.");
 
         if (GenICamHelper.GetPixelColorFilter(sourcePixelFormat) != PixelColorFilter.None ||
             GenICamHelper.GetPixelColorFilter(targetPixelFormat) != PixelColorFilter.None)
-            throw new NotSupportedException("Conversion to/from Bayer pixel formats is not supported.");
+            throw new NotSupportedException("Conversion of Bayer pixel formats is not supported.");
 
         // If the pixel formats are the same, no conversion is needed.
         if (sourcePixelFormat == targetPixelFormat)
             return mat;
 
         // Convert the matrix to the target depth type.
-        var targetMax = GenICamHelper.GetPixelDynamicRangeMax(targetPixelFormat);
-        mat.ConvertTo(mat, GetDepthType(targetPixelFormat), (double)targetMax / GenICamHelper.GetPixelDynamicRangeMax(sourcePixelFormat)); // Scale the pixel values to match the new depth type
+        mat.ConvertTo(m: mat, rtype: GetDepthType(targetPixelFormat), alpha: (double)GenICamHelper.GetPixelDynamicRangeMax(targetPixelFormat) / GenICamHelper.GetPixelDynamicRangeMax(sourcePixelFormat), beta: 0); // Scale the pixel values to match the new depth type
 
-        // Determine appropriate conversion code based on the source and target pixel formats.
+        // Determine appropriate color conversion code based on the source and target pixel formats.
+
         if (!GenICamHelper.IsColor(sourcePixelFormat) && !GenICamHelper.IsColor(targetPixelFormat))
             return mat; // No color conversion needed for grayscale formats
 
-        // If both source and target are color formats with the same color order, no conversion is needed.
         if (GenICamHelper.IsColor(sourcePixelFormat) && GenICamHelper.IsColor(targetPixelFormat) && GenICamHelper.GetColorOrder(sourcePixelFormat) == GenICamHelper.GetColorOrder(targetPixelFormat))
-            return mat;
+            return mat; // No color conversion needed for same color order
 
         // Determine the appropriate color conversion code based on the source and target pixel formats.
         var conversionCode = GetColorConversionCode(sourcePixelFormat, targetPixelFormat);
@@ -227,12 +214,12 @@ public static class EmguHelper
         // Perform color conversion using determined conversion code.
         CvInvoke.CvtColor(mat, mat, conversionCode);
 
-        // OpenCV initializes new alpha to the storage maximum; correct it only for reduced-range formats.
-        if (GenICamHelper.GetNumChannels(sourcePixelFormat) < 4 && mat.NumberOfChannels == 4 && targetMax != GetMax(mat.Depth))
+        // Emgu initializes new alpha to the storage maximum; correct it only for reduced-range formats.
+        if (GenICamHelper.GetNumChannels(sourcePixelFormat) < 4 && mat.NumberOfChannels == 4 && GenICamHelper.GetPixelDynamicRangeMax(targetPixelFormat) != GetMax(mat.Depth))
         {
-            using var alpha = new Mat(mat.Rows, mat.Cols, mat.Depth, 1);
-            alpha.SetTo(new Emgu.CV.Structure.MCvScalar(targetMax));
-            CvInvoke.InsertChannel(alpha, mat, 3);
+            using var alpha = new Mat(mat.Rows, mat.Cols, mat.Depth, 1); // Create a single-channel matrix for the alpha channel
+            alpha.SetTo(new Emgu.CV.Structure.MCvScalar(GenICamHelper.GetPixelDynamicRangeMax(targetPixelFormat))); // Set the alpha channel to the maximum value for the target pixel format
+            CvInvoke.InsertChannel(alpha, mat, 3); // Insert the alpha channel into the 4th channel of the converted matrix
         }
 
         return mat;

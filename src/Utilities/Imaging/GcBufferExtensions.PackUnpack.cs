@@ -5,7 +5,7 @@ using GcLib.Utilities.Numbers;
 namespace GcLib.Utilities.Imaging;
 
 /// <summary>
-/// Provides extension methods for converting <see cref="GcBuffer"/> instances between packed and unpacked PFNC pixel formats and debayering.
+/// Provides extension methods for <see cref="GcBuffer"/> class, providing conversion methods between packed and unpacked PFNC pixel formats, debayering and export options.
 /// </summary>
 public static partial class GcBufferExtensions
 {

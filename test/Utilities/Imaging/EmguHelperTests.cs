@@ -13,22 +13,34 @@ public class EmguHelperTests
 {
     [TestMethod]
     [DataRow(PixelSize.Bpp1, DepthType.Cv8U)]
+    [DataRow(PixelSize.Bpp2, DepthType.Cv8U)]
+    [DataRow(PixelSize.Bpp4, DepthType.Cv8U)]
     [DataRow(PixelSize.Bpp8, DepthType.Cv8U)]
     [DataRow(PixelSize.Bpp10, DepthType.Cv16U)]
+    [DataRow(PixelSize.Bpp12, DepthType.Cv16U)]
+    [DataRow(PixelSize.Bpp14, DepthType.Cv16U)]
     [DataRow(PixelSize.Bpp16, DepthType.Cv16U)]
-    [DataRow(PixelSize.Bpp32, DepthType.Cv32S)]
-    [DataRow(PixelSize.Bpp64, DepthType.Cv64F)]
-    [DataRow(PixelSize.Bpp96, DepthType.Default)]
-    public void GetDepthType_ForPixelSize_ReturnsExpectedDepth(PixelSize pixelSize, DepthType expected)
+    [DataRow(PixelSize.Bpp32, DepthType.Cv32U)]
+    [DataRow(PixelSize.Bpp64, DepthType.Cv64U)]
+    public void GetDepthType_ForValidPixelSize_ReturnsExpectedDepth(PixelSize pixelSize, DepthType expected)
     {
         Assert.AreEqual(expected, EmguHelper.GetDepthType(pixelSize));
+    }
+
+    [TestMethod]
+    public void GetDepthType_ForInvalidPixelSize_ThrowsArgumentOutOfRangeException()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => EmguHelper.GetDepthType(PixelSize.Bpp96));
+        Assert.Throws<ArgumentOutOfRangeException>(() => EmguHelper.GetDepthType((PixelSize)65));
+        Assert.Throws<ArgumentOutOfRangeException>(() => EmguHelper.GetDepthType((PixelSize)128));
+        Assert.Throws<ArgumentOutOfRangeException>(() => EmguHelper.GetDepthType((PixelSize)0));
     }
 
     [TestMethod]
     [DataRow(PixelFormat.Mono8, DepthType.Cv8U)]
     [DataRow(PixelFormat.Mono10p, DepthType.Cv16U)]
     [DataRow(PixelFormat.Mono16, DepthType.Cv16U)]
-    [DataRow(PixelFormat.Mono32, DepthType.Cv32S)]
+    [DataRow(PixelFormat.Mono32, DepthType.Cv32U)]
     [DataRow(PixelFormat.RGBa12p, DepthType.Cv16U)]
     public void GetDepthType_ForPixelFormat_ReturnsExpectedDepth(PixelFormat pixelFormat, DepthType expected)
     {
@@ -56,21 +68,6 @@ public class EmguHelperTests
         var exception = Assert.Throws<ArgumentException>(() => EmguHelper.GetDepthType(typeof(string)));
 
         Assert.AreEqual("Type is not a numeric type!", exception.Message);
-    }
-
-    [TestMethod]
-    [DataRow(-1, DepthType.Cv8U)]
-    [DataRow(8, DepthType.Cv8U)]
-    [DataRow(9, DepthType.Cv16U)]
-    [DataRow(16, DepthType.Cv16U)]
-    [DataRow(17, DepthType.Cv32S)]
-    [DataRow(32, DepthType.Cv32S)]
-    [DataRow(33, DepthType.Cv64F)]
-    [DataRow(64, DepthType.Cv64F)]
-    [DataRow(65, DepthType.Default)]
-    public void GetDepthType_ForBitDepth_ReturnsExpectedDepth(int bitDepth, DepthType expected)
-    {
-        Assert.AreEqual(expected, EmguHelper.GetDepthType(bitDepth));
     }
 
     [TestMethod]

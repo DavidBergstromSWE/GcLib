@@ -97,16 +97,20 @@ public static class NumericHelper
     }
 
     /// <summary>
-    /// Converts generic numeric array to byte array.
+    /// Converts an array of numeric values to a byte array in native byte order.
     /// </summary>
-    /// <typeparam name="T">Generic numeric type (byte, ushort, uint, float, double, etc.).</typeparam>
-    /// <param name="numericArray">Generic numeric array.</param>
-    /// <returns>Byte array representation of generic numeric array.</returns>
-    public static byte[] ToBytes<T>(T[] numericArray) where T : INumber<T>
+    /// <typeparam name="T">The unmanaged numeric type of the values.</typeparam>
+    /// <param name="numericArray">The numeric array to convert.</param>
+    /// <returns>A copy of the byte representation of <paramref name="numericArray"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="numericArray"/> is null.</exception>
+    public static byte[] ToBytes<T>(T[] numericArray) where T : unmanaged, INumber<T>
     {
-        byte[] bytes = new byte[numericArray.Length * Marshal.SizeOf<T>()];
-        Buffer.BlockCopy(numericArray, 0, bytes, 0, bytes.Length);
-        return bytes;
+        ArgumentNullException.ThrowIfNull(numericArray);
+
+        // Create a ReadOnlySpan<byte> view over the numeric array without copying data.
+        ReadOnlySpan<byte> bytes = MemoryMarshal.Cast<T, byte>(numericArray.AsSpan());
+
+        return bytes.ToArray();
     }
 
     /// <summary>
