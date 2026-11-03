@@ -73,6 +73,11 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     private int _hasLoggedPixelFormatWarning;
 
     /// <summary>
+    /// Flag indicating whether the queue latency warning has been logged for the current acquisition.
+    /// </summary>
+    private int _hasLoggedQueueLatencyWarning;
+
+    /// <summary>
     /// True if incoming buffers should be accepted for asynchronous processing.
     /// </summary>
     private volatile bool _isBufferProcessingEnabled = true;
@@ -385,6 +390,17 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     }
 
     /// <summary>
+    /// Eventhandler to event raised when a buffer is ready for processing.
+    /// </summary>
+    /// <param name="sender">Processing thread.</param>
+    /// <param name="buffer">Image buffer to be processed/displayed.</param>
+    public void OnBufferProcess(object sender, GcBuffer buffer)
+    {
+        if (sender is GcProcessingThread)
+            RawImage = buffer;
+    }
+
+    /// <summary>
     /// Handles a buffer transfer notification by queuing the transferred buffer for asynchronous processing when buffer
     /// processing is enabled.
     /// </summary>
@@ -400,6 +416,11 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         // Queue buffer for processing.
         _pendingBuffers.Enqueue(e.Buffer);
 
+        // Warn once per acquisition if queue backlog indicates increasing processing latency.
+        var queuedCount = _pendingBuffers.Count;
+        if (queuedCount > 4 && Interlocked.Exchange(ref _hasLoggedQueueLatencyWarning, 1) == 0)
+            Log.Logger.Warning("Incoming image buffers are queued ({QueuedBufferCount} pending). Processing cannot keep up and displayed images will be delayed.", queuedCount);
+
         // Start processing queue if not already running.
         if (Interlocked.CompareExchange(ref _isProcessingQueue, 1, 0) == 0)
             _ = Task.Run(ProcessQueuedBuffersAsync);
@@ -411,6 +432,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     internal void StartBufferProcessing()
     {
         Interlocked.Exchange(ref _hasLoggedPixelFormatWarning, 0); // Reset warning flag for new acquisition.
+        Interlocked.Exchange(ref _hasLoggedQueueLatencyWarning, 0); // Reset warning flag for new acquisition.
         _isBufferProcessingEnabled = true;
     }
 

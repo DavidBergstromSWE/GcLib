@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GcLib;
@@ -24,6 +25,11 @@ internal partial class AcquisitionModel : ObservableObject
     private GcDataStream _dataStream;
 
     /// <summary>
+    /// Thread used for grabbing images from datastream.
+    /// </summary>
+    private readonly GcProcessingThread _imageGrabbingThread;
+
+    /// <summary>
     /// Storage and processing of acquired image data.
     /// </summary>
     private readonly ImageModel _imageModel;
@@ -37,6 +43,16 @@ internal partial class AcquisitionModel : ObservableObject
     /// Writer of image buffer data.
     /// </summary>
     private GcBufferWriter _bufferWriter;
+
+    /// <summary>
+    /// Indicates whether the acquisition runs synchronously.
+    /// </summary>
+    private readonly bool _isSynchronous = true;
+
+    /// <summary>
+    /// Flag indicating whether grabbing queue latency warning has been logged for the current acquisition.
+    /// </summary>
+    private int _hasLoggedGrabbingQueueLatencyWarning;
 
     #endregion
 
@@ -162,6 +178,10 @@ internal partial class AcquisitionModel : ObservableObject
 
         // Default codec.
         SelectedCodec = VideoWriter.CODEC.X264;
+
+        // Initialize grabbing thread with device ID.
+        if (_isSynchronous)
+            _imageGrabbingThread = new GcProcessingThread();
     }
 
     #endregion
@@ -187,9 +207,20 @@ internal partial class AcquisitionModel : ObservableObject
         // Hook handler to events announcing dropped frames.
         _dataStream.FrameDropped += OnFrameDropped;
 
-        // Enable and hook asynchronous image buffer processing.
-        _imageModel.StartBufferProcessing();
-        _dataStream.BufferTransferred += _imageModel.OnBufferTransferred;
+        // Alternative: Use synchronous grabbing thread or asynchronous event handling
+        if (_isSynchronous)
+        {
+            Interlocked.Exchange(ref _hasLoggedGrabbingQueueLatencyWarning, 0); // Reset warning flag for new acquisition.
+            _imageGrabbingThread.BufferProcess += _imageModel.OnBufferProcess; // Hook handler to events announcing new buffers for processing.
+            _imageGrabbingThread.BufferOverFlow += OnImageGrabbingQueueOverflow; // Warn if grabbing queue is backing up.
+            _imageGrabbingThread.Start(_dataStream); // Start grabbing images using thread.
+        }
+        else
+        {
+            // Enable and hook asynchronous image buffer processing.
+            _imageModel.StartBufferProcessing();
+            _dataStream.BufferTransferred += _imageModel.OnBufferTransferred;
+        }
 
         // Hook handlers to events announcing acquisition events in device.
         DeviceModel.Device.AcquisitionStarted += OnAcquisitionStarted;
@@ -263,10 +294,20 @@ internal partial class AcquisitionModel : ObservableObject
         DeviceModel.Device.AcquisitionStopped -= OnAcquisitionStopped;
         DeviceModel.Device.AcquisitionAborted -= OnAcquisitionAborted;
         _dataStream.FrameDropped -= OnFrameDropped;
-        _dataStream.BufferTransferred -= _imageModel.OnBufferTransferred;
+        
 
-        // Stop accepting transferred buffers and discard pending work.
-        _imageModel.StopBufferProcessing();
+        if (_isSynchronous)
+        {
+            _imageGrabbingThread.Stop(); // Stop grabbing images from datastream.
+            _imageGrabbingThread.BufferProcess -= _imageModel.OnBufferProcess; // Unhook grabbing eventhandler.
+            _imageGrabbingThread.BufferOverFlow -= OnImageGrabbingQueueOverflow;
+        }
+        else
+        {
+            // Stop accepting transferred buffers and discard pending work.
+            _dataStream.BufferTransferred -= _imageModel.OnBufferTransferred;
+            _imageModel.StopBufferProcessing();
+        }
 
         // Stop recording (if writing).
         if (_bufferWriter != null && _bufferWriter.IsWriting)
@@ -274,6 +315,8 @@ internal partial class AcquisitionModel : ObservableObject
 
         if (_videoWriter != null && _videoWriter.IsWriting)
             await StopVideoWriting();
+
+
 
         // Stop streaming image data from device.
         _dataStream.Stop();
@@ -429,6 +472,15 @@ internal partial class AcquisitionModel : ObservableObject
     {
         // Handle error.
         AcquisitionAborted?.Invoke(this, eventArgs);
+    }
+
+    /// <summary>
+    /// Eventhandler to <see cref="GcProcessingThread.BufferOverFlow"/> events.
+    /// </summary>
+    private void OnImageGrabbingQueueOverflow(object sender, EventArgs eventArgs)
+    {
+        if (Interlocked.Exchange(ref _hasLoggedGrabbingQueueLatencyWarning, 1) == 0)
+            Log.Warning("Image grabbing queue is full. Processing cannot keep up and displayed images will be delayed.");
     }
 
     /// <summary>
