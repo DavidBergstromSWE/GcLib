@@ -45,9 +45,9 @@ internal partial class AcquisitionModel : ObservableObject
     private GcBufferWriter _bufferWriter;
 
     /// <summary>
-    /// Indicates whether the acquisition runs synchronously.
+    /// Indicates whether acquisition should run synchronously (using thread) or asynchronously (using async/await).
     /// </summary>
-    private readonly bool _isSynchronous = true;
+    private readonly bool _useSynchronousAcquisition = true;
 
     /// <summary>
     /// Flag indicating whether grabbing queue latency warning has been logged for the current acquisition.
@@ -180,7 +180,7 @@ internal partial class AcquisitionModel : ObservableObject
         SelectedCodec = VideoWriter.CODEC.X264;
 
         // Initialize grabbing thread with device ID.
-        if (_isSynchronous)
+        if (_useSynchronousAcquisition)
             _imageGrabbingThread = new GcProcessingThread();
     }
 
@@ -208,7 +208,7 @@ internal partial class AcquisitionModel : ObservableObject
         _dataStream.FrameDropped += OnFrameDropped;
 
         // Alternative: Use synchronous grabbing thread or asynchronous event handling
-        if (_isSynchronous)
+        if (_useSynchronousAcquisition)
         {
             Interlocked.Exchange(ref _hasLoggedGrabbingQueueLatencyWarning, 0); // Reset warning flag for new acquisition.
             _imageGrabbingThread.BufferProcess += _imageModel.OnBufferProcess; // Hook handler to events announcing new buffers for processing.
@@ -294,9 +294,8 @@ internal partial class AcquisitionModel : ObservableObject
         DeviceModel.Device.AcquisitionStopped -= OnAcquisitionStopped;
         DeviceModel.Device.AcquisitionAborted -= OnAcquisitionAborted;
         _dataStream.FrameDropped -= OnFrameDropped;
-        
 
-        if (_isSynchronous)
+        if (_useSynchronousAcquisition)
         {
             _imageGrabbingThread.Stop(); // Stop grabbing images from datastream.
             _imageGrabbingThread.BufferProcess -= _imageModel.OnBufferProcess; // Unhook grabbing eventhandler.
