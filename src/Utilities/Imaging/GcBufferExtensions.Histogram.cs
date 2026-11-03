@@ -1,5 +1,6 @@
 using System;
-using System.Buffers.Binary;
+using System.Buffers;
+using System.Runtime.CompilerServices;
 
 namespace GcLib.Utilities.Imaging;
 
@@ -30,145 +31,169 @@ public static partial class GcBufferExtensions
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="bins"/> is less than 2 or greater than the buffer's pixel dynamic range.</exception>
     /// <exception cref="NotSupportedException">Thrown when the buffer channel count is not 1, 3 or 4.</exception>
     /// <remarks>For 4-channel images, the alpha channel is used as a mask and only pixels with non-zero alpha are included in the histogram.</remarks>
-    public static void CalculateHistogram(this GcBuffer buffer, int bins, ref double[,] histogramData, bool decimate = true)
+    public static unsafe void CalculateHistogram(this GcBuffer buffer, int bins, ref double[,] histogramData, bool decimate = true)
     {
-        // ToDo: Consider using Emgu CV's CvInvoke.CalcHist for histogram calculation, which may provide performance benefits and additional features such as normalization and masking. This would require converting the GcBuffer to a Mat format compatible with Emgu CV.
-
         ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
 
-        // Validate histogram bin count against buffer's pixel dynamic range.
+        // Validate histogram bin count.
         if (bins < 2 || bins > (int)buffer.PixelDynamicRangeMax + 1)
             throw new ArgumentOutOfRangeException(nameof(bins), bins, $"Histogram bin count must be greater than one and less than or equal to the buffer's pixel dynamic range + 1 ({buffer.PixelDynamicRangeMax + 1}).");
 
-        // Number of histogram bins.
+        // ToDo: Implement support for packed buffers (modify strides?).
+        if (buffer.IsPacked())
+            throw new ArgumentException("Packed buffers are not supported for histogram calculation. Please unpack the buffer before calling this method.", nameof(buffer));
+
+        var sourceChannels = (int)buffer.NumChannels;
+        var histogramChannels = sourceChannels == 1 ? 1 : 3; // For color images, ignore alpha channel if present.
+
+        // Initialize histogram data array if null or size mismatch.
         var histogramBins = bins;
-
-        // Ensure byte-aligned source data for packed PFNC pixel formats.
-        var sourceBuffer = buffer.IsPacked() ? buffer.Unpack() : buffer;
-
-        // Allocate histogram data array if not already allocated or if dimensions do not match the number of channels and bins.
-        var sourceChannels = (int)sourceBuffer.NumChannels; // Get the number of channels in the source buffer.
-        var histogramChannels = sourceChannels == 4 ? 3 : sourceChannels; // For 4-channel images, only 3 channels are used for histogram calculation (alpha channel is used as a mask).
         if (histogramData == null || histogramData.GetLength(0) != histogramChannels || histogramData.GetLength(1) != histogramBins)
-            histogramData = new double[histogramChannels, histogramBins]; // Initialize histogram data array with the appropriate dimensions.
-        else Array.Clear(histogramData, 0, histogramData.Length); // Clear existing histogram data if the array is already allocated.
+            histogramData = new double[histogramChannels, histogramBins];
 
-        // Calculate the stride between pixels (in bytes) based on the source buffer's pixel format.
-        var bytesPerChannel = (int)(GenICamHelper.GetBitsPerPixelPerChannel(sourceBuffer.PixelFormat) / 8); // Calculate the number of bytes per channel based on bits per channel. Only correct for unpacked PFNC pixel formats.
-        var pixelStride = sourceChannels * bytesPerChannel; // Stride between pixels in bytes for interleaved formats.
+        var bytesPerChannel = (int)(GenICamHelper.GetBitsPerPixelPerChannel(buffer.PixelFormat) / 8);
+        var pixelStride = sourceChannels * bytesPerChannel; // Total bytes per pixel.
+        var pixelCount = (int)(buffer.Width * buffer.Height); // Total number of pixels in the image.
+        var planar = GenICamHelper.IsPlanar(buffer.PixelFormat);
+        var planeSize = planar ? pixelCount * bytesPerChannel : 0; // Size of each channel plane in bytes for planar formats.
+        var maxValue = buffer.PixelDynamicRangeMax;
+        var histogramRange = maxValue + 1UL;
+        var directBinLookup = histogramBins == (int)histogramRange;
 
-        // Total number of pixels in the image.
-        var pixelCount = (int)(sourceBuffer.Width * sourceBuffer.Height);
+        // Determine sampling stride for large images to improve performance.
+        var sampleStride = 1;
+        if (decimate && pixelCount > 400000)
+            sampleStride = (pixelCount + 399999) / 400000;
 
-        // Calculate planar size for planar formats (separate planes for each channel).
-        var planar = GenICamHelper.IsPlanar(sourceBuffer.PixelFormat); // Check if the pixel format is planar (separate planes for each channel).
-        var planeSize = planar ? pixelCount * bytesPerChannel : 0; // Size of each color plane in bytes for planar formats.
-
-        // Calculate the histogram range based on the buffer's pixel dynamic range. The range is used to scale pixel values into histogram bins.
-        ulong histogramRange = sourceBuffer.PixelDynamicRangeMax + 1UL; // (0 to dynamic range maximum inclusive)
-
-        // Decimate input data for improved performance on large images.
-        var sampleStride = 1; // Decimate input data for improved performance on large images.
-        if (decimate && pixelCount > 100000)
-            sampleStride = (pixelCount + 99999) / 100000; // Calculate stride to sample approximately 100,000 pixels.
-
-        // Get a span over the image data for efficient access.
-        var data = sourceBuffer.ImageData.AsSpan(); 
-
-        // Iterate over each pixel in the image, applying decimation if necessary.
-        for (int pixel = 0; pixel < pixelCount; pixel += sampleStride)
+        // Determine channel indices based on pixel format and color order.
+        int sourceBlueIndex = 0;
+        int sourceGreenIndex = 1;
+        int sourceRedIndex = 2;
+        int sourceAlphaIndex = sourceChannels == 4 ? 3 : -1;
+        if (sourceChannels > 1)
         {
-            // For single-channel images, update the histogram for the single channel.
-            if (sourceChannels == 1)
+            var colorOrder = GenICamHelper.GetColorOrder(buffer.PixelFormat);
+            var rgbOrder = colorOrder is ColorOrder.RGB or ColorOrder.RGBa;
+            sourceBlueIndex = rgbOrder ? 2 : 0;
+            sourceRedIndex = rgbOrder ? 0 : 2;
+        }
+
+        // Rent pooled histogram arrays for each channel.
+        var histogramPool = ArrayPool<uint>.Shared;
+        var histogram0 = histogramPool.Rent(histogramBins);
+        uint[]? histogram1 = null;
+        uint[]? histogram2 = null;
+
+        try
+        {
+            histogram0.AsSpan(0, histogramBins).Clear();
+
+            if (histogramChannels == 3)
             {
-                int offset = pixel * bytesPerChannel;
-                UpdateBin(source: data, offset: offset, bytesPerChannel: bytesPerChannel, channel: 0, bins: histogramBins, histogramRange: histogramRange, maxValue: sourceBuffer.PixelDynamicRangeMax, histogramData: histogramData);
-                continue;
+                histogram1 = histogramPool.Rent(histogramBins);
+                histogram2 = histogramPool.Rent(histogramBins);
+                histogram1.AsSpan(0, histogramBins).Clear();
+                histogram2.AsSpan(0, histogramBins).Clear();
             }
 
-            // For multi-channel images, determine the source channel order and update the histogram for each channel.
-            var colorOrder = GenICamHelper.GetColorOrder(sourceBuffer.PixelFormat);
-            int sourceBlueIndex = colorOrder is ColorOrder.RGB or ColorOrder.RGBa ? 2 : 0;
-            int sourceGreenIndex = 1;
-            int sourceRedIndex = colorOrder is ColorOrder.RGB or ColorOrder.RGBa ? 0 : 2;
-
-            // For 4-channel images, use the alpha channel as a mask to include only pixels with non-zero alpha in the histogram.
-            if (sourceChannels == 4)
+            // Process image data to populate histogram arrays.
+            fixed (byte* basePointer = buffer.ImageData)
             {
-                int alphaOffset = planar ? pixel * bytesPerChannel + 3 * planeSize : pixel * pixelStride + 3 * bytesPerChannel; // Calculate the offset for the alpha channel based on whether the format is planar or interleaved.
-                if (ReadValue(data, alphaOffset, bytesPerChannel) == 0)
-                    continue;
+                if (histogramChannels == 1) // For single-channel images, process all pixels in one loop.
+                {
+                    for (int pixel = 0; pixel < pixelCount; pixel += sampleStride)
+                    {
+                        var samplePointer = basePointer + pixel * bytesPerChannel;
+                        var value = ReadValue(samplePointer, bytesPerChannel);
+                        var bin = GetBin(value, maxValue, histogramBins, histogramRange, directBinLookup);
+                        histogram0[bin]++;
+                    }
+                }
+                else if (planar) // For planar images, process each channel plane separately.
+                {
+                    var bluePlane = basePointer + sourceBlueIndex * planeSize;
+                    var greenPlane = basePointer + sourceGreenIndex * planeSize;
+                    var redPlane = basePointer + sourceRedIndex * planeSize;
+                    var alphaPlane = sourceAlphaIndex >= 0 ? basePointer + sourceAlphaIndex * planeSize : null;
+
+                    for (int pixel = 0; pixel < pixelCount; pixel += sampleStride)
+                    {
+                        var channelOffset = pixel * bytesPerChannel;
+
+                        if (alphaPlane != null && ReadValue(alphaPlane + channelOffset, bytesPerChannel) == 0)
+                            continue;
+
+                        histogram0[GetBin(ReadValue(bluePlane + channelOffset, bytesPerChannel), maxValue, histogramBins, histogramRange, directBinLookup)]++;
+                        histogram1![GetBin(ReadValue(greenPlane + channelOffset, bytesPerChannel), maxValue, histogramBins, histogramRange, directBinLookup)]++;
+                        histogram2![GetBin(ReadValue(redPlane + channelOffset, bytesPerChannel), maxValue, histogramBins, histogramRange, directBinLookup)]++;
+                    }
+                }
+                else // For interleaved images, process all channels in one loop.
+                {
+                    for (int pixel = 0; pixel < pixelCount; pixel += sampleStride)
+                    {
+                        var pixelPointer = basePointer + pixel * pixelStride;
+
+                        if (sourceAlphaIndex >= 0 && ReadValue(pixelPointer + sourceAlphaIndex * bytesPerChannel, bytesPerChannel) == 0)
+                            continue;
+
+                        histogram0[GetBin(ReadValue(pixelPointer + sourceBlueIndex * bytesPerChannel, bytesPerChannel), maxValue, histogramBins, histogramRange, directBinLookup)]++;
+                        histogram1![GetBin(ReadValue(pixelPointer + sourceGreenIndex * bytesPerChannel, bytesPerChannel), maxValue, histogramBins, histogramRange, directBinLookup)]++;
+                        histogram2![GetBin(ReadValue(pixelPointer + sourceRedIndex * bytesPerChannel, bytesPerChannel), maxValue, histogramBins, histogramRange, directBinLookup)]++;
+                    }
+                }
             }
 
-            // For planar formats, update the histogram for each channel using the appropriate offsets for each color plane.
-            if (planar)
-            {
-                // Planar RGB/BGR channel storage; alpha plane is ignored.
-                UpdateBin(source: data, offset: pixel * bytesPerChannel + sourceBlueIndex * planeSize, bytesPerChannel: bytesPerChannel, channel: 0, bins: histogramBins, histogramRange: histogramRange, maxValue: sourceBuffer.PixelDynamicRangeMax, histogramData: histogramData);
-                UpdateBin(source: data, offset: pixel * bytesPerChannel + sourceGreenIndex * planeSize, bytesPerChannel: bytesPerChannel, channel: 1, bins: histogramBins, histogramRange: histogramRange, maxValue: sourceBuffer.PixelDynamicRangeMax, histogramData: histogramData);
-                UpdateBin(source: data, offset: pixel * bytesPerChannel + sourceRedIndex * planeSize, bytesPerChannel: bytesPerChannel, channel: 2, bins: histogramBins, histogramRange: histogramRange, maxValue: sourceBuffer.PixelDynamicRangeMax, histogramData: histogramData);
-                continue;
-            }
+            // Copy histogram arrays to output histogram data.
+            for (int i = 0; i < histogramBins; i++)
+                histogramData[0, i] = histogram0[i];
 
-            // For interleaved formats, calculate the pixel offset and update the histogram for each channel based on the source channel order.
-            int pixelOffset = pixel * pixelStride;
-            UpdateBin(source: data, offset: pixelOffset + sourceBlueIndex * bytesPerChannel, bytesPerChannel: bytesPerChannel, channel: 0, bins: histogramBins, histogramRange: histogramRange, maxValue: sourceBuffer.PixelDynamicRangeMax, histogramData: histogramData);
-            UpdateBin(source: data, offset: pixelOffset + sourceGreenIndex * bytesPerChannel, bytesPerChannel: bytesPerChannel, channel: 1, bins: histogramBins, histogramRange: histogramRange, maxValue: sourceBuffer.PixelDynamicRangeMax, histogramData: histogramData);
-            UpdateBin(source: data, offset: pixelOffset + sourceRedIndex * bytesPerChannel, bytesPerChannel: bytesPerChannel, channel: 2, bins: histogramBins, histogramRange: histogramRange, maxValue: sourceBuffer.PixelDynamicRangeMax, histogramData: histogramData);
+            // For color images, copy green and red channel histograms.
+            if (histogramChannels == 3)
+            {
+                for (int i = 0; i < histogramBins; i++)
+                    histogramData[1, i] = histogram1![i];
+
+                for (int i = 0; i < histogramBins; i++)
+                    histogramData[2, i] = histogram2![i];
+            }
+        }
+        finally
+        {
+            histogramPool.Return(histogram0, clearArray: false);
+
+            if (histogram1 != null)
+                histogramPool.Return(histogram1, clearArray: false);
+
+            if (histogram2 != null)
+                histogramPool.Return(histogram2, clearArray: false);
         }
     }
 
-    /// <summary>
-    /// Reads a channel sample from the source data, maps it to a histogram bin, and increments the corresponding bin
-    /// count.
-    /// </summary>
-    /// <remarks>Values greater than maxValue are clamped before scaling, and the computed bin index is capped
-    /// to the last valid bin.</remarks>
-    /// <param name="source">Source bytes containing packed channel sample data.</param>
-    /// <param name="offset">Zero-based position in source where the sample value begins.</param>
-    /// <param name="bytesPerChannel">Number of bytes used to read the sample value for one channel.</param>
-    /// <param name="channel">Zero-based channel index used for the first dimension of histogramData.</param>
-    /// <param name="bins">Total number of histogram bins available per channel.</param>
-    /// <param name="histogramRange">Range divisor used to scale the sample value into a bin index.</param>
-    /// <param name="maxValue">Maximum allowed sample value before bin calculation.</param>
-    /// <param name="histogramData">Two-dimensional histogram array indexed by channel and bin, updated in place.</param>
-    private static void UpdateBin(ReadOnlySpan<byte> source, int offset, int bytesPerChannel, int channel, int bins, ulong histogramRange, ulong maxValue, double[,] histogramData)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int GetBin(ulong value, ulong maxValue, int bins, ulong histogramRange, bool directBinLookup)
     {
-        // Read the channel sample value from the source data at the specified offset and convert it to ulong.
-        ulong value = ReadValue(source, offset, bytesPerChannel);
-
-        // Clamp the value to maxValue if it exceeds the allowed range.
         if (value > maxValue)
             value = maxValue;
 
-        // Scale the value to a histogram bin index based on the histogram range and total number of bins.
-        var bin = (int)(value * (ulong)bins / histogramRange);
-        if (bin >= bins)
-            bin = bins - 1; // Ensure the bin index does not exceed the last valid bin.
+        if (directBinLookup)
+            return (int)value;
 
-        // Increment the corresponding histogram bin count for the specified channel.
-        histogramData[channel, bin]++;
+        var bin = (int)(value * (ulong)bins / histogramRange);
+        return bin < bins ? bin : bins - 1;
     }
 
-    /// <summary>
-    /// Reads an unsigned channel value from a byte span at the specified offset using little-endian byte order.
-    /// </summary>
-    /// <remarks>Uses direct byte access for 1-byte values and <see
-    /// cref="BinaryPrimitives"/> little-endian readers for multi-byte values.</remarks>
-    /// <param name="source">The source bytes containing channel data.</param>
-    /// <param name="offset">The zero-based index of the first byte to read.</param>
-    /// <param name="bytesPerChannel">The channel width in bytes. Supported values are 1, 2, 4, and 8.</param>
-    /// <returns>The channel value converted to <see cref="ulong"/>.</returns>
-    /// <exception cref="NotSupportedException">Thrown when <paramref name="bytesPerChannel"/> is not 1, 2, 4, or 8.</exception>
-    private static ulong ReadValue(ReadOnlySpan<byte> source, int offset, int bytesPerChannel)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static unsafe ulong ReadValue(byte* pointer, int bytesPerChannel)
     {
         return bytesPerChannel switch
         {
-            1 => source[offset],
-            2 => BinaryPrimitives.ReadUInt16LittleEndian(source.Slice(offset, 2)),
-            4 => BinaryPrimitives.ReadUInt32LittleEndian(source.Slice(offset, 4)),
-            8 => BinaryPrimitives.ReadUInt64LittleEndian(source.Slice(offset, 8)),
+            1 => pointer[0],
+            2 => Unsafe.ReadUnaligned<ushort>(pointer),
+            4 => Unsafe.ReadUnaligned<uint>(pointer),
+            8 => Unsafe.ReadUnaligned<ulong>(pointer),
             _ => throw new NotSupportedException($"Pixel channel width of {bytesPerChannel} bytes is not supported.")
         };
     }
 }
+

@@ -384,19 +384,14 @@ public class GcBufferExtensionsTests
     }
 
     [TestMethod]
-    public void CalculateHistogram_Mono10p_UnpacksAndCalculatesExpectedBin()
+    public void CalculateHistogram_Mono10p_ThrowsArgumentException()
     {
         // Arrange
         var packedBuffer = new GcBuffer([136, 35, 142, 56, 226], 4, 1, PixelFormat.Mono10p, 42, 123);
         double[,] histogramData = null;
 
-        // Act
-        packedBuffer.CalculateHistogram(1024, ref histogramData);
-
-        // Assert
-        Assert.IsNotNull(histogramData);
-        Assert.AreEqual(1, histogramData.GetLength(0));
-        Assert.AreEqual(4d, histogramData[0, 904]);
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => packedBuffer.CalculateHistogram(1024, ref histogramData));
     }
 
     [TestMethod]
