@@ -186,8 +186,9 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// Opens a new or existing datastream on the device.
     /// </summary>
     /// <param name="dataStreamID">(Optional) Unique ID of the datastream.</param>
+    /// <param name="deliveryMode">(Optional) Delivery mode for the datastream.</param>
     /// <returns>Opened datastream.</returns>
-    public GcDataStream OpenDataStream(string dataStreamID = null)
+    public GcDataStream OpenDataStream(string dataStreamID = null, AcquisitionDeliveryMode deliveryMode = AcquisitionDeliveryMode.Queued)
     {
         // If ID is empty then create a unique one using Guid.
         if (string.IsNullOrEmpty(dataStreamID))
@@ -198,7 +199,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
                 return value;
 
         // Create new datastream on the device, using unique ID.
-        var dataStream = new GcDataStream(bufferProducer: this, dataStreamID: dataStreamID, outputQueueCapacity: 4);
+        var dataStream = new GcDataStream(bufferProducer: this, dataStreamID: dataStreamID, outputQueueCapacity: 4, deliveryMode: deliveryMode);
 
         // Add new datastream to list of available datastreams.
         _dataStreamList.Add(dataStreamID, dataStream);
@@ -291,30 +292,12 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// <returns><see langword="True"/> if fetch was successful, with the image in the <paramref name="buffer"/>.</returns>
     public bool FetchImage(out GcBuffer buffer, uint timeout = 1000)
     {
-        GcBuffer image = null;
-
-        // Use AutoResetEvent to wait for an image or timeout.
-        using var waitHandle = new AutoResetEvent(false);
-
-        // Define event handler.
-        void OnNewBuffer(object sender, NewBufferEventArgs eventArgs) { image = eventArgs.Buffer; _ = waitHandle.Set(); }
-
-        // Register handler to new buffer event.
-        NewBuffer += OnNewBuffer;
-
-        // Start acquisition in camera.
-        StartAcquisition();
-
-        // Wait for image or timeout.
-        bool result = waitHandle.WaitOne((int)timeout);
-
-        // Stop acquisition in camera.
-        StopAcquisition();
-
-        // Unregister handler from new buffer event.
-        NewBuffer -= OnNewBuffer;
-
-        buffer = image;
+        // Open a temporary datastream for fetching a single image, using queued delivery mode.
+        var dataStream = OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Queued);
+        dataStream.Start(1);
+        var result = dataStream.RetrieveImage(out buffer, (int)timeout);
+        dataStream.Stop();
+        dataStream.Close();
 
         return result;
     }

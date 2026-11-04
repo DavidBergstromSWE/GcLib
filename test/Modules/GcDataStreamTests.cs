@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using GcLib.UnitTests.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -79,6 +80,16 @@ public class GcDataStreamTests
         Assert.IsTrue(_dataStream.IsOpen);
     }
 
+    [TestMethod]
+    public void Constructor_EventDrivenNonBlocking_DeliveryModeIsSet()
+    {
+        // Arrange/Act
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
+
+        // Assert
+        Assert.AreEqual(AcquisitionDeliveryMode.EventDrivenNonBlocking, _dataStream.DeliveryMode);
+    }
+
     #endregion
 
     #region MethodTests
@@ -116,6 +127,22 @@ public class GcDataStreamTests
     }
 
     [TestMethod]
+    public void RetrieveImage_EventDrivenNonBlocking_ReturnsFalse()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
+        _dataStream.Start();
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+
+        // Act
+        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
+
+        // Assert
+        Assert.IsFalse(success);
+        Assert.IsNull(buffer);
+    }
+
+    [TestMethod]
     public void RetrieveImage_NoBufferWithinTimeout_ReturnsFalseAfterTimeout()
     {
         // Arrange
@@ -130,7 +157,7 @@ public class GcDataStreamTests
         // Assert
         Assert.IsFalse(success);
         Assert.IsNull(buffer);
-        Assert.IsTrue(stopwatch.ElapsedMilliseconds >= timeout - 5); // Allowing a small margin for timing inaccuracies
+        Assert.IsGreaterThanOrEqualTo(timeout - 5, stopwatch.ElapsedMilliseconds); // Allowing a small margin for timing inaccuracies
     }
 
     [TestMethod]
@@ -249,6 +276,47 @@ public class GcDataStreamTests
         // Assert
         Assert.IsFalse(_dataStream.IsStreaming);
         Assert.AreEqual(1, eventCounter);
+    }
+
+    [TestMethod]
+    public void RentInputBuffer_MinimumLengthIsZero_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+
+        // Act/Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => _dataStream.RentInputBuffer(0));
+    }
+
+    [TestMethod]
+    public void ReturnInputBuffer_NullOrEmptyBuffer_RentAllocatesRequestedSize()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+
+        // Act
+        _dataStream.ReturnInputBuffer(null);
+        _dataStream.ReturnInputBuffer([]);
+        var rentedBuffer = _dataStream.RentInputBuffer(8);
+
+        // Assert
+        Assert.AreEqual(8, rentedBuffer.Length);
+    }
+
+    [TestMethod]
+    public void RentInputBuffer_BufferReturnedWithInsufficientLength_AllocatesNewBuffer()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+        var smallBuffer = new byte[4];
+
+        // Act
+        _dataStream.ReturnInputBuffer(smallBuffer);
+        var rentedBuffer = _dataStream.RentInputBuffer(8);
+
+        // Assert
+        Assert.AreEqual(8, rentedBuffer.Length);
+        Assert.AreNotSame(smallBuffer, rentedBuffer);
     }
 
     [TestMethod]
@@ -394,6 +462,33 @@ public class GcDataStreamTests
     }
 
     [TestMethod]
+    public void OnNewBuffer_EventDrivenNonBlocking_BufferTransferredIsRaisedAndNotQueued()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
+        _dataStream.Start();
+        using var signal = new ManualResetEventSlim(false);
+        int eventCounter = 0;
+        GcBuffer buffer = null;
+        _dataStream.BufferTransferred += (s, e) =>
+        {
+            eventCounter++;
+            buffer = e.Buffer;
+            signal.Set();
+        };
+
+        // Act
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+
+        // Assert
+        Assert.IsTrue(signal.Wait(500));
+        Assert.AreEqual(1, eventCounter);
+        Assert.IsNotNull(buffer);
+        Assert.AreEqual(_testBuffer, buffer);
+        Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
+    }
+
+    [TestMethod]
     public void OnNewBuffer_IsStreaming_StatisticsIsUpdated()
     {
         // Arrange
@@ -440,6 +535,27 @@ public class GcDataStreamTests
 
         // Assert
         Assert.AreEqual(count, (int)_dataStream.FailedFrameCount);
+    }
+
+    [TestMethod]
+    public void OnNewBuffer_FrameGapExists_LostFrameCountIsIncrementedAndFrameDroppedRaised()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+        _dataStream.Start();
+        int frameDroppedEventCount = 0;
+        _dataStream.FrameDropped += (s, e) => { frameDroppedEventCount++; };
+
+        var firstBuffer = FakeBufferProvider.GetFakeBuffer(3, 3, PixelFormat.Mono8, 1, 100);
+        var secondBuffer = FakeBufferProvider.GetFakeBuffer(3, 3, PixelFormat.Mono8, 3, 200);
+
+        // Act
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(firstBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(secondBuffer, DateTime.Now));
+
+        // Assert
+        Assert.AreEqual<ulong>(1, _dataStream.LostFrameCount);
+        Assert.AreEqual(1, frameDroppedEventCount);
     }
 
     #endregion

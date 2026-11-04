@@ -24,7 +24,7 @@ public class GcDeviceTests
     [TestCleanup]
     public void TestCleanUp()
     {
-        _device.Reset();
+        _device?.Reset();
     }
 
     #endregion
@@ -87,6 +87,19 @@ public class GcDeviceTests
 
         // Assert
         Assert.AreSame(firstStream, secondStream);
+    }
+
+    [TestMethod]
+    public void OpenDataStream_DeliveryModeSpecified_StreamUsesExpectedDeliveryMode()
+    {
+        // Arrange
+        _device = new Mock<MockableCam>();
+
+        // Act
+        var dataStream = _device.Object.OpenDataStream(deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
+
+        // Assert
+        Assert.AreEqual(AcquisitionDeliveryMode.EventDrivenNonBlocking, dataStream.DeliveryMode);
     }
 
     [TestMethod]
@@ -156,6 +169,16 @@ public class GcDeviceTests
     }
 
     [TestMethod]
+    public void GetDataStreamID_NoDataStreamsOpened_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        _device = new Mock<MockableCam>();
+
+        // Act/Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => _device.Object.GetDataStreamID(0));
+    }
+
+    [TestMethod]
     public void Close_GetNumDataStreams_ReturnsZero()
     {
         // Arrange
@@ -185,6 +208,36 @@ public class GcDeviceTests
     }
 
     [TestMethod]
+    public void Close_OpenDataStream_DataStreamIsClosed()
+    {
+        // Arrange
+        _device = new Mock<MockableCam> { CallBase = true };
+        var dataStream = _device.Object.OpenDataStream();
+
+        // Act
+        _device.Object.Close();
+
+        // Assert
+        Assert.IsFalse(dataStream.IsOpen);
+    }
+
+    [TestMethod]
+    public void Close_DeviceInfoExists_UpdatesDeviceInfoFlags()
+    {
+        // Arrange
+        _device = new Mock<MockableCam> { CallBase = true };
+        var deviceInfo = new GcDeviceInfo("vendor", "model", "serial", "id", MockableCam.DeviceClassInfo, isAccessible: false, isOpen: true);
+        typeof(GcDevice).GetProperty(nameof(GcDevice.DeviceInfo))?.SetValue(_device.Object, deviceInfo);
+
+        // Act
+        _device.Object.Close();
+
+        // Assert
+        Assert.IsFalse(_device.Object.DeviceInfo.IsOpen);
+        Assert.IsTrue(_device.Object.DeviceInfo.IsAccessible);
+    }
+
+    [TestMethod]
     public void FetchImage_ReturnsNull()
     {
         // Arrange
@@ -196,6 +249,43 @@ public class GcDeviceTests
         // Assert
         Assert.IsFalse(success);
         Assert.IsNull(buffer);
+    }
+
+    [TestMethod]
+    public void FetchImage_NewBufferRaised_ReturnsTrueAndBuffer()
+    {
+        // Arrange
+        var expectedBuffer = FakeBufferProvider.GetFakeBuffer();
+        //var device = new FetchImageSuccessCam(expectedBuffer);
+        var device = new Mock<MockableCam>() { CallBase = true }; // Use CallBase to allow base method calls for FetchImage.
+        device.Setup(d => d.StartAcquisition()).Callback(() =>
+        {
+            // Simulate acquisition started and raise the NewBuffer event.
+            var onNewBuffer = typeof(MockableCam).BaseType?.GetMethod("OnNewBuffer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic); // Access the protected OnNewBuffer method using reflection.
+            onNewBuffer?.Invoke(device.Object, [new NewBufferEventArgs(expectedBuffer, DateTime.Now)]);
+        });
+
+        // Act
+        var success = device.Object.FetchImage(out GcBuffer buffer, 250);
+
+        // Assert
+        Assert.IsTrue(success);
+        Assert.IsNotNull(buffer);
+        Assert.AreSame(expectedBuffer, buffer);
+    }
+
+    [TestMethod]
+    public void FetchImage_Always_InvokesStartAndStopAcquisitionOnce()
+    {
+        // Arrange
+        _device = new Mock<MockableCam>();
+
+        // Act
+        _ = _device.Object.FetchImage(out _, 10);
+
+        // Assert
+        _device.Verify(d => d.StartAcquisition(), Times.Once);
+        _device.Verify(d => d.StopAcquisition(), Times.Once);
     }
 
     #endregion

@@ -45,9 +45,9 @@ internal partial class AcquisitionModel : ObservableObject
     private GcBufferWriter _bufferWriter;
 
     /// <summary>
-    /// Indicates whether acquisition should run synchronously (using thread) or asynchronously (using async/await).
+    /// Indicates whether acquisition should run synchronously (using thread) or asynchronously (event-driven using async/await).
     /// </summary>
-    private readonly bool _useSynchronousAcquisition = true;
+    private readonly bool _useSynchronousAcquisition = false;
 
     /// <summary>
     /// Flag indicating whether grabbing queue latency warning has been logged for the current acquisition.
@@ -202,7 +202,7 @@ internal partial class AcquisitionModel : ObservableObject
             throw new InvalidOperationException($"Acquisition is already actively running!");
 
         // Open datastream.
-        _dataStream = DeviceModel.Device.OpenDataStream();
+        _dataStream = DeviceModel.Device.OpenDataStream(deliveryMode: _useSynchronousAcquisition ? AcquisitionDeliveryMode.Queued : AcquisitionDeliveryMode.EventDrivenNonBlocking);
 
         // Hook handler to events announcing dropped frames.
         _dataStream.FrameDropped += OnFrameDropped;
