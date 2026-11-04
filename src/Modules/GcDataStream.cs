@@ -31,7 +31,6 @@ public enum AcquisitionDeliveryMode
 /// <param name="dataStreamID">Unique datastream ID.</param>
 /// <param name="outputQueueCapacity">Maximum size of output buffer queue in <see cref="AcquisitionDeliveryMode.Queued"/> mode.</param>
 /// <param name="deliveryMode">Delivery mode of transferred image buffers.</param>
-/// <param name="eventDispatchCapacity">Maximum number of pending buffers in non-blocking event dispatch mode.</param>
 public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStreamID, int outputQueueCapacity = 4, AcquisitionDeliveryMode deliveryMode = AcquisitionDeliveryMode.Queued) : IBufferStream
 {
     #region Fields
@@ -169,6 +168,19 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     }
 
     /// <summary>
+    /// Event announcing that a new buffer is added to the output buffer queue, indicating to consumers that data is available for retrieval and further processing. Use <see cref="GcDataStream.RetrieveImage(out GcBuffer, int)"/> to retrieve the buffer from the queue.
+    /// </summary>
+    public event EventHandler NewBuffer;
+
+    /// <summary>
+    /// Raises the <see cref="NewBuffer"/> event.
+    /// </summary>
+    private void OnNewBuffer()
+    {
+        NewBuffer?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
     /// Event announcing that acquisition in the datastream has been stopped.
     /// </summary>
     public event EventHandler StreamingStopped;
@@ -261,7 +273,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// Starts streaming images from device continuously until manually stopped. If <paramref name="numImages"/> is specified the acquisition stops automatically after the specified number of images have been acquired.
     /// </summary>
     /// <remarks>
-    /// Images can be grabbed from datastream by subscribing to <see cref="BufferTransferred"/> event (preferred) or by grabbing them from output buffer queue using <see cref="RetrieveImage(out GcBuffer)"/>.
+    /// Images can be grabbed from datastream by subscribing to <see cref="BufferTransferred"/> event or by grabbing them from output buffer queue using <see cref="RetrieveImage(out GcBuffer)"/>.
     /// </remarks>
     /// <param name="numImages">Number of images to acquire.</param>
     /// <exception cref="InvalidOperationException"></exception>
@@ -590,8 +602,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             // Signal waiting threads that a buffer is available.
             _waitHandle.Set();
 
-            // Raise event.
-            OnBufferTransferred(buffer);
+            // Raise new buffer event.
+            OnNewBuffer();
         }
         else
         {

@@ -443,25 +443,6 @@ public class GcDataStreamTests
     }
 
     [TestMethod]
-    public void OnNewBuffer_IsStreaming_BufferTransferredIsRaised()
-    {
-        // Arrange
-        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
-        _dataStream.Start();
-        int eventCounter = 0;
-        GcBuffer buffer = null;
-        _dataStream.BufferTransferred += (s, e) => { eventCounter++; buffer = e.Buffer; };
-
-        // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
-
-        // Assert
-        Assert.AreEqual(1, eventCounter);
-        Assert.IsNotNull(buffer);
-        Assert.AreEqual(_testBuffer, buffer);
-    }
-
-    [TestMethod]
     public void OnNewBuffer_EventDrivenNonBlocking_BufferTransferredIsRaisedAndNotQueued()
     {
         // Arrange

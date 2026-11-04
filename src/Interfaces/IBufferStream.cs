@@ -30,6 +30,14 @@ public interface IBufferStream
     public void Stop();
 
     /// <summary>
+    /// Retrieves an image buffer from the beginning of the output buffer queue.
+    /// </summary>
+    /// <param name="buffer">Image buffer (or null if none is available).</param>
+    /// <param name="timeout">Timeout in milliseconds to wait for a buffer. Use zero for non-blocking retrieval.</param>
+    /// <returns>True if buffer retrieval was successful, false if not.</returns>
+    bool RetrieveImage(out GcBuffer buffer, int timeout = 1000);
+
+    /// <summary>
     /// Event announcing that streaming has started.
     /// </summary>
     event EventHandler StreamingStarted;
@@ -43,4 +51,9 @@ public interface IBufferStream
     /// Event announcing that an buffer has been successfully transferred, containing the buffer in the event arguments.
     /// </summary>
     event EventHandler<BufferTransferredEventArgs> BufferTransferred;
+
+    /// <summary>
+    /// Event announcing that a new buffer is added to the output buffer queue, indicating to consumers that data is available for retrieval and further processing.
+    /// </summary>
+    event EventHandler NewBuffer;
 }

@@ -195,8 +195,8 @@ public sealed class GcProcessingThread : IDisposable
         // Initialize thread.
         _processingThread = new Thread(ThreadProc) { Priority = _priority, IsBackground = true };
 
-        // Register to events in datastream.
-        _dataStream.BufferTransferred += OnBufferTransferred;
+        // Register to new buffer events in datastream.
+        _dataStream.NewBuffer += OnNewBufferEvent;
 
         // Start thread.
         _isRunning = true;
@@ -212,8 +212,8 @@ public sealed class GcProcessingThread : IDisposable
         if (IsRunning == false)
             return;
 
-        // Unregister from events.
-        _dataStream?.BufferTransferred -= OnBufferTransferred;
+        // Unregister from new buffer events in datastream.
+        _dataStream?.NewBuffer -= OnNewBufferEvent;
 
         // Stop thread.
         _isRunning = false;
@@ -337,6 +337,7 @@ public sealed class GcProcessingThread : IDisposable
                 {
                     try
                     {
+                        // Announce that a buffer is ready for processing.
                         OnBufferProcess(buffer);
                     }
                     catch (Exception ex)
@@ -355,6 +356,7 @@ public sealed class GcProcessingThread : IDisposable
             // Process buffer.
             try
             {
+                // Announce that a buffer is ready for processing.
                 OnBufferProcess(buffer);
             }
             catch (Exception ex)
@@ -368,9 +370,9 @@ public sealed class GcProcessingThread : IDisposable
     }
 
     /// <summary>
-    /// Event-handling method to events raised when a buffer has been transferred from a datastream.
+    /// Event-handling method to events raised when a new buffer has been added to the datastream. The method queues the buffer for processing and raises an event if the internal ring buffer was full when adding the new buffer to the queue.
     /// </summary>
-    private void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
+    private void OnNewBufferEvent(object sender, EventArgs eventArgs)
     {
         bool overflow; // Flag indicating that the internal ring buffer was full when adding the new buffer to the queue.
 
@@ -381,8 +383,11 @@ public sealed class GcProcessingThread : IDisposable
             if (_disposed || _isRunning == false)
                 return;
 
+            if (_dataStream.RetrieveImage(out GcBuffer buffer, timeout: 0) == false)
+                return;
+
             overflow = _imageQueue.Size == _imageQueue.Capacity; // Check if adding the buffer will cause an overflow.
-            _imageQueue.Put(e.Buffer);
+            _imageQueue.Put(buffer); // Add buffer to queue, overwriting oldest buffer if the queue is full.
         }
 
         // Raise event if adding buffer caused an overflow of ring buffer.
