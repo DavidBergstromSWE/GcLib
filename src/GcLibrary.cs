@@ -134,12 +134,12 @@ public static class GcLibrary
             if (Logger.IsEnabled(LogLevel.Debug))
                 Logger.LogDebug("{DeviceType} registered ({API} v{Version})", deviceClassInfo.DeviceType.Name, deviceClassInfo.Name, deviceClassInfo.Version);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             // Log inner exception if available, to provide more specific error information for debugging.
             var inner = ex.InnerException;
             if (Logger.IsEnabled(LogLevel.Warning))
-                Logger.LogWarning(inner ?? ex, "Failed to register device class of type {Name}:\n{message}", typeof(TDevice).Name, inner == null? ex.Message : inner.Message);
+                Logger.LogWarning(inner ?? ex, "Failed to register device class of type {Name}:\n{message}", typeof(TDevice).Name, inner == null ? ex.Message : inner.Message);
         }
     }
 

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Emgu.CV;
 
 namespace GcLib.Utilities.Numbers;
 
@@ -125,11 +123,11 @@ public static class NumericHelper
         ArgumentNullException.ThrowIfNull(bytes);
 
         // Ensure that the byte array length is a multiple of the size of the numeric type T.
-        if (bytes.Length % Unsafe.SizeOf<T>() != 0) 
+        if (bytes.Length % Unsafe.SizeOf<T>() != 0)
             throw new ArgumentException("Byte count must be a multiple of the numeric type's size.", nameof(bytes));
 
         // Create a ReadOnlySpan<T> view over the byte array without copying data.
-        ReadOnlySpan<T> values = MemoryMarshal.Cast<byte, T>(bytes.AsSpan()); 
+        ReadOnlySpan<T> values = MemoryMarshal.Cast<byte, T>(bytes.AsSpan());
 
         return values.ToArray();
     }

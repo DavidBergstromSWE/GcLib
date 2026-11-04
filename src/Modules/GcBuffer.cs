@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Emgu.CV;
 using GcLib.Utilities.Imaging;
 using GcLib.Utilities.Numbers;

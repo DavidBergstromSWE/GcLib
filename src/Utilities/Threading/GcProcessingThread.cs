@@ -326,7 +326,7 @@ public sealed class GcProcessingThread : IDisposable
             // If no buffer is available, wait for a new buffer to be queued.
             if (buffer is null)
             {
-                _ = _waitHandle.WaitOne(); 
+                _ = _waitHandle.WaitOne();
                 continue;
             }
 
@@ -347,8 +347,8 @@ public sealed class GcProcessingThread : IDisposable
 
                 // Clear queue to avoid processing old buffers.
                 lock (_queueLock)
-                    _imageQueue.Clear(); 
-                
+                    _imageQueue.Clear();
+
                 continue;
             }
 

@@ -7,8 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cyotek.Collections.Generic;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;

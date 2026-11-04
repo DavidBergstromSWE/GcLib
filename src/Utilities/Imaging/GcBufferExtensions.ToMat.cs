@@ -31,7 +31,7 @@ public static partial class GcBufferExtensions
                 break;
             case Emgu.CV.CvEnum.DepthType.Cv16U:
                 mat.SetTo(NumericHelper.ToArray<ushort>(buffer.ImageData));
-                break;           
+                break;
             case Emgu.CV.CvEnum.DepthType.Cv32U:
                 mat.SetTo(NumericHelper.ToArray<uint>(buffer.ImageData));
                 break;

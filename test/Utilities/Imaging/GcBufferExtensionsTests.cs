@@ -421,7 +421,7 @@ public class GcBufferExtensionsTests
 
     #region ToMatTests
 
-    
+
     [TestMethod]
     [DataRow(PixelFormat.Mono8)]
     [DataRow(PixelFormat.Mono10)]
