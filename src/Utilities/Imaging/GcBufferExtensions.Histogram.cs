@@ -33,6 +33,14 @@ public static partial class GcBufferExtensions
     /// <remarks>For 4-channel images, the alpha channel is used as a mask and only pixels with non-zero alpha are included in the histogram.</remarks>
     public static unsafe void CalculateHistogram(this GcBuffer buffer, int bins, ref double[,] histogramData, bool decimate = true)
     {
+        // ToDo: Compare performance with OpenCV's calcHist function (MatExtensions.CalculateHistogram) for various image sizes and formats to identify potential optimizations.
+        // ToDo: Consider a parallelized version using Parallel.For or PLINQ for large images.
+        // ToDo: Consider using a more efficient memory access pattern (e.g., blocking or tiling) to improve cache locality and reduce cache misses when processing large images.
+        // ToDo: Consider using SIMD intrinsics (System.Numerics.Vector) for further performance improvements on supported hardware.
+        // ToDo: Consider using a more efficient histogram calculation algorithm, such as a two-pass approach or a histogram equalization technique, for better performance on large images.
+        // ToDo: Consider using a more efficient data structure for storing histogram data, such as a sparse representation or a compressed format, to reduce memory usage and improve performance on large images.
+        // ToDo: Consider using a more efficient algorithm for calculating histograms of color images, such as a color quantization technique or a color space transformation, to reduce the number of bins and improve performance on large images.
+        
         ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
 
         // Validate histogram bin count.
