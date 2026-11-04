@@ -74,7 +74,6 @@ public class GcDataStreamTests
         Assert.AreEqual<ulong>(0, _dataStream.FailedFrameCount);
         Assert.AreEqual(0, _dataStream.FrameRate);
         Assert.AreEqual(0, _dataStream.FrameRateAverage);
-        Assert.AreEqual(capacity, (int)_dataStream.OutputBufferQueueCapacity);
 
         Assert.IsFalse(_dataStream.IsStreaming);
         Assert.IsTrue(_dataStream.IsOpen);
@@ -259,7 +258,7 @@ public class GcDataStreamTests
     public void Start_AcquireMultipleImages_BuffersAreDeliveredAndQueued(int count)
     {
         // Arrange
-        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), count);
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), outputQueueCapacity: count);
 
         // Act
         _dataStream.Start((ulong)count);

@@ -42,7 +42,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// <summary>
     /// Size (number of buffers) of device input buffer pool. 
     /// </summary>
-    public abstract uint BufferCapacity { get; set; }
+    public virtual uint BufferCapacity { get; set; } = 4;
 
     /// <summary>
     /// Acquisition status of device.
@@ -198,7 +198,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
                 return value;
 
         // Create new datastream on the device, using unique ID.
-        var dataStream = new GcDataStream(this, dataStreamID);
+        var dataStream = new GcDataStream(bufferProducer: this, dataStreamID: dataStreamID, outputQueueCapacity: 4);
 
         // Add new datastream to list of available datastreams.
         _dataStreamList.Add(dataStreamID, dataStream);
@@ -266,6 +266,22 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// Stops acquisition on the device.
     /// </summary>
     public abstract void StopAcquisition();
+
+    /// <summary>
+    /// Rents a managed image buffer from the currently active datastream input pool.
+    /// </summary>
+    /// <param name="minimumLength">Minimum required byte length of the rented buffer.</param>
+    /// <returns>Rented image buffer.</returns>
+    protected byte[] RentInputBuffer(int minimumLength)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(minimumLength);
+
+        // Find the first datastream that is currently streaming, or if none are streaming, find the first datastream that is open.
+        // ToDo: Can datastream be found by ID instead of searching the list? Should the datastream be passed as an argument instead of searching the list?)
+        var activeStream = _dataStreamList.Values.FirstOrDefault(stream => stream.IsStreaming) ?? _dataStreamList.Values.FirstOrDefault(stream => stream.IsOpen);
+
+        return activeStream?.RentInputBuffer(minimumLength) ?? new byte[minimumLength]; // No suitable buffer was available in the pool, so allocate a new one.
+    }
 
     /// <summary>
     /// Fetches a single image from device, using a timeout request. To continously grab images, use <see cref="StartAcquisition"/> instead.

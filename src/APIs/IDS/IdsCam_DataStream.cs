@@ -175,8 +175,9 @@ public sealed partial class IdsCam
     private GcBuffer ToGcBuffer(IDSImaging.Peak.API.Core.Buffer buffer)
     {
         // Extract image data from buffer.
-        byte[] imageData = new byte[buffer.Size()];
-        Marshal.Copy(buffer.BasePtr(), imageData, 0, (int)buffer.Size());
+        int payloadSize = (int)buffer.Size();
+        byte[] imageData = RentInputBuffer(payloadSize);
+        Marshal.Copy(buffer.BasePtr(), imageData, 0, payloadSize);
 
         return new GcBuffer(imageData: imageData,
                             width: buffer.Width(),

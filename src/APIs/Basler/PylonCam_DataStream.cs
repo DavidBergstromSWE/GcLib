@@ -151,7 +151,7 @@ public sealed partial class PylonCam
     /// <param name="grabResult">Grab result.</param>
     /// <returns>Converted <see cref="GcBuffer"/>.</returns>
     /// <exception cref="NotSupportedException">Thrown when the payload type or pixel type is not supported.</exception>
-    private static GcBuffer ToGcBuffer(IGrabResult grabResult)
+    private GcBuffer ToGcBuffer(IGrabResult grabResult)
     {
         // Check if the payload type is an image.
         if (grabResult.PayloadTypeValue != PayloadType.Image)
@@ -162,10 +162,10 @@ public sealed partial class PylonCam
         if (pixelFormat == PixelFormat.InvalidPixelFormat)
             throw new NotSupportedException($"Pixel type {grabResult.PixelTypeValue} is not supported!");
 
-        // Copy pixel data to a new byte array.
-        var pixelData = (byte[])grabResult.PixelData; // Get the pixel data from the grab result
-        byte[] imageData = new byte[pixelData.Length]; // Allocate a new byte array to hold the image data
-        Buffer.BlockCopy(pixelData, 0, imageData, 0, pixelData.Length); // Copy the pixel data to the new byte array
+        // Copy pixel data to a rented byte array.
+        var pixelData = (byte[])grabResult.PixelData;
+        byte[] imageData = RentInputBuffer(pixelData.Length);
+        Buffer.BlockCopy(pixelData, 0, imageData, 0, pixelData.Length);
 
         // Alternative method using Marshal.Copy:
         //Marshal.Copy(grabResult.PixelDataPointer, imageData, 0, (int)grabResult.PayloadSize);

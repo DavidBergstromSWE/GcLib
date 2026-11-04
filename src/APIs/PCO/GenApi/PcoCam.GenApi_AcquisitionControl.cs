@@ -193,7 +193,7 @@ public partial class PcoCam
             for (int i = 0; i < _bufferIndex.Length; i++)
             {
                 LibWrapper.AllocateBuffer(_cameraHandle, ref _bufferIndex[i], (int)payloadSize, ref _buffer[i], ref _bufferEvent[i]);
-                _inputBufferPool[i] = new byte[payloadSize];
+                _inputBufferPool[i] = _pcoCam.RentInputBuffer((int)payloadSize);
             }
 
             // Set image parameters for internal allocated resources (is this needed if PCO_ArmCamera is used?!).

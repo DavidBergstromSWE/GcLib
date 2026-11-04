@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cyotek.Collections.Generic;
 using GcLib.Utilities.Numbers;
@@ -10,8 +11,8 @@ namespace GcLib;
 /// </summary>
 /// <param name="bufferProducer">Buffer producer.</param>
 /// <param name="dataStreamID">Unique datastream ID.</param>
-/// <param name="bufferCapacity">Maximum size of ring buffer.</param>
-public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStreamID, int bufferCapacity = 4) : IBufferStream
+/// <param name="outputQueueCapacity">Maximum size of output buffer queue.</param>
+public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStreamID, int outputQueueCapacity = 4) : IBufferStream
 {
     #region Fields
 
@@ -21,10 +22,9 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     private readonly IBufferProducer _device = bufferProducer;
 
     /// <summary>
-    /// Output buffer queue, containing images transferred from device input buffer pool and available to GenTL consumer.
-    /// ToDo: Use own implementation for a circular buffer instead?
+    /// Output buffer queue, containing images successfully transferred from device input buffer pool and available to GenTL consumer.
     /// </summary>
-    private readonly CircularBuffer<GcBuffer> _outputBufferQueue = new(capacity: bufferCapacity, allowOverwrite: true);
+    private readonly CircularBuffer<GcBuffer> _outputBufferQueue = new(capacity: outputQueueCapacity, allowOverwrite: true);
 
     /// <summary>
     /// Provides a synchronization event used to block and release a waiting thread.
@@ -45,6 +45,16 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// Number of images to acquire.
     /// </summary>
     private ulong _imagesToAcquire;
+
+    /// <summary>
+    /// Synchronization object for input buffer pool access.
+    /// </summary>
+    private readonly Lock _inputBufferPoolLock = new();
+
+    /// <summary>
+    /// Input buffer pool that device classes can reuse when filling new frame data.
+    /// </summary>
+    private readonly Queue<byte[]> _inputBufferPool = [];
 
     #endregion
 
@@ -84,15 +94,6 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// Average frame rate (in frames per second), calculated as a running average from start of acquisition.
     /// </summary>
     public double FrameRateAverage { get; private set; } = 0;
-
-    /// <summary>
-    /// Size capacity of datastream output buffer queue.
-    /// </summary>
-    public uint OutputBufferQueueCapacity
-    {
-        get => (uint)_outputBufferQueue.Capacity;
-        set => _outputBufferQueue.Capacity = (int)value;
-    }
 
     /// <summary>
     /// True if the acquisition engine has started and streaming is active, false if not.
@@ -176,8 +177,11 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (IsStreaming)
             Stop();
 
-        // Flush output buffer queue.      
-        _outputBufferQueue.Clear();
+        // Flush output buffer queue.
+        ClearOutputBufferQueue();
+
+        // Flush input buffer pool.
+        ClearInputBufferPool();
 
         // Reset streaming statistics.
         ResetStatistics();
@@ -220,7 +224,11 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         ResetStatistics();
 
         // Flush queue.
-        _outputBufferQueue.Clear();
+        ClearOutputBufferQueue();
+
+        // Reset input pool and pre-warm with payload-sized buffers.
+        ClearInputBufferPool();
+        PreWarmInputBufferPool();
 
         // Number of images to acquire.
         _imagesToAcquire = numImages;
@@ -262,6 +270,44 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     }
 
     /// <summary>
+    /// Rents a reusable image buffer with at least <paramref name="minimumLength"/> bytes from the input buffer pool.
+    /// </summary>
+    /// <param name="minimumLength">Minimum required number of bytes.</param>
+    /// <returns>Reusable image byte buffer.</returns>
+    internal byte[] RentInputBuffer(int minimumLength)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(minimumLength);
+
+        lock (_inputBufferPoolLock)
+        {
+            while (_inputBufferPool.Count > 0)
+            {
+                var candidate = _inputBufferPool.Dequeue();
+                if (candidate.Length >= minimumLength)
+                    return candidate;
+            }
+        }
+
+        return new byte[minimumLength]; // No suitable buffer was available in the pool, so allocate a new one.
+    }
+
+    /// <summary>
+    /// Returns an image buffer to the input buffer pool for reuse.
+    /// </summary>
+    /// <param name="buffer">Image data buffer.</param>
+    internal void ReturnInputBuffer(byte[] buffer)
+    {
+        if (buffer == null || buffer.Length == 0)
+            return;
+
+        lock (_inputBufferPoolLock)
+        {
+            if (_inputBufferPool.Count < _inputBufferPool.Capacity)
+                _inputBufferPool.Enqueue(buffer);
+        }
+    }
+
+    /// <summary>
     /// Retrieves a handle to the parent device of the datastream.
     /// </summary>
     /// <returns>Handle to the parent device.</returns>
@@ -284,6 +330,43 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         FrameRate = 0;
         FrameRateAverage = 0;
         FailedFrameCount = 0;
+    }
+
+    /// <summary>
+    /// Clears output queue and returns queued image buffers to the input buffer pool.
+    /// </summary>
+    private void ClearOutputBufferQueue()
+    {
+        while (_outputBufferQueue.IsEmpty == false)
+            ReturnInputBuffer(_outputBufferQueue.Get()?.ImageData);
+    }
+
+    /// <summary>
+    /// Clears input buffer pool.
+    /// </summary>
+    private void ClearInputBufferPool()
+    {
+        lock (_inputBufferPoolLock)
+            _inputBufferPool.Clear();
+    }
+
+    /// <summary>
+    /// Pre-allocates payload-sized buffers in the input buffer pool.
+    /// </summary>
+    private void PreWarmInputBufferPool()
+    {
+        if (_device is not GcDevice device)
+            return;
+
+        int payloadSize = (int)device.PayloadSize;
+        if (payloadSize <= 0)
+            return;
+
+        lock (_inputBufferPoolLock)
+        {
+            for (int i = 0; i < device.BufferCapacity; i++)
+                _inputBufferPool.Enqueue(new byte[payloadSize]);
+        }
     }
 
     /// <summary>
@@ -327,10 +410,17 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (buffer == null)
             return;
 
+        // If queue is full, recycle the oldest queued buffer before enqueueing this one.
+        if (_outputBufferQueue.Size == _outputBufferQueue.Capacity)
+        {
+            var recycledBuffer = _outputBufferQueue.Get();
+            ReturnInputBuffer(recycledBuffer?.ImageData);
+        }
+
         // Add image buffer to output buffer queue.
         _outputBufferQueue.Put(buffer);
 
-        // Signal that a buffer is available.
+        // Signal waiting threads that a buffer is available.
         _waitHandle.Set();
 
         // Update datastream stats.

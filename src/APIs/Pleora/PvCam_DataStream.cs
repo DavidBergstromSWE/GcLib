@@ -88,12 +88,12 @@ public sealed partial class PvCam
             //Parameters.Update();
         }
         catch (Exception) { }
-
+        
         // Reset pipeline.
         _pvPipeline.BufferCount = BufferCapacity;
         _pvPipeline.BufferSize = _pvDevice.PayloadSize;
         _pvPipeline.Reset();
-
+        
         // PC time at acquisition start.
         _pcTime0 = (ulong)DateTime.Now.Ticks;
 
@@ -228,11 +228,11 @@ public sealed partial class PvCam
     /// <returns>Image and chunkdata in a <see cref="GcBuffer"/> object.</returns>
     private unsafe GcBuffer ToGcBuffer(PvBuffer buffer)
     {
-        // Allocate new byte array to hold image data.
-        byte[] byteArray = new byte[buffer.Image.RequiredSize];
+        // Rent managed byte array to hold image data.
+        byte[] byteArray = RentInputBuffer((int)buffer.Image.RequiredSize);
 
         // Copy image data to byte array.
-        Marshal.Copy((nint)buffer.Image.DataPointer, byteArray, 0, byteArray.Length);
+        Marshal.Copy((nint)buffer.Image.DataPointer, byteArray, 0, (int)buffer.Image.RequiredSize);
 
         // Extract timestamp for image (in PC ticks).
         ulong timeStamp;
@@ -240,9 +240,6 @@ public sealed partial class PvCam
             timeStamp = _pcTime0 + (ulong)Math.Round((buffer.Timestamp - (double)_acquisitionStartTime) / _tickFrequency * 1e7); // deprecated GigeVision style
         else
             timeStamp = _pcTime0 + (ulong)Math.Round((buffer.Timestamp - (double)_acquisitionStartTime) / 100); // modern style (buffer timestamp in ns)
-
-        // Extract bit depth.
-        uint bitCount = PvImage.GetPixelBitCount(buffer.Image.PixelType);
 
         // Return new data container.
         return new GcBuffer(imageData: byteArray,

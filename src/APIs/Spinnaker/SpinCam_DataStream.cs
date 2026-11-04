@@ -128,12 +128,15 @@ public sealed partial class SpinCam
     /// </summary>
     /// <param name="image">Image buffer.</param>
     /// <returns>Converted <see cref="GcBuffer"/>.</returns>
-    private static GcBuffer ToGcBuffer(IManagedImage image)
+    private GcBuffer ToGcBuffer(IManagedImage image)
     {
         // Parse pixel format.
         PixelFormat pixelFormat = Enum.Parse<PixelFormat>(image.PixelFormat.ToString());
 
-        return new GcBuffer(image.ManagedData, image.Width, image.Height, pixelFormat, (long)image.FrameID, (ulong)DateTime.Now.Ticks);
+        byte[] imageData = RentInputBuffer(image.ManagedData.Length);
+        Buffer.BlockCopy(image.ManagedData, 0, imageData, 0, image.ManagedData.Length);
+
+        return new GcBuffer(imageData, image.Width, image.Height, pixelFormat, (long)image.FrameID, (ulong)DateTime.Now.Ticks);
     }
 
     #endregion

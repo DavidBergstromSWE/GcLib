@@ -82,6 +82,7 @@ public sealed partial class XiCam
 
         set
         {
+            // Set buffer capacity on the device if value is less than or equal to maximum allowed.
             if (value <= _xiCam.GetParamInt(PRM.BUFFERS_QUEUE_SIZE + PRMM.MAX))
             {
                 _bufferCapacity = value;
@@ -132,6 +133,8 @@ public sealed partial class XiCam
         // Timestamp in camera at acquisition start (in nanoseconds).
         _acquisitionStartTime = _xiCam.GetParamUlong(PRM.TIMESTAMP);
 
+        _xiCam.SetParam(PRM.RECENT_FRAME, 0); // Retrieve next available frame (0), instead of the most recent one (1).
+
         // Start image acquisition thread depending on buffer policy.
         _imageAcquisitionThread = BufferPolicy == BUFFERPOLICY.SAFE
             ? new Thread(ImageAcquisitionThreadSAFE)
@@ -176,16 +179,15 @@ public sealed partial class XiCam
     }
 
     /// <summary>
-    /// Image acquisition thread, based on using SAFE buffer policy version of GetImage from xiApi.NET.
+    /// Image acquisition thread, based on using SAFE buffer policy version of GetImage from xiApi.NET. The user will get a copy of the image data in a user allocated buffer.
     /// </summary>
     private void ImageAcquisitionThreadSAFE()
     {
         if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
             GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) started", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
-        // Using pre-allocated memory buffer and data copy.
-        _xiCam.GetParam(PRM.IMAGE_PAYLOAD_SIZE, out int val);
-        byte[] buffer = new byte[val];
+        // Get payload size used when renting reusable managed buffers.
+        _xiCam.GetParam(PRM.IMAGE_PAYLOAD_SIZE, out int payloadSize);
 
         uint nBufferErrors = 0; // Number of consecutive buffer errors.
         uint bufferErrorLimit = 10; // Number of consecutive buffer errors limit.
@@ -194,8 +196,9 @@ public sealed partial class XiCam
         {
             try
             {
-                _xiCam.GetImage(buffer, _timeout);
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(buffer, _xiCam.GetLastImageParams()), DateTime.Now));
+                byte[] imageData = RentInputBuffer(payloadSize);
+                _xiCam.GetImage(img_arr: imageData, timeout: _timeout); // GetImage copies data to user allocated buffer.
+                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(imageData, _xiCam.GetLastImageParams()), DateTime.Now));
                 nBufferErrors = 0;
             }
             catch (xiExc ex)
@@ -221,7 +224,7 @@ public sealed partial class XiCam
     }
 
     /// <summary>
-    /// Image acquisition thread, based on using UNSAFE buffer policy version of GetImage from xiApi.NET.
+    /// Image acquisition thread, based on using UNSAFE buffer policy version of GetImage from xiApi.NET. The user will get a pointer to an internal buffer, which can be overwritten by the device.
     /// </summary>
     private void ImageAcquisitionThreadUNSAFE()
     {
@@ -235,8 +238,10 @@ public sealed partial class XiCam
         {
             try
             {
-                _xiCam.GetImage(img_arr: out byte[] buffer, timeout: _timeout);
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(buffer, _xiCam.GetLastImageParams()), DateTime.Now));
+                _xiCam.GetImage(img_arr: out byte[] sourceBuffer, timeout: _timeout); // GetImage returns a pointer to an internal buffer.
+                byte[] imageData = RentInputBuffer(sourceBuffer.Length); // Copy data to user allocated buffer to avoid overwriting by device.
+                Buffer.BlockCopy(sourceBuffer, 0, imageData, 0, sourceBuffer.Length);
+                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(imageData, _xiCam.GetLastImageParams()), DateTime.Now));
             }
             catch (xiExc ex)
             {

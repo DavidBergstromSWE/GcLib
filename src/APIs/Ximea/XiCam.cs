@@ -69,8 +69,9 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
                                       isAccessible: false,
                                       isOpen: true);
 
-        // Set default buffer policy.
-        BufferPolicy = BUFFERPOLICY.UNSAFE;
+        // Set default buffer policy and input buffer pool capacity.
+        BufferPolicy = BUFFERPOLICY.SAFE;
+        BufferCapacity = 4;
 
         // Initialize some suitable camera settings. (remove?)
         try
@@ -84,9 +85,6 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
         {
             //
         }
-
-        // Initialize properties.
-        BufferCapacity = 4;
 
         // Retrieve collection of camera parameters.
         Parameters = ImportParameters();
