@@ -84,20 +84,19 @@ public sealed partial class VimbaCam
             if (Enum.IsDefined(pixelFormat) == false)
                 throw new NotSupportedException($"Pixel format {frame.PixelFormat} is not supported!");
 
-            // Copy image data from unmanaged memory to a rented managed byte array.
             string streamID = GetActiveDataStreamID();
-            var imageData = RentInputBuffer(streamID, (int)frame.BufferSize);
-            Marshal.Copy(frame.ImageData, imageData, 0, imageData.Length);
+            int payloadSize = (int)frame.BufferSize;
+            ulong timeStamp = (ulong)DateTime.Now.Ticks;
 
-            // Create a GcBuffer with the copied image data and frame metadata.
-            var buffer = new GcBuffer(imageData,
-                                      frame.Width,
-                                      frame.Height,
-                                      pixelFormat,
-                                      (long)frame.Id,
-                                      (ulong)DateTime.Now.Ticks);
-
-            OnNewBuffer(new NewBufferEventArgs(buffer, DateTime.Now, streamID));
+            OnNewBuffer(new NewBufferEventArgs(streamID,
+                                               DateTime.Now,
+                                               frame.Width,
+                                               frame.Height,
+                                               pixelFormat,
+                                               (long)frame.Id,
+                                               timeStamp,
+                                               payloadSize,
+                                               destination => Marshal.Copy(frame.ImageData, destination, 0, payloadSize)));
         }
         catch (Exception ex)
         {

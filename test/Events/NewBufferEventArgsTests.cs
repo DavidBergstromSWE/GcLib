@@ -16,12 +16,29 @@ public class NewBufferEventArgsTests
         var streamID = Guid.NewGuid().ToString();
 
         // Act
-        var eventArgs = new NewBufferEventArgs(buffer, receptionTime, streamID);
+        var eventArgs = new NewBufferEventArgs(streamID,
+                                               receptionTime,
+                                               buffer.Width,
+                                               buffer.Height,
+                                               buffer.PixelFormat,
+                                               buffer.FrameID,
+                                               buffer.TimeStamp,
+                                               buffer.ImageData.Length,
+                                               destination => Buffer.BlockCopy(buffer.ImageData, 0, destination, 0, buffer.ImageData.Length));
 
         // Assert
-        Assert.AreSame(buffer, eventArgs.Buffer);
-        Assert.AreEqual(receptionTime, eventArgs.ReceptionTime);
         Assert.AreEqual(streamID, eventArgs.StreamID);
+        Assert.AreEqual(receptionTime, eventArgs.ReceptionTime);
+        Assert.AreEqual(buffer.Width, eventArgs.Width);
+        Assert.AreEqual(buffer.Height, eventArgs.Height);
+        Assert.AreEqual(buffer.PixelFormat, eventArgs.PixelFormat);
+        Assert.AreEqual(buffer.FrameID, eventArgs.FrameID);
+        Assert.AreEqual(buffer.TimeStamp, eventArgs.TimeStamp);
+        Assert.AreEqual(buffer.ImageData.Length, eventArgs.PayloadSize);
+
+        byte[] copied = new byte[buffer.ImageData.Length];
+        eventArgs.CopyImageData(copied);
+        CollectionAssert.AreEqual(buffer.ImageData, copied);
     }
 
     [TestMethod]
@@ -31,7 +48,15 @@ public class NewBufferEventArgsTests
         var buffer = FakeBufferProvider.GetFakeBuffer();
 
         // Act
-        var eventArgs = new NewBufferEventArgs(buffer, DateTime.Now, string.Empty);
+        var eventArgs = new NewBufferEventArgs(string.Empty,
+                                               DateTime.Now,
+                                               buffer.Width,
+                                               buffer.Height,
+                                               buffer.PixelFormat,
+                                               buffer.FrameID,
+                                               buffer.TimeStamp,
+                                               buffer.ImageData.Length,
+                                               destination => Buffer.BlockCopy(buffer.ImageData, 0, destination, 0, buffer.ImageData.Length));
 
         // Assert
         Assert.AreEqual(string.Empty, eventArgs.StreamID);

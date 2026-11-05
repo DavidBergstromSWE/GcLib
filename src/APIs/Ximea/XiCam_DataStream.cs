@@ -186,8 +186,9 @@ public sealed partial class XiCam
         if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
             GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) started", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
-        // Get payload size used when renting reusable managed buffers.
+        // Get payload size and pre-allocate reusable managed buffer.
         _xiCam.GetParam(PRM.IMAGE_PAYLOAD_SIZE, out int payloadSize);
+        byte[] imageData = new byte[payloadSize];
 
         uint nBufferErrors = 0; // Number of consecutive buffer errors.
         uint bufferErrorLimit = 10; // Number of consecutive buffer errors limit.
@@ -196,10 +197,8 @@ public sealed partial class XiCam
         {
             try
             {
-                string streamID = GetActiveDataStreamID();
-                byte[] imageData = RentInputBuffer(streamID, payloadSize);
                 _xiCam.GetImage(img_arr: imageData, timeout: _timeout); // GetImage copies data to user allocated buffer.
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(imageData, _xiCam.GetLastImageParams()), DateTime.Now, streamID));
+                OnNewBuffer(ToNewBufferEventArgs(imageData, _xiCam.GetLastImageParams()));
                 nBufferErrors = 0;
             }
             catch (xiExc ex)
@@ -240,10 +239,7 @@ public sealed partial class XiCam
             try
             {
                 _xiCam.GetImage(img_arr: out byte[] sourceBuffer, timeout: _timeout); // GetImage returns a pointer to an internal buffer.
-                string streamID = GetActiveDataStreamID();
-                byte[] imageData = RentInputBuffer(streamID, sourceBuffer.Length); // Copy data to user allocated buffer to avoid overwriting by device.
-                Buffer.BlockCopy(sourceBuffer, 0, imageData, 0, sourceBuffer.Length);
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(imageData, _xiCam.GetLastImageParams()), DateTime.Now, streamID));
+                OnNewBuffer(ToNewBufferEventArgs(sourceBuffer, _xiCam.GetLastImageParams()));
             }
             catch (xiExc ex)
             {
@@ -268,12 +264,12 @@ public sealed partial class XiCam
     }
 
     /// <summary>
-    /// Converts image buffer to GcBuffer.
+    /// Converts image buffer and metadata to stream-transfer event data.
     /// </summary>
     /// <param name="buffer">Image buffer.</param>
     /// <param name="imgParams">Chunk data information about image.</param>
-    /// <returns>Image and chunkdata in GcBuffer object.</returns>
-    private GcBuffer ToGcBuffer(byte[] buffer, ImgParams imgParams)
+    /// <returns>Event data containing metadata and payload copy callback.</returns>
+    private NewBufferEventArgs ToNewBufferEventArgs(byte[] buffer, ImgParams imgParams)
     {
         int width = imgParams.GetWidth();
         int height = imgParams.GetHeight();
@@ -281,12 +277,15 @@ public sealed partial class XiCam
         long frameNumber = imgParams.GetFrameNum();
         ulong timeStamp = _pcTime0 + (ulong)Math.Round((imgParams.GetTimestamp() * TimeSpan.TicksPerSecond) - ((double)_acquisitionStartTime / 100));
 
-        return new GcBuffer(imageData: buffer,
-                            width: (uint)width,
-                            height: (uint)height,
-                            pixelFormat: pixelFormat,
-                            frameID: frameNumber,
-                            timeStamp: timeStamp);
+        return new NewBufferEventArgs(GetActiveDataStreamID(),
+                                      DateTime.Now,
+                                      (uint)width,
+                                      (uint)height,
+                                      pixelFormat,
+                                      frameNumber,
+                                      timeStamp,
+                                      buffer.Length,
+                                      destination => Buffer.BlockCopy(buffer, 0, destination, 0, buffer.Length));
     }
 
     /// <summary>

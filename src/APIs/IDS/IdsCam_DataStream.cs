@@ -144,7 +144,7 @@ public sealed partial class IdsCam
                 if (buffer.HasNewData())
                 {
                     // Raise new buffer event.
-                    OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(buffer), DateTime.Now, GetActiveDataStreamID()));
+                    OnNewBuffer(ToNewBufferEventArgs(buffer));
 
                     // Release buffer to the datastream for reuse.
                     _dataStream.QueueBuffer(buffer);
@@ -168,23 +168,24 @@ public sealed partial class IdsCam
     }
 
     /// <summary>
-    /// Converts a buffer from the IDSImaging Peak API to a GcBuffer containing the image data and metadata.
+    /// Converts a buffer from the IDSImaging Peak API to stream-transfer event data.
     /// </summary>
     /// <param name="buffer">The buffer to convert.</param>
-    /// <returns>The converted <see cref="GcBuffer"/>.</returns>
-    private GcBuffer ToGcBuffer(IDSImaging.Peak.API.Core.Buffer buffer)
+    /// <returns>Event data containing metadata and payload copy callback.</returns>
+    private NewBufferEventArgs ToNewBufferEventArgs(IDSImaging.Peak.API.Core.Buffer buffer)
     {
-        // Extract image data from buffer.
         int payloadSize = (int)buffer.Size();
-        byte[] imageData = RentInputBuffer(GetActiveDataStreamID(), payloadSize);
-        Marshal.Copy(buffer.BasePtr(), imageData, 0, payloadSize);
+        var sourcePtr = buffer.BasePtr();
 
-        return new GcBuffer(imageData: imageData,
-                            width: buffer.Width(),
-                            height: buffer.Height(),
-                            pixelFormat: (PixelFormat)buffer.PixelFormat(),
-                            frameID: (long)buffer.FrameID(),
-                            timeStamp: _pcTime0 + (ulong)Math.Round(buffer.Timestamp_ns() / 100d));
+        return new NewBufferEventArgs(GetActiveDataStreamID(),
+                                      DateTime.Now,
+                                      buffer.Width(),
+                                      buffer.Height(),
+                                      (PixelFormat)buffer.PixelFormat(),
+                                      (long)buffer.FrameID(),
+                                      _pcTime0 + (ulong)Math.Round(buffer.Timestamp_ns() / 100d),
+                                      payloadSize,
+                                      destination => Marshal.Copy(sourcePtr, destination, 0, payloadSize));
     }
 
     #endregion

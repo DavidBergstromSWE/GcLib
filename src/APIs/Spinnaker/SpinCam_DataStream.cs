@@ -102,7 +102,7 @@ public sealed partial class SpinCam
                     throw new SpinnakerException($"Failed to grab image", Error.SPINNAKER_ERR_INVALID_BUFFER);
 
                 // Raise new buffer event.
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(buffer), DateTime.Now, GetActiveDataStreamID()));
+                OnNewBuffer(ToNewBufferEventArgs(buffer));
 
                 // Release buffer to acquire next one.
                 buffer.Release();
@@ -124,19 +124,25 @@ public sealed partial class SpinCam
     }
 
     /// <summary>
-    /// Converts image buffer to <see cref="GcBuffer"/>.
+    /// Converts image buffer to stream-transfer event data.
     /// </summary>
     /// <param name="image">Image buffer.</param>
-    /// <returns>Converted <see cref="GcBuffer"/>.</returns>
-    private GcBuffer ToGcBuffer(IManagedImage image)
+    /// <returns>Event data containing metadata and payload copy callback.</returns>
+    private NewBufferEventArgs ToNewBufferEventArgs(IManagedImage image)
     {
         // Parse pixel format.
         PixelFormat pixelFormat = Enum.Parse<PixelFormat>(image.PixelFormat.ToString());
+        byte[] sourceData = image.ManagedData;
 
-        byte[] imageData = RentInputBuffer(GetActiveDataStreamID(), image.ManagedData.Length);
-        Buffer.BlockCopy(image.ManagedData, 0, imageData, 0, image.ManagedData.Length);
-
-        return new GcBuffer(imageData, image.Width, image.Height, pixelFormat, (long)image.FrameID, (ulong)DateTime.Now.Ticks);
+        return new NewBufferEventArgs(GetActiveDataStreamID(),
+                                      DateTime.Now,
+                                      image.Width,
+                                      image.Height,
+                                      pixelFormat,
+                                      (long)image.FrameID,
+                                      (ulong)DateTime.Now.Ticks,
+                                      sourceData.Length,
+                                      destination => Buffer.BlockCopy(sourceData, 0, destination, 0, sourceData.Length));
     }
 
     #endregion

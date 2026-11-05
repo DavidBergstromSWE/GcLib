@@ -183,15 +183,22 @@ public sealed partial class VirtualCam
         /// </summary>
         private void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            GcBuffer buffer;
+            NewBufferEventArgs eventArgs;
 
             if (TestPattern.StringValue == GcLib.TestPattern.ImageDirectory.ToString())
             {
                 if (_frameCounter <= _framePaths.Count - 1)
                 {
                     // Load image from directory.
-                    var mat = new Mat(_framePaths[(int)_frameCounter], Emgu.CV.CvEnum.ImreadModes.Unchanged);
-                    buffer = new GcBuffer(mat, _frameCounter++, (ulong)TimeStamp.Value);
+                    using var mat = new Mat(_framePaths[(int)_frameCounter], Emgu.CV.CvEnum.ImreadModes.Unchanged);
+                    var pixelFormat = EmguHelper.GetPixelFormat(mat.Depth, mat.NumberOfChannels);
+                    if (pixelFormat == GcLib.PixelFormat.InvalidPixelFormat)
+                        throw new NotSupportedException($"Pixel format {pixelFormat} is not supported!");
+
+                    eventArgs = ToNewBufferEventArgs(mat,
+                                                     pixelFormat,
+                                                     _frameCounter++,
+                                                     (ulong)TimeStamp.Value);
                 }
                 else
                 {
@@ -215,25 +222,32 @@ public sealed partial class VirtualCam
                 // Apply binning (if selected).
                 if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
                 {
-                    var mat = new Mat((int)Height.Value, (int)Width.Value, EmguHelper.GetDepthType((PixelFormat)PixelFormat.IntValue), (int)GenICamHelper.GetNumChannels((PixelFormat)PixelFormat.IntValue));
+                    using var mat = new Mat((int)Height.Value, (int)Width.Value, EmguHelper.GetDepthType((PixelFormat)PixelFormat.IntValue), (int)GenICamHelper.GetNumChannels((PixelFormat)PixelFormat.IntValue));
                     mat.SetTo(imageData);
                     CvInvoke.BoxFilter(mat, mat, EmguHelper.GetDepthType((PixelFormat)PixelFormat.IntValue), new Size((int)BinningHorizontal.Value, (int)BinningVertical.Value), new Point(-1, -1));
                     CvInvoke.Resize(mat, mat, new Size((int)Width.Value / (int)BinningHorizontal.Value, (int)Height.Value / (int)BinningVertical.Value));
-                    buffer = new GcBuffer(imageMat: mat,
-                                          pixelFormat: (PixelFormat)PixelFormat.IntValue,
-                                          frameID: _frameCounter,
-                                          timeStamp: (ulong)TimeStamp.Value);
+
+                    eventArgs = ToNewBufferEventArgs(mat,
+                                                     (PixelFormat)PixelFormat.IntValue,
+                                                     _frameCounter,
+                                                     (ulong)TimeStamp.Value);
                 }
-                else buffer = new GcBuffer(imageData: imageData,
-                                           width: (uint)Width.Value,
-                                           height: (uint)Height.Value,
-                                           pixelFormat: (PixelFormat)PixelFormat.IntValue,
-                                           frameID: _frameCounter,
-                                           timeStamp: (ulong)TimeStamp.Value);
+                else
+                {
+                    eventArgs = new NewBufferEventArgs(_virtualCam.GetActiveDataStreamID(),
+                                                       DateTime.Now,
+                                                       (uint)Width.Value,
+                                                       (uint)Height.Value,
+                                                       (PixelFormat)PixelFormat.IntValue,
+                                                       _frameCounter,
+                                                       (ulong)TimeStamp.Value,
+                                                       imageData.Length,
+                                                       destination => Buffer.BlockCopy(imageData, 0, destination, 0, imageData.Length));
+                }
             }
 
             // Raise new buffer event.
-            _virtualCam.OnNewBuffer(new NewBufferEventArgs(buffer, DateTime.Now, _virtualCam.GetActiveDataStreamID()));
+            _virtualCam.OnNewBuffer(eventArgs);
 
             // Check if acquisition is done.
             if ((AcquisitionMode.StringValue == GcLib.AcquisitionMode.SingleFrame.ToString()) || (AcquisitionMode.StringValue == GcLib.AcquisitionMode.MultiFrame.ToString() && _frameCounter == AcquisitionFrameCount.Value))
@@ -242,6 +256,25 @@ public sealed partial class VirtualCam
                 AcquisitionStop.Execute();
                 return;
             }
+        }
+
+        /// <summary>
+        /// Converts an image mat to stream-transfer event data.
+        /// </summary>
+        private NewBufferEventArgs ToNewBufferEventArgs(Mat imageMat, PixelFormat pixelFormat, long frameID, ulong timeStamp)
+        {
+            byte[] imageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
+            imageMat.CopyTo(imageData);
+
+            return new NewBufferEventArgs(_virtualCam.GetActiveDataStreamID(),
+                                          DateTime.Now,
+                                          (uint)imageMat.Width,
+                                          (uint)imageMat.Height,
+                                          pixelFormat,
+                                          frameID,
+                                          timeStamp,
+                                          imageData.Length,
+                                          destination => Buffer.BlockCopy(imageData, 0, destination, 0, imageData.Length));
         }
 
         #endregion

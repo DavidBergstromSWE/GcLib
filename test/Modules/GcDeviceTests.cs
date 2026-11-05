@@ -256,13 +256,21 @@ public class GcDeviceTests
     {
         // Arrange
         var expectedBuffer = FakeBufferProvider.GetFakeBuffer();
-        //var device = new FetchImageSuccessCam(expectedBuffer);
         var device = new Mock<MockableCam>() { CallBase = true }; // Use CallBase to allow base method calls for FetchImage.
         device.Setup(d => d.StartAcquisition()).Callback(() =>
         {
             // Simulate acquisition started and raise the NewBuffer event.
             var onNewBuffer = typeof(MockableCam).BaseType?.GetMethod("OnNewBuffer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic); // Access the protected OnNewBuffer method using reflection.
-            onNewBuffer?.Invoke(device.Object, [new NewBufferEventArgs(expectedBuffer, DateTime.Now, string.Empty)]);
+            var eventArgs = new NewBufferEventArgs(string.Empty,
+                                                   DateTime.Now,
+                                                   expectedBuffer.Width,
+                                                   expectedBuffer.Height,
+                                                   expectedBuffer.PixelFormat,
+                                                   expectedBuffer.FrameID,
+                                                   expectedBuffer.TimeStamp,
+                                                   expectedBuffer.ImageData.Length,
+                                                   destination => Buffer.BlockCopy(expectedBuffer.ImageData, 0, destination, 0, expectedBuffer.ImageData.Length));
+            onNewBuffer?.Invoke(device.Object, [eventArgs]);
         });
 
         // Act
@@ -271,7 +279,12 @@ public class GcDeviceTests
         // Assert
         Assert.IsTrue(success);
         Assert.IsNotNull(buffer);
-        Assert.AreSame(expectedBuffer, buffer);
+        Assert.AreEqual(expectedBuffer.Width, buffer.Width);
+        Assert.AreEqual(expectedBuffer.Height, buffer.Height);
+        Assert.AreEqual(expectedBuffer.PixelFormat, buffer.PixelFormat);
+        Assert.AreEqual(expectedBuffer.FrameID, buffer.FrameID);
+        Assert.AreEqual(expectedBuffer.TimeStamp, buffer.TimeStamp);
+        CollectionAssert.AreEqual(expectedBuffer.ImageData, buffer.ImageData);
     }
 
     [TestMethod]

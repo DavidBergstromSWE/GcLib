@@ -48,21 +48,6 @@ public interface IBufferProducer
     void StopAcquisition();
 
     /// <summary>
-    /// Rents a managed image buffer from the specified datastream input buffer pool.
-    /// </summary>
-    /// <param name="dataStreamID">ID of datastream to rent buffer from.</param>
-    /// <param name="minimumLength">Minimum required byte length of rented buffer.</param>
-    /// <returns>Rented image buffer.</returns>
-    byte[] RentInputBuffer(string dataStreamID, int minimumLength);
-
-    /// <summary>
-    /// Returns a managed image buffer to the specified datastream input buffer pool.
-    /// </summary>
-    /// <param name="dataStreamID">ID of datastream to return buffer to.</param>
-    /// <param name="buffer">Managed image buffer.</param>
-    void ReturnInputBuffer(string dataStreamID, byte[] buffer);
-
-    /// <summary>
     /// Event raised when acquisition is started.
     /// </summary>
     event EventHandler AcquisitionStarted;

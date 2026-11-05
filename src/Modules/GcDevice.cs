@@ -312,52 +312,6 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     }
 
     /// <summary>
-    /// Rents a managed image buffer from the currently active datastream input pool.
-    /// </summary>
-    /// <param name="minimumLength">Minimum required byte length of the rented buffer.</param>
-    /// <returns>Rented image buffer.</returns>
-    protected byte[] RentInputBuffer(int minimumLength)
-    {
-        return RentInputBuffer(GetActiveDataStreamID(), minimumLength);
-    }
-
-    /// <summary>
-    /// Rents a managed image buffer from the specified datastream input pool.
-    /// </summary>
-    /// <param name="dataStreamID">ID of datastream pool to rent from.</param>
-    /// <param name="minimumLength">Minimum required byte length of the rented buffer.</param>
-    /// <returns>Rented image buffer.</returns>
-    public byte[] RentInputBuffer(string dataStreamID, int minimumLength)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(minimumLength);
-
-        lock (_dataStreamListLock)
-        {
-            if (string.IsNullOrEmpty(dataStreamID) == false && _dataStreamList.TryGetValue(dataStreamID, out var dataStream))
-                return dataStream.RentInputBuffer(minimumLength);
-        }
-
-        return new byte[minimumLength];
-    }
-
-    /// <summary>
-    /// Returns a managed image buffer to the specified datastream input pool.
-    /// </summary>
-    /// <param name="dataStreamID">ID of datastream pool to return the buffer to.</param>
-    /// <param name="buffer">Managed image buffer.</param>
-    public void ReturnInputBuffer(string dataStreamID, byte[] buffer)
-    {
-        if (string.IsNullOrEmpty(dataStreamID) || buffer == null)
-            return;
-
-        lock (_dataStreamListLock)
-        {
-            if (_dataStreamList.TryGetValue(dataStreamID, out var dataStream))
-                dataStream.ReturnInputBuffer(buffer);
-        }
-    }
-
-    /// <summary>
     /// Fetches a single image from device, using a timeout request. To continously grab images, use <see cref="StartAcquisition"/> instead.
     /// </summary>
     /// <param name="buffer">Fetched image (or null if fetch was unsuccessful).</param>

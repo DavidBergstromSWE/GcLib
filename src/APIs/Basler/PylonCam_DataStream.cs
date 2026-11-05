@@ -114,7 +114,7 @@ public sealed partial class PylonCam
                     throw new InvalidOperationException($"Failed to grab image: {grabResult.ErrorDescription}");
 
                 // Raise new buffer event.
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(grabResult), DateTime.Now, GetActiveDataStreamID()));
+                OnNewBuffer(ToNewBufferEventArgs(grabResult));
 
                 // Stop acquisition if using SingleFrame or MultiFrame acquisition modes and the last image has been grabbed.
                 if (_camera.Parameters.Contains(PLCamera.AcquisitionMode))
@@ -146,12 +146,12 @@ public sealed partial class PylonCam
     }
 
     /// <summary>
-    /// Converts grab result to <see cref="GcBuffer"/>.
+    /// Converts a grab result to stream-transfer event data.
     /// </summary>
     /// <param name="grabResult">Grab result.</param>
-    /// <returns>Converted <see cref="GcBuffer"/>.</returns>
+    /// <returns>Event data containing metadata and payload copy callback.</returns>
     /// <exception cref="NotSupportedException">Thrown when the payload type or pixel type is not supported.</exception>
-    private GcBuffer ToGcBuffer(IGrabResult grabResult)
+    private NewBufferEventArgs ToNewBufferEventArgs(IGrabResult grabResult)
     {
         // Check if the payload type is an image.
         if (grabResult.PayloadTypeValue != PayloadType.Image)
@@ -162,20 +162,21 @@ public sealed partial class PylonCam
         if (pixelFormat == PixelFormat.InvalidPixelFormat)
             throw new NotSupportedException($"Pixel type {grabResult.PixelTypeValue} is not supported!");
 
-        // Copy pixel data to a rented byte array.
         var pixelData = (byte[])grabResult.PixelData;
-        string streamID = GetActiveDataStreamID();
-        byte[] imageData = RentInputBuffer(streamID, pixelData.Length);
-        Buffer.BlockCopy(pixelData, 0, imageData, 0, pixelData.Length);
-
-        // Alternative method using Marshal.Copy:
-        //Marshal.Copy(grabResult.PixelDataPointer, imageData, 0, (int)grabResult.PayloadSize);
 
         // Use the timestamp from the grab result if available, otherwise use the current PC time.
         // ToDo: Convert timestamp from camera specific ticks to PC ticks
         var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp;
 
-        return new GcBuffer(imageData, (uint)grabResult.Width, (uint)grabResult.Height, pixelFormat, grabResult.ImageNumber, timeStamp);
+        return new NewBufferEventArgs(GetActiveDataStreamID(),
+                                      DateTime.Now,
+                                      (uint)grabResult.Width,
+                                      (uint)grabResult.Height,
+                                      pixelFormat,
+                                      grabResult.ImageNumber,
+                                      timeStamp,
+                                      pixelData.Length,
+                                      destination => Buffer.BlockCopy(pixelData, 0, destination, 0, pixelData.Length));
     }
 
     #endregion

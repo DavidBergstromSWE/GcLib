@@ -24,10 +24,6 @@ public partial class PcoCam
         private GcEnumeration _triggerMode;
         private GcInteger _inputBufferCount;
 
-        /// <summary>
-        /// Pre-allocated (managed) pool of byte arrays for storing acquired (unmanaged) buffer data.
-        /// </summary>
-        private byte[][] _inputBufferPool;
 
         #endregion
 
@@ -183,18 +179,12 @@ public partial class PcoCam
             // Arm camera.
             LibWrapper.ArmCamera(_cameraHandle);
 
-            // Initialize managed input buffer pool.
-            _inputBufferPool = new byte[InputBufferCount.Value][];
-
             // Calculate required payload size (GenTL GetInfo method?).
             uint payloadSize = GetPayloadSize(); // buffer size (in bytes)
 
             // Allocate buffers.
             for (int i = 0; i < _bufferIndex.Length; i++)
-            {
                 LibWrapper.AllocateBuffer(_cameraHandle, ref _bufferIndex[i], (int)payloadSize, ref _buffer[i], ref _bufferEvent[i]);
-                _inputBufferPool[i] = _pcoCam.RentInputBuffer(_pcoCam.GetActiveDataStreamID(), (int)payloadSize);
-            }
 
             // Set image parameters for internal allocated resources (is this needed if PCO_ArmCamera is used?!).
             //_ = LibWrapper.PCO_SetImageParameters(_cameraHandle, width, height, IMAGEPARAMETERS_READ_WHILE_RECORDING);
@@ -301,7 +291,7 @@ public partial class PcoCam
                         nBufferError = 0;
 
                         // Raise new buffer event.
-                        _pcoCam.OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(_buffer[test], test), DateTime.Now, _pcoCam.GetActiveDataStreamID()));
+                        _pcoCam.OnNewBuffer(ToNewBufferEventArgs(_buffer[test]));
 
                         frameCounter++;
 
@@ -329,25 +319,29 @@ public partial class PcoCam
         }
 
         /// <summary>
-        /// Converts buffer pointer to <see cref="GcBuffer"/> image data container.
+        /// Converts buffer pointer to stream-transfer event data.
         /// </summary>
         /// <param name="bufferPtr">(Unmanaged) pointer to buffer data.</param>
-        /// <returns>Image and chunkdata.</returns>
-        private unsafe GcBuffer ToGcBuffer(nuint bufferPtr, int bufferIndex)
+        /// <returns>Event data containing metadata and payload copy callback.</returns>
+        private unsafe NewBufferEventArgs ToNewBufferEventArgs(nuint bufferPtr)
         {
-            // Copy image data from unmanaged pointer to pre-allocated byte array in input buffer pool.
-            Marshal.Copy((nint)bufferPtr.ToPointer(), _inputBufferPool[bufferIndex], 0, _inputBufferPool[bufferIndex].Length);
+            int payloadSize = (int)GetPayloadSize();
+            nint sourcePointer = (nint)bufferPtr.ToPointer();
 
             // Extract image header (containing frame ID and timestamp) from first 14 pixels.
-            var imageHeader = MemoryMarshal.Cast<byte, short>(new ReadOnlySpan<byte>(_inputBufferPool[bufferIndex], 0, 28));
+            byte[] headerBytes = new byte[28];
+            Marshal.Copy(sourcePointer, headerBytes, 0, headerBytes.Length);
+            var imageHeader = MemoryMarshal.Cast<byte, short>(new ReadOnlySpan<byte>(headerBytes));
 
-            // Return new data container.
-            return new GcBuffer(imageData: _inputBufferPool[bufferIndex],
-                                width: (uint)Width.Value,
-                                height: (uint)Height.Value,
-                                pixelFormat: (PixelFormat)PixelFormat.IntValue,
-                                frameID: ImageHeaderHelper.GetImageNumber(imageHeader),
-                                timeStamp: ImageHeaderHelper.GetTimestamp(imageHeader));
+            return new NewBufferEventArgs(_pcoCam.GetActiveDataStreamID(),
+                                          DateTime.Now,
+                                          (uint)Width.Value,
+                                          (uint)Height.Value,
+                                          (PixelFormat)PixelFormat.IntValue,
+                                          ImageHeaderHelper.GetImageNumber(imageHeader),
+                                          ImageHeaderHelper.GetTimestamp(imageHeader),
+                                          payloadSize,
+                                          destination => Marshal.Copy(sourcePointer, destination, 0, payloadSize));
         }
 
         #endregion

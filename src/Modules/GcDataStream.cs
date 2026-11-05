@@ -600,11 +600,20 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (string.IsNullOrEmpty(e.StreamID) == false && string.Equals(e.StreamID, StreamID, StringComparison.Ordinal) == false)
             return;
 
-        // Retrieve image data from event argument.
-        GcBuffer buffer = e.Buffer;
-
-        if (buffer == null)
+        if (e.CopyImageData == null || e.PayloadSize <= 0)
             return;
+
+        // Rent destination image data and copy payload from producer event.
+        byte[] imageData = RentInputBuffer(e.PayloadSize);
+        e.CopyImageData(imageData);
+
+        // Create stream-owned image buffer container.
+        var buffer = new GcBuffer(imageData,
+                                  e.Width,
+                                  e.Height,
+                                  e.PixelFormat,
+                                  e.FrameID,
+                                  e.TimeStamp);
 
         // Update datastream stats.
         UpdateStatistics(buffer.FrameID, buffer.TimeStamp);

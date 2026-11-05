@@ -174,7 +174,7 @@ public sealed partial class PvCam
                         nBufferError = 0;
 
                         // Raise new buffer event.
-                        OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(pvBuffer), DateTime.Now, GetActiveDataStreamID()));
+                        OnNewBuffer(ToNewBufferEventArgs(pvBuffer));
                     }
                     else throw new PvException(pvBuffer.OperationResult);
 
@@ -222,17 +222,14 @@ public sealed partial class PvCam
     }
 
     /// <summary>
-    /// Converts PvBuffer to <see cref="GcBuffer"/> object.
+    /// Converts PvBuffer to stream-transfer event data.
     /// </summary>
     /// <param name="buffer">PvBuffer containing image and chunkdata.</param>
-    /// <returns>Image and chunkdata in a <see cref="GcBuffer"/> object.</returns>
-    private unsafe GcBuffer ToGcBuffer(PvBuffer buffer)
+    /// <returns>Event data containing metadata and payload copy callback.</returns>
+    private unsafe NewBufferEventArgs ToNewBufferEventArgs(PvBuffer buffer)
     {
-        // Rent managed byte array to hold image data.
-        byte[] byteArray = RentInputBuffer(GetActiveDataStreamID(), (int)buffer.Image.RequiredSize);
-
-        // Copy image data to byte array.
-        Marshal.Copy((nint)buffer.Image.DataPointer, byteArray, 0, (int)buffer.Image.RequiredSize);
+        int payloadSize = (int)buffer.Image.RequiredSize;
+        nint sourcePointer = (nint)buffer.Image.DataPointer;
 
         // Extract timestamp for image (in PC ticks).
         ulong timeStamp;
@@ -241,13 +238,15 @@ public sealed partial class PvCam
         else
             timeStamp = _pcTime0 + (ulong)Math.Round((buffer.Timestamp - (double)_acquisitionStartTime) / 100); // modern style (buffer timestamp in ns)
 
-        // Return new data container.
-        return new GcBuffer(imageData: byteArray,
-                            width: buffer.Image.Width,
-                            height: buffer.Image.Height,
-                            pixelFormat: (PixelFormat)(int)buffer.Image.PixelType,
-                            frameID: (long)buffer.BlockID,
-                            timeStamp: timeStamp);
+        return new NewBufferEventArgs(GetActiveDataStreamID(),
+                                      DateTime.Now,
+                                      buffer.Image.Width,
+                                      buffer.Image.Height,
+                                      (PixelFormat)(int)buffer.Image.PixelType,
+                                      (long)buffer.BlockID,
+                                      timeStamp,
+                                      payloadSize,
+                                      destination => Marshal.Copy(sourcePointer, destination, 0, payloadSize));
     }
 
     /// <summary>
