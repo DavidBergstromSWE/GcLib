@@ -277,7 +277,7 @@ public sealed partial class XiCam
         long frameNumber = imgParams.GetFrameNum();
         ulong timeStamp = _pcTime0 + (ulong)Math.Round((imgParams.GetTimestamp() * TimeSpan.TicksPerSecond) - ((double)_acquisitionStartTime / 100));
 
-        return new NewBufferEventArgs(GetActiveDataStreamID(),
+        return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
                                       (uint)width,
                                       (uint)height,

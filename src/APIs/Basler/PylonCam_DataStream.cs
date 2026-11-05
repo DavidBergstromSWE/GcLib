@@ -168,7 +168,7 @@ public sealed partial class PylonCam
         // ToDo: Convert timestamp from camera specific ticks to PC ticks
         var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp;
 
-        return new NewBufferEventArgs(GetActiveDataStreamID(),
+        return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
                                       (uint)grabResult.Width,
                                       (uint)grabResult.Height,

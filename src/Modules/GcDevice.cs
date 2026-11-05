@@ -25,6 +25,11 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// </summary>
     private readonly Lock _dataStreamListLock = new();
 
+    /// <summary>
+    /// Registered stream-bound sinks for buffer and failure delivery.
+    /// </summary>
+    private readonly Dictionary<string, (Action<object, NewBufferEventArgs> OnNewBuffer, Action<object, EventArgs> OnFailedBuffer)> _bufferSinks = [];
+
     #endregion
 
     #region Properties
@@ -53,11 +58,6 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// Acquisition status of device.
     /// </summary>
     public bool IsAcquiring { get; protected set; }
-
-    /// <summary>
-    /// ID of the datastream currently owning acquisition on this device.
-    /// </summary>
-    public string ActiveDataStreamID => GetActiveDataStreamID();
 
     /// <summary>
     /// True if concurrent datastream acquisition is supported.
@@ -109,6 +109,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// <param name="eventArgs">Event arguments containing image buffer.</param>
     protected virtual void OnNewBuffer(NewBufferEventArgs eventArgs)
     {
+        DispatchNewBuffer(eventArgs);
         NewBuffer?.Invoke(this, eventArgs);
     }
 
@@ -122,6 +123,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// </summary>
     protected virtual void OnFailedBuffer()
     {
+        DispatchFailedBuffer();
         FailedBuffer?.Invoke(this, EventArgs.Empty);
     }
 
@@ -302,13 +304,105 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     public abstract void StopAcquisition();
 
     /// <summary>
-    /// Gets the currently active datastream ID.
+    /// Registers stream-bound callbacks for buffer delivery and failed-buffer notifications.
     /// </summary>
-    /// <returns>Active datastream ID (or <see langword="null"/> if no active datastream is registered).</returns>
-    protected string GetActiveDataStreamID()
+    /// <param name="dataStreamID">Unique datastream ID.</param>
+    /// <param name="onNewBuffer">Callback for new-buffer delivery for this stream.</param>
+    /// <param name="onFailedBuffer">Callback for failed-buffer notifications for this stream.</param>
+    /// <returns>Disposable registration handle.</returns>
+    public IDisposable RegisterBufferSink(string dataStreamID, Action<object, NewBufferEventArgs> onNewBuffer, Action<object, EventArgs> onFailedBuffer)
     {
+        ArgumentException.ThrowIfNullOrEmpty(dataStreamID);
+        ArgumentNullException.ThrowIfNull(onNewBuffer);
+        ArgumentNullException.ThrowIfNull(onFailedBuffer);
+
         lock (_dataStreamListLock)
-            return _dataStreamList.FirstOrDefault(kvp => kvp.Value.IsStreaming).Key;
+            _bufferSinks[dataStreamID] = (onNewBuffer, onFailedBuffer); // Register the provided callbacks for the specified datastream ID in the dictionary.
+
+        return new SinkRegistration(this, dataStreamID); // Return disposable registration handle for stream-bound sink subscription.
+    }
+
+    /// <summary>
+    /// Dispatches a new buffer to registered sink(s).
+    /// </summary>
+    /// <param name="eventArgs">Event arguments containing stream ID and payload metadata.</param>
+    private void DispatchNewBuffer(NewBufferEventArgs eventArgs)
+    {
+        // Determine which sinks to dispatch to based on the stream ID in the event arguments.
+        Action<object, NewBufferEventArgs>[] sinks;
+
+        lock (_dataStreamListLock)
+        {
+            // If a stream ID is provided, dispatch only to the sink registered for that stream ID (if any).
+            if (string.IsNullOrEmpty(eventArgs.StreamID) == false)
+            {
+                if (_bufferSinks.TryGetValue(eventArgs.StreamID, out var sink))
+                    sinks = [sink.OnNewBuffer]; // Dispatch to the sink registered for the provided stream ID.
+                else sinks = []; // Dispatch to no sinks if no sink is registered for the provided stream ID.
+            }
+            else sinks = [.. _bufferSinks.Values.Select(x => x.OnNewBuffer)]; // If no stream ID is provided, dispatch to all registered sinks.
+        }
+
+        // Invoke the new-buffer callback for each sink.
+        foreach (var sink in sinks)
+            sink(this, eventArgs);
+    }
+
+    /// <summary>
+    /// Dispatches failed-buffer notification to all registered sinks.
+    /// </summary>
+    private void DispatchFailedBuffer()
+    {
+        // Snapshot the registered sinks outside of the lock to avoid potential deadlocks during callback invocation.
+        Action<object, EventArgs>[] sinks;
+
+        lock (_dataStreamListLock)
+            sinks = [.. _bufferSinks.Values.Select(x => x.OnFailedBuffer)]; // Snapshot the registered sinks outside of the lock to avoid potential deadlocks during callback invocation.
+
+        // Invoke the failed-buffer callback for each sink.
+        foreach (var sink in sinks)
+            sink(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Removes a previously registered stream sink.
+    /// </summary>
+    /// <param name="dataStreamID">Datastream ID.</param>
+    private void UnregisterBufferSink(string dataStreamID)
+    {
+        if (string.IsNullOrEmpty(dataStreamID))
+            return;
+
+        lock (_dataStreamListLock)
+            _bufferSinks.Remove(dataStreamID); // Remove the sink associated with the provided stream ID from the dictionary.
+    }
+
+    /// <summary>
+    /// Disposable registration handle for stream-bound sink subscriptions.
+    /// </summary>
+    /// <param name="device">Device instance.</param>
+    /// <param name="dataStreamID">Datastream ID.</param>
+    private sealed class SinkRegistration(GcDevice device, string dataStreamID) : IDisposable
+    {
+        /// <summary>
+        /// Stores the GcDevice instance associated with this object.
+        /// </summary>
+        private GcDevice _device = device;
+
+        /// <summary>
+        /// Identifier for the datastream.
+        /// </summary>
+        private readonly string _dataStreamID = dataStreamID;
+
+        /// <summary>
+        /// Releases resources by unregistering the buffer sink from the current device.
+        /// </summary>
+        /// <remarks>Thread-safe and idempotent; subsequent calls have no effect after the buffer sink has
+        /// been unregistered.</remarks>
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref _device, null)?.UnregisterBufferSink(_dataStreamID);
+        }
     }
 
     /// <summary>

@@ -95,6 +95,11 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     private Task _eventDispatchTask;
 
+    /// <summary>
+    /// Registration handle for stream-bound sink callbacks in producer.
+    /// </summary>
+    private IDisposable _bufferSinkRegistration;
+
     #endregion
 
     #region Properties
@@ -232,6 +237,9 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (IsStreaming)
             Stop();
 
+        _bufferSinkRegistration?.Dispose();
+        _bufferSinkRegistration = null;
+
         // Dispose of wait handle.
         _waitHandle?.Dispose();
 
@@ -304,9 +312,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             // Number of images to acquire.
             _imagesToAcquire = numImages;
 
-            // Register to events.
-            _device.NewBuffer += OnNewBuffer;
-            _device.FailedBuffer += OnFailedBuffer;
+            // Register stream-bound sink callbacks in producer.
+            _bufferSinkRegistration = _device.RegisterBufferSink(StreamID, OnNewBuffer, OnFailedBuffer);
 
             _waitHandle.Reset();
 
@@ -322,8 +329,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         catch
         {
             // Roll back partially initialized start state.
-            _device.NewBuffer -= OnNewBuffer;
-            _device.FailedBuffer -= OnFailedBuffer;
+            _bufferSinkRegistration?.Dispose();
+            _bufferSinkRegistration = null;
             IsStreaming = false;
 
             if (eventDispatchInitialized)
@@ -344,9 +351,9 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         // Stop acquisition in device.
         _device.StopAcquisition();
 
-        // Unregister events.
-        _device.NewBuffer -= OnNewBuffer;
-        _device.FailedBuffer -= OnFailedBuffer;
+        // Unregister stream-bound sink callbacks.
+        _bufferSinkRegistration?.Dispose();
+        _bufferSinkRegistration = null;
 
         if (_deliveryMode == AcquisitionDeliveryMode.EventDrivenNonBlocking)
             StopEventDispatchPipeline();

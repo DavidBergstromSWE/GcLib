@@ -177,7 +177,7 @@ public sealed partial class IdsCam
         int payloadSize = (int)buffer.Size();
         var sourcePtr = buffer.BasePtr();
 
-        return new NewBufferEventArgs(GetActiveDataStreamID(),
+        return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
                                       buffer.Width(),
                                       buffer.Height(),

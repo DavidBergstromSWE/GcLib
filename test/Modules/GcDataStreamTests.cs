@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using GcLib.UnitTests.Utilities;
@@ -18,6 +19,11 @@ public class GcDataStreamTests
     /// Mocked acquirer of buffers.
     /// </summary>
     private readonly Mock<IBufferProducer> _mockDevice = new();
+
+    /// <summary>
+    /// Registered stream sink callbacks for simulated producer dispatch.
+    /// </summary>
+    private readonly Dictionary<string, (Action<object, NewBufferEventArgs> OnNewBuffer, Action<object, EventArgs> OnFailedBuffer)> _registeredSinks = [];
 
     /// <summary>
     /// Buffer data for testing (content unimportant).
@@ -50,6 +56,12 @@ public class GcDataStreamTests
         // Mock behaviour of device.
         _mockDevice.Setup(d => d.StartAcquisition()).Raises(d => d.AcquisitionStarted += null, EventArgs.Empty);
         _mockDevice.Setup(d => d.StopAcquisition()).Raises(d => d.AcquisitionStopped += null, EventArgs.Empty);
+        _mockDevice.Setup(d => d.RegisterBufferSink(It.IsAny<string>(), It.IsAny<Action<object, NewBufferEventArgs>>(), It.IsAny<Action<object, EventArgs>>()))
+                   .Returns<string, Action<object, NewBufferEventArgs>, Action<object, EventArgs>>((streamId, onNewBuffer, onFailedBuffer) =>
+                   {
+                       _registeredSinks[streamId] = (onNewBuffer, onFailedBuffer);
+                       return new SinkRegistration(() => _registeredSinks.Remove(streamId));
+                   });
 
         // Generate simple buffer data for testing.
         _testBuffer = FakeBufferProvider.GetFakeBuffer(3, 3, PixelFormat.Mono8);
@@ -62,6 +74,7 @@ public class GcDataStreamTests
         _dataStream.Close();
         _dataStream = null;
 
+        _registeredSinks.Clear();
         _mockDevice.Reset();
 
         _testBuffer = null;
@@ -130,7 +143,7 @@ public class GcDataStreamTests
         // Arrange
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
         _dataStream.Start();
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+        RaiseNewBuffer();
 
         // Act
         var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
@@ -153,7 +166,7 @@ public class GcDataStreamTests
         // Arrange
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
         _dataStream.Start();
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+        RaiseNewBuffer();
 
         // Act
         var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
@@ -191,8 +204,8 @@ public class GcDataStreamTests
         var firstBuffer = FakeBufferProvider.GetFakeBuffer();
         var secondBuffer = FakeBufferProvider.GetFakeBuffer();
 
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(firstBuffer, _dataStream.StreamID));
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(secondBuffer, _dataStream.StreamID));
+        RaiseNewBuffer(CreateNewBufferEventArgs(firstBuffer, _dataStream.StreamID));
+        RaiseNewBuffer(CreateNewBufferEventArgs(secondBuffer, _dataStream.StreamID));
 
         // Act
         var firstSuccess = _dataStream.RetrieveImage(out GcBuffer retrievedFirstBuffer, 0);
@@ -300,7 +313,7 @@ public class GcDataStreamTests
         Assert.IsFalse(_dataStream.IsStreaming);
 
         // Verify that NewBuffer handler was detached as part of rollback.
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+        RaiseNewBuffer();
         Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
         Assert.AreEqual<ulong>(0, _dataStream.DeliveredFrameCount);
     }
@@ -327,7 +340,7 @@ public class GcDataStreamTests
 
         // Assert
         Assert.IsTrue(_dataStream.IsStreaming);
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+        RaiseNewBuffer();
         Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
     }
 
@@ -345,7 +358,7 @@ public class GcDataStreamTests
         // Act
         _dataStream.Start((ulong)count);
         for (int i = 0; i < count; i++)
-            _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+            RaiseNewBuffer();
 
         // Assert
         Assert.IsFalse(_dataStream.IsStreaming);
@@ -405,7 +418,7 @@ public class GcDataStreamTests
         // Act
         _dataStream.Start((ulong)count);
         for (int i = 0; i < count; i++)
-            _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+            RaiseNewBuffer();
 
         // Assert
         Assert.AreEqual((ulong)count, _dataStream.DeliveredFrameCount);
@@ -510,7 +523,7 @@ public class GcDataStreamTests
         _dataStream.Start();
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+        RaiseNewBuffer();
 
         // Assert
         Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
@@ -524,7 +537,7 @@ public class GcDataStreamTests
         _dataStream.Start();
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, Guid.NewGuid().ToString()));
+        RaiseNewBuffer(CreateNewBufferEventArgs(_testBuffer, Guid.NewGuid().ToString()));
 
         // Assert
         Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
@@ -539,7 +552,7 @@ public class GcDataStreamTests
         _dataStream.Start();
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, string.Empty));
+        RaiseNewBuffer(CreateNewBufferEventArgs(_testBuffer, string.Empty));
 
         // Assert
         Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
@@ -563,13 +576,18 @@ public class GcDataStreamTests
         };
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+        RaiseNewBuffer();
 
         // Assert
         Assert.IsTrue(signal.Wait(500));
         Assert.AreEqual(1, eventCounter);
         Assert.IsNotNull(buffer);
-        Assert.AreEqual(_testBuffer, buffer);
+        Assert.AreEqual(_testBuffer.Width, buffer.Width);
+        Assert.AreEqual(_testBuffer.Height, buffer.Height);
+        Assert.AreEqual(_testBuffer.PixelFormat, buffer.PixelFormat);
+        Assert.AreEqual(_testBuffer.FrameID, buffer.FrameID);
+        Assert.AreEqual(_testBuffer.TimeStamp, buffer.TimeStamp);
+        CollectionAssert.AreEqual(_testBuffer.ImageData, buffer.ImageData);
         Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
     }
 
@@ -581,7 +599,7 @@ public class GcDataStreamTests
         _dataStream.Start();
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+        RaiseNewBuffer();
 
         // Assert
         Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
@@ -597,7 +615,7 @@ public class GcDataStreamTests
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+        RaiseNewBuffer();
 
         // Assert
         Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
@@ -616,7 +634,7 @@ public class GcDataStreamTests
 
         // Act
         for (int i = 0; i < count; i++)
-            _mockDevice.Raise(s => s.FailedBuffer += null, EventArgs.Empty);
+            RaiseFailedBuffer();
 
         // Assert
         Assert.AreEqual(count, (int)_dataStream.FailedFrameCount);
@@ -635,8 +653,8 @@ public class GcDataStreamTests
         var secondBuffer = FakeBufferProvider.GetFakeBuffer(3, 3, PixelFormat.Mono8, 3, 200);
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(firstBuffer, _dataStream.StreamID));
-        _mockDevice.Raise(s => s.NewBuffer += null, CreateNewBufferEventArgs(secondBuffer, _dataStream.StreamID));
+        RaiseNewBuffer(CreateNewBufferEventArgs(firstBuffer, _dataStream.StreamID));
+        RaiseNewBuffer(CreateNewBufferEventArgs(secondBuffer, _dataStream.StreamID));
 
         // Assert
         Assert.AreEqual<ulong>(1, _dataStream.LostFrameCount);
@@ -644,4 +662,34 @@ public class GcDataStreamTests
     }
 
     #endregion
+
+    private void RaiseNewBuffer()
+    {
+        if (_dataStream == null)
+            return;
+
+        RaiseNewBuffer(CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
+    }
+
+    private void RaiseNewBuffer(NewBufferEventArgs eventArgs)
+    {
+        foreach (var sink in _registeredSinks.Values)
+            sink.OnNewBuffer(_mockDevice.Object, eventArgs);
+    }
+
+    private void RaiseFailedBuffer()
+    {
+        foreach (var sink in _registeredSinks.Values)
+            sink.OnFailedBuffer(_mockDevice.Object, EventArgs.Empty);
+    }
+
+    private sealed class SinkRegistration(Action disposeAction) : IDisposable
+    {
+        private Action _disposeAction = disposeAction;
+
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref _disposeAction, null)?.Invoke();
+        }
+    }
 }

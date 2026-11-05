@@ -134,7 +134,7 @@ public sealed partial class SpinCam
         PixelFormat pixelFormat = Enum.Parse<PixelFormat>(image.PixelFormat.ToString());
         byte[] sourceData = image.ManagedData;
 
-        return new NewBufferEventArgs(GetActiveDataStreamID(),
+        return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
                                       image.Width,
                                       image.Height,

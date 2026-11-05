@@ -234,7 +234,7 @@ public sealed partial class VirtualCam
                 }
                 else
                 {
-                    eventArgs = new NewBufferEventArgs(_virtualCam.GetActiveDataStreamID(),
+                    eventArgs = new NewBufferEventArgs(string.Empty,
                                                        DateTime.Now,
                                                        (uint)Width.Value,
                                                        (uint)Height.Value,
@@ -266,7 +266,7 @@ public sealed partial class VirtualCam
             byte[] imageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
             imageMat.CopyTo(imageData);
 
-            return new NewBufferEventArgs(_virtualCam.GetActiveDataStreamID(),
+            return new NewBufferEventArgs(string.Empty,
                                           DateTime.Now,
                                           (uint)imageMat.Width,
                                           (uint)imageMat.Height,

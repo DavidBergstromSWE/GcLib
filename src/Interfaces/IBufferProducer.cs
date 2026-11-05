@@ -23,11 +23,6 @@ public interface IBufferProducer
     uint BufferCapacity { get; }
 
     /// <summary>
-    /// ID of the datastream currently owning acquisition on this producer.
-    /// </summary>
-    string ActiveDataStreamID { get; }
-
-    /// <summary>
     /// True if concurrent datastream acquisition is supported.
     /// </summary>
     bool SupportsConcurrentStreams { get; }
@@ -46,6 +41,15 @@ public interface IBufferProducer
     /// Stop acquiring buffers.
     /// </summary>
     void StopAcquisition();
+
+    /// <summary>
+    /// Registers a sink for stream-bound buffer delivery and returns a subscription handle.
+    /// </summary>
+    /// <param name="dataStreamID">Unique datastream ID.</param>
+    /// <param name="onNewBuffer">Callback for new buffer payloads belonging to the stream.</param>
+    /// <param name="onFailedBuffer">Callback for failed buffer notifications.</param>
+    /// <returns>Disposable registration handle.</returns>
+    IDisposable RegisterBufferSink(string dataStreamID, Action<object, NewBufferEventArgs> onNewBuffer, Action<object, EventArgs> onFailedBuffer);
 
     /// <summary>
     /// Event raised when acquisition is started.

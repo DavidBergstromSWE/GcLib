@@ -84,7 +84,7 @@ public sealed partial class VimbaCam
             if (Enum.IsDefined(pixelFormat) == false)
                 throw new NotSupportedException($"Pixel format {frame.PixelFormat} is not supported!");
 
-            string streamID = GetActiveDataStreamID();
+            const string streamID = "";
             int payloadSize = (int)frame.BufferSize;
             ulong timeStamp = (ulong)DateTime.Now.Ticks;
 

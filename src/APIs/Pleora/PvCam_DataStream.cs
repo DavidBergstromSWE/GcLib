@@ -238,7 +238,7 @@ public sealed partial class PvCam
         else
             timeStamp = _pcTime0 + (ulong)Math.Round((buffer.Timestamp - (double)_acquisitionStartTime) / 100); // modern style (buffer timestamp in ns)
 
-        return new NewBufferEventArgs(GetActiveDataStreamID(),
+        return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
                                       buffer.Image.Width,
                                       buffer.Image.Height,

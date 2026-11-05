@@ -333,7 +333,7 @@ public partial class PcoCam
             Marshal.Copy(sourcePointer, headerBytes, 0, headerBytes.Length);
             var imageHeader = MemoryMarshal.Cast<byte, short>(new ReadOnlySpan<byte>(headerBytes));
 
-            return new NewBufferEventArgs(_pcoCam.GetActiveDataStreamID(),
+            return new NewBufferEventArgs(string.Empty,
                                           DateTime.Now,
                                           (uint)Width.Value,
                                           (uint)Height.Value,
