@@ -8,7 +8,7 @@ namespace GcLib;
 /// <remarks>
 /// Creates a new instance of the class, providing data for the event.
 /// </remarks>
-/// <param name="streamID">Unique datastream ID that produced the buffer.</param>
+/// <param name="streamID">Unique ID of datastream that produced the buffer.</param>
 /// <param name="receptionTime">Reception time at host (PC).</param>
 /// <param name="width">Image width in pixels.</param>
 /// <param name="height">Image height in pixels.</param>

@@ -10,11 +10,6 @@ public sealed partial class PylonCam
     #region Fields
 
     /// <summary>
-    /// The capacity of the buffer.
-    /// </summary>
-    private uint _bufferCapacity = 10;
-
-    /// <summary>
     /// Image acquisition thread.
     /// </summary>
     private Thread _imageAcquisitionThread;
@@ -34,14 +29,11 @@ public sealed partial class PylonCam
     /// <inheritdoc/>
     public override uint BufferCapacity
     {
-        get => _bufferCapacity;
+        get;
         set
         {
-            if (IsAcquiring)
-                throw new InvalidOperationException("Unable to change buffer capacity while acquiring!");
-
-            _bufferCapacity = Math.Max(value, 1);
-            _camera.Parameters[PLStream.MaxNumBuffer].SetValue(_bufferCapacity);
+            field = Math.Max(value, 1);
+            _camera.Parameters[PLStream.MaxNumBuffer].SetValue(field); // Set the maximum number of buffers in the stream grabber.
         }
     }
 
@@ -151,7 +143,7 @@ public sealed partial class PylonCam
     /// <param name="grabResult">Grab result.</param>
     /// <returns>Event data containing metadata and payload copy callback.</returns>
     /// <exception cref="NotSupportedException">Thrown when the payload type or pixel type is not supported.</exception>
-    private NewBufferEventArgs ToNewBufferEventArgs(IGrabResult grabResult)
+    private static NewBufferEventArgs ToNewBufferEventArgs(IGrabResult grabResult)
     {
         // Check if the payload type is an image.
         if (grabResult.PayloadTypeValue != PayloadType.Image)

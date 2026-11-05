@@ -284,7 +284,7 @@ public class GcDeviceTests
         Assert.AreEqual(expectedBuffer.PixelFormat, buffer.PixelFormat);
         Assert.AreEqual(expectedBuffer.FrameID, buffer.FrameID);
         Assert.AreEqual(expectedBuffer.TimeStamp, buffer.TimeStamp);
-        CollectionAssert.AreEqual(expectedBuffer.ImageData, buffer.ImageData);
+        Assert.AreSequenceEqual(expectedBuffer.ImageData, buffer.ImageData);
     }
 
     [TestMethod]

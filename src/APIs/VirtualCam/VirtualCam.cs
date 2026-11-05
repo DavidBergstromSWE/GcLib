@@ -45,9 +45,6 @@ public sealed partial class VirtualCam : GcDevice<VirtualCam>, IDeviceFactory<Vi
         // Initialize GenApi module.
         _genApi = new GenApi(this);
 
-        // Initialize properties.
-        BufferCapacity = 1;
-
         // Retrieve collection of camera parameters.
         Parameters = ImportParameters();
 

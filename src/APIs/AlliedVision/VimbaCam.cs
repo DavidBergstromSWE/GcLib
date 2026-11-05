@@ -19,11 +19,6 @@ public sealed partial class VimbaCam : GcDevice<VimbaCam>, IDeviceFactory<VimbaC
     private readonly IOpenCamera _camera;
 
     /// <summary>
-    /// The capacity of the buffer.
-    /// </summary>
-    private uint _bufferCapacity = 4;
-
-    /// <summary>
     /// Stores the shared Vmb system instance.
     /// </summary>
     private static IVmbSystem _vmbSystem;
@@ -54,26 +49,6 @@ public sealed partial class VimbaCam : GcDevice<VimbaCam>, IDeviceFactory<VimbaC
 
         // Import parameters from the camera.
         Parameters = ImportParameters();
-    }
-
-    #endregion
-
-    #region Properties
-
-    /// <inheritdoc/>
-    public override uint PayloadSize => _camera.Stream.PayloadSize;
-
-    /// <inheritdoc/>
-    public override uint BufferCapacity
-    {
-        get => _bufferCapacity;
-        set
-        {
-            if (IsAcquiring)
-                throw new InvalidOperationException("Unable to change buffer capacity while acquiring!");
-
-            _bufferCapacity = Math.Max(value, 1);
-        }
     }
 
     #endregion

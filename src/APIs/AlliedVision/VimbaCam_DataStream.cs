@@ -16,6 +16,13 @@ public sealed partial class VimbaCam
 
     #endregion
 
+    #region Properties
+
+    /// <inheritdoc/>
+    public override uint PayloadSize => _camera.Stream.PayloadSize;
+
+    #endregion
+
     #region Public Methods
 
     /// <inheritdoc/>

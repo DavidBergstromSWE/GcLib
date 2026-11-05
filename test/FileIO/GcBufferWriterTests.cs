@@ -89,7 +89,7 @@ public class GcBufferWriterTests
         _writer.Start();
 
         // Act/Assert
-        Assert.Throws<InvalidOperationException>(() => _writer.Start());
+        Assert.Throws<InvalidOperationException>(_writer.Start);
     }
 
     [TestMethod]

@@ -261,7 +261,7 @@ public sealed partial class VirtualCam
         /// <summary>
         /// Converts an image mat to stream-transfer event data.
         /// </summary>
-        private NewBufferEventArgs ToNewBufferEventArgs(Mat imageMat, PixelFormat pixelFormat, long frameID, ulong timeStamp)
+        private static NewBufferEventArgs ToNewBufferEventArgs(Mat imageMat, PixelFormat pixelFormat, long frameID, ulong timeStamp)
         {
             byte[] imageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
             imageMat.CopyTo(imageData);

@@ -121,7 +121,7 @@ public class ByteExtensionsTests
 
         // Act
         source.GetBitRange(start: 0, length: 0, destination: destination);
-        source.GetBitRange(start: 0, length: 0, destination: Span<byte>.Empty);
+        source.GetBitRange(start: 0, length: 0, destination: []);
 
         // Assert
         Assert.AreSequenceEqual(new byte[] { 0xAA, 0x55 }, destination);

@@ -39,7 +39,7 @@ public sealed partial class IdsCam
     #region Public properties
 
     /// <inheritdoc/>
-    public override uint PayloadSize => (uint)_nodeMap.FindNode<IntegerNode>("PayloadSize").Value();
+    public override uint PayloadSize => _dataStream.PayloadSize(); // alternative: (uint)_nodeMap.FindNode<IntegerNode>("PayloadSize").Value();
 
     /// <inheritdoc/>
     public override uint BufferCapacity { get; set; }

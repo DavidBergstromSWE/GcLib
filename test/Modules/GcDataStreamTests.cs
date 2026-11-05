@@ -156,7 +156,7 @@ public class GcDataStreamTests
         Assert.AreEqual(_testBuffer.PixelFormat, buffer.PixelFormat);
         Assert.AreEqual(_testBuffer.FrameID, buffer.FrameID);
         Assert.AreEqual(_testBuffer.TimeStamp, buffer.TimeStamp);
-        CollectionAssert.AreEqual(_testBuffer.ImageData, buffer.ImageData);
+        Assert.AreSequenceEqual(_testBuffer.ImageData, buffer.ImageData);
         Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
     }
 
@@ -219,13 +219,13 @@ public class GcDataStreamTests
         Assert.AreEqual(firstBuffer.PixelFormat, retrievedFirstBuffer.PixelFormat);
         Assert.AreEqual(firstBuffer.FrameID, retrievedFirstBuffer.FrameID);
         Assert.AreEqual(firstBuffer.TimeStamp, retrievedFirstBuffer.TimeStamp);
-        CollectionAssert.AreEqual(firstBuffer.ImageData, retrievedFirstBuffer.ImageData);
+        Assert.AreSequenceEqual(firstBuffer.ImageData, retrievedFirstBuffer.ImageData);
         Assert.AreEqual(secondBuffer.Width, retrievedSecondBuffer.Width);
         Assert.AreEqual(secondBuffer.Height, retrievedSecondBuffer.Height);
         Assert.AreEqual(secondBuffer.PixelFormat, retrievedSecondBuffer.PixelFormat);
         Assert.AreEqual(secondBuffer.FrameID, retrievedSecondBuffer.FrameID);
         Assert.AreEqual(secondBuffer.TimeStamp, retrievedSecondBuffer.TimeStamp);
-        CollectionAssert.AreEqual(secondBuffer.ImageData, retrievedSecondBuffer.ImageData);
+        Assert.AreSequenceEqual(secondBuffer.ImageData, retrievedSecondBuffer.ImageData);
         Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
     }
 
@@ -587,7 +587,7 @@ public class GcDataStreamTests
         Assert.AreEqual(_testBuffer.PixelFormat, buffer.PixelFormat);
         Assert.AreEqual(_testBuffer.FrameID, buffer.FrameID);
         Assert.AreEqual(_testBuffer.TimeStamp, buffer.TimeStamp);
-        CollectionAssert.AreEqual(_testBuffer.ImageData, buffer.ImageData);
+        Assert.AreSequenceEqual(_testBuffer.ImageData, buffer.ImageData);
         Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
     }
 

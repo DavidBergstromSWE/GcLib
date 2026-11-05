@@ -129,16 +129,19 @@ public sealed partial class VirtualCam
             if (parameterName == nameof(Width))
             {
                 OffsetX.ImposeMax(WidthMax - Width);
+                PayloadSize.Value = _width.Value * _height.Value * GenICamHelper.GetBitsPerPixel((PixelFormat)PixelFormat.IntValue) / 8;
             }
 
             if (parameterName == nameof(Height))
             {
                 OffsetY.ImposeMax(HeightMax - Height);
+                PayloadSize.Value = _width.Value * _height.Value * GenICamHelper.GetBitsPerPixel((PixelFormat)PixelFormat.IntValue) / 8;
             }
 
             if (parameterName == nameof(PixelFormat))
             {
                 PixelSize.IntValue = (int)GenICamHelper.GetPixelSize((PixelFormat)PixelFormat.IntValue);
+                PayloadSize.Value = _width.Value * _height.Value * GenICamHelper.GetBitsPerPixel((PixelFormat)PixelFormat.IntValue) / 8;
             }
 
             if (parameterName == nameof(DeviceTemperatureSelector))

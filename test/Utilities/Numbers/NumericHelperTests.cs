@@ -12,44 +12,44 @@ public class NumericHelperTests
     public void ToBytes_UnsignedIntegers_ReturnsNativeByteRepresentation()
     {
         ushort[] values = [0, 0x1234, ushort.MaxValue];
-        byte[] expected = values.SelectMany(value => BitConverter.GetBytes(value)).ToArray();
+        byte[] expected = [.. values.SelectMany(BitConverter.GetBytes)];
 
         byte[] actual = NumericHelper.ToBytes(values);
 
-        CollectionAssert.AreEqual(expected, actual);
+        Assert.AreSequenceEqual(expected, actual);
     }
 
     [TestMethod]
     public void ToBytes_SignedIntegers_ReturnsNativeByteRepresentation()
     {
         int[] values = [int.MinValue, -1, 0, 0x12345678, int.MaxValue];
-        byte[] expected = values.SelectMany(value => BitConverter.GetBytes(value)).ToArray();
+        byte[] expected = [.. values.SelectMany(BitConverter.GetBytes)];
 
         byte[] actual = NumericHelper.ToBytes(values);
 
-        CollectionAssert.AreEqual(expected, actual);
+        Assert.AreSequenceEqual(expected, actual);
     }
 
     [TestMethod]
     public void ToBytes_FloatingPointValues_PreservesBitPatterns()
     {
         double[] values = [-1.5, -0.0, 0.0, double.NaN, double.PositiveInfinity];
-        byte[] expected = values.SelectMany(value => BitConverter.GetBytes(value)).ToArray();
+        byte[] expected = [.. values.SelectMany(BitConverter.GetBytes)];
 
         byte[] actual = NumericHelper.ToBytes(values);
 
-        CollectionAssert.AreEqual(expected, actual);
+        Assert.AreSequenceEqual(expected, actual);
     }
 
     [TestMethod]
     public void ToBytes_HalfValues_ReturnsNativeByteRepresentation()
     {
         Half[] values = [Half.MinValue, (Half)1.5, Half.MaxValue];
-        byte[] expected = values.SelectMany(value => BitConverter.GetBytes(value)).ToArray();
+        byte[] expected = [.. values.SelectMany(BitConverter.GetBytes)];
 
         byte[] actual = NumericHelper.ToBytes(values);
 
-        CollectionAssert.AreEqual(expected, actual);
+        Assert.AreSequenceEqual(expected, actual);
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public class NumericHelperTests
 
         byte[] actual = NumericHelper.ToBytes(values);
 
-        CollectionAssert.AreEqual(values, actual);
+        Assert.AreSequenceEqual(values, actual);
         Assert.AreNotSame(values, actual);
         actual[0] = 42;
         Assert.AreEqual((byte)0, values[0]);

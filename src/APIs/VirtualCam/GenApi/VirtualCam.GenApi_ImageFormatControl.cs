@@ -28,6 +28,7 @@ public sealed partial class VirtualCam
         private GcEnumeration _pixelSize;
         private GcEnumeration _testPattern;
         private GcString _imageDirectory;
+        private GcInteger _payloadSize;
 
         #endregion
 
@@ -140,6 +141,16 @@ public sealed partial class VirtualCam
         [Category("ImageFormatControl")]
         [DefaultValue("")]
         public GcString ImageDirectory => _imageDirectory;
+
+        #endregion
+
+        #region Transport Layer Control
+
+        /// <summary>
+        /// Gets the payload size, in bytes.
+        /// </summary>
+        [Category("TransportLayerControl")]
+        public GcInteger PayloadSize => _payloadSize;
 
         #endregion
     }

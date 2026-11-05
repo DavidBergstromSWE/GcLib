@@ -100,7 +100,7 @@ public class GcCommandTests
                                       description: "This is a unit test parameter.");
 
         // Act
-        Task task = Task.Run(() => gcCommand.Execute(), TestContext.CancellationToken);
+        Task task = Task.Run(gcCommand.Execute, TestContext.CancellationToken);
 
         // Assert
         Assert.IsFalse(gcCommand.IsDone());

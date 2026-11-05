@@ -193,7 +193,7 @@ public class EmguHelperTests
         Assert.AreSame(mat, result);
         Assert.AreEqual(DepthType.Cv16U, result.Depth);
         Assert.AreEqual(4, result.NumberOfChannels);
-        CollectionAssert.AreEqual(new double[] { 40, 80, 120, 1023 }, result.GetPixel(0, 0));
+        Assert.AreSequenceEqual([40, 80, 120, 1023], result.GetPixel(0, 0));
     }
 
     [TestMethod]
@@ -204,7 +204,7 @@ public class EmguHelperTests
 
         var result = EmguHelper.ConvertMat(mat, PixelFormat.BGR8, PixelFormat.RGB8);
 
-        CollectionAssert.AreEqual(new double[] { 30, 20, 10 }, result.GetPixel(0, 0));
+        Assert.AreSequenceEqual([30, 20, 10], result.GetPixel(0, 0));
     }
 
     [TestMethod]
@@ -321,9 +321,9 @@ public class EmguHelperTests
         byte[] defaultEndian = EmguHelper.Pack(mat, 10);
 
         // Assert
-        CollectionAssert.AreEqual(new byte[] { 0x02, 0xAA, 0x01, 0x55 }, bigEndian);
-        CollectionAssert.AreEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02 }, littleEndian);
-        CollectionAssert.AreEqual(littleEndian, defaultEndian);
+        Assert.AreSequenceEqual(new byte[] { 0x02, 0xAA, 0x01, 0x55 }, bigEndian);
+        Assert.AreSequenceEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02 }, littleEndian);
+        Assert.AreSequenceEqual(littleEndian, defaultEndian);
         Assert.AreEqual(0x155, mat.GetPixel(0, 0, 0));
         Assert.AreEqual(0x2AA, mat.GetPixel(1, 0, 0));
     }
@@ -340,14 +340,14 @@ public class EmguHelperTests
             secondRow.SetTo(new MCvScalar(4, 5, 6));
 
         Assert.IsTrue(roi.Step > roi.Cols * roi.NumberOfChannels);
-        CollectionAssert.AreEqual(new byte[] { 0x06, 0x54, 0x03, 0x21 }, EmguHelper.Pack(roi, 4, ByteExtensions.Endianness.BigEndian));
-        CollectionAssert.AreEqual(new byte[] { 0x21, 0x03, 0x54, 0x06 }, EmguHelper.Pack(roi, 4));
-        CollectionAssert.AreEqual(new double[] { 1, 2, 3 }, source.GetPixel(0, 1));
-        CollectionAssert.AreEqual(new double[] { 4, 5, 6 }, source.GetPixel(1, 1));
+        Assert.AreSequenceEqual(new byte[] { 0x06, 0x54, 0x03, 0x21 }, EmguHelper.Pack(roi, 4, ByteExtensions.Endianness.BigEndian));
+        Assert.AreSequenceEqual(new byte[] { 0x21, 0x03, 0x54, 0x06 }, EmguHelper.Pack(roi, 4));
+        Assert.AreSequenceEqual([1, 2, 3], source.GetPixel(0, 1));
+        Assert.AreSequenceEqual([4, 5, 6], source.GetPixel(1, 1));
         for (int row = 0; row < source.Rows; row++)
         {
-            CollectionAssert.AreEqual(new double[] { 15, 15, 15 }, source.GetPixel(row, 0));
-            CollectionAssert.AreEqual(new double[] { 15, 15, 15 }, source.GetPixel(row, 2));
+            Assert.AreSequenceEqual([15, 15, 15], source.GetPixel(row, 0));
+            Assert.AreSequenceEqual([15, 15, 15], source.GetPixel(row, 2));
         }
     }
 
@@ -368,8 +368,8 @@ public class EmguHelperTests
         Assert.AreEqual(0x2AA, bigEndianResult.GetPixel(1, 0, 0));
         Assert.AreEqual(0x155, littleEndianResult.GetPixel(0, 0, 0));
         Assert.AreEqual(0x2AA, littleEndianResult.GetPixel(1, 0, 0));
-        CollectionAssert.AreEqual(new byte[] { 0x02, 0xAA, 0x01, 0x55 }, bigEndian);
-        CollectionAssert.AreEqual(originalLittleEndian, littleEndian);
+        Assert.AreSequenceEqual(new byte[] { 0x02, 0xAA, 0x01, 0x55 }, bigEndian);
+        Assert.AreSequenceEqual(originalLittleEndian, littleEndian);
     }
 
     [TestMethod]
@@ -382,7 +382,7 @@ public class EmguHelperTests
 
         // Act
         Action packAction = () => EmguHelper.Pack(mat, 10, unsupportedEndianness);
-        Action unpackAction = () => EmguHelper.Unpack(new byte[] { 1, 0 }, 1, 1, 10, 1, unsupportedEndianness);
+        Action unpackAction = () => EmguHelper.Unpack([1, 0], 1, 1, 10, 1, unsupportedEndianness);
 
         // Assert
         Assert.Throws<ArgumentOutOfRangeException>(packAction);

@@ -2,7 +2,6 @@
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using SpinnakerNET;
-using SpinnakerNET.GenApi;
 
 namespace GcLib;
 
@@ -25,17 +24,7 @@ public sealed partial class SpinCam
     #region Properties
 
     /// <inheritdoc/>
-    public override uint PayloadSize
-    {
-        get
-        {
-            var val = _nodeMap.GetNode<Integer>("PayloadSize");
-            return (uint)val.Value;
-        }
-    }
-
-    /// <inheritdoc/>
-    public override uint BufferCapacity { get; set; } = 1;
+    public override uint PayloadSize => (uint)_camera.PayloadSize.Value; // alternative: (uint)_nodeMap.GetNode<Integer>("PayloadSize").Value;
 
     #endregion
 
@@ -128,7 +117,7 @@ public sealed partial class SpinCam
     /// </summary>
     /// <param name="image">Image buffer.</param>
     /// <returns>Event data containing metadata and payload copy callback.</returns>
-    private NewBufferEventArgs ToNewBufferEventArgs(IManagedImage image)
+    private static NewBufferEventArgs ToNewBufferEventArgs(IManagedImage image)
     {
         // Parse pixel format.
         PixelFormat pixelFormat = Enum.Parse<PixelFormat>(image.PixelFormat.ToString());

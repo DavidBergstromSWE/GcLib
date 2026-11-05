@@ -38,7 +38,7 @@ public class NewBufferEventArgsTests
 
         byte[] copied = new byte[buffer.ImageData.Length];
         eventArgs.CopyImageData(copied);
-        CollectionAssert.AreEqual(buffer.ImageData, copied);
+        Assert.AreSequenceEqual(buffer.ImageData, copied);
     }
 
     [TestMethod]
