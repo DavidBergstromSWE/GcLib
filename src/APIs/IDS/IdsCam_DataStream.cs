@@ -144,7 +144,7 @@ public sealed partial class IdsCam
                 if (buffer.HasNewData())
                 {
                     // Raise new buffer event.
-                    OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(buffer), DateTime.Now));
+                    OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(buffer), DateTime.Now, GetActiveDataStreamID()));
 
                     // Release buffer to the datastream for reuse.
                     _dataStream.QueueBuffer(buffer);
@@ -176,7 +176,7 @@ public sealed partial class IdsCam
     {
         // Extract image data from buffer.
         int payloadSize = (int)buffer.Size();
-        byte[] imageData = RentInputBuffer(payloadSize);
+        byte[] imageData = RentInputBuffer(GetActiveDataStreamID(), payloadSize);
         Marshal.Copy(buffer.BasePtr(), imageData, 0, payloadSize);
 
         return new GcBuffer(imageData: imageData,

@@ -20,6 +20,11 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// </summary>
     protected Dictionary<string, GcDataStream> _dataStreamList;
 
+    /// <summary>
+    /// Synchronization lock for datastream collection access.
+    /// </summary>
+    private readonly Lock _dataStreamListLock = new();
+
     #endregion
 
     #region Properties
@@ -48,6 +53,21 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// Acquisition status of device.
     /// </summary>
     public bool IsAcquiring { get; protected set; }
+
+    /// <summary>
+    /// ID of the datastream currently owning acquisition on this device.
+    /// </summary>
+    public string ActiveDataStreamID => GetActiveDataStreamID();
+
+    /// <summary>
+    /// True if concurrent datastream acquisition is supported.
+    /// </summary>
+    public virtual bool SupportsConcurrentStreams => false;
+
+    /// <summary>
+    /// Maximum number of datastreams that can acquire concurrently.
+    /// </summary>
+    public virtual uint MaxConcurrentStreams => 1;
 
     #endregion
 
@@ -190,21 +210,24 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// <returns>Opened datastream.</returns>
     public GcDataStream OpenDataStream(string dataStreamID = null, AcquisitionDeliveryMode deliveryMode = AcquisitionDeliveryMode.Queued)
     {
-        // If ID is empty then create a unique one using Guid.
-        if (string.IsNullOrEmpty(dataStreamID))
-            dataStreamID = Guid.NewGuid().ToString();
-        else
-            // else return datastream with ID if available in the list of datastreams.
-            if (_dataStreamList.TryGetValue(dataStreamID, out GcDataStream value))
-                return value;
+        lock (_dataStreamListLock)
+        {
+            // If ID is empty then create a unique one using Guid.
+            if (string.IsNullOrEmpty(dataStreamID))
+                dataStreamID = Guid.NewGuid().ToString();
+            else
+                // else return datastream with ID if available in the list of datastreams.
+                if (_dataStreamList.TryGetValue(dataStreamID, out GcDataStream value))
+                    return value;
 
-        // Create new datastream on the device, using unique ID.
-        var dataStream = new GcDataStream(bufferProducer: this, dataStreamID: dataStreamID, outputQueueCapacity: 4, deliveryMode: deliveryMode);
+            // Create new datastream on the device, using unique ID.
+            var dataStream = new GcDataStream(bufferProducer: this, dataStreamID: dataStreamID, outputQueueCapacity: 4, deliveryMode: deliveryMode);
 
-        // Add new datastream to list of available datastreams.
-        _dataStreamList.Add(dataStreamID, dataStream);
+            // Add new datastream to list of available datastreams.
+            _dataStreamList.Add(dataStreamID, dataStream);
 
-        return dataStream;
+            return dataStream;
+        }
     }
 
     /// <summary>
@@ -215,15 +238,21 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
         // Perform device-specific closure operations.
         OnDeviceClosed();
 
+        // Snapshot open datastreams outside of close loop lock.
+        GcDataStream[] dataStreams;
+        lock (_dataStreamListLock)
+            dataStreams = [.. _dataStreamList.Values];
+
         // Close all open datastreams.
-        foreach (var dataStream in _dataStreamList.Values)
+        foreach (var dataStream in dataStreams)
         {
             if (dataStream.IsOpen)
                 dataStream.Close();
         }
 
         // Clear list of datastreams.
-        _dataStreamList?.Clear();
+        lock (_dataStreamListLock)
+            _dataStreamList?.Clear();
 
         // Update device info.
         if (DeviceInfo != null)
@@ -244,9 +273,12 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// <exception cref="ArgumentOutOfRangeException"/>
     public string GetDataStreamID(uint index)
     {
-        return index < _dataStreamList.Count
-            ? _dataStreamList.ElementAt((int)index).Key
-            : throw new ArgumentOutOfRangeException($"Index {index} is out of range! Only {_dataStreamList.Count} datastreams are available.");
+        lock (_dataStreamListLock)
+        {
+            return index < _dataStreamList.Count
+                ? _dataStreamList.ElementAt((int)index).Key
+                : throw new ArgumentOutOfRangeException($"Index {index} is out of range! Only {_dataStreamList.Count} datastreams are available.");
+        }
     }
 
     /// <summary>
@@ -255,7 +287,8 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// <returns>Number of datastreams.</returns>
     public uint GetNumDataStreams()
     {
-        return (uint)_dataStreamList.Count;
+        lock (_dataStreamListLock)
+            return (uint)_dataStreamList.Count;
     }
 
     /// <summary>
@@ -269,19 +302,59 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     public abstract void StopAcquisition();
 
     /// <summary>
+    /// Gets the currently active datastream ID.
+    /// </summary>
+    /// <returns>Active datastream ID (or <see langword="null"/> if no active datastream is registered).</returns>
+    protected string GetActiveDataStreamID()
+    {
+        lock (_dataStreamListLock)
+            return _dataStreamList.FirstOrDefault(kvp => kvp.Value.IsStreaming).Key;
+    }
+
+    /// <summary>
     /// Rents a managed image buffer from the currently active datastream input pool.
     /// </summary>
     /// <param name="minimumLength">Minimum required byte length of the rented buffer.</param>
     /// <returns>Rented image buffer.</returns>
     protected byte[] RentInputBuffer(int minimumLength)
     {
+        return RentInputBuffer(GetActiveDataStreamID(), minimumLength);
+    }
+
+    /// <summary>
+    /// Rents a managed image buffer from the specified datastream input pool.
+    /// </summary>
+    /// <param name="dataStreamID">ID of datastream pool to rent from.</param>
+    /// <param name="minimumLength">Minimum required byte length of the rented buffer.</param>
+    /// <returns>Rented image buffer.</returns>
+    public byte[] RentInputBuffer(string dataStreamID, int minimumLength)
+    {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(minimumLength);
 
-        // Find the first datastream that is currently streaming, or if none are streaming, find the first datastream that is open.
-        // ToDo: Can datastream be found by ID instead of searching the list? Should the datastream be passed as an argument instead of searching the list?)
-        var activeStream = _dataStreamList.Values.FirstOrDefault(stream => stream.IsStreaming) ?? _dataStreamList.Values.FirstOrDefault(stream => stream.IsOpen);
+        lock (_dataStreamListLock)
+        {
+            if (string.IsNullOrEmpty(dataStreamID) == false && _dataStreamList.TryGetValue(dataStreamID, out var dataStream))
+                return dataStream.RentInputBuffer(minimumLength);
+        }
 
-        return activeStream?.RentInputBuffer(minimumLength) ?? new byte[minimumLength]; // No suitable buffer was available in the pool, so allocate a new one.
+        return new byte[minimumLength];
+    }
+
+    /// <summary>
+    /// Returns a managed image buffer to the specified datastream input pool.
+    /// </summary>
+    /// <param name="dataStreamID">ID of datastream pool to return the buffer to.</param>
+    /// <param name="buffer">Managed image buffer.</param>
+    public void ReturnInputBuffer(string dataStreamID, byte[] buffer)
+    {
+        if (string.IsNullOrEmpty(dataStreamID) || buffer == null)
+            return;
+
+        lock (_dataStreamListLock)
+        {
+            if (_dataStreamList.TryGetValue(dataStreamID, out var dataStream))
+                dataStream.ReturnInputBuffer(buffer);
+        }
     }
 
     /// <summary>
@@ -402,7 +475,8 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
 
     public IEnumerator<GcDataStream> GetEnumerator()
     {
-        return _dataStreamList.Values.GetEnumerator();
+        lock (_dataStreamListLock)
+            return _dataStreamList.Values.ToList().GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()

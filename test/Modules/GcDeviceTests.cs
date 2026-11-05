@@ -262,7 +262,7 @@ public class GcDeviceTests
         {
             // Simulate acquisition started and raise the NewBuffer event.
             var onNewBuffer = typeof(MockableCam).BaseType?.GetMethod("OnNewBuffer", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic); // Access the protected OnNewBuffer method using reflection.
-            onNewBuffer?.Invoke(device.Object, [new NewBufferEventArgs(expectedBuffer, DateTime.Now)]);
+            onNewBuffer?.Invoke(device.Object, [new NewBufferEventArgs(expectedBuffer, DateTime.Now, string.Empty)]);
         });
 
         // Act

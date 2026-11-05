@@ -114,7 +114,7 @@ public class GcDataStreamTests
         // Arrange
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
         _dataStream.Start();
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Act
         var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
@@ -132,7 +132,7 @@ public class GcDataStreamTests
         // Arrange
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
         _dataStream.Start();
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Act
         var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
@@ -170,8 +170,8 @@ public class GcDataStreamTests
         var firstBuffer = FakeBufferProvider.GetFakeBuffer();
         var secondBuffer = FakeBufferProvider.GetFakeBuffer();
 
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(firstBuffer, DateTime.Now));
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(secondBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(firstBuffer, DateTime.Now, _dataStream.StreamID));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(secondBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Act
         var firstSuccess = _dataStream.RetrieveImage(out GcBuffer retrievedFirstBuffer, 0);
@@ -258,6 +258,49 @@ public class GcDataStreamTests
     }
 
     [TestMethod]
+    public void Start_StartAcquisitionThrows_StateIsRolledBack()
+    {
+        // Arrange
+        _mockDevice.Setup(d => d.StartAcquisition()).Throws(new InvalidOperationException("Start failure"));
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+
+        // Act/Assert
+        Assert.Throws<InvalidOperationException>(() => _dataStream.Start());
+        Assert.IsFalse(_dataStream.IsStreaming);
+
+        // Verify that NewBuffer handler was detached as part of rollback.
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
+        Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
+        Assert.AreEqual<ulong>(0, _dataStream.DeliveredFrameCount);
+    }
+
+    [TestMethod]
+    public void Start_StartAcquisitionThrowsOnce_SecondStartSucceeds()
+    {
+        // Arrange
+        bool shouldThrow = true;
+        _mockDevice.Setup(d => d.StartAcquisition()).Callback(() =>
+        {
+            if (shouldThrow)
+            {
+                shouldThrow = false;
+                throw new InvalidOperationException("Start failure");
+            }
+        });
+
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+
+        // Act
+        Assert.Throws<InvalidOperationException>(() => _dataStream.Start());
+        _dataStream.Start();
+
+        // Assert
+        Assert.IsTrue(_dataStream.IsStreaming);
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
+        Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
+    }
+
+    [TestMethod]
     [DataRow(1)]
     [DataRow(3)]
     [DataRow(5)]
@@ -271,7 +314,7 @@ public class GcDataStreamTests
         // Act
         _dataStream.Start((ulong)count);
         for (int i = 0; i < count; i++)
-            _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+            _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Assert
         Assert.IsFalse(_dataStream.IsStreaming);
@@ -331,7 +374,7 @@ public class GcDataStreamTests
         // Act
         _dataStream.Start((ulong)count);
         for (int i = 0; i < count; i++)
-            _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+            _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Assert
         Assert.AreEqual((ulong)count, _dataStream.DeliveredFrameCount);
@@ -436,10 +479,40 @@ public class GcDataStreamTests
         _dataStream.Start();
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Assert
         Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
+    }
+
+    [TestMethod]
+    public void OnNewBuffer_StreamIDMismatch_BufferIsIgnored()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+        _dataStream.Start();
+
+        // Act
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, Guid.NewGuid().ToString()));
+
+        // Assert
+        Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
+        Assert.AreEqual<ulong>(0, _dataStream.DeliveredFrameCount);
+    }
+
+    [TestMethod]
+    public void OnNewBuffer_EmptyStreamID_BufferIsAccepted()
+    {
+        // Arrange
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+        _dataStream.Start();
+
+        // Act
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, string.Empty));
+
+        // Assert
+        Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
+        Assert.AreEqual<ulong>(1, _dataStream.DeliveredFrameCount);
     }
 
     [TestMethod]
@@ -459,7 +532,7 @@ public class GcDataStreamTests
         };
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Assert
         Assert.IsTrue(signal.Wait(500));
@@ -477,7 +550,7 @@ public class GcDataStreamTests
         _dataStream.Start();
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Assert
         Assert.AreEqual(1, _dataStream.AwaitDeliveryCount);
@@ -493,7 +566,7 @@ public class GcDataStreamTests
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(_testBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Assert
         Assert.AreEqual(0, _dataStream.AwaitDeliveryCount);
@@ -531,8 +604,8 @@ public class GcDataStreamTests
         var secondBuffer = FakeBufferProvider.GetFakeBuffer(3, 3, PixelFormat.Mono8, 3, 200);
 
         // Act
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(firstBuffer, DateTime.Now));
-        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(secondBuffer, DateTime.Now));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(firstBuffer, DateTime.Now, _dataStream.StreamID));
+        _mockDevice.Raise(s => s.NewBuffer += null, new NewBufferEventArgs(secondBuffer, DateTime.Now, _dataStream.StreamID));
 
         // Assert
         Assert.AreEqual<ulong>(1, _dataStream.LostFrameCount);

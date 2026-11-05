@@ -102,7 +102,7 @@ public sealed partial class SpinCam
                     throw new SpinnakerException($"Failed to grab image", Error.SPINNAKER_ERR_INVALID_BUFFER);
 
                 // Raise new buffer event.
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(buffer), DateTime.Now));
+                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(buffer), DateTime.Now, GetActiveDataStreamID()));
 
                 // Release buffer to acquire next one.
                 buffer.Release();
@@ -133,7 +133,7 @@ public sealed partial class SpinCam
         // Parse pixel format.
         PixelFormat pixelFormat = Enum.Parse<PixelFormat>(image.PixelFormat.ToString());
 
-        byte[] imageData = RentInputBuffer(image.ManagedData.Length);
+        byte[] imageData = RentInputBuffer(GetActiveDataStreamID(), image.ManagedData.Length);
         Buffer.BlockCopy(image.ManagedData, 0, imageData, 0, image.ManagedData.Length);
 
         return new GcBuffer(imageData, image.Width, image.Height, pixelFormat, (long)image.FrameID, (ulong)DateTime.Now.Ticks);

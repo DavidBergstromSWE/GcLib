@@ -10,8 +10,10 @@ namespace GcLib;
 /// </remarks>
 /// <param name="buffer">Buffer.</param>
 /// <param name="receptionTime">Reception time at host (PC).</param>
-public sealed class NewBufferEventArgs(GcBuffer buffer, DateTime receptionTime) : EventArgs
+/// <param name="streamID">Unique datastream ID that produced the buffer.</param>
+public sealed class NewBufferEventArgs(GcBuffer buffer, DateTime receptionTime, string streamID) : EventArgs
 {
+
     /// <summary>
     /// The new buffer.
     /// </summary>
@@ -21,4 +23,9 @@ public sealed class NewBufferEventArgs(GcBuffer buffer, DateTime receptionTime) 
     /// Reception time of new buffer at host (PC).
     /// </summary>
     public DateTime ReceptionTime { get; } = receptionTime;
+
+    /// <summary>
+    /// Unique ID of the datastream that produced the buffer.
+    /// </summary>
+    public string StreamID { get; } = streamID;
 }

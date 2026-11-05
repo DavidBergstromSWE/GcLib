@@ -233,7 +233,7 @@ public sealed partial class VirtualCam
             }
 
             // Raise new buffer event.
-            _virtualCam.OnNewBuffer(new NewBufferEventArgs(buffer, DateTime.Now));
+            _virtualCam.OnNewBuffer(new NewBufferEventArgs(buffer, DateTime.Now, _virtualCam.GetActiveDataStreamID()));
 
             // Check if acquisition is done.
             if ((AcquisitionMode.StringValue == GcLib.AcquisitionMode.SingleFrame.ToString()) || (AcquisitionMode.StringValue == GcLib.AcquisitionMode.MultiFrame.ToString() && _frameCounter == AcquisitionFrameCount.Value))

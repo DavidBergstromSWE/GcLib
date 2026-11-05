@@ -196,9 +196,10 @@ public sealed partial class XiCam
         {
             try
             {
-                byte[] imageData = RentInputBuffer(payloadSize);
+                string streamID = GetActiveDataStreamID();
+                byte[] imageData = RentInputBuffer(streamID, payloadSize);
                 _xiCam.GetImage(img_arr: imageData, timeout: _timeout); // GetImage copies data to user allocated buffer.
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(imageData, _xiCam.GetLastImageParams()), DateTime.Now));
+                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(imageData, _xiCam.GetLastImageParams()), DateTime.Now, streamID));
                 nBufferErrors = 0;
             }
             catch (xiExc ex)
@@ -239,9 +240,10 @@ public sealed partial class XiCam
             try
             {
                 _xiCam.GetImage(img_arr: out byte[] sourceBuffer, timeout: _timeout); // GetImage returns a pointer to an internal buffer.
-                byte[] imageData = RentInputBuffer(sourceBuffer.Length); // Copy data to user allocated buffer to avoid overwriting by device.
+                string streamID = GetActiveDataStreamID();
+                byte[] imageData = RentInputBuffer(streamID, sourceBuffer.Length); // Copy data to user allocated buffer to avoid overwriting by device.
                 Buffer.BlockCopy(sourceBuffer, 0, imageData, 0, sourceBuffer.Length);
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(imageData, _xiCam.GetLastImageParams()), DateTime.Now));
+                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(imageData, _xiCam.GetLastImageParams()), DateTime.Now, streamID));
             }
             catch (xiExc ex)
             {

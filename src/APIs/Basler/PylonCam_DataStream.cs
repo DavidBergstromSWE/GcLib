@@ -114,7 +114,7 @@ public sealed partial class PylonCam
                     throw new InvalidOperationException($"Failed to grab image: {grabResult.ErrorDescription}");
 
                 // Raise new buffer event.
-                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(grabResult), DateTime.Now));
+                OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(grabResult), DateTime.Now, GetActiveDataStreamID()));
 
                 // Stop acquisition if using SingleFrame or MultiFrame acquisition modes and the last image has been grabbed.
                 if (_camera.Parameters.Contains(PLCamera.AcquisitionMode))
@@ -164,7 +164,8 @@ public sealed partial class PylonCam
 
         // Copy pixel data to a rented byte array.
         var pixelData = (byte[])grabResult.PixelData;
-        byte[] imageData = RentInputBuffer(pixelData.Length);
+        string streamID = GetActiveDataStreamID();
+        byte[] imageData = RentInputBuffer(streamID, pixelData.Length);
         Buffer.BlockCopy(pixelData, 0, imageData, 0, pixelData.Length);
 
         // Alternative method using Marshal.Copy:

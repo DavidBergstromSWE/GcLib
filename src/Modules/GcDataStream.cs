@@ -291,25 +291,46 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         ClearInputBufferPool();
         PreWarmInputBufferPool();
 
-        if (_deliveryMode == AcquisitionDeliveryMode.EventDrivenNonBlocking)
-            InitializeEventDispatchPipeline();
+        bool eventDispatchInitialized = false;
 
-        // Number of images to acquire.
-        _imagesToAcquire = numImages;
+        try
+        {
+            if (_deliveryMode == AcquisitionDeliveryMode.EventDrivenNonBlocking)
+            {
+                InitializeEventDispatchPipeline();
+                eventDispatchInitialized = true;
+            }
 
-        // Register to events.
-        _device.NewBuffer += OnNewBuffer;
-        _device.FailedBuffer += OnFailedBuffer;
+            // Number of images to acquire.
+            _imagesToAcquire = numImages;
 
-        _waitHandle.Reset();
+            // Register to events.
+            _device.NewBuffer += OnNewBuffer;
+            _device.FailedBuffer += OnFailedBuffer;
 
-        // Start acquisition in camera.
-        _device.StartAcquisition();
+            _waitHandle.Reset();
 
-        IsStreaming = true;
+            // Mark as streaming before starting acquisition so producer-side stream lookups can resolve this stream during startup callbacks.
+            IsStreaming = true;
 
-        // Raise event.
-        OnStreamingStarted();
+            // Start acquisition in camera.
+            _device.StartAcquisition();
+
+            // Raise event.
+            OnStreamingStarted();
+        }
+        catch
+        {
+            // Roll back partially initialized start state.
+            _device.NewBuffer -= OnNewBuffer;
+            _device.FailedBuffer -= OnFailedBuffer;
+            IsStreaming = false;
+
+            if (eventDispatchInitialized)
+                StopEventDispatchPipeline();
+
+            throw;
+        }
     }
 
     /// <summary>
@@ -422,16 +443,13 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     private void PreWarmInputBufferPool()
     {
-        if (_device is not GcDevice device)
-            return;
-
-        int payloadSize = (int)device.PayloadSize;
+        int payloadSize = (int)_device.PayloadSize;
         if (payloadSize <= 0)
             return;
 
         lock (_inputBufferPoolLock)
         {
-            for (int i = 0; i < device.BufferCapacity; i++)
+            for (int i = 0; i < _device.BufferCapacity; i++)
                 _inputBufferPool.Enqueue(new byte[payloadSize]);
         }
     }
@@ -578,6 +596,10 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     private void OnNewBuffer(object sender, NewBufferEventArgs e)
     {
+        // Ignore buffers from other datastreams.
+        if (string.IsNullOrEmpty(e.StreamID) == false && string.Equals(e.StreamID, StreamID, StringComparison.Ordinal) == false)
+            return;
+
         // Retrieve image data from event argument.
         GcBuffer buffer = e.Buffer;
 

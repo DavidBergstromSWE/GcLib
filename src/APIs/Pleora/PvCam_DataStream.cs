@@ -174,7 +174,7 @@ public sealed partial class PvCam
                         nBufferError = 0;
 
                         // Raise new buffer event.
-                        OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(pvBuffer), DateTime.Now));
+                        OnNewBuffer(new NewBufferEventArgs(ToGcBuffer(pvBuffer), DateTime.Now, GetActiveDataStreamID()));
                     }
                     else throw new PvException(pvBuffer.OperationResult);
 
@@ -229,7 +229,7 @@ public sealed partial class PvCam
     private unsafe GcBuffer ToGcBuffer(PvBuffer buffer)
     {
         // Rent managed byte array to hold image data.
-        byte[] byteArray = RentInputBuffer((int)buffer.Image.RequiredSize);
+        byte[] byteArray = RentInputBuffer(GetActiveDataStreamID(), (int)buffer.Image.RequiredSize);
 
         // Copy image data to byte array.
         Marshal.Copy((nint)buffer.Image.DataPointer, byteArray, 0, (int)buffer.Image.RequiredSize);

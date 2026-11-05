@@ -85,7 +85,8 @@ public sealed partial class VimbaCam
                 throw new NotSupportedException($"Pixel format {frame.PixelFormat} is not supported!");
 
             // Copy image data from unmanaged memory to a rented managed byte array.
-            var imageData = RentInputBuffer((int)frame.BufferSize);
+            string streamID = GetActiveDataStreamID();
+            var imageData = RentInputBuffer(streamID, (int)frame.BufferSize);
             Marshal.Copy(frame.ImageData, imageData, 0, imageData.Length);
 
             // Create a GcBuffer with the copied image data and frame metadata.
@@ -96,7 +97,7 @@ public sealed partial class VimbaCam
                                       (long)frame.Id,
                                       (ulong)DateTime.Now.Ticks);
 
-            OnNewBuffer(new NewBufferEventArgs(buffer, DateTime.Now));
+            OnNewBuffer(new NewBufferEventArgs(buffer, DateTime.Now, streamID));
         }
         catch (Exception ex)
         {
