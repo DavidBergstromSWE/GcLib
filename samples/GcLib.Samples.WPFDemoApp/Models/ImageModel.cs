@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ControlzEx.Standard;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using GcLib;
@@ -363,16 +365,14 @@ internal class ImageModel : ObservableObject, IXmlSerializable
             throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");
 
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
-        var mat = buffer.ToMat();
+        var mat = buffer.ToMat(false);
 
         // Normalize (to 8 bits).
         if (EmguHelper.GetBitDepth(mat.Depth) > 8)
             CvInvoke.Normalize(src: mat, dst: mat, alpha: 0, beta: 255, normType: NormType.MinMax, dType: DepthType.Cv8U);
-
-        // Adjust brightness.
-        mat += 5.1 * Brightness - 255;
-        //mat *= Contrast / 50d;
-        mat *= Contrast * Contrast * 4d / 10000;
+ 
+        // Adjust brightness and contrast.
+        CvInvoke.ConvertScaleAbs(src: mat, dst: mat, scale: Contrast * Contrast * 4d / 10000, shift: 5.1 * Brightness - 255);
 
         // Flip (if requested).
         if (FlipHorizontal)
@@ -380,7 +380,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         if (FlipVertical)
             CvInvoke.Flip(mat, mat, FlipType.Vertical);
 
-        // Instantiate new output buffer (allocates new memory!).
+        // Instantiate new output buffer (allocates new memory).
         var output = new GcBuffer(mat, EmguHelper.GetPixelFormat(mat.Depth, mat.NumberOfChannels), buffer.FrameID, buffer.TimeStamp);
 
         // Dipose mat.

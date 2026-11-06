@@ -446,18 +446,12 @@ public sealed class GcBuffer
         if (otherBuffer.Width != Width || otherBuffer.Height != Height || otherBuffer.PixelFormat != PixelFormat || otherBuffer.FrameID != FrameID || otherBuffer.TimeStamp != TimeStamp)
             return false; // Metadata are not equal.
 
-        if (ImageData.AsSpan().SequenceEqual(otherBuffer.ImageData) == false)
-            return false;
-
         return true;
     }
 
     public override int GetHashCode()
     {
         var imageHash = new HashCode();
-
-        // Add the hash code of the image data to the hash code of the metadata.
-        imageHash.AddBytes(ImageData.AsSpan());
 
         // Combine the hash codes of the metadata and the image data.
         return HashCode.Combine(
