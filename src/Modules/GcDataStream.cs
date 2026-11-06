@@ -347,6 +347,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// <returns>Reusable image byte buffer.</returns>
     internal byte[] RentInputBuffer(int minimumLength)
     {
+        // ToDo: Implement bucketed size-class pooling?
+
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(minimumLength);
 
         lock (_inputBufferPoolLock)
@@ -373,7 +375,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
 
         lock (_inputBufferPoolLock)
         {
-            if (_inputBufferPool.Count < _inputBufferPool.Capacity)
+            if (_inputBufferPool.Count < _device.BufferCapacity)
                 _inputBufferPool.Enqueue(buffer);
         }
     }

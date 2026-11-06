@@ -136,27 +136,28 @@ public sealed class GcBuffer
     /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
     /// <exception cref="ArgumentException">Thrown if the image data is empty or if the image is incompatible with the specified pixel format.</exception>
     public GcBuffer(Mat imageMat, PixelFormat pixelFormat, long frameID, ulong timeStamp)
+        : this(imageMat, pixelFormat, frameID, timeStamp, outputBuffer: null)
     {
-        if (imageMat.IsEmpty)
-            throw new ArgumentException($"Image data is empty!", nameof(imageMat));
+    }
 
-        // Validate that the specified pixel format is not packed, as packed pixel formats are not supported.
-        if (GenICamHelper.IsPacked(pixelFormat))
-            throw new ArgumentException($"Packed pixel formats are not supported!", nameof(pixelFormat));
+    /// <summary>
+    /// Creates a new data container for the storage of an image buffer. The image data is copied from the provided <see cref="Mat"/>, where data is assumed to be stored in a pixel format specified in <paramref name="pixelFormat"/>.
+    /// </summary>
+    /// <remarks>
+    /// Uses provided <paramref name="outputBuffer"/> when it is large enough, otherwise allocates a new array.
+    /// </remarks>
+    /// <param name="imageMat">Image in <see cref="Mat"/> format.</param>
+    /// <param name="pixelFormat">Pixel format (GenICam PFNC) used in <paramref name="imageMat"/>.</param>
+    /// <param name="frameID">Frame ID.</param>
+    /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
+    /// <param name="outputBuffer">Optional pre-allocated byte array for image copy destination.</param>
+    /// <exception cref="ArgumentException">Thrown if the image data is empty or if the image is incompatible with the specified pixel format.</exception>
+    public GcBuffer(Mat imageMat, PixelFormat pixelFormat, long frameID, ulong timeStamp, byte[] outputBuffer)
+    {
+        int requiredBytes = ValidateMatAndGetRequiredBytes(imageMat, pixelFormat);
 
-        // Validate that the number of channels in the Mat matches the expected number of channels for the specified pixel format.
-        var expectedChannels = GenICamHelper.GetNumChannels(pixelFormat);
-        if (imageMat.NumberOfChannels != expectedChannels)
-            throw new ArgumentException($"Mat image is incompatible with the specified pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {expectedChannels}!");
-
-        // Validate that the bit depth of the Mat matches the expected bit depth for the specified pixel format.
-        var expectedBitDepth = GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat);
-        var actualBitDepth = EmguHelper.GetBitDepth(imageMat.Depth);
-        if (actualBitDepth != expectedBitDepth)
-            throw new ArgumentException($"Mat image is incompatible with the specified pixel format: Mat storage depth is {actualBitDepth} bits, while pixel format requires {expectedBitDepth} bits.");
-
-        // Allocate new memory for image data.
-        ImageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
+        // Allocate new memory for image data when no reusable output buffer is provided.
+        ImageData = outputBuffer != null && outputBuffer.Length >= requiredBytes ? outputBuffer : new byte[requiredBytes];
 
         // Copy image data.
         imageMat.CopyTo(ImageData);
@@ -190,8 +191,10 @@ public sealed class GcBuffer
         if (pixelFormat == PixelFormat.InvalidPixelFormat)
             throw new NotSupportedException($"Pixel format {pixelFormat} is not supported!");
 
+        int requiredBytes = ValidateMatAndGetRequiredBytes(imageMat, pixelFormat);
+
         // Allocate new memory for image data.
-        ImageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
+        ImageData = new byte[requiredBytes];
 
         // Copy image data.
         imageMat.CopyTo(ImageData);
@@ -201,6 +204,40 @@ public sealed class GcBuffer
         PixelFormat = pixelFormat;
         FrameID = frameID;
         TimeStamp = timeStamp;
+    }
+
+    /// <summary>
+    /// Validates that the image Mat is compatible with the specified pixel format and returns the required buffer size
+    /// in bytes.
+    /// </summary>
+    /// <param name="imageMat">Image data to validate.</param>
+    /// <param name="pixelFormat">Pixel format to validate against the image data.</param>
+    /// <returns>The total number of bytes required to store the image data.</returns>
+    /// <exception cref="ArgumentException">Thrown when image data is empty, when the pixel format is packed, when the channel count does not match the
+    /// pixel format, or when the Mat bit depth does not match the pixel format.</exception>
+    private static int ValidateMatAndGetRequiredBytes(Mat imageMat, PixelFormat pixelFormat)
+    {
+        // ToDo: Split validation into separate methods for each check, to provide more specific error messages?
+
+        if (imageMat.IsEmpty)
+            throw new ArgumentException($"Image data is empty!", nameof(imageMat));
+
+        // Validate that the specified pixel format is not packed, as packed pixel formats are not supported.
+        if (GenICamHelper.IsPacked(pixelFormat))
+            throw new ArgumentException($"Packed pixel formats are not supported!", nameof(pixelFormat));
+
+        // Validate that the number of channels in the Mat matches the expected number of channels for the specified pixel format.
+        var expectedChannels = GenICamHelper.GetNumChannels(pixelFormat);
+        if (imageMat.NumberOfChannels != expectedChannels)
+            throw new ArgumentException($"Mat image is incompatible with the specified pixel format: Number of channels in image is {imageMat.NumberOfChannels}, while pixel format uses {expectedChannels}!");
+
+        // Validate that the bit depth of the Mat matches the expected bit depth for the specified pixel format.
+        var expectedBitDepth = GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat);
+        var actualBitDepth = EmguHelper.GetBitDepth(imageMat.Depth);
+        if (actualBitDepth != expectedBitDepth)
+            throw new ArgumentException($"Mat image is incompatible with the specified pixel format: Mat storage depth is {actualBitDepth} bits, while pixel format requires {expectedBitDepth} bits.");
+
+        return imageMat.Total.ToInt32() * imageMat.ElementSize;
     }
 
     /// <summary>

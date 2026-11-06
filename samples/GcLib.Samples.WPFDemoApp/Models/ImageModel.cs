@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using ControlzEx.Standard;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using GcLib;
@@ -63,6 +61,16 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     /// Queue of buffers pending processing.
     /// </summary>
     private readonly ConcurrentQueue<GcBuffer> _pendingBuffers = new();
+
+    /// <summary>
+    /// Pool of reusable byte arrays used for processed image output buffers.
+    /// </summary>
+    private readonly ConcurrentQueue<byte[]> _processedOutputBufferPool = new();
+
+    /// <summary>
+    /// Maximum number of reusable arrays kept in the processed output buffer pool.
+    /// </summary>
+    private const int ProcessedOutputBufferPoolCapacity = 4;
 
     /// <summary>
     /// Flag indicating if queued buffer processing is currently running.
@@ -128,8 +136,15 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         get;
         private set
         {
-            if (SetProperty(ref field, value) && field != null)
-                OnProcessedImageAdded(field);
+            var previous = field;
+            if (SetProperty(ref field, value))
+            {
+                if (previous != null)
+                    ReturnProcessedOutputBuffer(previous.ImageData);
+
+                if (field != null)
+                    OnProcessedImageAdded(field);
+            }
         }
     }
 
@@ -314,6 +329,10 @@ internal class ImageModel : ObservableObject, IXmlSerializable
     {
         RawImage = null;
         ProcessedImage = null;
+
+        while (_processedOutputBufferPool.TryDequeue(out _))
+        {
+        }
     }
 
     /// <inheritdoc/>
@@ -365,7 +384,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
             throw new NotSupportedException($"Pixel format {buffer.PixelFormat} is not supported!");
 
         // Convert to Mat (allocates new memory to keep raw image data unchanged).
-        var mat = buffer.ToMat(false);
+        using var mat = buffer.ToMat(false);
 
         // Normalize (to 8 bits).
         if (EmguHelper.GetBitDepth(mat.Depth) > 8)
@@ -380,11 +399,15 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         if (FlipVertical)
             CvInvoke.Flip(mat, mat, FlipType.Vertical);
 
-        // Instantiate new output buffer (allocates new memory).
-        var output = new GcBuffer(mat, EmguHelper.GetPixelFormat(mat.Depth, mat.NumberOfChannels), buffer.FrameID, buffer.TimeStamp);
+        int requiredBytes = mat.Total.ToInt32() * mat.ElementSize;
+        byte[] outputData = RentProcessedOutputBuffer(requiredBytes);
 
-        // Dipose mat.
-        mat.Dispose();
+        // Instantiate new output buffer (allocates new memory).
+        var output = new GcBuffer(mat,
+                                  EmguHelper.GetPixelFormat(mat.Depth, mat.NumberOfChannels),
+                                  buffer.FrameID,
+                                  buffer.TimeStamp,
+                                  outputData);
 
         return output;
     }
@@ -446,6 +469,39 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         while (_pendingBuffers.TryDequeue(out _))
         {
         }
+
+        while (_processedOutputBufferPool.TryDequeue(out _))
+        {
+        }
+    }
+
+    /// <summary>
+    /// Rents a reusable byte array for processed image output.
+    /// </summary>
+    /// <param name="minimumLength">Minimum required size in bytes.</param>
+    /// <returns>Reusable output byte array.</returns>
+    private byte[] RentProcessedOutputBuffer(int minimumLength)
+    {
+        while (_processedOutputBufferPool.TryDequeue(out var candidate))
+        {
+            if (candidate.Length >= minimumLength)
+                return candidate;
+        }
+
+        return new byte[minimumLength];
+    }
+
+    /// <summary>
+    /// Returns a processed output buffer to the pool for reuse.
+    /// </summary>
+    /// <param name="buffer">Output buffer to return.</param>
+    private void ReturnProcessedOutputBuffer(byte[] buffer)
+    {
+        if (buffer == null || buffer.Length == 0)
+            return;
+
+        if (_processedOutputBufferPool.Count < ProcessedOutputBufferPoolCapacity)
+            _processedOutputBufferPool.Enqueue(buffer);
     }
 
     /// <summary>
