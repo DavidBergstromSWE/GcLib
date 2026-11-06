@@ -210,7 +210,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// <param name="dataStreamID">(Optional) Unique ID of the datastream.</param>
     /// <param name="deliveryMode">(Optional) Delivery mode for the datastream.</param>
     /// <returns>Opened datastream.</returns>
-    public GcDataStream OpenDataStream(string dataStreamID = null, AcquisitionDeliveryMode deliveryMode = AcquisitionDeliveryMode.Queued)
+    public GcDataStream OpenDataStream(string dataStreamID = null, AcquisitionDeliveryMode deliveryMode = AcquisitionDeliveryMode.Synchronous)
     {
         lock (_dataStreamListLock)
         {
@@ -414,7 +414,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     public bool FetchImage(out GcBuffer buffer, uint timeout = 1000)
     {
         // Open a temporary datastream for fetching a single image, using queued delivery mode.
-        var dataStream = OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Queued);
+        var dataStream = OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Synchronous);
         dataStream.Start(1);
         var result = dataStream.RetrieveImage(out buffer, (int)timeout);
         dataStream.Stop();

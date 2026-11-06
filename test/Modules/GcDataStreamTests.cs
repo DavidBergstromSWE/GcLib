@@ -110,13 +110,13 @@ public class GcDataStreamTests
     }
 
     [TestMethod]
-    public void Constructor_EventDrivenNonBlocking_DeliveryModeIsSet()
+    public void Constructor_Asynchronous_DeliveryModeIsSet()
     {
         // Arrange/Act
-        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.Asynchronous);
 
         // Assert
-        Assert.AreEqual(AcquisitionDeliveryMode.EventDrivenNonBlocking, _dataStream.DeliveryMode);
+        Assert.AreEqual(AcquisitionDeliveryMode.Asynchronous, _dataStream.DeliveryMode);
     }
 
     #endregion
@@ -161,10 +161,10 @@ public class GcDataStreamTests
     }
 
     [TestMethod]
-    public void RetrieveImage_EventDrivenNonBlocking_ReturnsFalse()
+    public void RetrieveImage_Asynchronous_ReturnsFalse()
     {
         // Arrange
-        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.Asynchronous);
         _dataStream.Start();
         RaiseNewBuffer();
 
@@ -560,10 +560,10 @@ public class GcDataStreamTests
     }
 
     [TestMethod]
-    public void OnNewBuffer_EventDrivenNonBlocking_BufferTransferredIsRaisedAndNotQueued()
+    public void OnNewBuffer_Asynchronous_BufferTransferredIsRaisedAndNotQueued()
     {
         // Arrange
-        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
+        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString(), deliveryMode: AcquisitionDeliveryMode.Asynchronous);
         _dataStream.Start();
         using var signal = new ManualResetEventSlim(false);
         int eventCounter = 0;

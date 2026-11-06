@@ -96,10 +96,10 @@ public class GcDeviceTests
         _device = new Mock<MockableCam>();
 
         // Act
-        var dataStream = _device.Object.OpenDataStream(deliveryMode: AcquisitionDeliveryMode.EventDrivenNonBlocking);
+        var dataStream = _device.Object.OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Asynchronous);
 
         // Assert
-        Assert.AreEqual(AcquisitionDeliveryMode.EventDrivenNonBlocking, dataStream.DeliveryMode);
+        Assert.AreEqual(AcquisitionDeliveryMode.Asynchronous, dataStream.DeliveryMode);
     }
 
     [TestMethod]

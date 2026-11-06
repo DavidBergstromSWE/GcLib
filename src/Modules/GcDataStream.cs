@@ -9,29 +9,17 @@ using GcLib.Utilities.Numbers;
 namespace GcLib;
 
 /// <summary>
-/// Defines how buffers are delivered from datastream to consumers.
-/// </summary>
-public enum AcquisitionDeliveryMode
-{
-    /// <summary>
-    /// Buffers are enqueued to output buffer queue and can be retrieved through <see cref="GcDataStream.RetrieveImage(out GcBuffer, int)"/>.
-    /// </summary>
-    Queued,
-
-    /// <summary>
-    /// Buffers are delivered using <see cref="GcDataStream.BufferTransferred"/> from a non-blocking dispatcher.
-    /// </summary>
-    EventDrivenNonBlocking
-}
-
-/// <summary>
 /// Represents the datastream level in the GenICam/GenTL standard module hierarchy, providing an acquisition engine and being responsible for transferring images from device to image data consumers. 
 /// </summary>
+/// <remarks>Buffers can be transferred synchronously or asynchronously according to the configured <see cref="AcquisitionDeliveryMode"/>.
+/// In synchronous mode, buffers are enqueued to an internal output buffer queue and can be retrieved by consumers through <see cref="RetrieveImage(out GcBuffer, int)"/>.
+/// In asynchronous mode, buffers are delivered to consumers through <see cref="BufferTransferred"/> events using a non-blocking event dispatcher.
+/// </remarks>
 /// <param name="bufferProducer">Buffer producer.</param>
 /// <param name="dataStreamID">Unique datastream ID.</param>
-/// <param name="outputQueueCapacity">Maximum size of output buffer queue in <see cref="AcquisitionDeliveryMode.Queued"/> mode.</param>
+/// <param name="outputQueueCapacity">Maximum size of output buffer queue in <see cref="AcquisitionDeliveryMode.Synchronous"/> mode.</param>
 /// <param name="deliveryMode">Delivery mode of transferred image buffers.</param>
-public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStreamID, int outputQueueCapacity = 4, AcquisitionDeliveryMode deliveryMode = AcquisitionDeliveryMode.Queued) : IBufferStream
+public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStreamID, int outputQueueCapacity = 4, AcquisitionDeliveryMode deliveryMode = AcquisitionDeliveryMode.Synchronous) : IBufferStream
 {
     #region Fields
 
@@ -46,12 +34,12 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     private readonly AcquisitionDeliveryMode _deliveryMode = deliveryMode;
 
     /// <summary>
-    /// Output buffer queue, containing images successfully transferred from device input buffer pool and available to GenTL consumer.
+    /// Output buffer queue, containing images successfully transferred from input buffer pool (and available to GenTL consumer).
     /// </summary>
     private readonly CircularBuffer<GcBuffer> _outputBufferQueue = new(capacity: outputQueueCapacity, allowOverwrite: true);
 
     /// <summary>
-    /// Provides a synchronization event used to block and release a waiting thread.
+    /// Provides a synchronization event used to block and release waiting threads.
     /// </summary>
     private readonly AutoResetEvent _waitHandle = new(false);
 
@@ -96,7 +84,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     private Task _eventDispatchTask;
 
     /// <summary>
-    /// Registration handle for stream-bound sink callbacks in producer.
+    /// Registration handle for stream-bound sink callbacks in producer. 
     /// </summary>
     private IDisposable _bufferSinkRegistration;
 
@@ -159,70 +147,35 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     #region Events
 
     /// <summary>
-    /// Event announcing that an image buffer has been successfully transferred from the camera to the datastream, where the image buffer is supplied with the event.
+    /// Event announcing that an image buffer has been successfully transferred from device to datastream, where the image buffer is supplied with the event.
     /// </summary>
+    /// <remarks>This event will only be raised in <see cref="AcquisitionDeliveryMode.Asynchronous"/> delivery mode.</remarks>
     public event EventHandler<BufferTransferredEventArgs> BufferTransferred;
 
     /// <summary>
-    /// Event-invoking method announcing that an image buffer has been successfully transferred from the camera to the datastream, where the image buffer is supplied with the event.
+    /// Event announcing that a new buffer has been received from device and is available for retrieval. Use <see cref="RetrieveImage(out GcBuffer, int)"/> to retrieve the buffer.
     /// </summary>
-    /// <param name="buffer">Image buffer.</param>
-    private void OnBufferTransferred(GcBuffer buffer)
-    {
-        BufferTransferred?.Invoke(this, new BufferTransferredEventArgs(buffer));
-    }
-
-    /// <summary>
-    /// Event announcing that a new buffer is added to the output buffer queue, indicating to consumers that data is available for retrieval and further processing. Use <see cref="GcDataStream.RetrieveImage(out GcBuffer, int)"/> to retrieve the buffer from the queue.
-    /// </summary>
+    /// <remarks>This event will only be raised in <see cref="AcquisitionDeliveryMode.Synchronous"/> delivery mode.</remarks>
     public event EventHandler NewBuffer;
-
-    /// <summary>
-    /// Raises the <see cref="NewBuffer"/> event.
-    /// </summary>
-    private void OnNewBuffer()
-    {
-        NewBuffer?.Invoke(this, EventArgs.Empty);
-    }
 
     /// <summary>
     /// Event announcing that acquisition in the datastream has been stopped.
     /// </summary>
     public event EventHandler StreamingStopped;
 
-    /// <summary>
-    /// Event-invoking method announcing that acquisition in the datastream has been stopped.
-    /// </summary>
-    private void OnStreamingStopped()
-    {
-        StreamingStopped?.Invoke(this, EventArgs.Empty);
-    }
+
 
     /// <summary>
     /// Event announcing that acquisition in the datastream has been started.
     /// </summary>
     public event EventHandler StreamingStarted;
 
-    /// <summary>
-    /// Event-invoking method announcing that acquisition in the datastream has been started.
-    /// </summary>
-    private void OnStreamingStarted()
-    {
-        StreamingStarted?.Invoke(this, EventArgs.Empty);
-    }
+
 
     /// <summary>
     /// Event announcing that an image frame has been dropped (lost) during acquisition, where the total (aggregated) number of frames dropped from the datastream is provided with the event.
     /// </summary>
     public event EventHandler<FrameDroppedEventArgs> FrameDropped;
-
-    /// <summary>
-    /// Event-invoking method announcing that an image frame has been dropped (lost) during acquisition.
-    /// </summary>
-    private void OnFrameDropped()
-    {
-        FrameDropped?.Invoke(this, new FrameDroppedEventArgs(LostFrameCount));
-    }
 
     #endregion
 
@@ -233,10 +186,11 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     public void Close()
     {
-        // Stop active acquisition and unregister from NewBuffer events.
+        // Stop acquisition if it is currently active.
         if (IsStreaming)
             Stop();
 
+        // Unregister stream-bound sink callbacks.
         _bufferSinkRegistration?.Dispose();
         _bufferSinkRegistration = null;
 
@@ -256,28 +210,6 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     }
 
     /// <summary>
-    /// Retrieves image buffer from beginning of output buffer queue.
-    /// </summary>
-    /// <param name="buffer">Image buffer (or null if none is available).</param>
-    /// <param name="timeout">Timeout in milliseconds to wait for a buffer.</param>
-    /// <returns>True if buffer retrieval was successful, false if not.</returns>
-    public bool RetrieveImage(out GcBuffer buffer, int timeout = 1000)
-    {
-        buffer = null;
-
-        if (_deliveryMode != AcquisitionDeliveryMode.Queued)
-            return false;
-
-        _waitHandle.WaitOne(timeout);
-
-        // Dequeue buffer.
-        if (_outputBufferQueue.IsEmpty == false)
-            buffer = _outputBufferQueue.Get();
-
-        return buffer != null;
-    }
-
-    /// <summary>
     /// Starts streaming images from device continuously until manually stopped. If <paramref name="numImages"/> is specified the acquisition stops automatically after the specified number of images have been acquired.
     /// </summary>
     /// <remarks>
@@ -290,20 +222,23 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (IsStreaming)
             throw new InvalidOperationException("Datastream is already streaming!");
 
+        // Reset streaming statistics.
         ResetStatistics();
 
-        // Flush queue.
+        // Reset output buffer queue and input buffer pool to ensure that no stale buffers are present before starting acquisition.
         FlushQueue();
-
-        // Reset input pool and pre-warm with payload-sized buffers.
         FlushPool();
-        PreWarmInputBufferPool();
 
+        // Pre-allocate payload-sized buffers in input buffer pool, to ensure that the pool is ready to receive new buffers from device.
+        QueueBuffers();
+
+        // Flag indicating whether the event dispatch pipeline has been initialized successfully.
         bool eventDispatchInitialized = false;
 
         try
         {
-            if (_deliveryMode == AcquisitionDeliveryMode.EventDrivenNonBlocking)
+            // Initialize event dispatch pipeline if asynchronous delivery mode is selected.
+            if (_deliveryMode == AcquisitionDeliveryMode.Asynchronous)
             {
                 InitializeEventDispatchPipeline();
                 eventDispatchInitialized = true;
@@ -312,9 +247,10 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             // Number of images to acquire.
             _imagesToAcquire = numImages;
 
-            // Register stream-bound sink callbacks in producer.
-            _bufferSinkRegistration = _device.RegisterBufferSink(StreamID, OnNewBuffer, OnFailedBuffer);
+            // Register datastream as a receiver of buffers from device, providing callbacks for new buffer and failed buffer events.
+            _bufferSinkRegistration = _device.RegisterBufferSink(StreamID, OnDeviceNewBuffer, OnDeviceFailedBuffer);
 
+            // Reset wait handle to ensure that any waiting threads are blocked until a new buffer is available.
             _waitHandle.Reset();
 
             // Mark as streaming before starting acquisition so producer-side stream lookups can resolve this stream during startup callbacks.
@@ -323,7 +259,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             // Start acquisition in camera.
             _device.StartAcquisition();
 
-            // Raise event.
+            // Raise event that streaming has started.
             OnStreamingStarted();
         }
         catch
@@ -333,6 +269,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             _bufferSinkRegistration = null;
             IsStreaming = false;
 
+            // Stop event dispatch pipeline if it was initialized before exception occurred.
             if (eventDispatchInitialized)
                 StopEventDispatchPipeline();
 
@@ -355,14 +292,53 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         _bufferSinkRegistration?.Dispose();
         _bufferSinkRegistration = null;
 
-        if (_deliveryMode == AcquisitionDeliveryMode.EventDrivenNonBlocking)
+        // Stop event dispatch pipeline if asynchronous delivery mode is selected.
+        if (_deliveryMode == AcquisitionDeliveryMode.Asynchronous)
             StopEventDispatchPipeline();
 
         IsStreaming = false;
 
-        // Raise event.
+        // Raise streaming stopped event.
         OnStreamingStopped();
     }
+
+    /// <summary>
+    /// Retrieves <paramref name="buffer"/> from output buffer queue. The method blocks until a buffer is available or until a specified <paramref name="timeout"/> has elapsed.
+    /// </summary>
+    /// <param name="buffer">Buffer retrieved (or <see cref="null"/> if none was available within the specified timeout).</param>
+    /// <param name="timeout">Timeout in milliseconds to wait.</param>
+    /// <returns>True if buffer retrieval was successful, false if not.</returns>
+    public bool RetrieveImage(out GcBuffer buffer, int timeout = 1000)
+    {
+        // Reset output parameter to null.
+        buffer = null;
+
+        // Only applicable in queued delivery mode.
+        if (_deliveryMode != AcquisitionDeliveryMode.Synchronous)
+            return false;
+
+        // Wait for a buffer to be available in the output buffer queue, with a specified timeout.
+        _waitHandle.WaitOne(timeout);
+
+        // Dequeue buffer.
+        if (_outputBufferQueue.IsEmpty == false)
+            buffer = _outputBufferQueue.Get();
+
+        return buffer != null;
+    }
+
+    /// <summary>
+    /// Retrieves a handle to the parent device of the datastream.
+    /// </summary>
+    /// <returns>Handle to the parent device.</returns>
+    public GcDevice GetParentDevice()
+    {
+        return _device is GcDevice device ? device : throw new InvalidOperationException("Object is not a device.");
+    }
+
+    #endregion
+
+    #region Internal Methods
 
     /// <summary>
     /// Rents a reusable image buffer with at least <paramref name="minimumLength"/> bytes from the input buffer pool.
@@ -402,15 +378,6 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         }
     }
 
-    /// <summary>
-    /// Retrieves a handle to the parent device of the datastream.
-    /// </summary>
-    /// <returns>Handle to the parent device.</returns>
-    public GcDevice GetParentDevice()
-    {
-        return _device is GcDevice device ? device : throw new InvalidOperationException("Object is not a device.");
-    }
-
     #endregion
 
     #region Private Methods
@@ -448,31 +415,22 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// <summary>
     /// Pre-allocates payload-sized buffers in the input buffer pool.
     /// </summary>
-    private void PreWarmInputBufferPool()
+    private void QueueBuffers()
     {
+        // Retrieve payload size from device.
         int payloadSize = (int)_device.PayloadSize;
         if (payloadSize <= 0)
-            return; // No payload size is available, so skip pre-warming.
+            return; // No payload size is available, so skip pre-warming. Throw new InvalidOperationException("Device has no payload size available!")?
 
+        // Pre-allocate buffers and add them to the input buffer pool.
         for (int i = 0; i < _device.BufferCapacity; i++)
         {
-            byte[] buffer = AllocateBuffer(payloadSize);
-            QueueBuffer(buffer);
-        }
-    }
-
-    private byte[] AllocateBuffer(int payloadSize)
-    {
-        return new byte[payloadSize];
-    }
-
-
-    private void QueueBuffer(byte[] buffer)
-    {
-        lock (_inputBufferPoolLock)
-        {
-            if (_inputBufferPool.Count < _device.BufferCapacity)
-                _inputBufferPool.Enqueue(buffer);
+            byte[] buffer = new byte[payloadSize];
+            lock (_inputBufferPoolLock)
+            {
+                if (_inputBufferPool.Count < _device.BufferCapacity)
+                    _inputBufferPool.Enqueue(buffer);
+            }
         }
     }
 
@@ -481,7 +439,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     private void InitializeEventDispatchPipeline()
     {
-        if (_deliveryMode != AcquisitionDeliveryMode.EventDrivenNonBlocking)
+        if (_deliveryMode != AcquisitionDeliveryMode.Asynchronous)
             return;
 
         // Create a bounded channel for event dispatching.
@@ -494,40 +452,44 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             AllowSynchronousContinuations = false   // Prevent synchronous continuations to avoid potential deadlocks.
         });
 
-        // Start the background task for dispatching buffers to event subscribers.
+        // Start the background task for dispatching buffers to event subscribers, with cancellation support.
         _eventDispatchCancellationTokenSource = new CancellationTokenSource();
         _eventDispatchTask = Task.Run(() => DispatchBuffersAsync(_eventDispatchCancellationTokenSource.Token));
     }
 
     /// <summary>
-    /// Stops and disposes non-blocking event-dispatch pipeline.
+    /// Stops and disposes non-blocking event-dispatch pipeline. 
     /// </summary>
     private void StopEventDispatchPipeline()
     {
+        // Cancel the dispatch task and signal that no more buffers will be queued.
         _eventDispatchCancellationTokenSource?.Cancel();
-
         _eventDispatchChannel?.Writer.TryComplete();
 
         try
         {
+            // Wait for the dispatch task to complete, handling cancellation exceptions gracefully.
             _eventDispatchTask?.Wait();
         }
         catch (AggregateException ex) when (ex.InnerExceptions.Count == 1 && ex.InnerException is OperationCanceledException)
         {
+            // Ignore OperationCanceledException, which is expected when the task is canceled. Only rethrow if cancellation was not requested.
+            if (_eventDispatchCancellationTokenSource?.IsCancellationRequested == false)
+                throw;
         }
         catch (OperationCanceledException)
         {
         }
 
+        // Dispose of the cancellation token source and reset the dispatch task and channel references.
         _eventDispatchCancellationTokenSource?.Dispose();
-
         _eventDispatchTask = null;
         _eventDispatchCancellationTokenSource = null;
         _eventDispatchChannel = null;
     }
 
     /// <summary>
-    /// Tries to enqueue a buffer for asynchronous event dispatch.
+    /// Tries to queue a buffer for asynchronous event dispatch.
     /// </summary>
     /// <param name="buffer">Buffer to dispatch.</param>
     /// <returns>True if buffer was accepted for dispatch, otherwise false.</returns>
@@ -537,7 +499,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             return false;
 
         // Try to write the buffer to the channel without blocking.
-        bool accepted = _eventDispatchChannel.Writer.TryWrite(buffer);
+        bool accepted = _eventDispatchChannel.Writer.TryWrite(buffer); // If the channel is full, this will return false.
 
         // If the buffer was not accepted (channel is full), increment lost frame count and return the buffer to the input pool.
         if (accepted == false)
@@ -554,6 +516,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// Dispatches buffers asynchronously to event subscribers.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
+    /// <exception cref="OperationCanceledException">Thrown if the operation is canceled.</exception>
+    /// <exception cref="ChannelClosedException">Thrown if the channel is closed before all buffers are dispatched.</exception>
     private async Task DispatchBuffersAsync(CancellationToken cancellationToken)
     {
         // If the event dispatch channel is not initialized, exit the method.
@@ -576,6 +540,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
                 }
                 catch
                 {
+                    // Subscribers may throw exceptions; log or handle them as needed. For now, we just ignore them to ensure the dispatch loop continues.
                 }
                 finally
                 {
@@ -617,9 +582,9 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     }
 
     /// <summary>
-    /// Event-handling method to <see cref="GcDevice.NewBuffer"/> events raised in device, delivering buffers based on configured delivery mode and signaling a <see cref="BufferTransferred"/> event.
+    /// Event-handling method to <see cref="GcDevice.NewBuffer"/> events raised in device, delivering buffers based on configured delivery mode.
     /// </summary>
-    private void OnNewBuffer(object sender, NewBufferEventArgs e)
+    private void OnDeviceNewBuffer(object sender, NewBufferEventArgs e)
     {
         // Ignore buffers from other datastreams.
         if (string.IsNullOrEmpty(e.StreamID) == false && string.Equals(e.StreamID, StreamID, StringComparison.Ordinal) == false)
@@ -629,29 +594,24 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (e.CopyImageData == null || e.PayloadSize <= 0)
             return; // Throw new InvalidOperationException("New buffer event has no payload!")?
 
-        // Rent input buffer and copy image payload from new buffer event.
+        // Rent buffer from input buffer pool and copy image payload from new buffer event.
         byte[] imageData = RentInputBuffer(e.PayloadSize);
         e.CopyImageData(imageData);
 
         // Create stream-owned image buffer container.
-        var buffer = new GcBuffer(imageData,
-                                  e.Width,
-                                  e.Height,
-                                  e.PixelFormat,
-                                  e.FrameID,
-                                  e.TimeStamp);
+        var buffer = new GcBuffer(imageData: imageData, width: e.Width, height: e.Height, pixelFormat: e.PixelFormat, frameID: e.FrameID, timeStamp: e.TimeStamp);
 
         // Update datastream stats.
         UpdateStatistics(buffer.FrameID, buffer.TimeStamp);
 
-        if (_deliveryMode == AcquisitionDeliveryMode.Queued)
+        // Deliver buffer to consumers based on configured delivery mode.
+        if (_deliveryMode == AcquisitionDeliveryMode.Synchronous) // synchronous delivery mode
         {
             // If queue is full, recycle the oldest queued buffer before enqueueing this one.
             if (_outputBufferQueue.Size == _outputBufferQueue.Capacity)
             {
-                // Recycle oldest buffer in output queue, by returning it to input buffer pool.
                 var recycledBuffer = _outputBufferQueue.Get();
-                ReturnInputBuffer(recycledBuffer?.ImageData); // Return recycled buffer to input pool.
+                ReturnInputBuffer(recycledBuffer?.ImageData); // Return recycled buffer to input buffer pool.
             }
 
             // Add image buffer to output buffer queue.
@@ -663,7 +623,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             // Raise new buffer event.
             OnNewBuffer();
         }
-        else
+        else // asynchronous delivery mode
         {
             // Try to publish buffer to event dispatch channel.
             TryPublishBufferEventDriven(buffer);
@@ -677,9 +637,50 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// <summary>
     /// Event-handling method to <see cref="GcDevice.FailedBuffer"/> events, incrementing the number of failed buffer.
     /// </summary>
-    private void OnFailedBuffer(object sender, EventArgs e)
+    private void OnDeviceFailedBuffer(object sender, EventArgs e)
     {
         FailedFrameCount++;
+    }
+
+    /// <summary>
+    /// Event-invoking method announcing that an image buffer has been successfully transferred from device to datastream, where the image buffer is supplied with the event.
+    /// </summary>
+    /// <param name="buffer">Image buffer.</param>
+    private void OnBufferTransferred(GcBuffer buffer)
+    {
+        BufferTransferred?.Invoke(this, new BufferTransferredEventArgs(buffer));
+    }
+
+    /// <summary>
+    /// Event-invoking method announcing to consumers that a new buffer is available for retrieval and further processing.
+    /// </summary>
+    private void OnNewBuffer()
+    {
+        NewBuffer?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Event-invoking method announcing that acquisition in the datastream has been stopped.
+    /// </summary>
+    private void OnStreamingStopped()
+    {
+        StreamingStopped?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Event-invoking method announcing that acquisition in the datastream has been started.
+    /// </summary>
+    private void OnStreamingStarted()
+    {
+        StreamingStarted?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Event-invoking method announcing that an image frame has been dropped (lost) during acquisition.
+    /// </summary>
+    private void OnFrameDropped()
+    {
+        FrameDropped?.Invoke(this, new FrameDroppedEventArgs(LostFrameCount));
     }
 
     #endregion

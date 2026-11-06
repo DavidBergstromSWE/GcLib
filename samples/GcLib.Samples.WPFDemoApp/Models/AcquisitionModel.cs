@@ -47,7 +47,7 @@ internal partial class AcquisitionModel : ObservableObject
     /// <summary>
     /// Indicates whether acquisition should run synchronously (using thread) or asynchronously (event-driven using async/await).
     /// </summary>
-    private readonly bool _useSynchronousAcquisition = false;
+    private readonly bool _useSynchronousAcquisition = true;
 
     /// <summary>
     /// Flag indicating whether grabbing queue latency warning has been logged for the current acquisition.
@@ -202,7 +202,7 @@ internal partial class AcquisitionModel : ObservableObject
             throw new InvalidOperationException($"Acquisition is already actively running!");
 
         // Open datastream.
-        _dataStream = DeviceModel.Device.OpenDataStream(deliveryMode: _useSynchronousAcquisition ? AcquisitionDeliveryMode.Queued : AcquisitionDeliveryMode.EventDrivenNonBlocking);
+        _dataStream = DeviceModel.Device.OpenDataStream(deliveryMode: _useSynchronousAcquisition ? AcquisitionDeliveryMode.Synchronous : AcquisitionDeliveryMode.Asynchronous);
 
         // Hook handler to events announcing dropped frames.
         _dataStream.FrameDropped += OnFrameDropped;
