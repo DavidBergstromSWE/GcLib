@@ -257,8 +257,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             IsStreaming = true;
 
             // Start producer acquisition for this stream.
-            if (_device is IStreamAcquisitionCoordinator coordinator)
-                coordinator.StartStreamAcquisition(StreamID); // Start acquisition for this stream only, allowing multiple streams to acquire concurrently.
+            if (_device is IStreamCoordinator coordinator)
+                coordinator.StartStream(StreamID); // Start acquisition for this stream only, allowing multiple streams to acquire concurrently.
             else _device.StartAcquisition(); 
             acquisitionStarted = true; // Mark that acquisition has been started successfully.
 
@@ -272,8 +272,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
                 // Release producer acquisition if startup completed before a later step failed.
                 if (acquisitionStarted)
                 {
-                    if (_device is IStreamAcquisitionCoordinator coordinator)
-                        coordinator.StopStreamAcquisition(StreamID);
+                    if (_device is IStreamCoordinator coordinator)
+                        coordinator.StopStream(StreamID);
                     else
                         _device.StopAcquisition();
                 }
@@ -303,8 +303,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             return;
 
         // Stop producer acquisition for this stream.
-        if (_device is IStreamAcquisitionCoordinator coordinator)
-            coordinator.StopStreamAcquisition(StreamID);
+        if (_device is IStreamCoordinator coordinator)
+            coordinator.StopStream(StreamID);
         else
             _device.StopAcquisition();
 

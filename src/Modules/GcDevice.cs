@@ -11,7 +11,7 @@ namespace GcLib;
 /// Represents the device level in the GenICam/GenTL standard module hierarchy, responsible for device communication and instantiation of datastreams.
 /// </summary>
 /// <remarks>All API-derived device classes need to inherit from this abstract base class through <see cref="GcDevice{TDevice}"/>.</remarks> 
-public abstract partial class GcDevice : IBufferProducer, IStreamAcquisitionCoordinator, IEnumerable<GcDataStream>
+public abstract partial class GcDevice : IBufferProducer, IStreamCoordinator, IEnumerable<GcDataStream>
 {
     #region Fields
 
@@ -31,7 +31,7 @@ public abstract partial class GcDevice : IBufferProducer, IStreamAcquisitionCoor
     private readonly Lock _acquisitionLock = new();
 
     /// <summary>
-    /// Tracks data streams with active acquisitions.
+    /// Tracks datastreams with active acquisitions.
     /// </summary>
     private readonly HashSet<string> _activeDataStreamAcquisitions = [];
 
@@ -390,7 +390,7 @@ public abstract partial class GcDevice : IBufferProducer, IStreamAcquisitionCoor
 
     /// <inheritdoc/>
     /// <exception cref="InvalidOperationException">The data stream is already being acquired, the maximum number of concurrent data streams has been reached, or the configured maximum is zero.</exception>
-    void IStreamAcquisitionCoordinator.StartStreamAcquisition(string dataStreamID)
+    void IStreamCoordinator.StartStream(string dataStreamID)
     {
         ArgumentException.ThrowIfNullOrEmpty(dataStreamID);
 
@@ -426,7 +426,7 @@ public abstract partial class GcDevice : IBufferProducer, IStreamAcquisitionCoor
         }
     }
 
-    void IStreamAcquisitionCoordinator.StopStreamAcquisition(string dataStreamID)
+    void IStreamCoordinator.StopStream(string dataStreamID)
     {
         lock (_acquisitionLock)
         {
