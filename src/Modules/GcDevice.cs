@@ -26,7 +26,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     private readonly Lock _dataStreamListLock = new();
 
     /// <summary>
-    /// Registered stream-bound sinks for buffer and failure delivery.
+    /// Registered stream-bound sinks for buffer and failure delivery, where key is datastream ID and value is a tuple containing the new-buffer and failed-buffer callbacks.
     /// </summary>
     private readonly Dictionary<string, (Action<object, NewBufferEventArgs> OnNewBuffer, Action<object, EventArgs> OnFailedBuffer)> _bufferSinks = [];
 
@@ -304,23 +304,26 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     public abstract void StopAcquisition();
 
     /// <summary>
-    /// Registers stream-bound callbacks for buffer delivery and failed-buffer notifications.
+    /// Fetches a single image from device, using a timeout request. To continously grab images, use <see cref="StartAcquisition"/> instead.
     /// </summary>
-    /// <param name="dataStreamID">Unique datastream ID.</param>
-    /// <param name="onNewBuffer">Callback for new-buffer delivery for this stream.</param>
-    /// <param name="onFailedBuffer">Callback for failed-buffer notifications for this stream.</param>
-    /// <returns>Disposable registration handle.</returns>
-    public IDisposable RegisterBufferSink(string dataStreamID, Action<object, NewBufferEventArgs> onNewBuffer, Action<object, EventArgs> onFailedBuffer)
+    /// <param name="buffer">Fetched image (or null if fetch was unsuccessful).</param>
+    /// <param name="timeout">Maximum time interval to wait for the image (in milliseconds).</param>
+    /// <returns><see langword="True"/> if fetch was successful, with the image in the <paramref name="buffer"/>.</returns>
+    public bool FetchImage(out GcBuffer buffer, uint timeout = 1000)
     {
-        ArgumentException.ThrowIfNullOrEmpty(dataStreamID);
-        ArgumentNullException.ThrowIfNull(onNewBuffer);
-        ArgumentNullException.ThrowIfNull(onFailedBuffer);
+        // Open a temporary datastream for fetching a single image, using queued delivery mode.
+        var dataStream = OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Synchronous);
+        dataStream.Start(1);
+        var result = dataStream.RetrieveImage(out buffer, (int)timeout);
+        dataStream.Stop();
+        dataStream.Close();
 
-        lock (_dataStreamListLock)
-            _bufferSinks[dataStreamID] = (onNewBuffer, onFailedBuffer); // Register the provided callbacks for the specified datastream ID in the dictionary.
-
-        return new SinkRegistration(this, dataStreamID); // Return disposable registration handle for stream-bound sink subscription.
+        return result;
     }
+
+    #endregion
+
+    #region Private Methods
 
     /// <summary>
     /// Dispatches a new buffer to registered sink(s).
@@ -353,11 +356,10 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// </summary>
     private void DispatchFailedBuffer()
     {
-        // Snapshot the registered sinks outside of the lock to avoid potential deadlocks during callback invocation.
         Action<object, EventArgs>[] sinks;
 
         lock (_dataStreamListLock)
-            sinks = [.. _bufferSinks.Values.Select(x => x.OnFailedBuffer)]; // Snapshot the registered sinks outside of the lock to avoid potential deadlocks during callback invocation.
+            sinks = [.. _bufferSinks.Values.Select(x => x.OnFailedBuffer)]; // Get all registered failed-buffer callbacks from the dictionary.
 
         // Invoke the failed-buffer callback for each sink.
         foreach (var sink in sinks)
@@ -376,6 +378,33 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
         lock (_dataStreamListLock)
             _bufferSinks.Remove(dataStreamID); // Remove the sink associated with the provided stream ID from the dictionary.
     }
+
+    #endregion
+
+    #region IBufferProducer
+
+    /// <summary>
+    /// Registers stream-bound callbacks for buffer delivery and failed-buffer notifications.
+    /// </summary>
+    /// <param name="dataStreamID">Unique datastream ID.</param>
+    /// <param name="onNewBuffer">Callback for new-buffer delivery for this stream.</param>
+    /// <param name="onFailedBuffer">Callback for failed-buffer notifications for this stream.</param>
+    /// <returns>Disposable registration handle.</returns>
+    IDisposable IBufferProducer.RegisterBufferSink(string dataStreamID, Action<object, NewBufferEventArgs> onNewBuffer, Action<object, EventArgs> onFailedBuffer)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(dataStreamID);
+        ArgumentNullException.ThrowIfNull(onNewBuffer);
+        ArgumentNullException.ThrowIfNull(onFailedBuffer);
+
+        lock (_dataStreamListLock)
+            _bufferSinks[dataStreamID] = (onNewBuffer, onFailedBuffer); // Register the provided callbacks for the specified datastream ID in the dictionary.
+
+        return new SinkRegistration(this, dataStreamID); // Return disposable registration handle for stream-bound sink subscription.
+    }
+
+    #endregion
+
+    #region Private Classes
 
     /// <summary>
     /// Disposable registration handle for stream-bound sink subscriptions.
@@ -403,24 +432,6 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
         {
             Interlocked.Exchange(ref _device, null)?.UnregisterBufferSink(_dataStreamID);
         }
-    }
-
-    /// <summary>
-    /// Fetches a single image from device, using a timeout request. To continously grab images, use <see cref="StartAcquisition"/> instead.
-    /// </summary>
-    /// <param name="buffer">Fetched image (or null if fetch was unsuccessful).</param>
-    /// <param name="timeout">Maximum time interval to wait for the image (in milliseconds).</param>
-    /// <returns><see langword="True"/> if fetch was successful, with the image in the <paramref name="buffer"/>.</returns>
-    public bool FetchImage(out GcBuffer buffer, uint timeout = 1000)
-    {
-        // Open a temporary datastream for fetching a single image, using queued delivery mode.
-        var dataStream = OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Synchronous);
-        dataStream.Start(1);
-        var result = dataStream.RetrieveImage(out buffer, (int)timeout);
-        dataStream.Stop();
-        dataStream.Close();
-
-        return result;
     }
 
     #endregion
