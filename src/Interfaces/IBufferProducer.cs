@@ -23,12 +23,7 @@ public interface IBufferProducer
     uint BufferCapacity { get; }
 
     /// <summary>
-    /// True if concurrent datastream acquisition is supported.
-    /// </summary>
-    bool SupportsConcurrentStreams { get; }
-
-    /// <summary>
-    /// Maximum number of datastreams that can acquire concurrently.
+    /// Maximum number of datastreams that can acquire concurrently. A value of one means concurrent acquisition is not supported.
     /// </summary>
     uint MaxConcurrentStreams { get; }
 

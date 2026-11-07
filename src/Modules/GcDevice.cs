@@ -11,7 +11,7 @@ namespace GcLib;
 /// Represents the device level in the GenICam/GenTL standard module hierarchy, responsible for device communication and instantiation of datastreams.
 /// </summary>
 /// <remarks>All API-derived device classes need to inherit from this abstract base class through <see cref="GcDevice{TDevice}"/>.</remarks> 
-public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStream>
+public abstract partial class GcDevice : IBufferProducer, IStreamAcquisitionCoordinator, IEnumerable<GcDataStream>
 {
     #region Fields
 
@@ -24,6 +24,16 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// Synchronization lock for datastream collection access.
     /// </summary>
     private readonly Lock _dataStreamListLock = new();
+
+    /// <summary>
+    /// Synchronizes access to acquisition operations.
+    /// </summary>
+    private readonly Lock _acquisitionLock = new();
+
+    /// <summary>
+    /// Tracks data streams with active acquisitions.
+    /// </summary>
+    private readonly HashSet<string> _activeDataStreamAcquisitions = [];
 
     /// <summary>
     /// Registered stream-bound sinks for buffer and failure delivery, where key is datastream ID and value is a tuple containing the new-buffer and failed-buffer callbacks.
@@ -60,12 +70,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     public bool IsAcquiring { get; protected set; }
 
     /// <summary>
-    /// True if concurrent datastream acquisition is supported.
-    /// </summary>
-    public virtual bool SupportsConcurrentStreams => false;
-
-    /// <summary>
-    /// Maximum number of datastreams that can acquire concurrently.
+    /// Maximum number of datastreams that can acquire concurrently. A value of one means concurrent acquisition is not supported.
     /// </summary>
     public virtual uint MaxConcurrentStreams => 1;
 
@@ -237,20 +242,20 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// </summary>
     public void Close()
     {
-        // Perform device-specific closure operations.
-        OnDeviceClosed();
-
         // Snapshot open datastreams outside of close loop lock.
         GcDataStream[] dataStreams;
         lock (_dataStreamListLock)
             dataStreams = [.. _dataStreamList.Values];
 
-        // Close all open datastreams.
+        // Stop acquisition and close streams before releasing device-specific resources.
         foreach (var dataStream in dataStreams)
         {
             if (dataStream.IsOpen)
                 dataStream.Close();
         }
+
+        // Perform device-specific closure operations after streams have stopped.
+        OnDeviceClosed();
 
         // Clear list of datastreams.
         lock (_dataStreamListLock)
@@ -382,6 +387,65 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     #endregion
 
     #region IBufferProducer
+
+    /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException">The data stream is already being acquired, the maximum number of concurrent data streams has been reached, or the configured maximum is zero.</exception>
+    void IStreamAcquisitionCoordinator.StartStreamAcquisition(string dataStreamID)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(dataStreamID);
+
+        lock (_acquisitionLock)
+        {
+            // Check if datastream is already acquiring.
+            if (_activeDataStreamAcquisitions.Contains(dataStreamID))
+                throw new InvalidOperationException($"Datastream '{dataStreamID}' is already acquiring.");
+
+            // Check if maximum number of concurrent streams has been reached.
+            uint maxConcurrentStreams = MaxConcurrentStreams;
+            if (maxConcurrentStreams == 0)
+                throw new InvalidOperationException("MaxConcurrentStreams must be greater than zero.");
+            if ((uint)_activeDataStreamAcquisitions.Count >= maxConcurrentStreams)
+                throw new InvalidOperationException($"The device supports a maximum of {maxConcurrentStreams} concurrent datastream(s).");
+
+            // Add datastream ID to set of active acquisitions.
+            _activeDataStreamAcquisitions.Add(dataStreamID);
+
+            // If first datastream, start device acquisition.
+            if (_activeDataStreamAcquisitions.Count == 1)
+            {
+                try
+                {
+                    StartAcquisition(); // Start device acquisition.
+                }
+                catch
+                {
+                    _activeDataStreamAcquisitions.Remove(dataStreamID); // Roll back if starting acquisition fails.
+                    throw; // Rethrow exception to propagate error to caller.
+                }
+            }
+        }
+    }
+
+    void IStreamAcquisitionCoordinator.StopStreamAcquisition(string dataStreamID)
+    {
+        lock (_acquisitionLock)
+        {
+            // Check if the datastream is currently acquiring.
+            if (_activeDataStreamAcquisitions.Contains(dataStreamID) == false)
+                return;
+
+            // If there are multiple active datastream acquisitions, just remove the specified datastream ID from the set and return.
+            if (_activeDataStreamAcquisitions.Count > 1)
+            {
+                _activeDataStreamAcquisitions.Remove(dataStreamID);
+                return;
+            }
+
+            // If this is the last active datastream acquisition, stop device acquisition and remove the datastream ID from the set.
+            StopAcquisition();
+            _activeDataStreamAcquisitions.Remove(dataStreamID);
+        }
+    }
 
     /// <summary>
     /// Registers stream-bound callbacks for buffer delivery and failed-buffer notifications.

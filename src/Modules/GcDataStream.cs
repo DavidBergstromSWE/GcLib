@@ -232,8 +232,8 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         // Pre-allocate payload-sized buffers in input buffer pool, to ensure that the pool is ready to receive new buffers from device.
         QueueBuffers();
 
-        // Flag indicating whether the event dispatch pipeline has been initialized successfully.
-        bool eventDispatchInitialized = false;
+        bool eventDispatchInitialized = false; // Flag indicating whether the event dispatch pipeline has been initialized successfully.
+        bool acquisitionStarted = false; // Flag indicating whether acquisition has been started successfully.
 
         try
         {
@@ -241,7 +241,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             if (_deliveryMode == AcquisitionDeliveryMode.Asynchronous)
             {
                 InitializeEventDispatchPipeline();
-                eventDispatchInitialized = true;
+                eventDispatchInitialized = true; // Mark that event dispatch pipeline has been initialized successfully.
             }
 
             // Number of images to acquire.
@@ -256,22 +256,39 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             // Mark as streaming before starting acquisition so producer-side stream lookups can resolve this stream during startup callbacks.
             IsStreaming = true;
 
-            // Start acquisition in camera.
-            _device.StartAcquisition();
+            // Start producer acquisition for this stream.
+            if (_device is IStreamAcquisitionCoordinator coordinator)
+                coordinator.StartStreamAcquisition(StreamID); // Start acquisition for this stream only, allowing multiple streams to acquire concurrently.
+            else _device.StartAcquisition(); 
+            acquisitionStarted = true; // Mark that acquisition has been started successfully.
 
             // Raise event that streaming has started.
             OnStreamingStarted();
         }
         catch
         {
-            // Roll back partially initialized start state.
-            _bufferSinkRegistration?.Dispose();
-            _bufferSinkRegistration = null;
-            IsStreaming = false;
+            try
+            {
+                // Release producer acquisition if startup completed before a later step failed.
+                if (acquisitionStarted)
+                {
+                    if (_device is IStreamAcquisitionCoordinator coordinator)
+                        coordinator.StopStreamAcquisition(StreamID);
+                    else
+                        _device.StopAcquisition();
+                }
+            }
+            finally
+            {
+                // Roll back partially initialized start state.
+                _bufferSinkRegistration?.Dispose();
+                _bufferSinkRegistration = null;
+                IsStreaming = false;
 
-            // Stop event dispatch pipeline if it was initialized before exception occurred.
-            if (eventDispatchInitialized)
-                StopEventDispatchPipeline();
+                // Stop event dispatch pipeline if it was initialized before exception occurred.
+                if (eventDispatchInitialized)
+                    StopEventDispatchPipeline();
+            }
 
             throw;
         }
@@ -285,8 +302,11 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (IsStreaming == false)
             return;
 
-        // Stop acquisition in device.
-        _device.StopAcquisition();
+        // Stop producer acquisition for this stream.
+        if (_device is IStreamAcquisitionCoordinator coordinator)
+            coordinator.StopStreamAcquisition(StreamID);
+        else
+            _device.StopAcquisition();
 
         // Unregister stream-bound sink callbacks.
         _bufferSinkRegistration?.Dispose();
