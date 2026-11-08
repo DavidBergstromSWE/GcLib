@@ -9,21 +9,21 @@ using GcLib.Utilities.Numbers;
 namespace GcLib;
 
 /// <summary>
-/// Represents the datastream level in the GenICam/GenTL standard module hierarchy, transferring buffers from device to consumers. 
+/// Represents the datastream level in the GenICam/GenTL standard module hierarchy, providing the acquisition engine for transferring buffers from device to consumers. 
 /// </summary>
 /// <remarks>Buffers can be transferred according to the configured <see cref="AcquisitionDeliveryMode"/>:
 /// <list type="bullet">
 ///     <item>
-///         <description>Synchronous mode: new buffers are enqueued to an internal output buffer queue and signaled by a <see cref="NewBuffer"/> event. These can then be retrieved by consumers through <see cref="RetrieveBuffer(out GcBuffer, int)"/>.</description>
+///         <description>Synchronous mode: new buffers are enqueued to an internal output buffer queue which is signaled by a <see cref="NewBuffer"/> event. The buffers can then be retrieved by consumers through <see cref="RetrieveBuffer(out GcBuffer, int)"/>.</description>
 ///     </item>
 ///     <item>
-///         <description>Asynchronous mode: new buffers are delivered directly to consumers through <see cref="BufferTransferred"/> events using a non-blocking event dispatcher.</description>
+///         <description>Asynchronous mode: new buffers are delivered directly to consumers through <see cref="BufferTransferred"/> events, using a non-blocking event dispatcher.</description>
 ///     </item>
 /// </list>
 /// </remarks>
 /// <param name="bufferProducer">Buffer producer.</param>
 /// <param name="dataStreamID">Unique datastream ID.</param>
-/// <param name="outputQueueCapacity">Maximum size of output buffer queue in <see cref="AcquisitionDeliveryMode.Synchronous"/> mode.</param>
+/// <param name="outputQueueCapacity">Maximum size of output buffer queue in <see cref="AcquisitionDeliveryMode.Synchronous"/> mode. Increasing this value can reduce the likelihood of dropped buffers, but also increases memory usage.</param>
 /// <param name="deliveryMode">Delivery mode of transferred buffers.</param>
 public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStreamID, int outputQueueCapacity = 4, AcquisitionDeliveryMode deliveryMode = AcquisitionDeliveryMode.Synchronous) : IBufferStream
 {
@@ -55,12 +55,12 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     private long _lastFrameID;
 
     /// <summary>
-    /// Timestamp of last grabbed buffer (in ticks).
+    /// Timestamp of last grabbed buffer (in ticks). This is used to calculate the actual framerate of the datastream.
     /// </summary>
     private ulong _lastTimeStamp;
 
     /// <summary>
-    /// Number of buffers to acquire.
+    /// Number of buffers to acquire before automatically stopping acquisition.
     /// </summary>
     private ulong _buffersToAcquire;
 
@@ -70,7 +70,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     private readonly Lock _inputBufferPoolLock = new();
 
     /// <summary>
-    /// Input buffer pool that device classes can reuse when filling new frame data.
+    /// Input buffer pool, providing reusable buffers to devices for filling new data.
     /// </summary>
     private readonly Queue<byte[]> _inputBufferPool = [];
 
@@ -90,7 +90,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     private Task _eventDispatchTask;
 
     /// <summary>
-    /// Registration handle for stream-bound sink callbacks in producer. 
+    /// Registration handle for stream-bound sink callbacks in producer.
     /// </summary>
     private IDisposable _bufferSinkRegistration;
 
@@ -109,7 +109,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     public AcquisitionDeliveryMode DeliveryMode => _deliveryMode;
 
     /// <summary>
-    /// Number of buffers waiting in the output buffer queue.
+    /// Number of frames waiting in the output buffer queue.
     /// </summary>
     public int AwaitDeliveryCount => _outputBufferQueue.Size;
 
@@ -124,7 +124,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     public ulong LostFrameCount { get; private set; } = 0;
 
     /// <summary>
-    /// Number of failed buffers during acquisition due to errors.
+    /// Number of failed frames during acquisition due to errors.
     /// </summary>
     public ulong FailedFrameCount { get; private set; } = 0;
 
@@ -159,7 +159,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     public event EventHandler<BufferTransferredEventArgs> BufferTransferred;
 
     /// <summary>
-    /// Event announcing that a new buffer has been received from device and is available for retrieval.
+    /// Event announcing that a new buffer has been received from device and is available for retrieval from the output buffer queue.
     /// </summary>
     /// <remarks>This event will only be raised in <see cref="AcquisitionDeliveryMode.Synchronous"/> delivery mode.</remarks>
     public event EventHandler NewBuffer;
@@ -184,7 +184,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     #region Public Methods
 
     /// <summary>
-    /// Closes datastream by stopping any active streaming and resetting streaming statistics.
+    /// Closes datastream by stopping any active streaming, clearing buffer queues and resetting streaming statistics.
     /// </summary>
     public void Close()
     {
@@ -322,12 +322,12 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     }
 
     /// <summary>
-    /// Retrieves <paramref name="buffer"/> from the output buffer queue of the datastream. The method blocks until a buffer is available or until a specified <paramref name="timeout"/> has elapsed.
+    /// Retrieves a <paramref name="buffer"/> from the output buffer queue. The method blocks until a buffer is available or until a specified <paramref name="timeout"/> has elapsed.
     /// </summary>
     /// <remarks>This method is only applicable in <see cref="AcquisitionDeliveryMode.Synchronous"/> delivery mode.</remarks>
     /// <param name="buffer">Buffer retrieved (or <see cref="null"/> if none was available within the specified timeout).</param>
     /// <param name="timeout">Timeout in milliseconds to wait.</param>
-    /// <returns>True if buffer retrieval was successful, false if not.</returns>
+    /// <returns><see langword="true"/> if buffer retrieval was successful, <see langword="false"/> if not.</returns>
     public bool RetrieveBuffer(out GcBuffer buffer, int timeout = 1000)
     {
         // Reset output parameter to null.
