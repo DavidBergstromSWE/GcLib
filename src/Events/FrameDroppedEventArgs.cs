@@ -3,16 +3,16 @@
 namespace GcLib;
 
 /// <summary>
-/// Provides data for a <see cref="GcDataStream.FrameDropped"/> event.
+/// Provides data for a <see cref="GcDataStream.BufferDropped"/> event.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the class, providing data for the <see cref="GcDataStream.FrameDropped"/> event.
+/// Creates a new instance of the class, providing data for the <see cref="GcDataStream.BufferDropped"/> event.
 /// </remarks>
-/// <param name="lostFrameCount">Total (aggregated) number of frames lost from the datastream.</param>
-public sealed class FrameDroppedEventArgs(ulong lostFrameCount) : EventArgs
+/// <param name="lostBufferCount">Total (aggregated) number of buffers lost from the datastream.</param>
+public sealed class BufferDroppedEventArgs(ulong lostBufferCount) : EventArgs
 {
     /// <summary>
-    /// Total (aggregated) number of frames lost from the datastream.
+    /// Total (aggregated) number of buffers lost from the datastream.
     /// </summary>
-    public ulong LostFrameCount { get; } = lostFrameCount;
+    public ulong LostBufferCount { get; } = lostBufferCount;
 }

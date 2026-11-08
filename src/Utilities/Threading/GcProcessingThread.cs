@@ -383,7 +383,7 @@ public sealed class GcProcessingThread : IDisposable
             if (_disposed || _isRunning == false)
                 return;
 
-            if (_dataStream.RetrieveImage(out GcBuffer buffer, timeout: 0) == false)
+            if (_dataStream.RetrieveBuffer(out GcBuffer buffer, timeout: 0) == false)
                 return;
 
             overflow = _imageQueue.Size == _imageQueue.Capacity; // Check if adding the buffer will cause an overflow.

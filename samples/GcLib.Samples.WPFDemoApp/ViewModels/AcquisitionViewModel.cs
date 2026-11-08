@@ -306,9 +306,9 @@ internal sealed partial class AcquisitionViewModel : ObservableRecipient
     /// <summary>
     /// Eventhandler to <see cref="AcquisitionModel.FrameDropped"/> events, raised in the acquisition channel.
     /// </summary>
-    private void Channel_FrameDropped(object sender, FrameDroppedEventArgs eventArgs)
+    private void Channel_FrameDropped(object sender, BufferDroppedEventArgs eventArgs)
     {
-        _ = Messenger.Send(new StatusBarLogMessage($"Frames have been lost (Total number: {eventArgs.LostFrameCount}).", LogEventLevel.Warning));
+        _ = Messenger.Send(new StatusBarLogMessage($"Frames have been lost (Total number: {eventArgs.LostBufferCount}).", LogEventLevel.Warning));
     }
 
     /// <summary>

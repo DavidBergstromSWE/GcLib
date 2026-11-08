@@ -6,7 +6,7 @@
 public enum AcquisitionDeliveryMode
 {
     /// <summary>
-    /// Buffers are enqueued to an internal output queue and retrieved by consumers via <see cref="GcDataStream.RetrieveImage(out GcBuffer, int)"/>.
+    /// Buffers are enqueued to an internal output queue and retrieved by consumers via <see cref="GcDataStream.RetrieveBuffer(out GcBuffer, int)"/>.
     /// </summary>
     Synchronous,
 

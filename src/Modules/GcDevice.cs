@@ -319,7 +319,7 @@ public abstract partial class GcDevice : IBufferProducer, IStreamCoordinator, IE
         // Open a temporary datastream for fetching a single image, using queued delivery mode.
         var dataStream = OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Synchronous);
         dataStream.Start(1);
-        var result = dataStream.RetrieveImage(out buffer, (int)timeout);
+        var result = dataStream.RetrieveBuffer(out buffer, (int)timeout);
         dataStream.Stop();
         dataStream.Close();
 
