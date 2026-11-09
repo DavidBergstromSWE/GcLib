@@ -88,12 +88,12 @@ public sealed partial class PvCam
             //Parameters.Update();
         }
         catch (Exception) { }
-        
+
         // Reset pipeline.
         _pvPipeline.BufferCount = BufferCapacity;
         _pvPipeline.BufferSize = _pvDevice.PayloadSize;
         _pvPipeline.Reset();
-        
+
         // PC time at acquisition start.
         _pcTime0 = (ulong)DateTime.Now.Ticks;
 

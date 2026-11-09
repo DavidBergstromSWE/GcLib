@@ -8,7 +8,7 @@ using GcLib.Utilities.Numbers;
 namespace GcLib;
 
 /// <summary>
-/// Represents the datastream level in the GenICam/GenTL standard module hierarchy, providing an acquisition engine and being responsible for transferring images from device to image data consumers. 
+/// Represents the datastream level in the GenICam/GenTL standard module hierarchy, responsible for transferring buffers from device to consumers. 
 /// </summary>
 /// <remarks>Buffers can be transferred synchronously or asynchronously according to the configured <see cref="AcquisitionDeliveryMode"/>.
 /// In synchronous mode, buffers are enqueued to an internal output buffer queue and can be retrieved by consumers through <see cref="RetrieveBuffer(out GcBuffer, int)"/>.

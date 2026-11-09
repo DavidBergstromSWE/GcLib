@@ -40,7 +40,7 @@ public static partial class GcBufferExtensions
         // ToDo: Consider using a more efficient histogram calculation algorithm, such as a two-pass approach or a histogram equalization technique, for better performance on large images.
         // ToDo: Consider using a more efficient data structure for storing histogram data, such as a sparse representation or a compressed format, to reduce memory usage and improve performance on large images.
         // ToDo: Consider using a more efficient algorithm for calculating histograms of color images, such as a color quantization technique or a color space transformation, to reduce the number of bins and improve performance on large images.
-        
+
         ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
 
         // Validate histogram bin count.

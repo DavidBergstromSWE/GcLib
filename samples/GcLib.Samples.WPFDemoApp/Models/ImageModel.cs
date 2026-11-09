@@ -389,7 +389,7 @@ internal class ImageModel : ObservableObject, IXmlSerializable
         // Normalize (to 8 bits).
         if (EmguHelper.GetBitDepth(mat.Depth) > 8)
             CvInvoke.Normalize(src: mat, dst: mat, alpha: 0, beta: 255, normType: NormType.MinMax, dType: DepthType.Cv8U);
- 
+
         // Adjust brightness and contrast.
         CvInvoke.ConvertScaleAbs(src: mat, dst: mat, scale: Contrast * Contrast * 4d / 10000, shift: 5.1 * Brightness - 255);
 

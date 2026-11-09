@@ -387,7 +387,7 @@ public sealed partial class VirtualCam
                 name: nameof(PayloadSize),
                 category: GetCategory(nameof(PayloadSize)),
                 description: "Size of the image payload in bytes",
-                value: _width.Value * _height.Value * GenICamHelper.GetBitsPerPixel((PixelFormat)PixelFormat.IntValue) / 8, 
+                value: _width.Value * _height.Value * GenICamHelper.GetBitsPerPixel((PixelFormat)PixelFormat.IntValue) / 8,
                 min: 0,
                 max: int.MaxValue,
                 increment: 1,
