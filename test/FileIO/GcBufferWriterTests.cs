@@ -52,6 +52,31 @@ public class GcBufferWriterTests
     #region Constructor
 
     [TestMethod]
+    public async Task GcBufferWriter_BareRelativeFilename_WritesInCurrentDirectory()
+    {
+        string filename = $"GcBufferWriter_{Guid.NewGuid():N}.bin";
+        string fullPath = Path.GetFullPath(filename);
+        try
+        {
+            using (var writer = new GcBufferWriter(filename))
+            {
+                Assert.AreEqual(filename, writer.FilePath);
+                writer.Start();
+                writer.OnBufferTransferred(this, new BufferTransferredEventArgs(GetBuffer()));
+                await writer.StopAsync();
+                Assert.AreEqual(1, writer.BuffersWritten);
+            }
+
+            Assert.IsTrue(File.Exists(fullPath));
+            Assert.AreEqual((long)GcBufferWriter.ImageHeaderSize + GetBuffer().ImageData.Length, new FileInfo(fullPath).Length);
+        }
+        finally
+        {
+            File.Delete(fullPath);
+        }
+    }
+
+    [TestMethod]
     public void GcBufferWriter_ValidateInitialization()
     {
         // Assert
@@ -278,7 +303,73 @@ public class GcBufferWriterTests
 
     #endregion
 
+    #region WritingAborted
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task WritingAborted_HandlerStopsWriter_DoesNotDeadlock(bool stopOnAnotherThread)
+    {
+        var streamField = typeof(GcBufferWriter).GetField("_fileStream", BindingFlags.Instance | BindingFlags.NonPublic);
+        ((FileStream)streamField.GetValue(_writer)).Dispose();
+        var failingStream = new FailingFileStream(_path);
+        streamField.SetValue(_writer, failingStream);
+
+        var completed = new TaskCompletionSource<WritingAbortedEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _writer.WritingAborted += (sender, args) =>
+        {
+            try
+            {
+                if (stopOnAnotherThread)
+                    Task.Run(() => _writer.StopAsync()).WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+                else
+                    _writer.StopAsync().GetAwaiter().GetResult();
+
+                completed.TrySetResult(args);
+            }
+            catch (Exception ex)
+            {
+                completed.TrySetException(ex);
+            }
+        };
+
+        _writer.Start();
+        BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer()));
+
+        var eventArgs = await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.AreSame(failingStream.Failure, eventArgs.Exception);
+        Assert.IsFalse(_writer.IsWriting);
+        Assert.AreEqual(0, _writer.BuffersWritten);
+        Assert.AreEqual(0, _writer.BuffersQueued);
+    }
+
+    #endregion
+
     #region IDisposable
+
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(30)]
+    public void Dispose_IsWriting_StopsRecordingThread(int numBuffers)
+    {
+        _writer.Start();
+        var recordingThread = (System.Threading.Thread)typeof(GcBufferWriter)
+            .GetField("_recordingThread", BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetValue(_writer);
+
+        for (int i = 0; i < numBuffers; i++)
+            BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
+
+        _writer.Dispose();
+
+        Assert.IsFalse(recordingThread.IsAlive);
+        Assert.IsTrue(_writer.IsDisposed);
+        Assert.IsFalse(_writer.IsWriting);
+        Assert.AreEqual(0, _writer.BuffersQueued);
+
+        using var file = new FileStream(_path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+    }
 
     [TestMethod]
     public void Dispose_IsNotWriting_IsDisposed()
@@ -319,6 +410,13 @@ public class GcBufferWriterTests
     #endregion
 
     #region Private methods
+
+    private sealed class FailingFileStream(string path) : FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None)
+    {
+        public IOException Failure { get; } = new("Simulated write failure.");
+
+        public override void Write(byte[] buffer, int offset, int count) => throw Failure;
+    }
 
     private static GcBuffer GetBuffer(int n = 42)
     {

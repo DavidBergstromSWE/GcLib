@@ -33,7 +33,7 @@ public sealed class GcBufferWriter : IDisposable
     /// <summary>
     /// Stopping condition for recording thread.
     /// </summary>
-    private bool _recordingThreadStoppingCondition;
+    private volatile bool _recordingThreadStoppingCondition;
 
     /// <summary>
     /// True if object has been disposed.
@@ -125,7 +125,9 @@ public sealed class GcBufferWriter : IDisposable
         FilePath = filePath;
 
         // Create directory if it doesn't already exist.
-        _ = Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        string directory = Path.GetDirectoryName(filePath);
+        if (string.IsNullOrEmpty(directory) == false)
+            _ = Directory.CreateDirectory(directory);
 
         // Initialize buffer queue.
         _bufferQueue = new ConcurrentQueue<GcBuffer>();
@@ -138,7 +140,9 @@ public sealed class GcBufferWriter : IDisposable
 
     #region IDisposable
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Stops recording, discards queued buffers, and releases resources.
+    /// </summary>
     public void Dispose()
     {
         Dispose(disposing: true);
@@ -156,9 +160,15 @@ public sealed class GcBufferWriter : IDisposable
         {
             if (disposing)
             {
-                // Dispose managed state (managed objects).
+                // Stop recording thread.
+                _recordingThreadStoppingCondition = true;
+                _ = _waitHandle.Set();
 
-                // Flush queue.
+                // Event handlers can dispose the writer on the recording thread itself.
+                if (_recordingThread != null && _recordingThread != Thread.CurrentThread)
+                    _recordingThread.Join(); // Wait for thread to terminate.
+
+                IsWriting = false;
                 _bufferQueue.Clear();
             }
 
@@ -201,6 +211,7 @@ public sealed class GcBufferWriter : IDisposable
     /// <summary>
     /// Event announcing that an <see cref="IOException"/> was thrown while writing, with the exception in the event arguments.
     /// </summary>
+    /// <remarks>Failures on the recording thread are reported asynchronously on a thread-pool thread so handlers can stop or dispose the writer.</remarks>
     public event EventHandler<WritingAbortedEventArgs> WritingAborted;
 
     /// <summary>
@@ -209,7 +220,13 @@ public sealed class GcBufferWriter : IDisposable
     /// <param name="ex">Exception that was thrown.</param>
     private void OnWritingAborted(string message, IOException ex)
     {
-        WritingAborted?.Invoke(this, new WritingAbortedEventArgs(message, ex));
+        var handler = WritingAborted; // Copy to a temporary variable to be thread-safe.
+        var eventArgs = new WritingAbortedEventArgs(message, ex);
+
+        // If recording thread raised the event, invoking handler directly would cause a deadlock.
+        if (Thread.CurrentThread == _recordingThread)
+            ThreadPool.QueueUserWorkItem(_ => handler?.Invoke(this, eventArgs)); // Queue invocation on a thread-pool thread.
+        else handler?.Invoke(this, eventArgs);
     }
 
     #endregion

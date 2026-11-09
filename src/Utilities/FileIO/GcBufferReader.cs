@@ -132,41 +132,49 @@ public sealed class GcBufferReader : IDisposable
         // Try to open file.
         _fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
 
-        FilePath = filePath;
-
-        // Retrieve file size.
-        FileSize = (ulong)_fileStream.Length;
-
-        // Read file header.
-        if (_fileHeaderSize > _fileStream.Length)
-            throw new IOException("Could not read file header!");
-        byte[] fileHeader = new byte[_fileHeaderSize];
-        _ = _fileStream.Read(fileHeader, 0, fileHeader.Length);
-
-        // Read image header of first frame.
-        if (_imageHeaderSize > _fileStream.Length - _fileStream.Position)
-            throw new IOException("Could not read image header!");
-        byte[] imageHeader = new byte[_imageHeaderSize];
-        _ = _fileStream.Read(imageHeader, 0, imageHeader.Length);
-
-        // Retrieve expected buffer and image sizes.
         try
         {
-            _imageBufferSize = GetWidth(imageHeader) * GetHeight(imageHeader) * GenICamHelper.GetBitsPerPixel(GetPixelFormat(imageHeader)) / 8;
+            FilePath = filePath;
+
+            // Retrieve file size.
+            FileSize = (ulong)_fileStream.Length;
+
+            // Read file header.
+            if (_fileHeaderSize > _fileStream.Length)
+                throw new IOException("Could not read file header!");
+            byte[] fileHeader = new byte[_fileHeaderSize];
+            _ = _fileStream.Read(fileHeader, 0, fileHeader.Length);
+
+            // Read image header of first frame.
+            if (_imageHeaderSize > _fileStream.Length - _fileStream.Position)
+                throw new IOException("Could not read image header!");
+            byte[] imageHeader = new byte[_imageHeaderSize];
+            _ = _fileStream.Read(imageHeader, 0, imageHeader.Length);
+
+            // Retrieve expected buffer and image sizes.
+            try
+            {
+                _imageBufferSize = GetWidth(imageHeader) * GetHeight(imageHeader) * GenICamHelper.GetBitsPerPixel(GetPixelFormat(imageHeader)) / 8;
+            }
+            catch (Exception)
+            {
+                throw new IOException("File corrupt?");
+            }
+
+            _imageSize = _imageBufferSize + _imageHeaderSize;
+
+            if ((_fileStream.Length - _fileHeaderSize) % _imageSize != 0)
+                throw new IOException("File corrupt?");
+            else FrameCount = (ulong)((_fileStream.Length - _fileHeaderSize) / _imageSize);
+
+            _frameIDList = [];
+            _timeStampList = [];
         }
-        catch (Exception)
+        catch
         {
-            throw new IOException("File corrupt?");
+            _fileStream.Dispose();
+            throw;
         }
-
-        _imageSize = _imageBufferSize + _imageHeaderSize;
-
-        if ((_fileStream.Length - _fileHeaderSize) % _imageSize != 0)
-            throw new IOException("File corrupt?");
-        else FrameCount = (ulong)((_fileStream.Length - _fileHeaderSize) / _imageSize);
-
-        _frameIDList = [];
-        _timeStampList = [];
     }
 
     #endregion
@@ -458,11 +466,11 @@ public sealed class GcBufferReader : IDisposable
     /// Returns a calculated frame rate (in frames per second), estimated from a list of timestamps.
     /// </summary>
     /// <param name="timeStamps">List of timestamps.</param>
-    /// <returns>Estimated frame rate (or 0 if sequence only contains one image or if timestamps are equal).</returns>
+    /// <returns>Estimated frame rate (or 0 if sequence only contains one image or the last timestamp is not greater than the first).</returns>
     private static double CalculateFrameRate(List<ulong> timeStamps)
     {
         var timeSpan = TimeSpan.FromTicks((long)timeStamps[^1] - (long)timeStamps[0]);
-        return timeSpan.TotalSeconds > 0 ? timeStamps.Count / timeSpan.TotalSeconds : 0;
+        return timeSpan.TotalSeconds > 0 ? (timeStamps.Count - 1) / timeSpan.TotalSeconds : 0;
     }
 
     /// <summary>
