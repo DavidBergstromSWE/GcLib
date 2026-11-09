@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -32,6 +33,11 @@ public static class GcLibrary
     /// Device enumeration methods of registered device classes.
     /// </summary>
     private static readonly Dictionary<Type, Func<List<GcDeviceInfo>>> _deviceEnumerators = [];
+
+    /// <summary>
+    /// Synchronization lock for registry collections.
+    /// </summary>
+    private static readonly Lock _registryLock = new();
 
     #endregion
 
@@ -111,8 +117,11 @@ public static class GcLibrary
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
 
         // Check if the device class is already registered.
-        if (_registeredDeviceClasses.ContainsKey(typeof(TDevice)))
-            throw new ArgumentException("A device class of this type is already registered!", typeof(TDevice).Name);
+        lock (_registryLock)
+        {
+            if (_registeredDeviceClasses.ContainsKey(typeof(TDevice)))
+                throw new ArgumentException("A device class of this type is already registered!", typeof(TDevice).Name);
+        }
 
         try
         {
@@ -124,12 +133,18 @@ public static class GcLibrary
             if (deviceClassInfo.DeviceType != typeof(TDevice))
                 throw new InvalidOperationException($"Device class info for {typeof(TDevice).Name} identifies {deviceClassInfo.DeviceType.Name}.");
 
-            // Add detected devices to list.
-            _registeredDeviceClasses.Add(typeof(TDevice), deviceClassInfo);
+            lock (_registryLock)
+            {
+                if (_registeredDeviceClasses.ContainsKey(typeof(TDevice)))
+                    throw new ArgumentException("A device class of this type is already registered!", typeof(TDevice).Name);
 
-            // Add factory and enumeration methods for this device class.
-            _deviceFactories.Add(typeof(TDevice), TDevice.CreateDevice);
-            _deviceEnumerators.Add(typeof(TDevice), TDevice.EnumerateDevices);
+                // Add detected devices to list.
+                _registeredDeviceClasses.Add(typeof(TDevice), deviceClassInfo);
+
+                // Add factory and enumeration methods for this device class.
+                _deviceFactories.Add(typeof(TDevice), TDevice.CreateDevice);
+                _deviceEnumerators.Add(typeof(TDevice), TDevice.EnumerateDevices);
+            }
 
             if (Logger.IsEnabled(LogLevel.Debug))
                 Logger.LogDebug("{DeviceType} registered ({API} v{Version})", deviceClassInfo.DeviceType.Name, deviceClassInfo.Name, deviceClassInfo.Version);
@@ -185,19 +200,25 @@ public static class GcLibrary
         if (IsInitialized == false)
             throw new InvalidOperationException("Library needs to be initialized before device registration/unregistration!");
 
-        if (IsRegistered<TDevice>())
+        lock (_registryLock)
         {
-            try
-            {
-                // Release resources used by API.
-                TDevice.Release();
-            }
-            catch (Exception ex)
-            {
-                if (Logger.IsEnabled(LogLevel.Debug))
-                    Logger.LogDebug(ex, "Failed to release resources for {DeviceType}", typeof(TDevice).Name);
-            }
+            if (IsRegistered<TDevice>() == false)
+                throw new ArgumentException("Device class is not registered!", typeof(TDevice).Name);
+        }
 
+        try
+        {
+            // Release resources used by API.
+            TDevice.Release();
+        }
+        catch (Exception ex)
+        {
+            if (Logger.IsEnabled(LogLevel.Debug))
+                Logger.LogDebug(ex, "Failed to release resources for {DeviceType}", typeof(TDevice).Name);
+        }
+
+        lock (_registryLock)
+        {
             // Remove device class from list.
             _registeredDeviceClasses.Remove(typeof(TDevice));
 
@@ -205,7 +226,6 @@ public static class GcLibrary
             _deviceFactories.Remove(typeof(TDevice));
             _deviceEnumerators.Remove(typeof(TDevice));
         }
-        else throw new ArgumentException("Device class is not registered!", typeof(TDevice).Name);
 
         if (Logger.IsEnabled(LogLevel.Debug))
             Logger.LogDebug("{DeviceType} unregistered", typeof(TDevice).Name);
@@ -262,7 +282,8 @@ public static class GcLibrary
     /// <returns>Device classes registered.</returns>
     public static IReadOnlyCollection<GcDeviceClassInfo> GetRegisteredDeviceClasses()
     {
-        return _registeredDeviceClasses.Values;
+        lock (_registryLock)
+            return [.. _registeredDeviceClasses.Values];
     }
 
     /// <summary>
@@ -273,7 +294,8 @@ public static class GcLibrary
     /// <returns><see langword="true"/> if the type is registered; otherwise, <see langword="false"/>.</returns>
     public static bool IsRegistered<TDevice>() where TDevice : GcDevice<TDevice>, IDeviceFactory<TDevice>
     {
-        return _registeredDeviceClasses.ContainsKey(typeof(TDevice));
+        lock (_registryLock)
+            return _registeredDeviceClasses.ContainsKey(typeof(TDevice));
     }
 
     /// <summary>
@@ -282,10 +304,10 @@ public static class GcLibrary
     /// <remarks>Only device classes that have been successfully registered can be discovered, enumerated and created in the library.</remarks>
     /// <param name="deviceType">The device class to check.</param>
     /// <returns><see langword="true"/> if the type is registered; otherwise, <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentException">The type does not derive from <see cref="GcDevice"/> or does not implement <see cref="IDeviceFactory{T}"/>.</exception>
     public static bool IsRegistered(Type deviceType)
     {
-        return _registeredDeviceClasses.ContainsKey(deviceType);
+        lock (_registryLock)
+            return _registeredDeviceClasses.ContainsKey(deviceType);
     }
 
     /// <summary>
@@ -294,8 +316,12 @@ public static class GcLibrary
     /// <remarks>After calling this method, the library needs to be re-initialized by calling <see cref="Init"/> again.</remarks>
     public static void Close()
     {
-        foreach (var deviceType in _registeredDeviceClasses.Values)
-            Unregister(deviceType.DeviceType);
+        List<Type> registeredDeviceTypes;
+        lock (_registryLock)
+            registeredDeviceTypes = [.. _registeredDeviceClasses.Keys];
+
+        foreach (var deviceType in registeredDeviceTypes)
+            Unregister(deviceType);
 
         IsInitialized = false;
 
@@ -314,7 +340,8 @@ public static class GcLibrary
     /// <exception cref="KeyNotFoundException">Thrown if the device class is not registered.</exception>
     internal static Func<GcDeviceInfo, GcDevice> GetDeviceFactory(Type deviceType)
     {
-        return _deviceFactories.TryGetValue(deviceType, out var factory) ? factory : throw new KeyNotFoundException($"Device class {deviceType.Name} is not registered!");
+        lock (_registryLock)
+            return _deviceFactories.TryGetValue(deviceType, out var factory) ? factory : throw new KeyNotFoundException($"Device class {deviceType.Name} is not registered!");
     }
 
     /// <summary>
@@ -325,7 +352,8 @@ public static class GcLibrary
     /// <exception cref="KeyNotFoundException">Thrown if the device class is not registered.</exception>
     internal static Func<List<GcDeviceInfo>> GetDeviceEnumerator(Type deviceType)
     {
-        return _deviceEnumerators.TryGetValue(deviceType, out var enumerate) ? enumerate : throw new KeyNotFoundException($"Device class {deviceType.Name} is not registered!");
+        lock (_registryLock)
+            return _deviceEnumerators.TryGetValue(deviceType, out var enumerate) ? enumerate : throw new KeyNotFoundException($"Device class {deviceType.Name} is not registered!");
     }
 
     #endregion
