@@ -472,7 +472,7 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
 
     #endregion
 
-    #region Object overrides
+    #region Equality and Hashing
 
     /// <summary>
     /// Determines whether this buffer has metadata equality with another buffer.

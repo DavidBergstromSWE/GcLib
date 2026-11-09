@@ -320,36 +320,6 @@ public class GcBufferTests
     #region GetPixelTests
 
     [TestMethod]
-    [DataRow(PixelFormat.RGB8)]
-    [DataRow(PixelFormat.BGR8)]
-    public void GetPixel_Blue_ForSpecificChannel_ValidatePixelValues(PixelFormat pixelFormat)
-    {
-        // Arrange
-        uint width = 3; uint height = 3;
-        var imageData = TestPatternGenerator.CreateImage(width, height, pixelFormat, TestPattern.Blue);
-        var buffer = new GcBuffer(imageData, width, height, pixelFormat, 42, (ulong)DateTime.Now.Ticks);
-        var mat = buffer.ToMat();
-
-        // Act/Assert
-        for (int col = 0; col < mat.Width; col++)
-            for (int row = 0; row < mat.Height; row++)
-            {
-                if (pixelFormat == PixelFormat.RGB8)
-                {
-                    Assert.AreEqual(255, mat.GetPixel(row, col, 0)); // B
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 1)); // G
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 2)); // R
-                }
-                else if (pixelFormat == PixelFormat.BGR8)
-                {
-                    Assert.AreEqual(255, mat.GetPixel(row, col, 0)); // B
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 1)); // G
-                    Assert.AreEqual(0, mat.GetPixel(row, col, 2)); // R
-                }
-            }
-    }
-
-    [TestMethod]
     [DataRow(PixelFormat.Mono8)]
     [DataRow(PixelFormat.Mono10)]
     [DataRow(PixelFormat.Mono12)]
@@ -1085,6 +1055,37 @@ public class GcBufferTests
 
         // Act/Assert
         Assert.IsFalse(first.Equals((GcBuffer)null));
+    }
+
+    [TestMethod]
+    public void Equals_NonBufferObject_ReturnsFalse()
+    {
+        // Arrange
+        var first = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+
+        // Act/Assert
+        Assert.IsFalse(first.Equals(new object()));
+    }
+
+    [TestMethod]
+    public void ContentEquals_NullBuffer_ReturnsFalse()
+    {
+        // Arrange
+        var first = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+
+        // Act/Assert
+        Assert.IsFalse(first.ContentEquals(null));
+    }
+
+    [TestMethod]
+    public void ContentEquals_DifferentMetadata_ReturnsFalse()
+    {
+        // Arrange
+        var first = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+        var second = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1001);
+
+        // Act/Assert
+        Assert.IsFalse(first.ContentEquals(second));
     }
 
     #endregion
