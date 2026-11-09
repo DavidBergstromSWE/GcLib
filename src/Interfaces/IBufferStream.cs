@@ -38,13 +38,6 @@ public interface IBufferStream
     bool RetrieveBuffer(out GcBuffer buffer, int timeout = 1000);
 
     /// <summary>
-    /// Returns buffer to the stream, so that the memory can be recycled.
-    /// </summary>
-    /// <remarks>Make sure to make a copy of the data if you need to retain it.</remarks>
-    /// <param name="buffer">The buffer to recycle.</param>
-    //public void ReturnBuffer(GcBuffer buffer);
-
-    /// <summary>
     /// Event announcing that streaming has started.
     /// </summary>
     event EventHandler StreamingStarted;

@@ -10,9 +10,15 @@ namespace GcLib;
 /// <summary>
 /// Represents the datastream level in the GenICam/GenTL standard module hierarchy, responsible for transferring buffers from device to consumers. 
 /// </summary>
-/// <remarks>Buffers can be transferred synchronously or asynchronously according to the configured <see cref="AcquisitionDeliveryMode"/>.
-/// In synchronous mode, buffers are enqueued to an internal output buffer queue and can be retrieved by consumers through <see cref="RetrieveBuffer(out GcBuffer, int)"/>.
-/// In asynchronous mode, buffers are delivered to consumers through <see cref="BufferTransferred"/> events using a non-blocking event dispatcher.
+/// <remarks>Buffers can be transferred synchronously or asynchronously according to the configured <see cref="AcquisitionDeliveryMode"/>:
+/// <list type="bullet">
+/// <item>
+/// <description>Synchronous: Buffers are signaled by the <see cref="NewBuffer"/> event and enqueued to an internal output buffer queue. They can be retrieved by consumers through <see cref="RetrieveBuffer"/>.</description>
+/// </item>
+/// <item>
+/// <description>Asynchronous: Buffers are delivered to consumers through <see cref="BufferTransferred"/> events, using a non-blocking event dispatcher.</description>
+/// </item>
+/// </list>
 /// </remarks>
 /// <param name="bufferProducer">Buffer producer.</param>
 /// <param name="dataStreamID">Unique datastream ID.</param>
@@ -38,17 +44,17 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     private readonly AcquisitionDeliveryMode _deliveryMode = deliveryMode;
 
     /// <summary>
-    /// Output buffer queue, containing images available to synchronous consumers.
+    /// Output buffer queue, containing buffers available to synchronous consumers.
     /// </summary>
     private readonly CircularBuffer<GcBuffer> _outputBufferQueue = new(capacity: outputQueueCapacity, allowOverwrite: true);
 
     /// <summary>
-    /// Synchronization lock for output queue access.
+    /// Synchronization lock for output buffer queue access.
     /// </summary>
     private readonly Lock _outputQueueLock = new();
 
     /// <summary>
-    /// Provides a synchronization event used to block and release waiting threads.
+    /// Provides a synchronization event used to block and release threads waiting for a buffer to be available in the output buffer queue.
     /// </summary>
     private readonly AutoResetEvent _waitHandle = new(false);
 
@@ -83,7 +89,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     private Task _eventDispatchTask;
 
     /// <summary>
-    /// Registration handle for stream-bound sink callbacks in producer. 
+    /// Registration handle for stream-bound sink callbacks in producer.
     /// </summary>
     private IDisposable _bufferSinkRegistration;
 
