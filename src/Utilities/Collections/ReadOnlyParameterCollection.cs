@@ -42,9 +42,6 @@ public sealed class ReadOnlyParameterCollection(string collectionName, IEnumerab
     public int Count => _parameters.Count;
 
     /// <inheritdoc/>
-    public GcParameter this[int i] => _parameters[i];
-
-    /// <inheritdoc/>
     public GcParameter this[string parameterName] => _parameters.FirstOrDefault(p => p.Name == parameterName) ?? throw new KeyNotFoundException($"Device does not implement a parameter with name {parameterName}!");
 
     /// <inheritdoc/>

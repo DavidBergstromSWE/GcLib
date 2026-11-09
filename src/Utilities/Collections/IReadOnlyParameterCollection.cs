@@ -10,14 +10,6 @@ public interface IReadOnlyParameterCollection : IReadOnlyCollection<GcParameter>
     /// <summary>
     /// Indexer to allow parameter retrieval using [] notation.
     /// </summary>
-    /// <param name="i">Index of parameter in collection.</param>
-    /// <returns>Parameter.</returns>
-    /// 
-    GcParameter this[int i] { get; }
-
-    /// <summary>
-    /// Indexer to allow parameter retrieval using [] notation.
-    /// </summary>
     /// <param name="parameterName">Name of parameter.</param>
     /// <returns>Parameter.</returns>
     GcParameter this[string parameterName] { get; }

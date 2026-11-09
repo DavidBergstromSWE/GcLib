@@ -27,15 +27,24 @@ public abstract partial class GcDevice : IBufferProducer
         /// </summary>
         private readonly Dictionary<string, GcParameter> _parameterDict;
 
+        /// <summary>
+        /// Synchronization lock for parameter dictionary access.
+        /// </summary>
+        private readonly object _parameterDictLock = new();
+
         #endregion
 
         #region Indexers
 
         /// <inheritdoc/>
-        public GcParameter this[int i] => _parameterDict.ElementAt(i).Value;
-
-        /// <inheritdoc/>
-        public GcParameter this[string parameterName] => _parameterDict.TryGetValue(parameterName, out GcParameter value) ? value : throw new KeyNotFoundException($"Device does not implement a parameter with name {parameterName}!");
+        public GcParameter this[string parameterName]
+        {
+            get
+            {
+                lock (_parameterDictLock)
+                    return _parameterDict.TryGetValue(parameterName, out GcParameter value) ? value : throw new KeyNotFoundException($"Device does not implement a parameter with name {parameterName}!");
+            }
+        }
 
         #endregion
 
@@ -49,7 +58,14 @@ public abstract partial class GcDevice : IBufferProducer
         /// <summary>
         /// Gets the number of parameters implemented by the device.
         /// </summary>
-        public int Count => _parameterDict.Count;
+        public int Count
+        {
+            get
+            {
+                lock (_parameterDictLock)
+                    return _parameterDict.Count;
+            }
+        }
 
         /// <inheritdoc/>
         public string Name { get; }
@@ -67,6 +83,11 @@ public abstract partial class GcDevice : IBufferProducer
         /// <param name="failedParameters">The names of parameters that failed to be imported.</param>
         public GcDeviceParameterCollection(GcDevice device, List<GcParameter> parameters, List<string> failedParameters)
         {
+            ArgumentNullException.ThrowIfNull(device);
+            ArgumentNullException.ThrowIfNull(parameters);
+            ArgumentNullException.ThrowIfNull(failedParameters);
+            ArgumentNullException.ThrowIfNull(device.DeviceInfo);
+
             _device = device;
             _parameterDict = new Dictionary<string, GcParameter>(parameters.ToDictionary(x => x.Name, x => x));
             FailedParameters = failedParameters;
@@ -86,19 +107,22 @@ public abstract partial class GcDevice : IBufferProducer
         /// </summary>
         public IReadOnlyList<GcParameter> ToList()
         {
-            return [.. _parameterDict.Values];
+            lock (_parameterDictLock)
+                return [.. _parameterDict.Values];
         }
 
         /// <inheritdoc/>
         public IReadOnlyList<GcParameter> ToList(GcVisibility visibility = GcVisibility.Guru)
         {
-            return [.. _parameterDict.Values.Where(p => p.Visibility <= visibility)];
+            lock (_parameterDictLock)
+                return [.. _parameterDict.Values.Where(p => p.Visibility <= visibility)];
         }
 
         /// <inheritdoc/>
         public IEnumerable<string> GetCategories(GcVisibility visibility)
         {
-            return _parameterDict.Values.Where(p => p.Visibility <= visibility).Select(p => p.Category).Distinct();
+            lock (_parameterDictLock)
+                return [.. _parameterDict.Values.Where(p => p.Visibility <= visibility).Select(p => p.Category).Distinct()];
         }
 
         /// <summary>
@@ -109,16 +133,24 @@ public abstract partial class GcDevice : IBufferProducer
             // Measure elapsed time for making update.
             var startTime = Stopwatch.GetTimestamp();
 
-            var parameterDict = new Dictionary<string, GcParameter>(_parameterDict);
-            foreach (GcParameter parameter in parameterDict.Values)
+            List<GcParameter> parameters;
+            lock (_parameterDictLock)
+                parameters = [.. _parameterDict.Values];
+
+            foreach (GcParameter parameter in parameters)
             {
                 try
                 {
-                    _parameterDict[parameter.Name].FromString(GetParameterValue(parameter.Name));
+                    string parameterValue = GetParameterValue(parameter.Name);
+                    lock (_parameterDictLock)
+                        _parameterDict[parameter.Name].FromString(parameterValue);
 
                     var param = _device.GetParameter(parameter.Name);
                     if (param != null)
-                        _parameterDict[parameter.Name].ImposeAccessMode(param.IsReadable, param.IsWritable);
+                    {
+                        lock (_parameterDictLock)
+                            _parameterDict[parameter.Name].ImposeAccessMode(param.IsReadable, param.IsWritable);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -136,7 +168,8 @@ public abstract partial class GcDevice : IBufferProducer
         /// <inheritdoc/>
         public bool IsImplemented(string parameterName)
         {
-            return _parameterDict.ContainsKey(parameterName);
+            lock (_parameterDictLock)
+                return _parameterDict.ContainsKey(parameterName);
         }
 
         /// <summary>
@@ -146,9 +179,12 @@ public abstract partial class GcDevice : IBufferProducer
         /// <returns>Parameter value as string.</returns>
         public string GetParameterValue(string parameterName)
         {
-            if (IsImplemented(parameterName) && _parameterDict[parameterName].IsReadable && _parameterDict[parameterName].Type != GcParameterType.Command)
-                return _device.GetParameterValue(parameterName);
-            else return null;
+            lock (_parameterDictLock)
+            {
+                if (_parameterDict.TryGetValue(parameterName, out var parameter) && parameter.IsReadable && parameter.Type != GcParameterType.Command)
+                    return _device.GetParameterValue(parameterName);
+                else return null;
+            }
         }
 
         /// <summary>
@@ -158,7 +194,11 @@ public abstract partial class GcDevice : IBufferProducer
         /// <param name="parameterValue">New parameter value.</param>
         public void SetParameterValue(string parameterName, string parameterValue)
         {
-            if (IsImplemented(parameterName) && _parameterDict[parameterName].IsWritable && _parameterDict[parameterName].Type != GcParameterType.Command)
+            bool canSet;
+            lock (_parameterDictLock)
+                canSet = _parameterDict.TryGetValue(parameterName, out var parameter) && parameter.IsWritable && parameter.Type != GcParameterType.Command;
+
+            if (canSet)
             {
                 _device.SetParameterValue(parameterName, parameterValue);
 
@@ -178,7 +218,11 @@ public abstract partial class GcDevice : IBufferProducer
         {
             try
             {
-                if (IsImplemented(parameterName) && _parameterDict[parameterName].Type == GcParameterType.Command)
+                bool canExecute;
+                lock (_parameterDictLock)
+                    canExecute = _parameterDict.TryGetValue(parameterName, out var parameter) && parameter.Type == GcParameterType.Command;
+
+                if (canExecute)
                 {
                     _device.ExecuteParameterCommand(parameterName);
 
@@ -204,23 +248,25 @@ public abstract partial class GcDevice : IBufferProducer
         /// <returns>Parameter (or null if parameter is not found).</returns>
         public GcParameter GetParameter(string parameterName)
         {
-            if (IsImplemented(parameterName))
+            lock (_parameterDictLock)
             {
-                var parameter = _parameterDict[parameterName];
-                return parameter.Type switch
+                if (_parameterDict.TryGetValue(parameterName, out var parameter))
                 {
-                    GcParameterType.Integer => parameter as GcInteger,
-                    GcParameterType.Float => parameter as GcFloat,
-                    GcParameterType.String => parameter as GcString,
-                    GcParameterType.Enumeration => parameter as GcEnumeration,
-                    GcParameterType.Boolean => parameter as GcBoolean,
-                    GcParameterType.Command => parameter as GcCommand,
-                    _ => null,
-                };
-            }
-            else
-            {
-                return null;
+                    return parameter.Type switch
+                    {
+                        GcParameterType.Integer => parameter as GcInteger,
+                        GcParameterType.Float => parameter as GcFloat,
+                        GcParameterType.String => parameter as GcString,
+                        GcParameterType.Enumeration => parameter as GcEnumeration,
+                        GcParameterType.Boolean => parameter as GcBoolean,
+                        GcParameterType.Command => parameter as GcCommand,
+                        _ => null,
+                    };
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -232,6 +278,7 @@ public abstract partial class GcDevice : IBufferProducer
         public IReadOnlyList<KeyValuePair<string, string>> GetPropertyList(GcVisibility visibility = GcVisibility.Guru)
         {
             var propertyList = new List<KeyValuePair<string, string>>();
+            var propertyIndexLookup = new Dictionary<string, int>();
 
             foreach (GcParameter gcParameter in this)
             {
@@ -248,16 +295,16 @@ public abstract partial class GcDevice : IBufferProducer
                 {
                     foreach (string parameter in selectedParameters)
                     {
-                        if (propertyList.Where(keyValuePair => keyValuePair.Key == parameter).ToList().Count > 0)
-                        {
-                            int pos = propertyList.FindIndex(p => p.Key == parameter); // position of parameter being selected
-                            if (pos < destinationIndex)
-                                destinationIndex = pos;
-                        }
+                        if (propertyIndexLookup.TryGetValue(parameter, out int pos) && pos < destinationIndex)
+                            destinationIndex = pos;
                     }
                 }
 
                 propertyList.Insert(destinationIndex, new KeyValuePair<string, string>(parameterName, parameterValue)); // insert before all selected parameters (if any)
+
+                // Rebuild lookup indexes from insertion point onward.
+                for (int i = destinationIndex; i < propertyList.Count; i++)
+                    propertyIndexLookup[propertyList[i].Key] = i;
             }
 
             return propertyList;
@@ -266,7 +313,8 @@ public abstract partial class GcDevice : IBufferProducer
         /// <inheritdoc/>
         public IEnumerator<GcParameter> GetEnumerator()
         {
-            return _parameterDict.Values.GetEnumerator();
+            lock (_parameterDictLock)
+                return _parameterDict.Values.ToList().GetEnumerator();
         }
 
         /// <inheritdoc/>
