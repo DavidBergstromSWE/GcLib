@@ -339,6 +339,33 @@ public class GcDeviceTests
     }
 
     [TestMethod]
+    public void StopAcquisitionFailure_DoesNotKeepStaleActiveStreamSlot()
+    {
+        // Arrange
+        _device = new Mock<MockableCam> { CallBase = true };
+        _device.SetupGet(d => d.MaxConcurrentStreams).Returns(1);
+
+        int stopAttempts = 0;
+        _device.Setup(d => d.StopAcquisition()).Callback(() =>
+        {
+            if (++stopAttempts == 1)
+                throw new InvalidOperationException("Simulated acquisition stop failure.");
+        });
+
+        var firstStream = _device.Object.OpenDataStream("Stream1");
+        var secondStream = _device.Object.OpenDataStream("Stream2");
+
+        firstStream.Start();
+
+        // Act/Assert
+        Assert.Throws<InvalidOperationException>(() => firstStream.Stop());
+        secondStream.Start();
+
+        // Cleanup
+        secondStream.Stop();
+    }
+
+    [TestMethod]
     public void FetchImage_ReturnsNull()
     {
         // Arrange

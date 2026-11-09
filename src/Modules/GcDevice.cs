@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using GcLib.Utilities.Collections;
 
@@ -242,6 +243,8 @@ public abstract partial class GcDevice : IBufferProducer, IStreamCoordinator, IE
     /// </summary>
     public void Close()
     {
+        Exception closeException = null;
+
         // Snapshot open datastreams outside of close loop lock.
         GcDataStream[] dataStreams;
         lock (_dataStreamListLock)
@@ -250,26 +253,50 @@ public abstract partial class GcDevice : IBufferProducer, IStreamCoordinator, IE
         // Stop acquisition and close streams before releasing device-specific resources.
         foreach (var dataStream in dataStreams)
         {
-            if (dataStream.IsOpen)
+            if (dataStream.IsOpen == false)
+                continue;
+
+            try
+            {
                 dataStream.Close();
+            }
+            catch (Exception ex) when (closeException == null)
+            {
+                closeException = ex;
+            }
         }
 
-        // Perform device-specific closure operations after streams have stopped.
-        OnDeviceClosed();
-
-        // Clear list of datastreams.
-        lock (_dataStreamListLock)
-            _dataStreamList?.Clear();
-
-        // Update device info.
-        if (DeviceInfo != null)
+        try
         {
-            DeviceInfo.IsOpen = false;
-            DeviceInfo.IsAccessible = true;
+            // Perform device-specific closure operations after streams have stopped.
+            OnDeviceClosed();
+        }
+        catch (Exception ex) when (closeException == null)
+        {
+            closeException = ex;
+        }
+        finally
+        {
+            // Clear list of datastreams.
+            lock (_dataStreamListLock)
+                _dataStreamList?.Clear();
+
+            lock (_acquisitionLock)
+                _activeDataStreamAcquisitions.Clear();
+
+            // Update device info.
+            if (DeviceInfo != null)
+            {
+                DeviceInfo.IsOpen = false;
+                DeviceInfo.IsAccessible = true;
+            }
+
+            // Raise event.
+            OnClosed();
         }
 
-        // Raise event.
-        OnClosed();
+        if (closeException != null)
+            ExceptionDispatchInfo.Capture(closeException).Throw();
     }
 
     /// <summary>
@@ -318,12 +345,24 @@ public abstract partial class GcDevice : IBufferProducer, IStreamCoordinator, IE
     {
         // Open a temporary datastream for fetching a single image, using queued delivery mode.
         var dataStream = OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Synchronous);
-        dataStream.Start(1);
-        var result = dataStream.RetrieveBuffer(out buffer, (int)timeout);
-        dataStream.Stop();
-        dataStream.Close();
-
-        return result;
+        try
+        {
+            dataStream.Start(1);
+            return dataStream.RetrieveBuffer(out buffer, (int)timeout);
+        }
+        finally
+        {
+            try
+            {
+                if (dataStream.IsStreaming)
+                    dataStream.Stop();
+            }
+            finally
+            {
+                if (dataStream.IsOpen)
+                    dataStream.Close();
+            }
+        }
     }
 
     #endregion
@@ -441,9 +480,9 @@ public abstract partial class GcDevice : IBufferProducer, IStreamCoordinator, IE
                 return;
             }
 
-            // If this is the last active datastream acquisition, stop device acquisition and remove the datastream ID from the set.
-            StopAcquisition();
+            // If this is the last active datastream acquisition, remove stream from active set and stop device acquisition.
             _activeDataStreamAcquisitions.Remove(dataStreamID);
+            StopAcquisition();
         }
     }
 
