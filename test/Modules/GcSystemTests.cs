@@ -35,6 +35,7 @@ public class GcSystemTests
     [TestCleanup]
     public void TestCleanUp()
     {
+        VirtualCam.NumberOfAvailableDevices = 2;
         _device?.Close();
         _system?.Dispose();
     }
@@ -114,7 +115,7 @@ public class GcSystemTests
     }
 
     [TestMethod]
-    public void GetDeviceList_FromUpdatedDeviceList_DeviceListIsNotEmpty()
+    public void GetDeviceList_ReturnsSnapshot_ModifyingReturnedListDoesNotAffectSystem()
     {
         // Arrange
         _system = new GcSystem();
@@ -122,9 +123,11 @@ public class GcSystemTests
 
         // Act
         var devices = _system.GetDeviceList();
+        devices.Clear();
 
         // Assert
-        Assert.IsNotEmpty(devices);
+        Assert.IsGreaterThan<uint>(0, _system.GetNumDevices());
+        Assert.IsNotEmpty(_system.GetDeviceList());
     }
 
     [TestMethod]
@@ -155,6 +158,23 @@ public class GcSystemTests
         // Assert
         Assert.IsTrue(devices[0].IsOpen);
         Assert.IsFalse(devices[0].IsAccessible);
+        Assert.IsNotNull(_device);
+    }
+
+    [TestMethod]
+    public void OpenDevice_UniqueIDIsAvailable_DeviceIsOpenAndNotNull()
+    {
+        // Arrange
+        _system = new GcSystem();
+        _system.UpdateDeviceList();
+        var devices = _system.GetDeviceList();
+
+        // Act
+        _device = _system.OpenDevice(devices[0].UniqueID);
+
+        // Assert
+        Assert.IsTrue(_device.DeviceInfo.IsOpen);
+        Assert.IsFalse(_device.DeviceInfo.IsAccessible);
         Assert.IsNotNull(_device);
     }
 
@@ -342,6 +362,27 @@ public class GcSystemTests
         {
             Assert.IsNotNull(deviceInfo);
         }
+    }
+
+    [TestMethod]
+    public void IEnumerable_GetEnumerator_ReturnsSnapshot()
+    {
+        // Arrange
+        _system = new GcSystem();
+        VirtualCam.NumberOfAvailableDevices = 1;
+        _system.UpdateDeviceList();
+        var enumerator = _system.GetEnumerator();
+
+        // Act
+        VirtualCam.NumberOfAvailableDevices = 2;
+        _system.UpdateDeviceList();
+
+        int enumeratedCount = 0;
+        while (enumerator.MoveNext())
+            enumeratedCount++;
+
+        // Assert
+        Assert.AreEqual(1, enumeratedCount);
     }
 
     #endregion

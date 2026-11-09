@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace GcLib;
@@ -13,6 +14,11 @@ namespace GcLib;
 public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisposable
 {
     #region Fields
+
+    /// <summary>
+    /// Synchronization lock for singleton-style instantiation guard.
+    /// </summary>
+    private static readonly Lock _instantiationLock = new();
 
     /// <summary>
     /// True if system has been instantiated already.
@@ -29,6 +35,11 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     /// </summary>
     private readonly List<GcDevice> _connectedDevices;
 
+    /// <summary>
+    /// Synchronization lock for mutable system state.
+    /// </summary>
+    private readonly Lock _stateLock = new();
+
     #endregion
 
     #region Constructors
@@ -42,17 +53,29 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     /// <exception cref="InvalidOperationException"></exception>
     public GcSystem()
     {
-        if (_isInstantiated)
-            throw new InvalidOperationException("System has already been instantiated! Only one instance ís allowed of this class.");
+        lock (_instantiationLock)
+        {
+            if (_isInstantiated)
+                throw new InvalidOperationException("System has already been instantiated! Only one instance ís allowed of this class.");
+
+            _isInstantiated = true;
+        }
 
         _availableDevices = [];
         _connectedDevices = [];
 
-        // Make sure library is initialized.
-        if (GcLibrary.IsInitialized == false)
-            GcLibrary.Init();
-
-        _isInstantiated = true;
+        try
+        {
+            // Make sure library is initialized.
+            if (GcLibrary.IsInitialized == false)
+                GcLibrary.Init();
+        }
+        catch
+        {
+            lock (_instantiationLock)
+                _isInstantiated = false;
+            throw;
+        }
     }
 
     #endregion
@@ -79,7 +102,11 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         }
 
         // Check connected device list for overlapping or missing items (devices already connected may or may not be discoverable, depending on API).
-        foreach (GcDevice device in _connectedDevices)
+        List<GcDevice> connectedDevicesSnapshot;
+        lock (_stateLock)
+            connectedDevicesSnapshot = [.. _connectedDevices];
+
+        foreach (GcDevice device in connectedDevicesSnapshot)
         {
             int index = deviceList.FindIndex(i => i.UniqueID == device.DeviceInfo.UniqueID);
             if (index >= 0)
@@ -94,24 +121,30 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         deviceList = [.. deviceList.Distinct()];
 
         // Update list of available devices.
-        if (_availableDevices.SequenceEqual(deviceList) == false)
+        lock (_stateLock)
         {
-            _availableDevices = deviceList;
-            return true;
+            if (_availableDevices.SequenceEqual(deviceList) == false)
+            {
+                _availableDevices = deviceList;
+                return true;
+            }
         }
-        else return false;
+
+        return false;
     }
 
     /// <inheritdoc />
     public List<GcDeviceInfo> GetDeviceList()
     {
-        return _availableDevices;
+        lock (_stateLock)
+            return [.. _availableDevices];
     }
 
     /// <inheritdoc />
     public uint GetNumDevices()
     {
-        return (uint)_availableDevices.Count;
+        lock (_stateLock)
+            return (uint)_availableDevices.Count;
     }
 
     /// <summary>
@@ -133,33 +166,45 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     /// <exception cref="TargetInvocationException"/>
     public GcDevice OpenDevice(string uniqueID)
     {
-        GcDevice device = null;
+        GcDeviceInfo deviceInfo;
 
         // Find index of camera in device list using string identifier.
-        int index = _availableDevices.FindIndex(x => x.UniqueID == uniqueID);
-        if (index == -1)
-            throw new ArgumentException($"Device with ID {uniqueID} not found!");
+        lock (_stateLock)
+        {
+            int index = _availableDevices.FindIndex(x => x.UniqueID == uniqueID);
+            if (index == -1)
+                throw new ArgumentException($"Device with ID {uniqueID} not found!");
 
-        // Retrieve information of found device.
-        GcDeviceInfo deviceInfo = _availableDevices[index];
+            // Retrieve information of found device.
+            deviceInfo = _availableDevices[index];
 
-        // Check if device is already open (e.g. is a member of the list of connected devices).
-        if (_connectedDevices.Any(device => device.DeviceInfo.UniqueID == deviceInfo.UniqueID))
-            throw new InvalidOperationException($"Device {deviceInfo.ModelName} of ID {deviceInfo.UniqueID} is already open!");
+            // Check if device is already open (e.g. is a member of the list of connected devices).
+            if (_connectedDevices.Any(device => device.DeviceInfo.UniqueID == deviceInfo.UniqueID))
+                throw new InvalidOperationException($"Device {deviceInfo.ModelName} of ID {deviceInfo.UniqueID} is already open!");
+        }
 
         // Instantiate using factory method of the device class.
         var deviceFactory = GcLibrary.GetDeviceFactory(deviceInfo.DeviceClassInfo.DeviceType);
-        device = deviceFactory(deviceInfo);
+        var device = deviceFactory(deviceInfo);
 
         // Log information.
         if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
             GcLibrary.Logger.LogDebug("{deviceModel} (ID: {deviceID}) instantiated using {className} device class", deviceInfo.ModelName, deviceInfo.UniqueID, deviceInfo.DeviceClassInfo.DeviceType.Name);
 
         // Add device to list of connected devices.
-        _connectedDevices.Add(device);
+        lock (_stateLock)
+        {
+            if (_connectedDevices.Any(connectedDevice => connectedDevice.DeviceInfo.UniqueID == deviceInfo.UniqueID))
+            {
+                device.Close();
+                throw new InvalidOperationException($"Device {deviceInfo.ModelName} of ID {deviceInfo.UniqueID} is already open!");
+            }
 
-        // Update device info in device list.
-        UpdateListWithUpdatedDeviceInfo(device.DeviceInfo);
+            _connectedDevices.Add(device);
+
+            // Update device info in device list.
+            UpdateListWithUpdatedDeviceInfo(device.DeviceInfo);
+        }
 
         // Hook eventhandler to Closed events.
         device.Closed += Device_Closed;
@@ -170,14 +215,16 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     /// <inheritdoc />
     public string GetDeviceID(uint index)
     {
-        return index < _availableDevices.Count ? _availableDevices[(int)index].UniqueID : null;
+        lock (_stateLock)
+            return index < _availableDevices.Count ? _availableDevices[(int)index].UniqueID : null;
     }
 
     /// <inheritdoc />
     public GcDeviceInfo GetDeviceInfo(string uniqueID)
     {
         // Find device using string identifier.
-        return _availableDevices.Find(x => x.UniqueID == uniqueID);
+        lock (_stateLock)
+            return _availableDevices.Find(x => x.UniqueID == uniqueID);
     }
 
     /// <summary>
@@ -186,7 +233,11 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     public void Dispose()
     {
         // Close all connected devices.
-        foreach (var device in _connectedDevices.ToList())
+        List<GcDevice> connectedDevicesSnapshot;
+        lock (_stateLock)
+            connectedDevicesSnapshot = [.. _connectedDevices];
+
+        foreach (var device in connectedDevicesSnapshot)
         {
             device.Close();
             device.Closed -= Device_Closed;
@@ -194,10 +245,14 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         }
 
         // Clear lists of devices.
-        _connectedDevices.Clear();
-        _availableDevices.Clear();
+        lock (_stateLock)
+        {
+            _connectedDevices.Clear();
+            _availableDevices.Clear();
+        }
 
-        _isInstantiated = false;
+        lock (_instantiationLock)
+            _isInstantiated = false;
     }
 
     #endregion
@@ -212,10 +267,12 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
         var device = (GcDevice)sender;
 
         // Acquire mutual-exclusion lock to list of connected devices for the current thread.
-        lock (_connectedDevices)
+        lock (_stateLock)
         {
             // Remove device from list of connected devices.
             _connectedDevices.Remove(device);
+
+            UpdateListWithUpdatedDeviceInfo(device.DeviceInfo);
         }
 
         // Unsubscribe from the event.
@@ -228,13 +285,17 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
     /// <param name="deviceInfo">Updated device info.</param>
     private void UpdateListWithUpdatedDeviceInfo(GcDeviceInfo deviceInfo)
     {
-        // Find device.
-        int index = _availableDevices.FindIndex(i => i.UniqueID == deviceInfo.UniqueID);
-        if (index == -1)
-            return;
+        lock (_stateLock)
+        {
+            // Find device.
+            int index = _availableDevices.FindIndex(i => i.UniqueID == deviceInfo.UniqueID);
+            if (index == -1)
+                return;
 
-        // Update device list.
-        _availableDevices[index] = deviceInfo;
+            // Update mutable device state while preserving object identity.
+            _availableDevices[index].IsOpen = deviceInfo.IsOpen;
+            _availableDevices[index].IsAccessible = deviceInfo.IsAccessible;
+        }
     }
 
     #endregion
@@ -243,7 +304,8 @@ public sealed class GcSystem : IDeviceProvider, IEnumerable<GcDeviceInfo>, IDisp
 
     public IEnumerator<GcDeviceInfo> GetEnumerator()
     {
-        return _availableDevices.GetEnumerator();
+        lock (_stateLock)
+            return _availableDevices.ToList().GetEnumerator();
     }
 
 
