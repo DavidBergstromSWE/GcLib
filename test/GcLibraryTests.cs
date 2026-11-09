@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using GcLib.UnitTests.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -74,19 +77,9 @@ public class GcLibraryTests
 
         // Assert all registered classes returns true for IsRegistered
         foreach (var deviceClassInfo in GcLibrary.GetRegisteredDeviceClasses())
-            Assert.IsTrue(GcLibrary.IsRegistered(deviceClassInfo.DeviceType));
-    }
-
-    [TestMethod]
-    public void Init_AutoRegister_RegisteredDeviceClassesCanBeEnumerated()
-    {
-        // Arrange
-        GcLibrary.Init();
-        var registeredDeviceClasses = GcLibrary.GetRegisteredDeviceClasses();
-
-        // Act
-        foreach (var deviceClassInfo in registeredDeviceClasses)
         {
+            Assert.IsTrue(GcLibrary.IsRegistered(deviceClassInfo.DeviceType));
+
             var enumerator = GcLibrary.GetDeviceEnumerator(deviceClassInfo.DeviceType);
             var devices = enumerator();
 
@@ -104,6 +97,93 @@ public class GcLibraryTests
 
         // Assert
         Assert.IsEmpty(GcLibrary.GetRegisteredDeviceClasses());
+    }
+
+    [TestMethod]
+    public void Close_NotInitialized_DoesNotThrow()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        GcLibrary.Close();
+
+        // Act
+        GcLibrary.Close();
+
+        // Assert
+        Assert.IsFalse(GcLibrary.IsInitialized);
+        Assert.IsEmpty(GcLibrary.GetRegisteredDeviceClasses());
+    }
+
+    [TestMethod]
+    public void GetRegisteredDeviceClasses_ReturnsSnapshot_NotLiveView()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        GcLibrary.Register<VirtualCam>();
+
+        // Act
+        var snapshot = GcLibrary.GetRegisteredDeviceClasses();
+        GcLibrary.Unregister<VirtualCam>();
+
+        // Assert
+        Assert.AreEqual(1, snapshot.Count);
+        Assert.IsFalse(GcLibrary.IsRegistered<VirtualCam>());
+        Assert.IsEmpty(GcLibrary.GetRegisteredDeviceClasses());
+    }
+
+    [TestMethod]
+    public void GetRegisteredDeviceClasses_ConcurrentReadWrite_DoesNotThrow()
+    {
+        // Arrange
+        GcLibrary.Init(false);
+        GcLibrary.Register<VirtualCam>();
+
+        var exceptions = new ConcurrentQueue<Exception>();
+
+        // Act
+        var reader = Task.Run(() =>
+        {
+            for (int i = 0; i < 2000; i++)
+            {
+                try
+                {
+                    foreach (var deviceClass in GcLibrary.GetRegisteredDeviceClasses())
+                        _ = deviceClass.DeviceType;
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Enqueue(ex);
+                }
+            }
+        });
+
+        var writer = Task.Run(() =>
+        {
+            for (int i = 0; i < 500; i++)
+            {
+                try
+                {
+                    GcLibrary.Unregister<VirtualCam>();
+                }
+                catch (ArgumentException)
+                {
+                }
+
+                try
+                {
+                    GcLibrary.Register<VirtualCam>();
+                }
+                catch (ArgumentException)
+                {
+                }
+            }
+        });
+
+        Task.WaitAll(reader, writer);
+
+        // Assert
+        if (exceptions.IsEmpty == false)
+            Assert.Fail($"Unexpected exception(s) during concurrent access: {string.Join(" | ", exceptions.Select(x => x.GetType().Name + ": " + x.Message))}");
     }
 
     #endregion
@@ -474,7 +554,7 @@ public class GcLibraryTests
     #region CloseTests
 
     [TestMethod]
-    public void Close_IsNotInitialized()
+    public void Close_InitializedLibrary_IsNotInitialized()
     {
         // Arrange
         GcLibrary.Init(false);
