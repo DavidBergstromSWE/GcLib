@@ -1018,4 +1018,74 @@ public class GcBufferTests
     }
 
     #endregion
+
+    #region EqualityTests
+
+    [TestMethod]
+    public void Equals_SameMetadataDifferentImageData_ReturnsTrue()
+    {
+        // Arrange
+        var first = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+        var second = new GcBuffer([4, 3, 2, 1], 2, 2, PixelFormat.Mono8, 42, 1000);
+
+        // Act/Assert
+        Assert.IsTrue(first.Equals(second));
+        Assert.IsTrue(first.Equals((object)second));
+    }
+
+    [TestMethod]
+    public void GetHashCode_SameMetadataDifferentImageData_AreEqual()
+    {
+        // Arrange
+        var first = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+        var second = new GcBuffer([4, 3, 2, 1], 2, 2, PixelFormat.Mono8, 42, 1000);
+
+        // Act/Assert
+        Assert.AreEqual(first.GetHashCode(), second.GetHashCode());
+    }
+
+    [TestMethod]
+    public void Equals_DifferentMetadata_ReturnsFalse()
+    {
+        // Arrange
+        var first = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+        var second = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 43, 1000);
+
+        // Act/Assert
+        Assert.IsFalse(first.Equals(second));
+    }
+
+    [TestMethod]
+    public void ContentEquals_SameMetadataDifferentImageData_ReturnsFalse()
+    {
+        // Arrange
+        var first = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+        var second = new GcBuffer([4, 3, 2, 1], 2, 2, PixelFormat.Mono8, 42, 1000);
+
+        // Act/Assert
+        Assert.IsFalse(first.ContentEquals(second));
+    }
+
+    [TestMethod]
+    public void ContentEquals_SameMetadataAndImageData_ReturnsTrue()
+    {
+        // Arrange
+        var first = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+        var second = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+
+        // Act/Assert
+        Assert.IsTrue(first.ContentEquals(second));
+    }
+
+    [TestMethod]
+    public void Equals_NullBuffer_ReturnsFalse()
+    {
+        // Arrange
+        var first = new GcBuffer([1, 2, 3, 4], 2, 2, PixelFormat.Mono8, 42, 1000);
+
+        // Act/Assert
+        Assert.IsFalse(first.Equals((GcBuffer)null));
+    }
+
+    #endregion
 }

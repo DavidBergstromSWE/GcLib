@@ -9,7 +9,7 @@ namespace GcLib;
 /// <summary>
 /// Represents the buffer level in the GenICam/GenTL standard module hierarchy and is responsible for the storage and format conversion of an image buffer. Image data is stored as a managed byte array, with metadata such as frame ID, timestamp, width, height and pixel format stored as properties. 
 /// </summary>
-public sealed class GcBuffer
+public sealed class GcBuffer : IEquatable<GcBuffer>
 {
     // ToDo: Implement Guard for boundary checking?
 
@@ -474,29 +474,48 @@ public sealed class GcBuffer
 
     #region Object overrides
 
+    /// <summary>
+    /// Determines whether this buffer has metadata equality with another buffer.
+    /// </summary>
+    /// <remarks>Metadata equality compares only width, height, pixel format, frame ID and timestamp. Image payload (<see cref="ImageData"/>) is intentionally excluded.</remarks>
+    /// <param name="other">Other buffer to compare with.</param>
+    /// <returns><see langword="true"/> if metadata are equal; otherwise <see langword="false"/>.</returns>
+    public bool Equals(GcBuffer other)
+    {
+        if (other is null)
+            return false;
+
+        return other.Width == Width
+            && other.Height == Height
+            && other.PixelFormat == PixelFormat
+            && other.FrameID == FrameID
+            && other.TimeStamp == TimeStamp;
+    }
+
+    /// <summary>
+    /// Determines whether this buffer has payload/content equality with another buffer.
+    /// </summary>
+    /// <remarks>Content equality requires both metadata equality and byte-wise equality of <see cref="ImageData"/>.</remarks>
+    /// <param name="other">Other buffer to compare with.</param>
+    /// <returns><see langword="true"/> if metadata and image payload are equal; otherwise <see langword="false"/>.</returns>
+    public bool ContentEquals(GcBuffer other)
+    {
+        return Equals(other) && ImageData.AsSpan().SequenceEqual(other.ImageData);
+    }
+
     public override bool Equals(object obj)
     {
-        if ((obj is GcBuffer otherBuffer) == false)
-            return false; // Not the same type.
-
-        if (otherBuffer.Width != Width || otherBuffer.Height != Height || otherBuffer.PixelFormat != PixelFormat || otherBuffer.FrameID != FrameID || otherBuffer.TimeStamp != TimeStamp)
-            return false; // Metadata are not equal.
-
-        return true;
+        return obj is GcBuffer otherBuffer && Equals(otherBuffer);
     }
 
     public override int GetHashCode()
     {
-        var imageHash = new HashCode();
-
-        // Combine the hash codes of the metadata and the image data.
         return HashCode.Combine(
             Width,
             Height,
             PixelFormat,
             FrameID,
-            TimeStamp,
-            imageHash.ToHashCode());
+            TimeStamp);
     }
 
     #endregion
