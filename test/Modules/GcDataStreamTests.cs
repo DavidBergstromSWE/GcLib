@@ -368,7 +368,7 @@ public class GcDataStreamTests
 
         // Act
         RaiseNewBuffer();
-        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
+        var success = _dataStream.RetrieveBuffer(out GcBuffer buffer, 0);
 
         // Assert
         Assert.IsTrue(success);
@@ -395,7 +395,7 @@ public class GcDataStreamTests
 
         // Act
         RaiseNewBuffer(eventArgs);
-        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
+        var success = _dataStream.RetrieveBuffer(out GcBuffer buffer, 0);
 
         // Assert
         Assert.IsTrue(success);
@@ -670,14 +670,14 @@ public class GcDataStreamTests
 
     private void RaiseNewBuffer(NewBufferEventArgs eventArgs)
     {
-        foreach (var sink in _registeredSinks.Values)
-            sink.OnNewBuffer(_mockDevice.Object, eventArgs);
+        foreach (var (OnNewBuffer, OnFailedBuffer) in _registeredSinks.Values)
+            OnNewBuffer(_mockDevice.Object, eventArgs);
     }
 
     private void RaiseFailedBuffer()
     {
-        foreach (var sink in _registeredSinks.Values)
-            sink.OnFailedBuffer(_mockDevice.Object, EventArgs.Empty);
+        foreach (var (OnNewBuffer, OnFailedBuffer) in _registeredSinks.Values)
+            OnFailedBuffer(_mockDevice.Object, EventArgs.Empty);
     }
 
     private sealed class SinkRegistration(Action disposeAction) : IDisposable

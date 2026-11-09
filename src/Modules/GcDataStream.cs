@@ -11,7 +11,7 @@ namespace GcLib;
 /// Represents the datastream level in the GenICam/GenTL standard module hierarchy, providing an acquisition engine and being responsible for transferring images from device to image data consumers. 
 /// </summary>
 /// <remarks>Buffers can be transferred synchronously or asynchronously according to the configured <see cref="AcquisitionDeliveryMode"/>.
-/// In synchronous mode, buffers are enqueued to an internal output buffer queue and can be retrieved by consumers through <see cref="RetrieveImage(out GcBuffer, int)"/>.
+/// In synchronous mode, buffers are enqueued to an internal output buffer queue and can be retrieved by consumers through <see cref="RetrieveBuffer(out GcBuffer, int)"/>.
 /// In asynchronous mode, buffers are delivered to consumers through <see cref="BufferTransferred"/> events using a non-blocking event dispatcher.
 /// </remarks>
 /// <param name="bufferProducer">Buffer producer.</param>
@@ -28,14 +28,24 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     private readonly IBufferProducer _device = bufferProducer;
 
     /// <summary>
+    /// Optional stream coordinator for coordinated start/stop across concurrent datastreams.
+    /// </summary>
+    private readonly IStreamCoordinator _streamCoordinator = bufferProducer as IStreamCoordinator;
+
+    /// <summary>
     /// Selected delivery mode.
     /// </summary>
     private readonly AcquisitionDeliveryMode _deliveryMode = deliveryMode;
 
     /// <summary>
-    /// Output buffer queue, containing images successfully transferred from input buffer pool (and available to GenTL consumer).
+    /// Output buffer queue, containing images available to synchronous consumers.
     /// </summary>
     private readonly CircularBuffer<GcBuffer> _outputBufferQueue = new(capacity: outputQueueCapacity, allowOverwrite: true);
+
+    /// <summary>
+    /// Synchronization lock for output queue access.
+    /// </summary>
+    private readonly Lock _outputQueueLock = new();
 
     /// <summary>
     /// Provides a synchronization event used to block and release waiting threads.
@@ -94,7 +104,14 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// <summary>
     /// Number of buffers waiting in the output buffer queue.
     /// </summary>
-    public int AwaitDeliveryCount => _outputBufferQueue.Size;
+    public int AwaitDeliveryCount
+    {
+        get
+        {
+            lock (_outputQueueLock)
+                return _outputBufferQueue.Size;
+        }
+    }
 
     /// <summary>
     /// Number of delivered frames since last acquisition start.
@@ -164,7 +181,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// <summary>
     /// Event announcing that an image frame has been dropped (lost) during acquisition, where the total (aggregated) number of frames dropped from the datastream is provided with the event.
     /// </summary>
-    public event EventHandler<FrameDroppedEventArgs> FrameDropped;
+    public event EventHandler<BufferDroppedEventArgs> BufferDropped;
 
     #endregion
 
@@ -217,6 +234,9 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         // Flag indicating whether the event dispatch pipeline has been initialized successfully.
         bool eventDispatchInitialized = false;
 
+        // Flag indicating whether stream acquisition reservation/start succeeded and requires rollback on failure.
+        bool streamAcquisitionStarted = false;
+
         try
         {
             // Initialize event dispatch pipeline if asynchronous delivery mode is selected.
@@ -238,14 +258,33 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
             // Mark as streaming before starting acquisition so producer-side stream lookups can resolve this stream during startup callbacks.
             IsStreaming = true;
 
-            // Start acquisition in camera.
-            _device.StartAcquisition();
+            // Start acquisition coordinated with the producer, if supported.
+            if (_streamCoordinator != null)
+                _streamCoordinator.StartStream(StreamID);
+            else
+                _device.StartAcquisition();
+
+            streamAcquisitionStarted = true;
 
             // Raise event that streaming has started.
             OnStreamingStarted();
         }
         catch
         {
+            if (streamAcquisitionStarted)
+            {
+                try
+                {
+                    if (_streamCoordinator != null)
+                        _streamCoordinator.StopStream(StreamID);
+                    else
+                        _device.StopAcquisition();
+                }
+                catch
+                {
+                }
+            }
+
             // Roll back partially initialized start state.
             _bufferSinkRegistration?.Dispose();
             _bufferSinkRegistration = null;
@@ -267,8 +306,11 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (IsStreaming == false)
             return;
 
-        // Stop acquisition in device.
-        _device.StopAcquisition();
+        // Stop acquisition in device, coordinated across active datastreams if supported.
+        if (_streamCoordinator != null)
+            _streamCoordinator.StopStream(StreamID);
+        else
+            _device.StopAcquisition();
 
         // Unregister stream-bound sink callbacks.
         _bufferSinkRegistration?.Dispose();
@@ -290,7 +332,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// <param name="buffer">Buffer retrieved (or <see cref="null"/> if none was available within the specified timeout).</param>
     /// <param name="timeout">Timeout in milliseconds to wait.</param>
     /// <returns>True if buffer retrieval was successful, false if not.</returns>
-    public bool RetrieveImage(out GcBuffer buffer, int timeout = 1000)
+    public bool RetrieveBuffer(out GcBuffer buffer, int timeout = 1000)
     {
         // Reset output parameter to null.
         buffer = null;
@@ -299,12 +341,24 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (_deliveryMode != AcquisitionDeliveryMode.Synchronous)
             return false;
 
+        // Fast path: retrieve immediately if queue already contains data.
+        lock (_outputQueueLock)
+        {
+            if (_outputBufferQueue.IsEmpty == false)
+            {
+                buffer = _outputBufferQueue.Get();
+                return true;
+            }
+        }
+
         // Wait for a buffer to be available in the output buffer queue, with a specified timeout.
         _waitHandle.WaitOne(timeout);
 
-        // Dequeue buffer.
-        if (_outputBufferQueue.IsEmpty == false)
-            buffer = _outputBufferQueue.Get();
+        lock (_outputQueueLock)
+        {
+            if (_outputBufferQueue.IsEmpty == false)
+                buffer = _outputBufferQueue.Get();
+        }
 
         return buffer != null;
     }
@@ -323,6 +377,38 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     #region Private Methods
 
     /// <summary>
+    /// Updates streaming statistics, including number of delivered frames, lost frames and actual/average framerates.
+    /// </summary>
+    /// <param name="frameID">Frame ID of image.</param>
+    /// <param name="timeStamp">Timestamp of image (in ticks).</param>
+    private void UpdateStatistics(long frameID, ulong timeStamp)
+    {
+        // Increment number of successfully grabbed frames.
+        DeliveredFrameCount++;
+
+        // Check for dropped (unaccounted) frames.
+        if (frameID > _lastFrameID + 1)
+        {
+            LostFrameCount += (ulong)(frameID - _lastFrameID - 1);
+            OnFrameDropped();
+        }
+
+        // Update frame ID of last grabbed image.
+        _lastFrameID = frameID;
+
+        // Calculate actual/average framerate only when timestamp delta is valid.
+        if (timeStamp > _lastTimeStamp)
+        {
+            ulong deltaTicks = timeStamp - _lastTimeStamp;
+            FrameRate = (double)TimeSpan.TicksPerSecond / deltaTicks;
+            FrameRateAverage += (FrameRate - FrameRateAverage) / (DeliveredFrameCount + LostFrameCount); // running average since acquisition start
+        }
+
+        // Update timestamp of last grabbed image.
+        _lastTimeStamp = timeStamp;
+    }
+
+    /// <summary>
     /// Reset streaming statistics.
     /// </summary>
     private void ResetStatistics()
@@ -339,8 +425,11 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     private void FlushQueue()
     {
-        while (_outputBufferQueue.IsEmpty == false)
-            _outputBufferQueue.Get();
+        lock (_outputQueueLock)
+        {
+            while (_outputBufferQueue.IsEmpty == false)
+                _outputBufferQueue.Get();
+        }
     }
 
     /// <summary>
@@ -455,40 +544,14 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     }
 
     /// <summary>
-    /// Updates streaming statistics, including number of delivered frames, lost frames and actual/average framerates.
-    /// </summary>
-    /// <param name="frameID">Frame ID of image.</param>
-    /// <param name="timeStamp">Timestamp of image (in ticks).</param>
-    private void UpdateStatistics(long frameID, ulong timeStamp)
-    {
-        // Increment number of successfully grabbed frames.
-        DeliveredFrameCount++;
-
-        // Check for dropped (unaccounted) frames.
-        if (frameID > _lastFrameID + 1)
-        {
-            LostFrameCount += (ulong)(frameID - _lastFrameID - 1);
-            OnFrameDropped();
-        }
-
-        // Update frame ID of last grabbed image.
-        _lastFrameID = frameID;
-
-        // Calculate actual framerate.
-        FrameRate = (double)TimeSpan.TicksPerSecond / (timeStamp - _lastTimeStamp);
-
-        // Calculate average framerate.
-        FrameRateAverage += (FrameRate - FrameRateAverage) / (DeliveredFrameCount + LostFrameCount); // running average since acquisition start
-
-        // Update timestamp of last grabbed image.
-        _lastTimeStamp = timeStamp;
-    }
-
-    /// <summary>
     /// Event-handling method to <see cref="GcDevice.NewBuffer"/> events raised in device, delivering buffers based on configured delivery mode.
     /// </summary>
     private void OnDeviceNewBuffer(object sender, NewBufferEventArgs e)
     {
+        // Ignore late callbacks when stream is closed/stopped.
+        if (IsOpen == false || IsStreaming == false)
+            return;
+
         // Ignore buffers from other datastreams.
         if (string.IsNullOrEmpty(e.StreamID) == false && string.Equals(e.StreamID, StreamID, StringComparison.Ordinal) == false)
             return;
@@ -505,15 +568,25 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         // Deliver buffer to consumers based on configured delivery mode.
         if (_deliveryMode == AcquisitionDeliveryMode.Synchronous) // synchronous delivery mode
         {
-            // If queue is full, recycle the oldest queued buffer before enqueueing this one.
-            if (_outputBufferQueue.Size == _outputBufferQueue.Capacity)
-                _outputBufferQueue.Get();
+            lock (_outputQueueLock)
+            {
+                // If queue is full, recycle the oldest queued buffer before enqueueing this one.
+                if (_outputBufferQueue.Size == _outputBufferQueue.Capacity)
+                    _outputBufferQueue.Get();
 
-            // Add image buffer to output buffer queue.
-            _outputBufferQueue.Put(buffer);
+                // Add image buffer to output buffer queue.
+                _outputBufferQueue.Put(buffer);
+            }
 
             // Signal waiting threads that a buffer is available.
-            _waitHandle.Set();
+            try
+            {
+                _waitHandle.Set();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
 
             // Raise new buffer event.
             OnNewBuffer();
@@ -534,6 +607,9 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     private void OnDeviceFailedBuffer(object sender, EventArgs e)
     {
+        if (IsOpen == false || IsStreaming == false)
+            return;
+
         FailedFrameCount++;
     }
 
@@ -575,7 +651,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
     /// </summary>
     private void OnFrameDropped()
     {
-        FrameDropped?.Invoke(this, new FrameDroppedEventArgs(LostFrameCount));
+        BufferDropped?.Invoke(this, new BufferDroppedEventArgs(LostFrameCount));
     }
 
     #endregion

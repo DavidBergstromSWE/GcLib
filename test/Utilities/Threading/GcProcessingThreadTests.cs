@@ -262,8 +262,8 @@ public class GcProcessingThreadTests
         _processingThread.Stop(aWait: true);
 
         // Assert
-        Assert.IsTrue(processedCount > 0);
-        Assert.IsTrue(processedCount < 30);
+        Assert.IsGreaterThan(0, processedCount);
+        Assert.IsLessThan(30, processedCount);
     }
 
     [TestMethod]

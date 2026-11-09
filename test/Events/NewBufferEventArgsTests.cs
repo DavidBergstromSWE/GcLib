@@ -24,6 +24,6 @@ public class NewBufferEventArgsTests
         Assert.AreEqual(streamID, eventArgs.StreamID);
         Assert.AreEqual(receptionTime, eventArgs.ReceptionTime);
         Assert.AreSame(buffer, eventArgs.Buffer);
-        Assert.IsTrue(eventArgs.Buffer.ImageData.Length > 0);
+        Assert.IsNotEmpty(eventArgs.Buffer.ImageData);
     }
 }
