@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using GcLib.UnitTests.Utilities;
 using GcLib.Utilities.Collections;
@@ -107,8 +106,8 @@ public class GcDeviceParameterCollectionTests
     [TestMethod]
     public void GetParameter_ExistingTypedParameters_ReturnExpectedTypes()
     {
-        Assert.IsInstanceOfType(_parameters.GetParameter("DeviceUserID"), typeof(GcString));
-        Assert.IsInstanceOfType(_parameters.GetParameter("TimestampReset"), typeof(GcCommand));
+        Assert.IsInstanceOfType<GcString>(_parameters.GetParameter("DeviceUserID"));
+        Assert.IsInstanceOfType<GcCommand>(_parameters.GetParameter("TimestampReset"));
         Assert.IsNull(_parameters.GetParameter("NotARealParameter"));
     }
 
@@ -117,7 +116,7 @@ public class GcDeviceParameterCollectionTests
     {
         var propertyList = _parameters.GetPropertyList(GcVisibility.Guru);
 
-        Assert.IsFalse(propertyList.Any(p => p.Key == "TimestampReset"));
+        Assert.DoesNotContain(p => p.Key == "TimestampReset", propertyList);
     }
 
     [TestMethod]
@@ -155,7 +154,7 @@ public class GcDeviceParameterCollectionTests
     {
         var ex = Assert.Throws<TargetInvocationException>(action);
         Assert.IsNotNull(ex.InnerException);
-        Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentNullException));
+        Assert.IsInstanceOfType<ArgumentNullException>(ex.InnerException);
         Assert.AreEqual(expectedParamName, ((ArgumentNullException)ex.InnerException).ParamName);
     }
 }

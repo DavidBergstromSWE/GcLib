@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using GcLib.Utilities.Collections;
 using Microsoft.Extensions.Logging;
 
@@ -30,7 +31,7 @@ public abstract partial class GcDevice : IBufferProducer
         /// <summary>
         /// Synchronization lock for parameter dictionary access.
         /// </summary>
-        private readonly object _parameterDictLock = new();
+        private readonly Lock _parameterDictLock = new();
 
         #endregion
 
