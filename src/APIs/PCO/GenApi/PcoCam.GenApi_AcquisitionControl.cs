@@ -322,7 +322,7 @@ public partial class PcoCam
         /// Converts buffer pointer to stream-transfer event data.
         /// </summary>
         /// <param name="bufferPtr">(Unmanaged) pointer to buffer data.</param>
-        /// <returns>Event data containing metadata and payload copy callback.</returns>
+        /// <returns>Event data containing stream information and acquired buffer.</returns>
         private unsafe NewBufferEventArgs ToNewBufferEventArgs(nuint bufferPtr)
         {
             int payloadSize = (int)GetPayloadSize();
@@ -333,15 +333,19 @@ public partial class PcoCam
             Marshal.Copy(sourcePointer, headerBytes, 0, headerBytes.Length);
             var imageHeader = MemoryMarshal.Cast<byte, short>(new ReadOnlySpan<byte>(headerBytes));
 
+            byte[] imageData = new byte[payloadSize];
+            Marshal.Copy(sourcePointer, imageData, 0, payloadSize);
+
+            var buffer = new GcBuffer(imageData,
+                                      (uint)Width.Value,
+                                      (uint)Height.Value,
+                                      (PixelFormat)PixelFormat.IntValue,
+                                      ImageHeaderHelper.GetImageNumber(imageHeader),
+                                      ImageHeaderHelper.GetTimestamp(imageHeader));
+
             return new NewBufferEventArgs(string.Empty,
                                           DateTime.Now,
-                                          (uint)Width.Value,
-                                          (uint)Height.Value,
-                                          (PixelFormat)PixelFormat.IntValue,
-                                          ImageHeaderHelper.GetImageNumber(imageHeader),
-                                          ImageHeaderHelper.GetTimestamp(imageHeader),
-                                          payloadSize,
-                                          destination => Marshal.Copy(sourcePointer, destination, 0, payloadSize));
+                                          buffer);
         }
 
         #endregion

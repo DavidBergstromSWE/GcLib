@@ -118,7 +118,7 @@ public class VirtualCamTests
             Assert.AreSame(firstBufferReceived.Task, completedTask, "Timed out waiting for NewBuffer event.");
             Assert.IsGreaterThan(0, eventCounter);
             Assert.IsNotNull(firstBufferReceived.Task.Result);
-            Assert.IsTrue(firstBufferReceived.Task.Result.PayloadSize > 0);
+            Assert.IsTrue(firstBufferReceived.Task.Result.Buffer.ImageData.Length > 0);
         }
         finally
         {

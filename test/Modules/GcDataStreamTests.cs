@@ -37,13 +37,7 @@ public class GcDataStreamTests
     {
         return new NewBufferEventArgs(streamID,
                                       DateTime.Now,
-                                      buffer.Width,
-                                      buffer.Height,
-                                      buffer.PixelFormat,
-                                      buffer.FrameID,
-                                      buffer.TimeStamp,
-                                      buffer.ImageData.Length,
-                                      destination => Buffer.BlockCopy(buffer.ImageData, 0, destination, 0, buffer.ImageData.Length));
+                                      buffer);
     }
 
     #endregion
@@ -366,44 +360,47 @@ public class GcDataStreamTests
     }
 
     [TestMethod]
-    public void RentInputBuffer_MinimumLengthIsZero_ThrowsArgumentOutOfRangeException()
+    public void OnNewBuffer_DirectPayload_BufferUsesProducerOwnedData()
     {
         // Arrange
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+        _dataStream.Start();
 
-        // Act/Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => _dataStream.RentInputBuffer(0));
+        // Act
+        RaiseNewBuffer();
+        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
+
+        // Assert
+        Assert.IsTrue(success);
+        Assert.IsNotNull(buffer);
+        Assert.AreSame(_testBuffer.ImageData, buffer.ImageData);
     }
 
     [TestMethod]
-    public void ReturnInputBuffer_NullOrEmptyBuffer_RentAllocatesRequestedSize()
+    public void OnNewBuffer_DirectPayloadClone_BufferUsesProvidedData()
     {
         // Arrange
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
+        _dataStream.Start();
+
+        var payload = (byte[])_testBuffer.ImageData.Clone();
+        var eventArgs = new NewBufferEventArgs(_dataStream.StreamID,
+                                               DateTime.Now,
+                                               new GcBuffer(payload,
+                                                            _testBuffer.Width,
+                                                            _testBuffer.Height,
+                                                            _testBuffer.PixelFormat,
+                                                            _testBuffer.FrameID,
+                                                            _testBuffer.TimeStamp));
 
         // Act
-        _dataStream.ReturnInputBuffer(null);
-        _dataStream.ReturnInputBuffer([]);
-        var rentedBuffer = _dataStream.RentInputBuffer(8);
+        RaiseNewBuffer(eventArgs);
+        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
 
         // Assert
-        Assert.AreEqual(8, rentedBuffer.Length);
-    }
-
-    [TestMethod]
-    public void RentInputBuffer_BufferReturnedWithInsufficientLength_AllocatesNewBuffer()
-    {
-        // Arrange
-        _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
-        var smallBuffer = new byte[4];
-
-        // Act
-        _dataStream.ReturnInputBuffer(smallBuffer);
-        var rentedBuffer = _dataStream.RentInputBuffer(8);
-
-        // Assert
-        Assert.AreEqual(8, rentedBuffer.Length);
-        Assert.AreNotSame(smallBuffer, rentedBuffer);
+        Assert.IsTrue(success);
+        Assert.IsNotNull(buffer);
+        Assert.AreSame(payload, buffer.ImageData);
     }
 
     [TestMethod]

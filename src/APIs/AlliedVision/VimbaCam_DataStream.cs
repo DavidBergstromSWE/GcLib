@@ -95,15 +95,19 @@ public sealed partial class VimbaCam
             int payloadSize = (int)frame.BufferSize;
             ulong timeStamp = (ulong)DateTime.Now.Ticks;
 
+            byte[] imageData = new byte[payloadSize];
+            Marshal.Copy(frame.ImageData, imageData, 0, payloadSize);
+
+            var buffer = new GcBuffer(imageData,
+                                      frame.Width,
+                                      frame.Height,
+                                      pixelFormat,
+                                      (long)frame.Id,
+                                      timeStamp);
+
             OnNewBuffer(new NewBufferEventArgs(streamID,
                                                DateTime.Now,
-                                               frame.Width,
-                                               frame.Height,
-                                               pixelFormat,
-                                               (long)frame.Id,
-                                               timeStamp,
-                                               payloadSize,
-                                               destination => Marshal.Copy(frame.ImageData, destination, 0, payloadSize)));
+                                               buffer));
         }
         catch (Exception ex)
         {

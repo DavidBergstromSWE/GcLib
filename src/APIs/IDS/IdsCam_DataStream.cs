@@ -171,21 +171,25 @@ public sealed partial class IdsCam
     /// Converts a buffer from the IDSImaging Peak API to stream-transfer event data.
     /// </summary>
     /// <param name="buffer">The buffer to convert.</param>
-    /// <returns>Event data containing metadata and payload copy callback.</returns>
+    /// <returns>Event data containing stream information and acquired buffer.</returns>
     private NewBufferEventArgs ToNewBufferEventArgs(IDSImaging.Peak.API.Core.Buffer buffer)
     {
         int payloadSize = (int)buffer.Size();
         var sourcePtr = buffer.BasePtr();
 
+        byte[] imageData = new byte[payloadSize];
+        Marshal.Copy(sourcePtr, imageData, 0, payloadSize);
+
+        var gcBuffer = new GcBuffer(imageData,
+                                    buffer.Width(),
+                                    buffer.Height(),
+                                    (PixelFormat)buffer.PixelFormat(),
+                                    (long)buffer.FrameID(),
+                                    _pcTime0 + (ulong)Math.Round(buffer.Timestamp_ns() / 100d));
+
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
-                                      buffer.Width(),
-                                      buffer.Height(),
-                                      (PixelFormat)buffer.PixelFormat(),
-                                      (long)buffer.FrameID(),
-                                      _pcTime0 + (ulong)Math.Round(buffer.Timestamp_ns() / 100d),
-                                      payloadSize,
-                                      destination => Marshal.Copy(sourcePtr, destination, 0, payloadSize));
+                                      gcBuffer);
     }
 
     #endregion

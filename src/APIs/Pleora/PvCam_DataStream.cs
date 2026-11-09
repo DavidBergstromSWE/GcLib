@@ -225,7 +225,7 @@ public sealed partial class PvCam
     /// Converts PvBuffer to stream-transfer event data.
     /// </summary>
     /// <param name="buffer">PvBuffer containing image and chunkdata.</param>
-    /// <returns>Event data containing metadata and payload copy callback.</returns>
+    /// <returns>Event data containing stream information and acquired buffer.</returns>
     private unsafe NewBufferEventArgs ToNewBufferEventArgs(PvBuffer buffer)
     {
         int payloadSize = (int)buffer.Image.RequiredSize;
@@ -238,15 +238,19 @@ public sealed partial class PvCam
         else
             timeStamp = _pcTime0 + (ulong)Math.Round((buffer.Timestamp - (double)_acquisitionStartTime) / 100); // modern style (buffer timestamp in ns)
 
+        byte[] imageData = new byte[payloadSize];
+        Marshal.Copy(sourcePointer, imageData, 0, payloadSize);
+
+        var gcBuffer = new GcBuffer(imageData,
+                                    buffer.Image.Width,
+                                    buffer.Image.Height,
+                                    (PixelFormat)(int)buffer.Image.PixelType,
+                                    (long)buffer.BlockID,
+                                    timeStamp);
+
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
-                                      buffer.Image.Width,
-                                      buffer.Image.Height,
-                                      (PixelFormat)(int)buffer.Image.PixelType,
-                                      (long)buffer.BlockID,
-                                      timeStamp,
-                                      payloadSize,
-                                      destination => Marshal.Copy(sourcePointer, destination, 0, payloadSize));
+                                      gcBuffer);
     }
 
     /// <summary>

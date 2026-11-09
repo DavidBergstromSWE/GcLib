@@ -234,15 +234,16 @@ public sealed partial class VirtualCam
                 }
                 else
                 {
+                    var buffer = new GcBuffer(imageData,
+                                              (uint)Width.Value,
+                                              (uint)Height.Value,
+                                              (PixelFormat)PixelFormat.IntValue,
+                                              _frameCounter,
+                                              (ulong)TimeStamp.Value);
+
                     eventArgs = new NewBufferEventArgs(string.Empty,
                                                        DateTime.Now,
-                                                       (uint)Width.Value,
-                                                       (uint)Height.Value,
-                                                       (PixelFormat)PixelFormat.IntValue,
-                                                       _frameCounter,
-                                                       (ulong)TimeStamp.Value,
-                                                       imageData.Length,
-                                                       destination => Buffer.BlockCopy(imageData, 0, destination, 0, imageData.Length));
+                                                       buffer);
                 }
             }
 
@@ -266,15 +267,16 @@ public sealed partial class VirtualCam
             byte[] imageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
             imageMat.CopyTo(imageData);
 
+            var buffer = new GcBuffer(imageData,
+                                      (uint)imageMat.Width,
+                                      (uint)imageMat.Height,
+                                      pixelFormat,
+                                      frameID,
+                                      timeStamp);
+
             return new NewBufferEventArgs(string.Empty,
                                           DateTime.Now,
-                                          (uint)imageMat.Width,
-                                          (uint)imageMat.Height,
-                                          pixelFormat,
-                                          frameID,
-                                          timeStamp,
-                                          imageData.Length,
-                                          destination => Buffer.BlockCopy(imageData, 0, destination, 0, imageData.Length));
+                                          buffer);
         }
 
         #endregion

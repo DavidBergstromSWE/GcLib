@@ -186,9 +186,8 @@ public sealed partial class XiCam
         if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
             GcLibrary.Logger.LogTrace("Image acquisition thread (ID: {ThreadName}) in Device {ModelName} (ID: {ID}) started", _imageAcquisitionThread.Name, DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
-        // Get payload size and pre-allocate reusable managed buffer.
+        // Get payload size.
         _xiCam.GetParam(PRM.IMAGE_PAYLOAD_SIZE, out int payloadSize);
-        byte[] imageData = new byte[payloadSize];
 
         uint nBufferErrors = 0; // Number of consecutive buffer errors.
         uint bufferErrorLimit = 10; // Number of consecutive buffer errors limit.
@@ -197,6 +196,7 @@ public sealed partial class XiCam
         {
             try
             {
+                var imageData = new byte[payloadSize];
                 _xiCam.GetImage(img_arr: imageData, timeout: _timeout); // GetImage copies data to user allocated buffer.
                 OnNewBuffer(ToNewBufferEventArgs(imageData, _xiCam.GetLastImageParams()));
                 nBufferErrors = 0;
@@ -268,7 +268,7 @@ public sealed partial class XiCam
     /// </summary>
     /// <param name="buffer">Image buffer.</param>
     /// <param name="imgParams">Chunk data information about image.</param>
-    /// <returns>Event data containing metadata and payload copy callback.</returns>
+    /// <returns>Event data containing stream information and acquired buffer.</returns>
     private NewBufferEventArgs ToNewBufferEventArgs(byte[] buffer, ImgParams imgParams)
     {
         int width = imgParams.GetWidth();
@@ -277,15 +277,25 @@ public sealed partial class XiCam
         long frameNumber = imgParams.GetFrameNum();
         ulong timeStamp = _pcTime0 + (ulong)Math.Round((imgParams.GetTimestamp() * TimeSpan.TicksPerSecond) - ((double)_acquisitionStartTime / 100));
 
+        byte[] ownedData;
+        if (BufferPolicy == BUFFERPOLICY.SAFE)
+            ownedData = buffer;
+        else
+        {
+            ownedData = new byte[buffer.Length];
+            Buffer.BlockCopy(buffer, 0, ownedData, 0, buffer.Length);
+        }
+
+        var gcBuffer = new GcBuffer(ownedData,
+                                    (uint)width,
+                                    (uint)height,
+                                    pixelFormat,
+                                    frameNumber,
+                                    timeStamp);
+
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
-                                      (uint)width,
-                                      (uint)height,
-                                      pixelFormat,
-                                      frameNumber,
-                                      timeStamp,
-                                      buffer.Length,
-                                      destination => Buffer.BlockCopy(buffer, 0, destination, 0, buffer.Length));
+                                      gcBuffer);
     }
 
     /// <summary>

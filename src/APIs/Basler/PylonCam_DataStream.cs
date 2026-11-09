@@ -141,7 +141,7 @@ public sealed partial class PylonCam
     /// Converts a grab result to stream-transfer event data.
     /// </summary>
     /// <param name="grabResult">Grab result.</param>
-    /// <returns>Event data containing metadata and payload copy callback.</returns>
+    /// <returns>Event data containing stream information and acquired buffer.</returns>
     /// <exception cref="NotSupportedException">Thrown when the payload type or pixel type is not supported.</exception>
     private static NewBufferEventArgs ToNewBufferEventArgs(IGrabResult grabResult)
     {
@@ -155,20 +155,23 @@ public sealed partial class PylonCam
             throw new NotSupportedException($"Pixel type {grabResult.PixelTypeValue} is not supported!");
 
         var pixelData = (byte[])grabResult.PixelData;
+        var ownedPixelData = new byte[pixelData.Length];
+        Buffer.BlockCopy(pixelData, 0, ownedPixelData, 0, pixelData.Length);
 
         // Use the timestamp from the grab result if available, otherwise use the current PC time.
         // ToDo: Convert timestamp from camera specific ticks to PC ticks
         var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp;
 
+        var buffer = new GcBuffer(ownedPixelData,
+                                  (uint)grabResult.Width,
+                                  (uint)grabResult.Height,
+                                  pixelFormat,
+                                  grabResult.ImageNumber,
+                                  timeStamp);
+
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
-                                      (uint)grabResult.Width,
-                                      (uint)grabResult.Height,
-                                      pixelFormat,
-                                      grabResult.ImageNumber,
-                                      timeStamp,
-                                      pixelData.Length,
-                                      destination => Buffer.BlockCopy(pixelData, 0, destination, 0, pixelData.Length));
+                                      buffer);
     }
 
     #endregion

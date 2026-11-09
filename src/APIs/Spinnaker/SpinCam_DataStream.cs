@@ -116,22 +116,25 @@ public sealed partial class SpinCam
     /// Converts image buffer to stream-transfer event data.
     /// </summary>
     /// <param name="image">Image buffer.</param>
-    /// <returns>Event data containing metadata and payload copy callback.</returns>
+    /// <returns>Event data containing stream information and acquired buffer.</returns>
     private static NewBufferEventArgs ToNewBufferEventArgs(IManagedImage image)
     {
         // Parse pixel format.
         PixelFormat pixelFormat = Enum.Parse<PixelFormat>(image.PixelFormat.ToString());
         byte[] sourceData = image.ManagedData;
+        byte[] ownedData = new byte[sourceData.Length];
+        Buffer.BlockCopy(sourceData, 0, ownedData, 0, sourceData.Length);
+
+        var buffer = new GcBuffer(ownedData,
+                                  image.Width,
+                                  image.Height,
+                                  pixelFormat,
+                                  (long)image.FrameID,
+                                  (ulong)DateTime.Now.Ticks);
 
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
-                                      image.Width,
-                                      image.Height,
-                                      pixelFormat,
-                                      (long)image.FrameID,
-                                      (ulong)DateTime.Now.Ticks,
-                                      sourceData.Length,
-                                      destination => Buffer.BlockCopy(sourceData, 0, destination, 0, sourceData.Length));
+                                      buffer);
     }
 
     #endregion
