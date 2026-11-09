@@ -205,7 +205,7 @@ internal partial class AcquisitionModel : ObservableObject
         _dataStream = DeviceModel.Device.OpenDataStream(deliveryMode: _useSynchronousAcquisition ? AcquisitionDeliveryMode.Synchronous : AcquisitionDeliveryMode.Asynchronous);
 
         // Hook handler to events announcing dropped frames.
-        _dataStream.FrameDropped += OnFrameDropped;
+        _dataStream.BufferDropped += OnFrameDropped;
 
         // Alternative: Use synchronous grabbing thread or asynchronous event handling
         if (_useSynchronousAcquisition)
@@ -293,7 +293,7 @@ internal partial class AcquisitionModel : ObservableObject
         DeviceModel.Device.AcquisitionStarted -= OnAcquisitionStarted;
         DeviceModel.Device.AcquisitionStopped -= OnAcquisitionStopped;
         DeviceModel.Device.AcquisitionAborted -= OnAcquisitionAborted;
-        _dataStream.FrameDropped -= OnFrameDropped;
+        _dataStream.BufferDropped -= OnFrameDropped;
 
         if (_useSynchronousAcquisition)
         {
@@ -485,12 +485,12 @@ internal partial class AcquisitionModel : ObservableObject
     /// <summary>
     /// Event announcing that a frame has been dropped (lost) during acquisition.
     /// </summary>
-    public event EventHandler<FrameDroppedEventArgs> FrameDropped;
+    public event EventHandler<BufferDroppedEventArgs> FrameDropped;
 
     /// <summary>
     /// Event-invoking method, announcing that a frame has been dropped (lost) during acquisition.
     /// </summary>
-    private void OnFrameDropped(object sender, FrameDroppedEventArgs frameDroppedEventArgs)
+    private void OnFrameDropped(object sender, BufferDroppedEventArgs frameDroppedEventArgs)
     {
         FrameDropped?.Invoke(this, frameDroppedEventArgs);
     }

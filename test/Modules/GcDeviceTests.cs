@@ -238,10 +238,112 @@ public class GcDeviceTests
     }
 
     [TestMethod]
+    public void StartMultipleStreams_StartsDeviceOnceAndStopsAfterLastStream()
+    {
+        // Arrange
+        _device = new Mock<MockableCam> { CallBase = true };
+        _device.SetupGet(d => d.MaxConcurrentStreams).Returns(2);
+        var firstStream = _device.Object.OpenDataStream("Stream1");
+        var secondStream = _device.Object.OpenDataStream("Stream2");
+
+        // Act
+        firstStream.Start();
+        secondStream.Start();
+        firstStream.Stop();
+
+        // Assert
+        _device.Verify(d => d.StartAcquisition(), Times.Once);
+        _device.Verify(d => d.StopAcquisition(), Times.Never);
+
+        // Act
+        secondStream.Stop();
+
+        // Assert
+        _device.Verify(d => d.StopAcquisition(), Times.Once);
+    }
+
+    [TestMethod]
+    public void Start_StreamingStartedHandlerThrows_AcquisitionIsStoppedAndStreamSlotReleased()
+    {
+        // Arrange
+        _device = new Mock<MockableCam> { CallBase = true };
+        _device.SetupGet(d => d.MaxConcurrentStreams).Returns(1);
+        var firstStream = _device.Object.OpenDataStream("Stream1");
+        bool throwOnFirstStart = true;
+        firstStream.StreamingStarted += (s, e) =>
+        {
+            if (throwOnFirstStart)
+            {
+                throwOnFirstStart = false;
+                throw new InvalidOperationException("Streaming-started handler failure.");
+            }
+        };
+
+        // Act/Assert
+        Assert.Throws<InvalidOperationException>(() => firstStream.Start());
+        _device.Verify(d => d.StartAcquisition(), Times.Once);
+        _device.Verify(d => d.StopAcquisition(), Times.Once);
+        Assert.IsFalse(firstStream.IsStreaming);
+
+        firstStream.Start();
+        Assert.IsTrue(firstStream.IsStreaming);
+        firstStream.Stop();
+    }
+
+    [TestMethod]
+    public void StartConcurrentStreams_ExceedingLimitThrows()
+    {
+        // Arrange
+        _device = new Mock<MockableCam> { CallBase = true };
+        _device.SetupGet(d => d.MaxConcurrentStreams).Returns(2);
+        var firstStream = _device.Object.OpenDataStream("Stream1");
+        var secondStream = _device.Object.OpenDataStream("Stream2");
+        var thirdStream = _device.Object.OpenDataStream("Stream3");
+
+        // Act
+        firstStream.Start();
+        secondStream.Start();
+
+        // Assert
+        Assert.Throws<InvalidOperationException>(() => thirdStream.Start());
+        _device.Verify(d => d.StartAcquisition(), Times.Once);
+        _device.Verify(d => d.StopAcquisition(), Times.Never);
+
+        // Cleanup
+        firstStream.Stop();
+        secondStream.Stop();
+        _device.Verify(d => d.StopAcquisition(), Times.Once);
+    }
+
+    [TestMethod]
+    public void StartAcquisitionFailure_DoesNotReserveStreamSlot()
+    {
+        // Arrange
+        _device = new Mock<MockableCam> { CallBase = true };
+        int startAttempts = 0;
+        _device.Setup(d => d.StartAcquisition()).Callback(() =>
+        {
+            if (++startAttempts == 1)
+                throw new InvalidOperationException("Simulated acquisition start failure.");
+        });
+        var firstStream = _device.Object.OpenDataStream("Stream1");
+        var secondStream = _device.Object.OpenDataStream("Stream2");
+
+        // Act/Assert
+        Assert.Throws<InvalidOperationException>(() => firstStream.Start());
+        secondStream.Start();
+        _device.Verify(d => d.StartAcquisition(), Times.Exactly(2));
+
+        // Cleanup
+        secondStream.Stop();
+    }
+
+    [TestMethod]
     public void FetchImage_ReturnsNull()
     {
         // Arrange
         _device = new Mock<MockableCam>();
+        _device.SetupGet(d => d.MaxConcurrentStreams).Returns(1);
 
         // Act
         var success = _device.Object.FetchImage(out GcBuffer buffer, 100);
@@ -286,6 +388,7 @@ public class GcDeviceTests
     {
         // Arrange
         _device = new Mock<MockableCam>();
+        _device.SetupGet(d => d.MaxConcurrentStreams).Returns(1);
 
         // Act
         _ = _device.Object.FetchImage(out _, 10);

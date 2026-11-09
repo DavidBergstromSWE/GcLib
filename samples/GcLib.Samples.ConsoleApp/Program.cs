@@ -45,7 +45,7 @@ GcDataStream dataStream = camera.OpenDataStream();
 dataStream.Start();
 
 // Retrieve image from the front of the queue and save it to file. Image should be an RGB image of a frame counter testpattern with counter set to 0 (640x480, 8-bit).
-dataStream.RetrieveImage(out GcBuffer image2); // alternatively, images can be retrieved by subscribing to the dataStream.BufferTransferred event. 
+dataStream.RetrieveBuffer(out GcBuffer image2); // alternatively, images can be retrieved by subscribing to the dataStream.BufferTransferred event. 
 image2.ToMat().Save("image2.tiff");
 Log.Information("image2.tiff saved to {dir}", Directory.GetCurrentDirectory());
 

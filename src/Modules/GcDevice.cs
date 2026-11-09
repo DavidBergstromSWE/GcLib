@@ -11,7 +11,7 @@ namespace GcLib;
 /// Represents the device level in the GenICam/GenTL standard module hierarchy, responsible for device communication and instantiation of datastreams.
 /// </summary>
 /// <remarks>All API-derived device classes need to inherit from this abstract base class through <see cref="GcDevice{TDevice}"/>.</remarks> 
-public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStream>
+public abstract partial class GcDevice : IBufferProducer, IStreamCoordinator, IEnumerable<GcDataStream>
 {
     #region Fields
 
@@ -26,7 +26,17 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     private readonly Lock _dataStreamListLock = new();
 
     /// <summary>
-    /// Registered stream-bound sinks for buffer and failure delivery.
+    /// Synchronizes access to acquisition operations.
+    /// </summary>
+    private readonly Lock _acquisitionLock = new();
+
+    /// <summary>
+    /// Tracks datastreams with active acquisitions.
+    /// </summary>
+    private readonly HashSet<string> _activeDataStreamAcquisitions = [];
+
+    /// <summary>
+    /// Registered stream-bound sinks for buffer and failure delivery, where key is datastream ID and value is a tuple containing the new-buffer and failed-buffer callbacks.
     /// </summary>
     private readonly Dictionary<string, (Action<object, NewBufferEventArgs> OnNewBuffer, Action<object, EventArgs> OnFailedBuffer)> _bufferSinks = [];
 
@@ -60,12 +70,7 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     public bool IsAcquiring { get; protected set; }
 
     /// <summary>
-    /// True if concurrent datastream acquisition is supported.
-    /// </summary>
-    public virtual bool SupportsConcurrentStreams => false;
-
-    /// <summary>
-    /// Maximum number of datastreams that can acquire concurrently.
+    /// Maximum number of datastreams that can acquire concurrently. A value of one means concurrent acquisition is not supported.
     /// </summary>
     public virtual uint MaxConcurrentStreams => 1;
 
@@ -237,20 +242,20 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// </summary>
     public void Close()
     {
-        // Perform device-specific closure operations.
-        OnDeviceClosed();
-
         // Snapshot open datastreams outside of close loop lock.
         GcDataStream[] dataStreams;
         lock (_dataStreamListLock)
             dataStreams = [.. _dataStreamList.Values];
 
-        // Close all open datastreams.
+        // Stop acquisition and close streams before releasing device-specific resources.
         foreach (var dataStream in dataStreams)
         {
             if (dataStream.IsOpen)
                 dataStream.Close();
         }
+
+        // Perform device-specific closure operations after streams have stopped.
+        OnDeviceClosed();
 
         // Clear list of datastreams.
         lock (_dataStreamListLock)
@@ -304,23 +309,26 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     public abstract void StopAcquisition();
 
     /// <summary>
-    /// Registers stream-bound callbacks for buffer delivery and failed-buffer notifications.
+    /// Fetches a single image from device, using a timeout request. To continously grab images, use <see cref="StartAcquisition"/> instead.
     /// </summary>
-    /// <param name="dataStreamID">Unique datastream ID.</param>
-    /// <param name="onNewBuffer">Callback for new-buffer delivery for this stream.</param>
-    /// <param name="onFailedBuffer">Callback for failed-buffer notifications for this stream.</param>
-    /// <returns>Disposable registration handle.</returns>
-    public IDisposable RegisterBufferSink(string dataStreamID, Action<object, NewBufferEventArgs> onNewBuffer, Action<object, EventArgs> onFailedBuffer)
+    /// <param name="buffer">Fetched image (or null if fetch was unsuccessful).</param>
+    /// <param name="timeout">Maximum time interval to wait for the image (in milliseconds).</param>
+    /// <returns><see langword="True"/> if fetch was successful, with the image in the <paramref name="buffer"/>.</returns>
+    public bool FetchImage(out GcBuffer buffer, uint timeout = 1000)
     {
-        ArgumentException.ThrowIfNullOrEmpty(dataStreamID);
-        ArgumentNullException.ThrowIfNull(onNewBuffer);
-        ArgumentNullException.ThrowIfNull(onFailedBuffer);
+        // Open a temporary datastream for fetching a single image, using queued delivery mode.
+        var dataStream = OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Synchronous);
+        dataStream.Start(1);
+        var result = dataStream.RetrieveBuffer(out buffer, (int)timeout);
+        dataStream.Stop();
+        dataStream.Close();
 
-        lock (_dataStreamListLock)
-            _bufferSinks[dataStreamID] = (onNewBuffer, onFailedBuffer); // Register the provided callbacks for the specified datastream ID in the dictionary.
-
-        return new SinkRegistration(this, dataStreamID); // Return disposable registration handle for stream-bound sink subscription.
+        return result;
     }
+
+    #endregion
+
+    #region Private Methods
 
     /// <summary>
     /// Dispatches a new buffer to registered sink(s).
@@ -353,11 +361,10 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
     /// </summary>
     private void DispatchFailedBuffer()
     {
-        // Snapshot the registered sinks outside of the lock to avoid potential deadlocks during callback invocation.
         Action<object, EventArgs>[] sinks;
 
         lock (_dataStreamListLock)
-            sinks = [.. _bufferSinks.Values.Select(x => x.OnFailedBuffer)]; // Snapshot the registered sinks outside of the lock to avoid potential deadlocks during callback invocation.
+            sinks = [.. _bufferSinks.Values.Select(x => x.OnFailedBuffer)]; // Get all registered failed-buffer callbacks from the dictionary.
 
         // Invoke the failed-buffer callback for each sink.
         foreach (var sink in sinks)
@@ -376,6 +383,92 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
         lock (_dataStreamListLock)
             _bufferSinks.Remove(dataStreamID); // Remove the sink associated with the provided stream ID from the dictionary.
     }
+
+    #endregion
+
+    #region IBufferProducer
+
+    /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException">The data stream is already being acquired, the maximum number of concurrent data streams has been reached, or the configured maximum is zero.</exception>
+    void IStreamCoordinator.StartStream(string dataStreamID)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(dataStreamID);
+
+        lock (_acquisitionLock)
+        {
+            // Check if datastream is already acquiring.
+            if (_activeDataStreamAcquisitions.Contains(dataStreamID))
+                throw new InvalidOperationException($"Datastream '{dataStreamID}' is already acquiring.");
+
+            // Check if maximum number of concurrent streams has been reached.
+            uint maxConcurrentStreams = MaxConcurrentStreams;
+            if (maxConcurrentStreams == 0)
+                throw new InvalidOperationException("MaxConcurrentStreams must be greater than zero.");
+            if ((uint)_activeDataStreamAcquisitions.Count >= maxConcurrentStreams)
+                throw new InvalidOperationException($"The device supports a maximum of {maxConcurrentStreams} concurrent datastream(s).");
+
+            // Add datastream ID to set of active acquisitions.
+            _activeDataStreamAcquisitions.Add(dataStreamID);
+
+            // If first datastream, start device acquisition.
+            if (_activeDataStreamAcquisitions.Count == 1)
+            {
+                try
+                {
+                    StartAcquisition(); // Start device acquisition.
+                }
+                catch
+                {
+                    _activeDataStreamAcquisitions.Remove(dataStreamID); // Roll back if starting acquisition fails.
+                    throw; // Rethrow exception to propagate error to caller.
+                }
+            }
+        }
+    }
+
+    void IStreamCoordinator.StopStream(string dataStreamID)
+    {
+        lock (_acquisitionLock)
+        {
+            // Check if the datastream is currently acquiring.
+            if (_activeDataStreamAcquisitions.Contains(dataStreamID) == false)
+                return;
+
+            // If there are multiple active datastream acquisitions, just remove the specified datastream ID from the set and return.
+            if (_activeDataStreamAcquisitions.Count > 1)
+            {
+                _activeDataStreamAcquisitions.Remove(dataStreamID);
+                return;
+            }
+
+            // If this is the last active datastream acquisition, stop device acquisition and remove the datastream ID from the set.
+            StopAcquisition();
+            _activeDataStreamAcquisitions.Remove(dataStreamID);
+        }
+    }
+
+    /// <summary>
+    /// Registers stream-bound callbacks for buffer delivery and failed-buffer notifications.
+    /// </summary>
+    /// <param name="dataStreamID">Unique datastream ID.</param>
+    /// <param name="onNewBuffer">Callback for new-buffer delivery for this stream.</param>
+    /// <param name="onFailedBuffer">Callback for failed-buffer notifications for this stream.</param>
+    /// <returns>Disposable registration handle.</returns>
+    IDisposable IBufferProducer.RegisterBufferSink(string dataStreamID, Action<object, NewBufferEventArgs> onNewBuffer, Action<object, EventArgs> onFailedBuffer)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(dataStreamID);
+        ArgumentNullException.ThrowIfNull(onNewBuffer);
+        ArgumentNullException.ThrowIfNull(onFailedBuffer);
+
+        lock (_dataStreamListLock)
+            _bufferSinks[dataStreamID] = (onNewBuffer, onFailedBuffer); // Register the provided callbacks for the specified datastream ID in the dictionary.
+
+        return new SinkRegistration(this, dataStreamID); // Return disposable registration handle for stream-bound sink subscription.
+    }
+
+    #endregion
+
+    #region Private Classes
 
     /// <summary>
     /// Disposable registration handle for stream-bound sink subscriptions.
@@ -403,24 +496,6 @@ public abstract partial class GcDevice : IBufferProducer, IEnumerable<GcDataStre
         {
             Interlocked.Exchange(ref _device, null)?.UnregisterBufferSink(_dataStreamID);
         }
-    }
-
-    /// <summary>
-    /// Fetches a single image from device, using a timeout request. To continously grab images, use <see cref="StartAcquisition"/> instead.
-    /// </summary>
-    /// <param name="buffer">Fetched image (or null if fetch was unsuccessful).</param>
-    /// <param name="timeout">Maximum time interval to wait for the image (in milliseconds).</param>
-    /// <returns><see langword="True"/> if fetch was successful, with the image in the <paramref name="buffer"/>.</returns>
-    public bool FetchImage(out GcBuffer buffer, uint timeout = 1000)
-    {
-        // Open a temporary datastream for fetching a single image, using queued delivery mode.
-        var dataStream = OpenDataStream(deliveryMode: AcquisitionDeliveryMode.Synchronous);
-        dataStream.Start(1);
-        var result = dataStream.RetrieveImage(out buffer, (int)timeout);
-        dataStream.Stop();
-        dataStream.Close();
-
-        return result;
     }
 
     #endregion

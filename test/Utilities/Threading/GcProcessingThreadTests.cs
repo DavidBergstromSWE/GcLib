@@ -20,7 +20,7 @@ public class GcProcessingThreadTests
         _mockStream = new Mock<IBufferStream>();
         _buffer = FakeBufferProvider.GetFakeBuffer();
         GcBuffer buffer = _buffer;
-        _mockStream.Setup(s => s.RetrieveImage(out buffer, 0)).Returns(true);
+        _mockStream.Setup(s => s.RetrieveBuffer(out buffer, 0)).Returns(true);
     }
 
     [TestCleanup]
@@ -189,7 +189,7 @@ public class GcProcessingThreadTests
 
         // Assert
         Assert.AreEqual(0, processedCount);
-        _mockStream.Verify(s => s.RetrieveImage(out It.Ref<GcBuffer>.IsAny, 0), Times.Never);
+        _mockStream.Verify(s => s.RetrieveBuffer(out It.Ref<GcBuffer>.IsAny, 0), Times.Never);
     }
 
     [TestMethod]
@@ -294,7 +294,7 @@ public class GcProcessingThreadTests
     public void NewBuffer_RetrievalFails_DoesNotQueueOrProcessBuffer()
     {
         GcBuffer buffer = null;
-        _mockStream.Setup(s => s.RetrieveImage(out buffer, 0)).Returns(false);
+        _mockStream.Setup(s => s.RetrieveBuffer(out buffer, 0)).Returns(false);
         _processingThread = new GcProcessingThread();
         int processedCount = 0;
         _processingThread.BufferProcess += (sender, image) => Interlocked.Increment(ref processedCount);
@@ -303,7 +303,7 @@ public class GcProcessingThreadTests
         _mockStream.Raise(s => s.NewBuffer += null, EventArgs.Empty);
         _processingThread.Stop(aWait: true);
 
-        _mockStream.Verify(s => s.RetrieveImage(out It.Ref<GcBuffer>.IsAny, 0), Times.Once);
+        _mockStream.Verify(s => s.RetrieveBuffer(out It.Ref<GcBuffer>.IsAny, 0), Times.Once);
         Assert.AreEqual(0, _processingThread.QueuedCount);
         Assert.AreEqual(0, processedCount);
     }

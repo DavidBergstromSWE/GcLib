@@ -19,10 +19,10 @@ public interface IBufferStream
     bool IsStreaming { get; }
 
     /// <summary>
-    /// Starts streaming buffers continuously until manually stopped. If <paramref name="numImages"/> is specified the acquisition stops automatically after the specified number of images have been acquired.
+    /// Starts streaming buffers continuously until manually stopped. If <paramref name="numBuffers"/> is specified the acquisition stops automatically after the specified number of buffers have been acquired.
     /// </summary>
-    /// <param name="numImages">(Optional) Number of images to acquire.</param>
-    public void Start(ulong numImages = Constants.GENTL_INFINITE);
+    /// <param name="numBuffers">(Optional) Number of buffers to acquire.</param>
+    public void Start(ulong numBuffers = Constants.GENTL_INFINITE);
 
     /// <summary>
     /// Stop streaming buffers.
@@ -30,12 +30,19 @@ public interface IBufferStream
     public void Stop();
 
     /// <summary>
-    /// Retrieves an image buffer from the beginning of the output buffer queue.
+    /// Retrieves a buffer from the stream.
     /// </summary>
-    /// <param name="buffer">Image buffer (or null if none is available).</param>
+    /// <param name="buffer">Buffer (or null if none is available).</param>
     /// <param name="timeout">Timeout in milliseconds to wait for a buffer. Use zero for non-blocking retrieval.</param>
     /// <returns>True if buffer retrieval was successful, false if not.</returns>
-    bool RetrieveImage(out GcBuffer buffer, int timeout = 1000);
+    bool RetrieveBuffer(out GcBuffer buffer, int timeout = 1000);
+
+    /// <summary>
+    /// Returns buffer to the stream, so that the memory can be recycled.
+    /// </summary>
+    /// <remarks>Make sure to make a copy of the data if you need to retain it.</remarks>
+    /// <param name="buffer">The buffer to recycle.</param>
+    //public void ReturnBuffer(GcBuffer buffer);
 
     /// <summary>
     /// Event announcing that streaming has started.
@@ -48,12 +55,12 @@ public interface IBufferStream
     event EventHandler StreamingStopped;
 
     /// <summary>
-    /// Event announcing that an buffer has been successfully transferred, containing the buffer in the event arguments.
+    /// Event announcing that a buffer has been successfully transferred to the stream, containing the buffer in the event arguments.
     /// </summary>
     event EventHandler<BufferTransferredEventArgs> BufferTransferred;
 
     /// <summary>
-    /// Event announcing that a new buffer is added to the output buffer queue, indicating to consumers that data is available for retrieval and further processing.
+    /// Event announcing that a new buffer has been added to the stream, indicating to registered consumers that a buffer is available for retrieval (using <see cref="RetrieveBuffer(out GcBuffer, int)"/>).
     /// </summary>
     event EventHandler NewBuffer;
 }

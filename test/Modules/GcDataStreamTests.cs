@@ -124,7 +124,7 @@ public class GcDataStreamTests
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
 
         // Act
-        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
+        var success = _dataStream.RetrieveBuffer(out GcBuffer buffer, 0);
 
         // Assert
         Assert.IsFalse(success);
@@ -140,7 +140,7 @@ public class GcDataStreamTests
         RaiseNewBuffer();
 
         // Act
-        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
+        var success = _dataStream.RetrieveBuffer(out GcBuffer buffer, 0);
 
         // Assert
         Assert.IsTrue(success);
@@ -163,7 +163,7 @@ public class GcDataStreamTests
         RaiseNewBuffer();
 
         // Act
-        var success = _dataStream.RetrieveImage(out GcBuffer buffer, 0);
+        var success = _dataStream.RetrieveBuffer(out GcBuffer buffer, 0);
 
         // Assert
         Assert.IsFalse(success);
@@ -179,7 +179,7 @@ public class GcDataStreamTests
         var stopwatch = Stopwatch.StartNew();
 
         // Act
-        var success = _dataStream.RetrieveImage(out GcBuffer buffer, timeout);
+        var success = _dataStream.RetrieveBuffer(out GcBuffer buffer, timeout);
         stopwatch.Stop();
 
         // Assert
@@ -202,8 +202,8 @@ public class GcDataStreamTests
         RaiseNewBuffer(CreateNewBufferEventArgs(secondBuffer, _dataStream.StreamID));
 
         // Act
-        var firstSuccess = _dataStream.RetrieveImage(out GcBuffer retrievedFirstBuffer, 0);
-        var secondSuccess = _dataStream.RetrieveImage(out GcBuffer retrievedSecondBuffer, 0);
+        var firstSuccess = _dataStream.RetrieveBuffer(out GcBuffer retrievedFirstBuffer, 0);
+        var secondSuccess = _dataStream.RetrieveBuffer(out GcBuffer retrievedSecondBuffer, 0);
 
         // Assert
         Assert.IsTrue(firstSuccess);
@@ -644,7 +644,7 @@ public class GcDataStreamTests
         _dataStream = new GcDataStream(_mockDevice.Object, Guid.NewGuid().ToString());
         _dataStream.Start();
         int frameDroppedEventCount = 0;
-        _dataStream.FrameDropped += (s, e) => { frameDroppedEventCount++; };
+        _dataStream.BufferDropped += (s, e) => { frameDroppedEventCount++; };
 
         var firstBuffer = FakeBufferProvider.GetFakeBuffer(3, 3, PixelFormat.Mono8, 1, 100);
         var secondBuffer = FakeBufferProvider.GetFakeBuffer(3, 3, PixelFormat.Mono8, 3, 200);
