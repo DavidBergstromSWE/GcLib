@@ -453,7 +453,7 @@ public class GcFloatTests
     public void FromString_IsNotImplemented_ThrowsInvalidOperationException()
     {
         // Arrange
-        var gcFloat = new GcInteger("NonImplementedParameter");
+        var gcFloat = new GcFloat("NonImplementedParameter");
 
         // Act/Assert
         Assert.Throws<InvalidOperationException>(() => gcFloat.FromString(Math.PI.ToString()));

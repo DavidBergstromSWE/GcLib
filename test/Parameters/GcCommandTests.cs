@@ -155,7 +155,7 @@ public class GcCommandTests
     }
 
     [TestMethod]
-    public void FromString_ReturnsVoid()
+    public void FromString_IsImplemented_DoesNotThrow()
     {
         // Arrange
         var gcCommand = new GcCommand(name: "TestCommand",
@@ -168,6 +168,19 @@ public class GcCommandTests
 
         // Act
         gcCommand.FromString("HelloWorld");
+    }
+
+    [TestMethod]
+    public void FromString_IsNotImplemented_DoesNotThrow()
+    {
+        // Arrange
+        var gcCommand = new GcCommand("NonimplementedParameter");
+
+        // Act
+        gcCommand.FromString("IgnoredValue");
+
+        // Assert
+        Assert.IsFalse(gcCommand.IsImplemented);
     }
 
     [TestMethod]

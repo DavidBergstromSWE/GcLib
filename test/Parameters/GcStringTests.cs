@@ -54,10 +54,12 @@ public class GcStringTests
     }
 
     [TestMethod]
-    public void GcString_InvalidMaxLength_ThrowsArgumentException()
+    [DataRow(0L)]
+    [DataRow(-1L)]
+    public void GcString_InvalidMaxLength_ThrowsArgumentException(long maxLength)
     {
         // Act/Assert
-        Assert.Throws<ArgumentException>(() => new GcString(name: "Name containing white spaces", category: "Test", value: "HelloWorld", maxLength: -1));
+        Assert.Throws<ArgumentException>(() => new GcString(name: "TestString", category: "Test", value: "HelloWorld", maxLength: maxLength));
     }
 
     [TestMethod]
