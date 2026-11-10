@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using GcLib.Utilities.Imaging;
@@ -338,6 +339,42 @@ public class VirtualCamTests
     }
 
     [TestMethod]
+    public void ProtectedGetter_GetBoolean_MissingParameter_ThrowsMissingMemberException()
+    {
+        // Arrange
+        _device = new VirtualCam();
+
+        // Act/Assert
+        var ex = Assert.Throws<TargetInvocationException>(() => InvokeNonPublicMethod(_device, "GetBoolean", "FakeParameter"));
+        Assert.IsNotNull(ex.InnerException);
+        Assert.IsInstanceOfType<MissingMemberException>(ex.InnerException);
+    }
+
+    [TestMethod]
+    public void ProtectedGetter_GetString_MissingParameter_ThrowsMissingMemberException()
+    {
+        // Arrange
+        _device = new VirtualCam();
+
+        // Act/Assert
+        var ex = Assert.Throws<TargetInvocationException>(() => InvokeNonPublicMethod(_device, "GetString", "FakeParameter"));
+        Assert.IsNotNull(ex.InnerException);
+        Assert.IsInstanceOfType<MissingMemberException>(ex.InnerException);
+    }
+
+    [TestMethod]
+    public void ProtectedCommand_ExecuteParameterCommand_MissingParameter_ThrowsMissingMemberException()
+    {
+        // Arrange
+        _device = new VirtualCam();
+
+        // Act/Assert
+        var ex = Assert.Throws<TargetInvocationException>(() => InvokeNonPublicMethod(_device, "ExecuteParameterCommand", "FakeCommand"));
+        Assert.IsNotNull(ex.InnerException);
+        Assert.IsInstanceOfType<MissingMemberException>(ex.InnerException);
+    }
+
+    [TestMethod]
     public void SetParameterValue_ParameterInvalidateIsRaised()
     {
         // Arrange
@@ -375,7 +412,159 @@ public class VirtualCamTests
         _device.ParameterInvalidate -= eventHandler;
     }
 
-    // Add tests for FailedBuffer, ConnectionLost, AcquisitionAborted?
+    [TestMethod]
+    public async Task ExecuteParameterCommand_ForceDisconnect_ConnectionLostIsRaised()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        var disconnected = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void eventHandler(object s, EventArgs e) => disconnected.TrySetResult(true);
+        _device.ConnectionLost += eventHandler;
+
+        try
+        {
+            // Act
+            _device.Parameters.ExecuteParameterCommand("ForceDisconnect");
+            var completedTask = await Task.WhenAny(disconnected.Task, Task.Delay(2000, CancellationToken.None));
+
+            // Assert
+            Assert.AreSame(disconnected.Task, completedTask, "Timed out waiting for ConnectionLost event.");
+            Assert.IsTrue(disconnected.Task.Result);
+        }
+        finally
+        {
+            _device.ConnectionLost -= eventHandler;
+        }
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_AcquisitionFailureConnectionLost_ConnectionLostIsRaised()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("AcquisitionFailure", "True");
+        _device.Parameters.SetParameterValue("AcquisitionFailureEvent", "ConnectionLost");
+        _device.Parameters.SetParameterValue("AcquisitionTimeToFailure", "10");
+
+        var disconnected = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void eventHandler(object s, EventArgs e) => disconnected.TrySetResult(true);
+        _device.ConnectionLost += eventHandler;
+
+        try
+        {
+            // Act
+            _device.StartAcquisition();
+            var completedTask = await Task.WhenAny(disconnected.Task, Task.Delay(2000, CancellationToken.None));
+
+            // Assert
+            Assert.AreSame(disconnected.Task, completedTask, "Timed out waiting for ConnectionLost event.");
+            Assert.IsTrue(disconnected.Task.Result);
+        }
+        finally
+        {
+            _device.StopAcquisition();
+            _device.ConnectionLost -= eventHandler;
+        }
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_AcquisitionFailureAborted_AcquisitionAbortedIsRaised()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("AcquisitionFailure", "True");
+        _device.Parameters.SetParameterValue("AcquisitionFailureEvent", "AcquisitionAborted");
+        _device.Parameters.SetParameterValue("AcquisitionTimeToFailure", "10");
+
+        var aborted = new TaskCompletionSource<AcquisitionAbortedEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void eventHandler(object s, AcquisitionAbortedEventArgs e) => aborted.TrySetResult(e);
+        _device.AcquisitionAborted += eventHandler;
+
+        try
+        {
+            // Act
+            _device.StartAcquisition();
+            var completedTask = await Task.WhenAny(aborted.Task, Task.Delay(2000, CancellationToken.None));
+
+            // Assert
+            Assert.AreSame(aborted.Task, completedTask, "Timed out waiting for AcquisitionAborted event.");
+            Assert.IsNotNull(aborted.Task.Result);
+            Assert.IsNotEmpty(aborted.Task.Result.ErrorMessage);
+        }
+        finally
+        {
+            _device.StopAcquisition();
+            _device.AcquisitionAborted -= eventHandler;
+        }
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_Binning2x2_BufferDimensionsAreReduced()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.Mono8.ToString());
+        _device.Parameters.SetParameterValue("Width", "320");
+        _device.Parameters.SetParameterValue("Height", "240");
+        _device.Parameters.SetParameterValue("BinningHorizontal", "2");
+        _device.Parameters.SetParameterValue("BinningVertical", "2");
+
+        // Act
+        var buffer = await AcquireSingleBufferAsync(_device);
+
+        // Assert
+        Assert.AreEqual<uint>(160, buffer.Width);
+        Assert.AreEqual<uint>(120, buffer.Height);
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_ReverseX_MirrorsHorizontalRamp()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.Mono8.ToString());
+        _device.Parameters.SetParameterValue("Width", "80");
+        _device.Parameters.SetParameterValue("Height", "60");
+        _device.Parameters.SetParameterValue("TestPattern", TestPattern.GrayHorizontalRamp.ToString());
+        _device.Parameters.SetParameterValue("ReverseX", "False");
+        _device.Parameters.SetParameterValue("ReverseY", "False");
+
+        var baseline = await AcquireSingleBufferAsync(_device);
+
+        _device.Parameters.SetParameterValue("ReverseX", "True");
+        var flipped = await AcquireSingleBufferAsync(_device);
+
+        // Assert
+        int width = (int)baseline.Width;
+        Assert.AreEqual(baseline.ImageData[width - 1], flipped.ImageData[0]);
+        Assert.AreEqual(baseline.ImageData[0], flipped.ImageData[width - 1]);
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_ReverseY_MirrorsVerticalRamp()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.Mono8.ToString());
+        _device.Parameters.SetParameterValue("Width", "80");
+        _device.Parameters.SetParameterValue("Height", "60");
+        _device.Parameters.SetParameterValue("TestPattern", TestPattern.GrayVerticalRamp.ToString());
+        _device.Parameters.SetParameterValue("ReverseX", "False");
+        _device.Parameters.SetParameterValue("ReverseY", "False");
+
+        var baseline = await AcquireSingleBufferAsync(_device);
+
+        _device.Parameters.SetParameterValue("ReverseY", "True");
+        var flipped = await AcquireSingleBufferAsync(_device);
+
+        // Assert
+        int width = (int)baseline.Width;
+        int height = (int)baseline.Height;
+        int lastRowStart = (height - 1) * width;
+
+        Assert.AreEqual(baseline.ImageData[lastRowStart], flipped.ImageData[0]);
+        Assert.AreEqual(baseline.ImageData[0], flipped.ImageData[lastRowStart]);
+    }
 
     // Testing updates of parameter dependencies...
 
@@ -416,5 +605,41 @@ public class VirtualCamTests
         GcEnumeration pixelSize = _device.Parameters["PixelSize"] as GcEnumeration;
 
         Assert.AreEqual(GenICamHelper.GetPixelSize(pixelFormat), (PixelSize)pixelSize.IntValue);
+    }
+
+    /// <summary>
+    /// Starts acquisition on the specified device, waits for the first buffer event, and returns the received
+    /// buffer.
+    /// </summary>
+    /// <remarks>Acquisition is stopped and the event handler is removed in all cases, including timeout or
+    /// failure.</remarks>
+    /// <param name="device">Virtual camera instance that raises buffer events during acquisition.</param>
+    /// <param name="timeoutMs">Maximum time to wait, in milliseconds, for the first buffer event before timing out.</param>
+    /// <returns>A task that completes with the first acquired <see cref="GcBuffer"/>.</returns>
+    private static async Task<GcBuffer> AcquireSingleBufferAsync(VirtualCam device, int timeoutMs = 2000)
+    {
+        var firstBufferReceived = new TaskCompletionSource<NewBufferEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void eventHandler(object s, NewBufferEventArgs e) => firstBufferReceived.TrySetResult(e);
+        device.NewBuffer += eventHandler;
+
+        try
+        {
+            device.StartAcquisition();
+            var completedTask = await Task.WhenAny(firstBufferReceived.Task, Task.Delay(timeoutMs, CancellationToken.None));
+            Assert.AreSame(firstBufferReceived.Task, completedTask, "Timed out waiting for NewBuffer event.");
+            return firstBufferReceived.Task.Result.Buffer;
+        }
+        finally
+        {
+            device.StopAcquisition();
+            device.NewBuffer -= eventHandler;
+        }
+    }
+
+    private static object InvokeNonPublicMethod(object instance, string methodName, params object[] arguments)
+    {
+        var method = instance.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.IsNotNull(method, $"Method '{methodName}' was not found.");
+        return method.Invoke(instance, arguments);
     }
 }

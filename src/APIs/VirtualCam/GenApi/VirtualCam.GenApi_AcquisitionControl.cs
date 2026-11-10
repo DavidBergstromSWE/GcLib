@@ -183,87 +183,67 @@ public sealed partial class VirtualCam
         /// </summary>
         private void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            NewBufferEventArgs eventArgs;
+            NewBufferEventArgs eventArgs; // Event args to be passed to OnNewBuffer event.
+            var frameId = _frameCounter; // Frame ID is equal to frame counter at the time of event.
 
-            if (TestPattern.StringValue == GcLib.TestPattern.ImageDirectory.ToString())
+            // Generate image data based on test pattern selected.
+            if (TestPattern.StringValue == GcLib.TestPattern.ImageDirectory.ToString()) // Read images from directory
             {
-                if (_frameCounter <= _framePaths.Count - 1)
-                {
-                    // Load image from directory.
-                    using var mat = new Mat(_framePaths[(int)_frameCounter], Emgu.CV.CvEnum.ImreadModes.Unchanged);
-
-                    if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
-                        ApplyBinning(mat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
-
-                    if (ReverseX.Value || ReverseY.Value)
-                        ApplyFlip(mat, ReverseX.Value, ReverseY.Value);
-
-                    eventArgs = ToNewBufferEventArgs(mat,
-                                                     (PixelFormat)PixelFormat.IntValue,
-                                                     _frameCounter++,
-                                                     (ulong)TimeStamp.Value);
-                }
-                else
+                // Check if there are more images to read.
+                if (_frameCounter > _framePaths.Count - 1)
                 {
                     // Rewind and start from beginning if in continuous mode.
                     if (AcquisitionMode.StringValue == GcLib.AcquisitionMode.Continuous.ToString())
                         _frameCounter = 0;
                     else AcquisitionStop.Execute(); // No more images to read, stop acquisition.
-
                     return;
                 }
+
+                // Load image from directory.
+                using var mat = new Mat(_framePaths[(int)frameId], Emgu.CV.CvEnum.ImreadModes.Unchanged);
+
+                // Apply binning and flipping.
+                ApplyBinning(mat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
+                ApplyFlip(mat, ReverseX.Value, ReverseY.Value);
+
+                // Create buffer and event args.
+                eventArgs = new NewBufferEventArgs(string.Empty, DateTime.Now, new GcBuffer(mat, frameId, (ulong)TimeStamp.Value));
             }
             else
             {
-                // Create image data using test pattern generator.
-                var pixelFormat = (PixelFormat)PixelFormat.IntValue;
-                var imageData = TestPatternGenerator.CreateImage(width: (uint)Width.Value,
-                                                                 height: (uint)Height.Value,
-                                                                 pixelFormat: pixelFormat,
-                                                                 testPattern: (TestPattern)TestPattern.IntValue,
-                                                                 frameNumber: _frameCounter++);
+                // Generate image data using selected test pattern.
+                var imageData = TestPatternGenerator.CreateImage(width: (uint)Width.Value, height: (uint)Height.Value, pixelFormat: (PixelFormat)PixelFormat.IntValue, testPattern: (TestPattern)TestPattern.IntValue, frameNumber: frameId);
 
-                if (BinningHorizontal.Value <= 1 && BinningVertical.Value <= 1 && ReverseX.Value == false && ReverseY.Value == false)
+                // Create buffer and event args.
+                if ((int)BinningHorizontal.Value > 1 || (int)BinningVertical.Value > 1 || ReverseX.Value || ReverseY.Value)
                 {
-                    var buffer = new GcBuffer(imageData,
-                                              (uint)Width.Value,
-                                              (uint)Height.Value,
-                                              pixelFormat,
-                                              _frameCounter,
-                                              (ulong)TimeStamp.Value);
-
-                    eventArgs = new NewBufferEventArgs(string.Empty,
-                                                       DateTime.Now,
-                                                       buffer);
-                }
-                else
-                {
-                    using var mat = new Mat((int)Height.Value, (int)Width.Value, EmguHelper.GetDepthType(pixelFormat), (int)GenICamHelper.GetNumChannels(pixelFormat));
+                    // Create a Mat from the image data.
+                    using var mat = new Mat((int)Height.Value, (int)Width.Value, EmguHelper.GetDepthType((PixelFormat)PixelFormat.IntValue), (int)GenICamHelper.GetNumChannels((PixelFormat)PixelFormat.IntValue));
                     mat.SetTo(imageData);
 
-                    if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
-                        ApplyBinning(mat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
+                    // Apply binning and flipping.
+                    ApplyBinning(mat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
+                    ApplyFlip(mat, ReverseX.Value, ReverseY.Value);
 
-                    if (ReverseX.Value || ReverseY.Value)
-                        ApplyFlip(mat, ReverseX.Value, ReverseY.Value);
-
-                    eventArgs = ToNewBufferEventArgs(mat,
-                                                     pixelFormat,
-                                                     _frameCounter,
-                                                     (ulong)TimeStamp.Value);
+                    // Create buffer and event args from the modified Mat.
+                    eventArgs = new NewBufferEventArgs(string.Empty, DateTime.Now, new GcBuffer(mat, (PixelFormat)PixelFormat.IntValue, frameId, (ulong)TimeStamp.Value));
+                }
+                else 
+                {
+                    // No binning or flipping, create buffer directly from image data.
+                    var buffer = new GcBuffer(imageData, (uint)Width.Value, (uint)Height.Value, (PixelFormat)PixelFormat.IntValue, frameId, (ulong)TimeStamp.Value);
+                    eventArgs = new NewBufferEventArgs(string.Empty, DateTime.Now, buffer);
                 }
             }
+
+            _frameCounter++; // Increment frame counter for next image.
 
             // Raise new buffer event.
             _virtualCam.OnNewBuffer(eventArgs);
 
             // Check if acquisition is done.
             if ((AcquisitionMode.StringValue == GcLib.AcquisitionMode.SingleFrame.ToString()) || (AcquisitionMode.StringValue == GcLib.AcquisitionMode.MultiFrame.ToString() && _frameCounter == AcquisitionFrameCount.Value))
-            {
-                // Acquisition is done, stop.
                 AcquisitionStop.Execute();
-                return;
-            }
         }
 
         /// <summary>
@@ -293,26 +273,6 @@ public sealed partial class VirtualCam
                     : Emgu.CV.CvEnum.FlipType.Vertical;
 
             CvInvoke.Flip(mat, mat, flipType);
-        }
-
-        /// <summary>
-        /// Converts an image mat to stream-transfer event data.
-        /// </summary>
-        private static NewBufferEventArgs ToNewBufferEventArgs(Mat imageMat, PixelFormat pixelFormat, long frameID, ulong timeStamp)
-        {
-            byte[] imageData = new byte[imageMat.Total.ToInt32() * imageMat.ElementSize];
-            imageMat.CopyTo(imageData);
-
-            var buffer = new GcBuffer(imageData,
-                                      (uint)imageMat.Width,
-                                      (uint)imageMat.Height,
-                                      pixelFormat,
-                                      frameID,
-                                      timeStamp);
-
-            return new NewBufferEventArgs(string.Empty,
-                                          DateTime.Now,
-                                          buffer);
         }
 
         #endregion

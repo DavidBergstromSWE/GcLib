@@ -16,18 +16,14 @@ public sealed partial class VirtualCam
     /// <inheritdoc/>
     protected override string GetParameterValue(string parameterName)
     {
-        // Return null if parameter is not implemented in collection.
-        if (Parameters[parameterName].IsImplemented == false)
+        var parameter = Parameters.GetParameter(parameterName);
+
+        // Return null if parameter is missing or not implemented in collection.
+        if (parameter is null || parameter.IsImplemented == false)
             return null;
 
-        // Get matched property from GenApi.
-        PropertyInfo propertyInfo = typeof(GenApi).GetProperty(parameterName, BindingFlags.Instance | BindingFlags.Public);
-
-        // Retrieve property casted as a parameter.
-        var parameter = propertyInfo.GetValue(_genApi, null) as GcParameter;
-
-        // Return parameter value.
-        return parameter.ToString();
+        // Return matched GenApi parameter value.
+        return GetGenApiParameter<GcParameter>(parameterName).ToString();
     }
 
     /// <inheritdoc/>
@@ -38,93 +34,101 @@ public sealed partial class VirtualCam
         if (Parameters.IsImplemented(parameterName) == false)
             throw new MissingMemberException(GetType().Name, parameterName);
 
-        // Get matched property from GenApi.
-        PropertyInfo propertyInfo = typeof(GenApi).GetProperty(parameterName, BindingFlags.Instance | BindingFlags.Public);
-
-        // Retrieve property casted as a parameter.
-        var parameter = propertyInfo.GetValue(_genApi, null) as GcParameter;
+        var parameter = GetGenApiParameter<GcParameter>(parameterName);
 
         // Return if change is unnecessary.
         if (newParameterValue == parameter.ToString())
             return;
 
-        try
+        // Check type of parameter and set new value.
+        switch (parameter)
         {
-            // Check type of parameter and set new value.
-            switch (parameter)
-            {
-                case GcString gcString:
-                    propertyInfo.PropertyType.GetProperty(nameof(GcString.Value)).SetValue(parameter, newParameterValue, null);
-                    break;
+            case GcString gcString:
+                gcString.Value = newParameterValue;
+                break;
 
-                case GcInteger gcInteger:
-                    propertyInfo.PropertyType.GetProperty(nameof(GcInteger.Value)).SetValue(parameter, Convert.ToInt64(newParameterValue), null);
-                    break;
+            case GcInteger gcInteger:
+                gcInteger.Value = Convert.ToInt64(newParameterValue);
+                break;
 
-                case GcFloat gcFloat:
-                    propertyInfo.PropertyType.GetProperty(nameof(GcFloat.Value)).SetValue(parameter, double.Parse(newParameterValue, System.Globalization.CultureInfo.InvariantCulture), null);
-                    break;
+            case GcFloat gcFloat:
+                gcFloat.Value = double.Parse(newParameterValue, System.Globalization.CultureInfo.InvariantCulture);
+                break;
 
-                case GcBoolean gcBoolean:
-                    propertyInfo.PropertyType.GetProperty(nameof(GcBoolean.Value)).SetValue(parameter, Convert.ToBoolean(newParameterValue), null);
-                    break;
+            case GcBoolean gcBoolean:
+                gcBoolean.Value = Convert.ToBoolean(newParameterValue);
+                break;
 
-                case GcEnumeration gcEnumeration:
-                    propertyInfo.PropertyType.GetProperty(nameof(GcEnumeration.StringValue)).SetValue(parameter, newParameterValue, null);
-                    break;
+            case GcEnumeration gcEnumeration:
+                gcEnumeration.StringValue = newParameterValue;
+                break;
 
-                case GcCommand gcCommand:
-                    break;
+            case GcCommand:
+                break;
 
-                default:
-                    throw new ArgumentException($"{parameterName} is not a {nameof(GcParameter)}!", paramName: parameterName);
-            }
-        }
-        catch (Exception)
-        {
-            throw;
+            default:
+                throw new ArgumentException($"{parameterName} is not a {nameof(GcParameter)}!", paramName: parameterName);
         }
     }
 
     /// <inheritdoc/>
     protected override void ExecuteParameterCommand(string parameterName)
     {
-        (Parameters[parameterName] as GcCommand).Execute();
+        GetGenApiParameter<GcCommand>(parameterName).Execute();
     }
 
     /// <inheritdoc/>
     protected override GcBoolean GetBoolean(string parameterName)
     {
-        return _genApi.GetType().GetProperty(parameterName, BindingFlags.Instance | BindingFlags.Public).GetValue(_genApi) as GcBoolean;
+        return GetGenApiParameter<GcBoolean>(parameterName);
     }
 
     /// <inheritdoc/>
     protected override GcCommand GetCommand(string parameterName)
     {
-        return _genApi.GetType().GetProperty(parameterName, BindingFlags.Instance | BindingFlags.Public).GetValue(_genApi) as GcCommand;
+        return GetGenApiParameter<GcCommand>(parameterName);
     }
 
     /// <inheritdoc/>
     protected override GcEnumeration GetEnumeration(string parameterName)
     {
-        return _genApi.GetType().GetProperty(parameterName, BindingFlags.Instance | BindingFlags.Public).GetValue(_genApi) as GcEnumeration;
+        return GetGenApiParameter<GcEnumeration>(parameterName);
     }
 
     /// <inheritdoc/>
     protected override GcFloat GetFloat(string parameterName)
     {
-        return _genApi.GetType().GetProperty(parameterName, BindingFlags.Instance | BindingFlags.Public).GetValue(_genApi) as GcFloat;
+        return GetGenApiParameter<GcFloat>(parameterName);
     }
 
     /// <inheritdoc/>
     protected override GcInteger GetInteger(string parameterName)
     {
-        return _genApi.GetType().GetProperty(parameterName, BindingFlags.Instance | BindingFlags.Public).GetValue(_genApi) as GcInteger;
+        return GetGenApiParameter<GcInteger>(parameterName);
     }
 
     /// <inheritdoc/>
     protected override GcString GetString(string parameterName)
     {
-        return _genApi.GetType().GetProperty(parameterName, BindingFlags.Instance | BindingFlags.Public).GetValue(_genApi) as GcString;
+        return GetGenApiParameter<GcString>(parameterName);
+    }
+
+    /// <summary>
+    /// Gets a GenApi parameter by name as the specified parameter type.
+    /// </summary>
+    /// <typeparam name="TParameter">The GenApi parameter type to return. Must derive from <see cref="GcParameter"/>.</typeparam>
+    /// <param name="parameterName">The name of the GenApi parameter property.</param>
+    /// <returns>The GenApi parameter instance that matches <paramref name="parameterName"/> and <typeparamref
+    /// name="TParameter"/>.</returns>
+    /// <exception cref="MissingMemberException">No member with the specified name can be returned as <typeparamref name="TParameter"/> from <see
+    /// cref="GenApi"/>.</exception>
+    private TParameter GetGenApiParameter<TParameter>(string parameterName) where TParameter : GcParameter
+    {
+        var propertyInfo = typeof(GenApi).GetProperty(parameterName, BindingFlags.Instance | BindingFlags.Public) ?? throw new MissingMemberException(nameof(GenApi), parameterName);
+
+        if (propertyInfo.GetValue(_genApi, null) is TParameter parameter)
+            return parameter;
+
+        throw new MissingMemberException(nameof(GenApi), parameterName);
     }
 }
