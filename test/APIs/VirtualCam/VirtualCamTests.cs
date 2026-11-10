@@ -636,6 +636,15 @@ public class VirtualCamTests
         }
     }
 
+    /// <summary>
+    /// Invokes a non-public instance method on the specified object by using reflection.
+    /// </summary>
+    /// <remarks>Uses BindingFlags.Instance and BindingFlags.NonPublic to find the method and asserts that a
+    /// matching method is found before invocation.</remarks>
+    /// <param name="instance">Object that contains the non-public instance method to invoke.</param>
+    /// <param name="methodName">Name of the non-public instance method to locate and invoke.</param>
+    /// <param name="arguments">Arguments to pass to the invoked method.</param>
+    /// <returns>Result returned by the invoked method.</returns>
     private static object InvokeNonPublicMethod(object instance, string methodName, params object[] arguments)
     {
         var method = instance.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);

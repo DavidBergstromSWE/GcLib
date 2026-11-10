@@ -14,5 +14,5 @@ public sealed class ParameterInvalidateEventArgs(string parameterName) : EventAr
     /// <summary>
     /// Name of parameter that was changed.
     /// </summary>
-    public string ParameterName { get; } = parameterName;
+    public string ParameterName { get; } = parameterName ?? throw new ArgumentNullException(nameof(parameterName));
 }
