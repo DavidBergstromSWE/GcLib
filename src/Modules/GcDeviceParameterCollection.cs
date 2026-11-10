@@ -19,13 +19,14 @@ public abstract partial class GcDevice : IBufferProducer
         #region Fields
 
         /// <summary>
-        /// Camera device (reference to outer class object).
+        /// Camera device to which the parameters belong.
         /// </summary>
         private readonly GcDevice _device;
 
         /// <summary>
-        /// Dictionary containing parameter name as key and parameter itself as value.
+        /// Cached collection of device parameters, implemented as a dictionary with parameter name as key and the parameter itself as value.
         /// </summary>
+        /// <remarks>This is a cached collection of the device parameters, for quick parameter lookup by name. To get an updated list of parameters with new values from the device, use the Update() method.</remarks>
         private readonly Dictionary<string, GcParameter> _parameterDict;
 
         /// <summary>
@@ -68,7 +69,9 @@ public abstract partial class GcDevice : IBufferProducer
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the name of the parameter collection. This is configured as the unique ID of the device associated with the parameters.
+        /// </summary>
         public string Name { get; }
 
         #endregion
@@ -91,7 +94,7 @@ public abstract partial class GcDevice : IBufferProducer
 
             _device = device;
             _parameterDict = new Dictionary<string, GcParameter>(parameters.ToDictionary(x => x.Name, x => x));
-            FailedParameters = failedParameters;
+            FailedParameters = new List<string>(failedParameters).AsReadOnly();
             Name = _device.DeviceInfo.UniqueID;
 
             // Log debugging info.
@@ -138,19 +141,25 @@ public abstract partial class GcDevice : IBufferProducer
             lock (_parameterDictLock)
                 parameters = [.. _parameterDict.Values];
 
+            // Update each parameter in collection with current value and access mode from device.
             foreach (GcParameter parameter in parameters)
             {
                 try
                 {
+                    // Retrieve parameter value from device and update parameter in collection.
                     string parameterValue = GetParameterValue(parameter.Name);
-                    lock (_parameterDictLock)
-                        _parameterDict[parameter.Name].FromString(parameterValue);
+                    if (parameterValue is not null)
+                    {
+                        lock (_parameterDictLock)
+                            _parameterDict[parameter.Name].FromString(parameterValue);
+                    }
 
+                    // Retrieve parameter access mode from device and update mode in collection (can change on device state).
                     var param = _device.GetParameter(parameter.Name);
                     if (param != null)
                     {
                         lock (_parameterDictLock)
-                            _parameterDict[parameter.Name].ImposeAccessMode(param.IsReadable, param.IsWritable);
+                            _parameterDict[parameter.Name].ImposeAccessMode(param.IsReadable, param.IsWritable); // Update access mode in collection
                     }
                 }
                 catch (Exception ex)
@@ -163,7 +172,7 @@ public abstract partial class GcDevice : IBufferProducer
 
             // Log debugging info.
             if (GcLibrary.Logger.IsEnabled(LogLevel.Trace))
-                GcLibrary.Logger.LogTrace("Updated all parameters in {ModelName} ({ID}) in {ElapsedMilliseconds:000} milliseconds", _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID, Stopwatch.GetElapsedTime(startTime).Milliseconds);
+                GcLibrary.Logger.LogTrace("Updated all parameters in {ModelName} ({ID}) in {ElapsedMilliseconds:000} milliseconds", _device.DeviceInfo.ModelName, _device.DeviceInfo.UniqueID, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
         }
 
         /// <inheritdoc/>
@@ -177,15 +186,13 @@ public abstract partial class GcDevice : IBufferProducer
         /// Retrieves current parameter value from device.
         /// </summary>
         /// <param name="parameterName">Parameter name.</param>
-        /// <returns>Parameter value as string.</returns>
+        /// <returns>Parameter value as string or null if the parameter is not found, not readable, or is a command.</returns>
         public string GetParameterValue(string parameterName)
         {
+            bool canGet;
             lock (_parameterDictLock)
-            {
-                if (_parameterDict.TryGetValue(parameterName, out var parameter) && parameter.IsReadable && parameter.Type != GcParameterType.Command)
-                    return _device.GetParameterValue(parameterName);
-                else return null;
-            }
+                canGet = _parameterDict.TryGetValue(parameterName, out var parameter) && parameter.IsReadable && parameter.Type != GcParameterType.Command;
+            return canGet ? _device.GetParameterValue(parameterName) : null;
         }
 
         /// <summary>

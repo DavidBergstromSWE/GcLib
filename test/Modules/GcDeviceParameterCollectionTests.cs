@@ -9,7 +9,7 @@ using Moq;
 namespace GcLib.UnitTests.Modules;
 
 [TestClass]
-public class GcDeviceParameterCollectionTests
+public partial class GcDeviceParameterCollectionTests
 {
     private VirtualCam _device;
     private IReadOnlyParameterCollection _parameters;
@@ -117,6 +117,32 @@ public class GcDeviceParameterCollectionTests
         var propertyList = _parameters.GetPropertyList(GcVisibility.Guru);
 
         Assert.DoesNotContain(p => p.Key == "TimestampReset", propertyList);
+    }
+
+    [TestMethod]
+    public void Constructor_FailedParameters_IsDefensiveCopy()
+    {
+        var failedParameters = new List<string> { "A" };
+        var collection = CreateCollection(_device, [], failedParameters);
+
+        failedParameters.Add("B");
+
+        var failedParametersProperty = collection.GetType().GetProperty("FailedParameters", BindingFlags.Public | BindingFlags.Instance);
+        Assert.IsNotNull(failedParametersProperty);
+
+        var snapshot = (IReadOnlyCollection<string>)failedParametersProperty.GetValue(collection);
+        CollectionAssert.AreEqual(new List<string> { "A" }, new List<string>(snapshot));
+    }
+
+    [TestMethod]
+    public void Update_CommandParameterWithNullValue_DoesNotCallFromString()
+    {
+        var spyParameter = new SpyCommandLikeParameter("SpyCommand");
+        var collection = (IReadOnlyParameterCollection)CreateCollection(_device, [spyParameter], []);
+
+        collection.Update();
+
+        Assert.AreEqual(0, spyParameter.FromStringCallCount);
     }
 
     [TestMethod]
