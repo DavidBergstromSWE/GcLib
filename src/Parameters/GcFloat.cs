@@ -272,6 +272,9 @@ public sealed class GcFloat : GcParameter
         if (IsImplemented == false)
             throw new InvalidOperationException($"{Name} is not implemented!");
 
+        ArgumentNullException.ThrowIfNull(valueString);
+
+        // Try parsing the value string using both invariant and current culture formats (handles both . and , as decimal separators).
         if (double.TryParse(valueString, NumberStyles.Float, CultureInfo.InvariantCulture, out var invariantValue)
             || double.TryParse(valueString, NumberStyles.Float, CultureInfo.CurrentCulture, out invariantValue))
         {
