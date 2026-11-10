@@ -191,18 +191,15 @@ public sealed partial class VirtualCam
                 {
                     // Load image from directory.
                     using var mat = new Mat(_framePaths[(int)_frameCounter], Emgu.CV.CvEnum.ImreadModes.Unchanged);
-                    var pixelFormat = EmguHelper.GetPixelFormat(mat.Depth, mat.NumberOfChannels);
-                    if (pixelFormat == GcLib.PixelFormat.InvalidPixelFormat)
-                        throw new NotSupportedException($"Pixel format {pixelFormat} is not supported!");
 
                     if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
-                        ApplyBinning(mat, pixelFormat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
+                        ApplyBinning(mat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
 
                     if (ReverseX.Value || ReverseY.Value)
                         ApplyFlip(mat, ReverseX.Value, ReverseY.Value);
 
                     eventArgs = ToNewBufferEventArgs(mat,
-                                                     pixelFormat,
+                                                     (PixelFormat)PixelFormat.IntValue,
                                                      _frameCounter++,
                                                      (ulong)TimeStamp.Value);
                 }
@@ -245,7 +242,7 @@ public sealed partial class VirtualCam
                     mat.SetTo(imageData);
 
                     if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
-                        ApplyBinning(mat, pixelFormat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
+                        ApplyBinning(mat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
 
                     if (ReverseX.Value || ReverseY.Value)
                         ApplyFlip(mat, ReverseX.Value, ReverseY.Value);
@@ -272,12 +269,12 @@ public sealed partial class VirtualCam
         /// <summary>
         /// Applies image binning based on BinningHorizontal and BinningVertical values.
         /// </summary>
-        private static void ApplyBinning(Mat mat, PixelFormat pixelFormat, int binningHorizontal, int binningVertical)
+        private static void ApplyBinning(Mat mat, int binningHorizontal, int binningVertical)
         {
             if (binningHorizontal <= 1 && binningVertical <= 1)
                 return;
 
-            CvInvoke.BoxFilter(mat, mat, EmguHelper.GetDepthType(pixelFormat), new Size(binningHorizontal, binningVertical), new Point(-1, -1));
+            CvInvoke.BoxFilter(mat, mat, mat.Depth, new Size(binningHorizontal, binningVertical), new Point(-1, -1));
             CvInvoke.Resize(mat, mat, new Size(Math.Max(1, mat.Width / binningHorizontal), Math.Max(1, mat.Height / binningVertical)));
         }
 
