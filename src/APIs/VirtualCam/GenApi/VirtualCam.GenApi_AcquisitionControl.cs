@@ -195,6 +195,12 @@ public sealed partial class VirtualCam
                     if (pixelFormat == GcLib.PixelFormat.InvalidPixelFormat)
                         throw new NotSupportedException($"Pixel format {pixelFormat} is not supported!");
 
+                    if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
+                        ApplyBinning(mat, pixelFormat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
+
+                    if (ReverseX.Value || ReverseY.Value)
+                        ApplyFlip(mat, ReverseX.Value, ReverseY.Value);
+
                     eventArgs = ToNewBufferEventArgs(mat,
                                                      pixelFormat,
                                                      _frameCounter++,
@@ -213,37 +219,41 @@ public sealed partial class VirtualCam
             else
             {
                 // Create image data using test pattern generator.
+                var pixelFormat = (PixelFormat)PixelFormat.IntValue;
                 var imageData = TestPatternGenerator.CreateImage(width: (uint)Width.Value,
                                                                  height: (uint)Height.Value,
-                                                                 pixelFormat: (PixelFormat)PixelFormat.IntValue,
+                                                                 pixelFormat: pixelFormat,
                                                                  testPattern: (TestPattern)TestPattern.IntValue,
                                                                  frameNumber: _frameCounter++);
 
-                // Apply binning (if selected).
-                if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
-                {
-                    using var mat = new Mat((int)Height.Value, (int)Width.Value, EmguHelper.GetDepthType((PixelFormat)PixelFormat.IntValue), (int)GenICamHelper.GetNumChannels((PixelFormat)PixelFormat.IntValue));
-                    mat.SetTo(imageData);
-                    CvInvoke.BoxFilter(mat, mat, EmguHelper.GetDepthType((PixelFormat)PixelFormat.IntValue), new Size((int)BinningHorizontal.Value, (int)BinningVertical.Value), new Point(-1, -1));
-                    CvInvoke.Resize(mat, mat, new Size((int)Width.Value / (int)BinningHorizontal.Value, (int)Height.Value / (int)BinningVertical.Value));
-
-                    eventArgs = ToNewBufferEventArgs(mat,
-                                                     (PixelFormat)PixelFormat.IntValue,
-                                                     _frameCounter,
-                                                     (ulong)TimeStamp.Value);
-                }
-                else
+                if (BinningHorizontal.Value <= 1 && BinningVertical.Value <= 1 && ReverseX.Value == false && ReverseY.Value == false)
                 {
                     var buffer = new GcBuffer(imageData,
                                               (uint)Width.Value,
                                               (uint)Height.Value,
-                                              (PixelFormat)PixelFormat.IntValue,
+                                              pixelFormat,
                                               _frameCounter,
                                               (ulong)TimeStamp.Value);
 
                     eventArgs = new NewBufferEventArgs(string.Empty,
                                                        DateTime.Now,
                                                        buffer);
+                }
+                else
+                {
+                    using var mat = new Mat((int)Height.Value, (int)Width.Value, EmguHelper.GetDepthType(pixelFormat), (int)GenICamHelper.GetNumChannels(pixelFormat));
+                    mat.SetTo(imageData);
+
+                    if (BinningHorizontal.Value > 1 || BinningVertical.Value > 1)
+                        ApplyBinning(mat, pixelFormat, (int)BinningHorizontal.Value, (int)BinningVertical.Value);
+
+                    if (ReverseX.Value || ReverseY.Value)
+                        ApplyFlip(mat, ReverseX.Value, ReverseY.Value);
+
+                    eventArgs = ToNewBufferEventArgs(mat,
+                                                     pixelFormat,
+                                                     _frameCounter,
+                                                     (ulong)TimeStamp.Value);
                 }
             }
 
@@ -257,6 +267,35 @@ public sealed partial class VirtualCam
                 AcquisitionStop.Execute();
                 return;
             }
+        }
+
+        /// <summary>
+        /// Applies image binning based on BinningHorizontal and BinningVertical values.
+        /// </summary>
+        private static void ApplyBinning(Mat mat, PixelFormat pixelFormat, int binningHorizontal, int binningVertical)
+        {
+            if (binningHorizontal <= 1 && binningVertical <= 1)
+                return;
+
+            CvInvoke.BoxFilter(mat, mat, EmguHelper.GetDepthType(pixelFormat), new Size(binningHorizontal, binningVertical), new Point(-1, -1));
+            CvInvoke.Resize(mat, mat, new Size(Math.Max(1, mat.Width / binningHorizontal), Math.Max(1, mat.Height / binningVertical)));
+        }
+
+        /// <summary>
+        /// Applies image flip based on ReverseX and ReverseY parameter values.
+        /// </summary>
+        private static void ApplyFlip(Mat mat, bool reverseX, bool reverseY)
+        {
+            if (reverseX == false && reverseY == false)
+                return;
+
+            var flipType = reverseX && reverseY
+                ? Emgu.CV.CvEnum.FlipType.Both
+                : reverseX
+                    ? Emgu.CV.CvEnum.FlipType.Horizontal
+                    : Emgu.CV.CvEnum.FlipType.Vertical;
+
+            CvInvoke.Flip(mat, mat, flipType);
         }
 
         /// <summary>

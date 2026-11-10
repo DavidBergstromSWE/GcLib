@@ -236,9 +236,19 @@ public sealed partial class VirtualCam
                 visibility: GcVisibility.Expert,
                 isSelector: true);
 
-            _reverseX = new GcBoolean(nameof(ReverseX)); // not implemented
+            _reverseX = new GcBoolean(
+                name: nameof(ReverseX),
+                category: GetCategory(nameof(ReverseX)),
+                description: "Flips the image sent by the device horizontally",
+                value: false,
+                visibility: GcVisibility.Expert);
 
-            _reverseY = new GcBoolean(nameof(ReverseX)); // not implemented
+            _reverseY = new GcBoolean(
+                name: nameof(ReverseY),
+                category: GetCategory(nameof(ReverseY)),
+                description: "Flips the image sent by the device vertically",
+                value: false,
+                visibility: GcVisibility.Expert);
 
             _pixelFormat = new GcEnumeration(
                 name: nameof(PixelFormat),

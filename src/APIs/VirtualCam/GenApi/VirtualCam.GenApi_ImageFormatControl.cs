@@ -106,12 +106,14 @@ public sealed partial class VirtualCam
         /// Flips the image sent by the device horizontally.
         /// </summary>
         [Category("ImageFormatControl")]
+        [DefaultValue(false)]
         public GcBoolean ReverseX => _reverseX;
 
         /// <summary>
         /// Flips the image sent by the device vertically.
         /// </summary>
         [Category("ImageFormatControl")]
+        [DefaultValue(false)]
         public GcBoolean ReverseY => _reverseY;
 
         /// <summary>
