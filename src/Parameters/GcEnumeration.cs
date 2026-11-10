@@ -16,6 +16,7 @@ public sealed class GcEnumeration : GcParameter
     private string _stringValue;
     private long _intValue;
     private double _numericValue;
+    private readonly List<GcEnumEntry> _entries;
 
     #endregion
 
@@ -42,7 +43,7 @@ public sealed class GcEnumeration : GcParameter
                     throw new InvalidOperationException($"{Name} is not implemented!");
 
                 if (!IsDefined(value))
-                    throw new ArgumentException($"No entry with name {value} was found in the enumeration!");
+                    throw new ArgumentException($"No entry with name {value} was found in the enumeration!", nameof(value));
 
                 _stringValue = value;
                 _intValue = GetEntryByName(value).ValueInt;
@@ -69,7 +70,7 @@ public sealed class GcEnumeration : GcParameter
                     throw new InvalidOperationException($"{Name} is not implemented!");
 
                 if (!IsDefined(value))
-                    throw new ArgumentException($"No entry with value {value} was found in the enumeration!");
+                    throw new ArgumentException($"No entry with value {value} was found in the enumeration!", nameof(value));
 
                 _intValue = value;
                 _numericValue = GetEntry(_intValue).NumericValue;
@@ -96,7 +97,7 @@ public sealed class GcEnumeration : GcParameter
                     throw new InvalidOperationException($"{Name} is not implemented!");
 
                 if (!IsDefined(value))
-                    throw new ArgumentException($"No entry with numeric value {value} was found in the enumeration!");
+                    throw new ArgumentException($"No entry with numeric value {value} was found in the enumeration!", nameof(value));
 
                 _numericValue = value;
                 _intValue = GetEntry(value).ValueInt;
@@ -115,7 +116,7 @@ public sealed class GcEnumeration : GcParameter
     /// List of possible enumeration values.
     /// </summary>
     [Browsable(false)]
-    public List<GcEnumEntry> Entries { get; }
+    public IReadOnlyList<GcEnumEntry> Entries => _entries;
 
     #endregion
 
@@ -136,13 +137,16 @@ public sealed class GcEnumeration : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcEnumeration(string name, string category, GcEnumEntry gcEnumEntry, List<GcEnumEntry> gcEnumEntries, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
+    public GcEnumeration(string name, string category, GcEnumEntry gcEnumEntry, IReadOnlyList<GcEnumEntry> gcEnumEntries, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, IReadOnlyList<string> selectingParameters = null, IReadOnlyList<string> selectedParameters = null) : base(name)
     {
+        ArgumentNullException.ThrowIfNull(gcEnumEntry);
+        ArgumentNullException.ThrowIfNull(gcEnumEntries);
+
         if (gcEnumEntries.Any(entry => entry.ValueString == gcEnumEntry.ValueString) == false)
-            throw new ArgumentException($"{nameof(gcEnumEntry)} is not an enumeration of {nameof(gcEnumEntries)}!", name);
+            throw new ArgumentException($"{nameof(gcEnumEntry)} is not an enumeration of {nameof(gcEnumEntries)}!", nameof(gcEnumEntry));
 
         if (Enumerable.SequenceEqual(gcEnumEntries, gcEnumEntries.Distinct()) == false)
-            throw new ArgumentException($"{nameof(gcEnumEntries)} do not contain unique entries!", name);
+            throw new ArgumentException($"{nameof(gcEnumEntries)} do not contain unique entries!", nameof(gcEnumEntries));
 
         Name = name;
         Category = category;
@@ -151,17 +155,17 @@ public sealed class GcEnumeration : GcParameter
         Visibility = visibility;
         Description = description;
         IsSelector = isSelector;
-        SelectedParameters = selectedParameters ?? [];
-        SelectingParameters = selectingParameters ?? [];
+        SelectedParameters = new List<string>(selectedParameters ?? []).AsReadOnly();
+        SelectingParameters = new List<string>(selectingParameters ?? []).AsReadOnly();
 
         Type = GcParameterType.Enumeration;
 
-        Entries = gcEnumEntries;
+        _entries = [.. gcEnumEntries];
         StringValue = gcEnumEntry.ValueString;
     }
 
     /// <summary>
-    /// Instantiates a new <see cref="enum"/> type parameter, using an <see cref="Enum"/> from en existing enumeration <see cref="Type"/> as initial value.
+    /// Instantiates a new <see cref="enum"/> type parameter, using an <see cref="Enum"/> from an existing enumeration <see cref="Type"/> as initial value.
     /// </summary>
     /// <param name="name"></param>
     /// <param name="category"></param>
@@ -175,16 +179,20 @@ public sealed class GcEnumeration : GcParameter
     /// <param name="selectingParameters"></param>
     /// <param name="selectedParameters"></param>
     /// <exception cref="ArgumentException"></exception>
-    public GcEnumeration(string name, string category, Enum enumEntry, Type enumType, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
+    public GcEnumeration(string name, string category, Enum enumEntry, Type enumType, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, IReadOnlyList<string> selectingParameters = null, IReadOnlyList<string> selectedParameters = null) : base(name)
     {
+        ArgumentNullException.ThrowIfNull(enumEntry);
+        ArgumentNullException.ThrowIfNull(enumType);
+
         if (enumType.IsEnum == false)
-            throw new ArgumentException($"{enumType.Name} does not represent an enumeration type!", name);
+            throw new ArgumentException($"{enumType.Name} does not represent an enumeration type!", nameof(enumType));
 
         if (enumEntry.GetType() != enumType)
-            throw new ArgumentException($"{enumEntry} is not an enumeration of {enumType.Name}!", name);
+            throw new ArgumentException($"{enumEntry} is not an enumeration of {enumType.Name}!", nameof(enumEntry));
 
-        if (enumType.GetEnumValues().Cast<int>().Count() != enumType.GetEnumValues().Cast<int>().Distinct().Count())
-            throw new ArgumentException($"{enumType.Name} does not contain unique constants!", name);
+        var enumValues = enumType.GetEnumValues().Cast<object>().Select(Convert.ToInt64).ToArray();
+        if (enumValues.Length != enumValues.Distinct().Count())
+            throw new ArgumentException($"{enumType.Name} does not contain unique constants!", nameof(enumType));
 
         Name = name;
         Category = category;
@@ -193,12 +201,12 @@ public sealed class GcEnumeration : GcParameter
         Visibility = visibility;
         Description = description;
         IsSelector = isSelector;
-        SelectedParameters = selectedParameters ?? [];
-        SelectingParameters = selectingParameters ?? [];
+        SelectedParameters = new List<string>(selectedParameters ?? []).AsReadOnly();
+        SelectingParameters = new List<string>(selectingParameters ?? []).AsReadOnly();
 
         Type = GcParameterType.Enumeration;
 
-        Entries = CreateGcEnumEntryList(enumType);
+        _entries = CreateGcEnumEntryList(enumType);
         StringValue = enumEntry.ToString();
     }
 
@@ -217,13 +225,16 @@ public sealed class GcEnumeration : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcEnumeration(string name, string category, Enum enumEntry, Enum[] enumArray, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
+    public GcEnumeration(string name, string category, Enum enumEntry, Enum[] enumArray, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, IReadOnlyList<string> selectingParameters = null, IReadOnlyList<string> selectedParameters = null) : base(name)
     {
+        ArgumentNullException.ThrowIfNull(enumEntry);
+        ArgumentNullException.ThrowIfNull(enumArray);
+
         if (enumArray.Contains(enumEntry) == false)
-            throw new ArgumentException($"{enumEntry} is not an enumeration member of '{nameof(enumArray)}'!", name);
+            throw new ArgumentException($"{enumEntry} is not an enumeration member of '{nameof(enumArray)}'!", nameof(enumEntry));
 
         if (enumArray.Length != enumArray.Distinct().Count())
-            throw new ArgumentException($"'{nameof(enumArray)}' does not contain unique entries!", name);
+            throw new ArgumentException($"'{nameof(enumArray)}' does not contain unique entries!", nameof(enumArray));
 
         Name = name;
         Category = category;
@@ -232,12 +243,12 @@ public sealed class GcEnumeration : GcParameter
         Visibility = visibility;
         Description = description;
         IsSelector = isSelector;
-        SelectedParameters = selectedParameters ?? [];
-        SelectingParameters = selectingParameters ?? [];
+        SelectedParameters = new List<string>(selectedParameters ?? []).AsReadOnly();
+        SelectingParameters = new List<string>(selectingParameters ?? []).AsReadOnly();
 
         Type = GcParameterType.Enumeration;
 
-        Entries = CreateGcEnumEntryList(enumArray);
+        _entries = CreateGcEnumEntryList(enumArray);
         StringValue = enumEntry.ToString();
     }
 
@@ -248,6 +259,7 @@ public sealed class GcEnumeration : GcParameter
     public GcEnumeration(string name) : base(name)
     {
         Name = name;
+        _entries = [];
         IsImplemented = false;
     }
 
@@ -298,8 +310,8 @@ public sealed class GcEnumeration : GcParameter
     public GcEnumEntry GetEntryByName(string stringValue)
     {
         return IsDefined(stringValue)
-            ? Entries.Find(enumEntry => enumEntry.ValueString == stringValue)
-            : throw new ArgumentException($"No entry with name {stringValue} was found in the enumeration!"); // return null?
+            ? Entries.First(enumEntry => enumEntry.ValueString == stringValue)
+            : throw new ArgumentException($"No entry with name {stringValue} was found in the enumeration!", nameof(stringValue));
     }
 
     /// <summary>
@@ -311,8 +323,8 @@ public sealed class GcEnumeration : GcParameter
     public GcEnumEntry GetEntry(long intValue)
     {
         return IsDefined(intValue)
-            ? Entries.Find(enumEntry => enumEntry.ValueInt == intValue)
-            : throw new ArgumentException($"No entry with value {intValue} was found in the enumeration!"); // return null?
+            ? Entries.First(enumEntry => enumEntry.ValueInt == intValue)
+            : throw new ArgumentException($"No entry with value {intValue} was found in the enumeration!", nameof(intValue));
     }
 
     /// <summary>
@@ -324,8 +336,8 @@ public sealed class GcEnumeration : GcParameter
     public GcEnumEntry GetEntry(double numericValue)
     {
         return IsDefined(numericValue)
-            ? Entries.Find(enumEntry => enumEntry.NumericValue == numericValue)
-            : throw new ArgumentException($"No entry with numeric value {numericValue} was found in the enumeration!"); // return null?
+            ? Entries.First(enumEntry => enumEntry.NumericValue == numericValue)
+            : throw new ArgumentException($"No entry with numeric value {numericValue} was found in the enumeration!", nameof(numericValue));
     }
 
     /// <inheritdoc/>
@@ -393,7 +405,7 @@ public sealed class GcEnumeration : GcParameter
 
         var entries = new List<GcEnumEntry>(intValues.Length);
         for (int i = 0; i < intValues.Length; i++)
-            entries.Add(new GcEnumEntry(stringValues[i], (int)intValues.GetValue(i)));
+            entries.Add(new GcEnumEntry(stringValues[i], Convert.ToInt64(intValues.GetValue(i))));
 
         return entries;
     }
@@ -407,7 +419,7 @@ public sealed class GcEnumeration : GcParameter
     {
         var gcEnumsList = new List<GcEnumEntry>(e.Length);
         for (int i = 0; i < e.Length; i++)
-            gcEnumsList.Add(new GcEnumEntry(e.GetValue(i).ToString(), (int)e.GetValue(i)));
+            gcEnumsList.Add(new GcEnumEntry(e.GetValue(i).ToString(), Convert.ToInt64(e.GetValue(i))));
 
         return gcEnumsList;
     }

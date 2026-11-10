@@ -126,6 +126,20 @@ public class GcIntegerTests
     }
 
     [TestMethod]
+    public void GcInteger_NullListOfValidValues_ThrowsArgumentNullException()
+    {
+        // Act/Assert
+        Assert.Throws<ArgumentNullException>(() => new GcInteger(name: "TestInteger", category: "Test", value: 30, min: 0, max: 100, incrementMode: EIncMode.listIncrement, listOfValidValue: null));
+    }
+
+    [TestMethod]
+    public void GcInteger_EmptyListOfValidValues_ThrowsArgumentException()
+    {
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => new GcInteger(name: "TestInteger", category: "Test", value: 30, min: 0, max: 100, incrementMode: EIncMode.listIncrement, listOfValidValue: []));
+    }
+
+    [TestMethod]
     public void GcInteger_NonImplemented_IsImplementedIsFalse()
     {
         // Act

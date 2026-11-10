@@ -61,7 +61,7 @@ public sealed class GcBoolean : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcBoolean(string name, string category, bool value, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
+    public GcBoolean(string name, string category, bool value, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, IReadOnlyList<string> selectingParameters = null, IReadOnlyList<string> selectedParameters = null) : base(name)
     {
         Name = name;
         Category = category;
@@ -70,8 +70,8 @@ public sealed class GcBoolean : GcParameter
         Visibility = visibility;
         Description = description;
         IsSelector = isSelector;
-        SelectedParameters = selectedParameters ?? [];
-        SelectingParameters = selectingParameters ?? [];
+        SelectedParameters = new List<string>(selectedParameters ?? []).AsReadOnly();
+        SelectingParameters = new List<string>(selectingParameters ?? []).AsReadOnly();
 
         Type = GcParameterType.Boolean;
 

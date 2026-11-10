@@ -36,6 +36,12 @@ public class GcEnumerationTests
         Third = 3
     }
 
+    enum LongEnum : long
+    {
+        Zero = 0,
+        Large = 3_000_000_000L,
+    }
+
     #region Constructors
 
     [TestMethod]
@@ -95,6 +101,22 @@ public class GcEnumerationTests
     }
 
     [TestMethod]
+    public void GcEnumeration_GcEnumEntries_IsDefensiveCopy()
+    {
+        // Arrange
+        var entries = GetValidEnumEntries();
+        var originalCount = entries.Count;
+
+        // Act
+        var gcEnumeration = new GcEnumeration("TestEnumeration", "Test", entries[0], entries);
+        entries.Add(new GcEnumEntry("Injected", 999));
+
+        // Assert
+        Assert.HasCount(originalCount, gcEnumeration.Entries);
+        Assert.DoesNotContain(e => e.ValueString == "Injected", gcEnumeration.Entries);
+    }
+
+    [TestMethod]
     public void GcEnumeration_Type_PropertiesAreValid()
     {
         // Arrange
@@ -146,6 +168,17 @@ public class GcEnumerationTests
     {
         // Act/Assert
         Assert.Throws<ArgumentException>(() => new GcEnumeration("TestEnumeration", "Test", InvalidEnum.First, typeof(InvalidEnum)));
+    }
+
+    [TestMethod]
+    public void GcEnumeration_Type_LongBackedEnum_PropertiesAreValid()
+    {
+        // Act
+        var gcEnumeration = new GcEnumeration("TestEnumeration", "Test", LongEnum.Large, typeof(LongEnum));
+
+        // Assert
+        Assert.AreEqual("Large", gcEnumeration.StringValue);
+        Assert.AreEqual(3_000_000_000L, gcEnumeration.IntValue);
     }
 
     [TestMethod]
@@ -369,7 +402,7 @@ public class GcEnumerationTests
     }
 
     [TestMethod]
-    public void Entries_IsNotImplemented_ReturnsNull()
+    public void Entries_IsNotImplemented_ReturnsEmptyReadOnlyList()
     {
         // Arrange
         var gcEnumeration = new GcEnumeration(name: "TestEnumeration");
@@ -378,7 +411,8 @@ public class GcEnumerationTests
         var actualEntries = gcEnumeration.Entries;
 
         // Assert
-        Assert.IsNull(actualEntries);
+        Assert.IsNotNull(actualEntries);
+        Assert.IsEmpty(actualEntries);
     }
 
     #endregion

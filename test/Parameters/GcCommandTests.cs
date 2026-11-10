@@ -46,6 +46,13 @@ public class GcCommandTests
     }
 
     [TestMethod]
+    public void GcCommand_NullMethod_ThrowsArgumentNullException()
+    {
+        // Act/Assert
+        Assert.Throws<ArgumentNullException>(() => new GcCommand(name: "TestCommand", category: "Test", method: null));
+    }
+
+    [TestMethod]
     public void GcCommand_NonImplemented_IsImplementedIsFalse()
     {
         // Act

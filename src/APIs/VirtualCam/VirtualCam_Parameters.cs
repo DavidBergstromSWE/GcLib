@@ -62,7 +62,7 @@ public sealed partial class VirtualCam
                     break;
 
                 case GcFloat gcFloat:
-                    propertyInfo.PropertyType.GetProperty(nameof(GcFloat.Value)).SetValue(parameter, Convert.ToDouble(newParameterValue), null);
+                    propertyInfo.PropertyType.GetProperty(nameof(GcFloat.Value)).SetValue(parameter, double.Parse(newParameterValue, System.Globalization.CultureInfo.InvariantCulture), null);
                     break;
 
                 case GcBoolean gcBoolean:

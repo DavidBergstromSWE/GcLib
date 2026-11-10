@@ -49,12 +49,12 @@ public sealed class GcEnumEntry
 
     public static bool operator ==(GcEnumEntry c1, GcEnumEntry c2)
     {
-        return c1.Equals(c2);
+        return Equals(c1, c2);
     }
 
     public static bool operator !=(GcEnumEntry c1, GcEnumEntry c2)
     {
-        return !c1.Equals(c2);
+        return !Equals(c1, c2);
     }
 
     #endregion
@@ -77,12 +77,12 @@ public sealed class GcEnumEntry
 
     public bool Equals(GcEnumEntry enumEntry)
     {
-        return ValueString == enumEntry.ValueString && ValueInt == enumEntry.ValueInt;
+        return enumEntry is not null && ValueString == enumEntry.ValueString && ValueInt == enumEntry.ValueInt;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(ValueInt, ValueString, NumericValue);
+        return HashCode.Combine(ValueInt, ValueString);
     }
 
     /// <summary>

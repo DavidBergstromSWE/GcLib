@@ -315,7 +315,7 @@ public class GcFloatTests
                                   max: 1000000.0,
                                   displayPrecision: displayPrecision,
                                   visibility: GcVisibility.Expert);
-        var expectedString = Convert.ToString(Math.Round(gcFloat.Value, (int)displayPrecision));
+        var expectedString = Convert.ToString(Math.Round(gcFloat.Value, (int)displayPrecision), CultureInfo.InvariantCulture);
 
         // Act
         var actualString = gcFloat.ToString();
@@ -372,9 +372,9 @@ public class GcFloatTests
     }
 
     [TestMethod]
-    [DataRow("33,74")]
+    [DataRow("33.74")]
     [DataRow("33")]
-    [DataRow("-29,001")]
+    [DataRow("-29.001")]
     public void FromString_IsImplemented_StringIsNumber_ValueAsExpected(string expectedValue)
     {
         // Arrange
@@ -413,6 +413,30 @@ public class GcFloatTests
 
         // Act
         Assert.Throws<FormatException>(() => gcFloat.FromString("HelloWorld"));
+    }
+
+    [TestMethod]
+    public void FromString_IsImplemented_CommaDecimalSeparator_CurrentCulture_ValueAsExpected()
+    {
+        // Arrange
+        var gcFloat = GetFloat(value: Math.PI, min: -100, max: 100);
+        var originalCulture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("sv-SE");
+
+            // Act
+            gcFloat.FromString("33,74");
+            var actualValue = gcFloat.ToString(CultureInfo.InvariantCulture);
+
+            // Assert
+            Assert.AreEqual("33.74", actualValue);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
     }
 
     [TestMethod]

@@ -99,6 +99,16 @@ public class GcStringTests
     }
 
     [TestMethod]
+    public void FromString_Null_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var gcString = GetString();
+
+        // Act/Assert
+        Assert.Throws<ArgumentNullException>(() => gcString.FromString(null));
+    }
+
+    [TestMethod]
     public void ToString_NonImplemented_ReturnsNotImplementedString()
     {
         // Arrange

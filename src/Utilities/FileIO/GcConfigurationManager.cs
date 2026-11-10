@@ -174,7 +174,7 @@ public sealed class GcConfigurationManager : IDisposable
             string parameterValue = gcParameter.ToString();
 
             // Sorting by SelectedParameters.
-            List<string> selectedParameters = gcParameter.SelectedParameters;
+            IReadOnlyList<string> selectedParameters = gcParameter.SelectedParameters;
             int destinationIndex = propertyList.Count; // default position is at the end of the list
             if (selectedParameters != null)
             {

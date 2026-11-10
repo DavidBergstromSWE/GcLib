@@ -191,7 +191,7 @@ public sealed partial class IdsCam
             return new GcEnumeration(name: gcEnum.Name,
                                      category: gcEnum.Category,
                                      gcEnumEntry: gcEnum.CurrentEntry,
-                                     gcEnumEntries: gcEnum.Entries,
+                                     gcEnumEntries: [.. gcEnum.Entries],
                                      isReadable: node.IsReadable(),
                                      isWritable: node.IsWriteable(),
                                      visibility: gcEnum.Visibility,

@@ -77,13 +77,13 @@ public abstract class GcParameter : INotifyPropertyChanged
     /// Gets the names of parameters that are changed by this parameter.
     /// </summary>
     [Browsable(false)]
-    public List<string> SelectedParameters { get; protected set; }
+    public IReadOnlyList<string> SelectedParameters { get; protected set; }
 
     /// <summary>
     /// Gets the names of parameters that changes this parameter.
     /// </summary>
     [Browsable(false)]
-    public List<string> SelectingParameters { get; protected set; }
+    public IReadOnlyList<string> SelectingParameters { get; protected set; }
 
     #endregion
 
@@ -97,10 +97,10 @@ public abstract class GcParameter : INotifyPropertyChanged
     protected GcParameter(string name)
     {
         if (string.IsNullOrEmpty(name))
-            throw new ArgumentException("Parameter name cannot be empty!", name);
+            throw new ArgumentException("Parameter name cannot be empty!", nameof(name));
 
         if (name.Any(char.IsWhiteSpace))
-            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", name);
+            throw new ArgumentException("Parameter name cannot contain any whitespace characters!", nameof(name));
     }
 
     #endregion

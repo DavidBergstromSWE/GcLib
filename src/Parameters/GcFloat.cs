@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace GcLib;
 
@@ -129,16 +130,16 @@ public sealed class GcFloat : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcFloat(string name, string category, double value, double min, double max, double increment = 0, string unit = "", long displayPrecision = 3, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
+    public GcFloat(string name, string category, double value, double min, double max, double increment = 0, string unit = "", long displayPrecision = 3, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, IReadOnlyList<string> selectingParameters = null, IReadOnlyList<string> selectedParameters = null) : base(name)
     {
         if (min > max)
-            throw new ArgumentException($"Minimum value ({min}) must be smaller or equal to maximum value ({max})!", name);
+            throw new ArgumentException($"Minimum value ({min}) must be smaller or equal to maximum value ({max})!", nameof(min));
 
         if (value < min)
-            throw new ArgumentException($"Value ({value}) must be larger or equal to minimum value ({min})!", name);
+            throw new ArgumentException($"Value ({value}) must be larger or equal to minimum value ({min})!", nameof(value));
 
         if (value > max)
-            throw new ArgumentException($"Value ({value}) must be smaller or equal to maximum value ({max})!", name);
+            throw new ArgumentException($"Value ({value}) must be smaller or equal to maximum value ({max})!", nameof(value));
 
         Name = name;
         Category = category;
@@ -147,8 +148,8 @@ public sealed class GcFloat : GcParameter
         IsWritable = isWritable;
         Visibility = visibility;
         IsSelector = isSelector;
-        SelectedParameters = selectedParameters ?? [];
-        SelectingParameters = selectingParameters ?? [];
+        SelectedParameters = new List<string>(selectedParameters ?? []).AsReadOnly();
+        SelectingParameters = new List<string>(selectingParameters ?? []).AsReadOnly();
         Type = GcParameterType.Float;
 
         Min = min;
@@ -248,13 +249,13 @@ public sealed class GcFloat : GcParameter
     /// <inheritdoc/>
     public override string ToString()
     {
-        return IsImplemented ? _value.ToString("0." + new string('#', (int)DisplayPrecision)) : $"{Name} is not implemented!"; // old implementation
+        return IsImplemented ? _value.ToString("0." + new string('#', (int)DisplayPrecision), CultureInfo.InvariantCulture) : $"{Name} is not implemented!";
     }
 
     /// <summary>
     /// Get the parameter value as a string.
     /// </summary>
-    /// <param name="cultureInfo">An object that supplies culture-specific formatting information.</param>
+    /// <param name="formatProvider">An object that supplies culture-specific formatting information.</param>
     /// <returns>String representation of parameter value.</returns>
     public string ToString(IFormatProvider formatProvider)
     {
@@ -271,7 +272,14 @@ public sealed class GcFloat : GcParameter
         if (IsImplemented == false)
             throw new InvalidOperationException($"{Name} is not implemented!");
 
-        Value = double.Parse(valueString); // old implementation
+        if (double.TryParse(valueString, NumberStyles.Float, CultureInfo.InvariantCulture, out var invariantValue)
+            || double.TryParse(valueString, NumberStyles.Float, CultureInfo.CurrentCulture, out invariantValue))
+        {
+            Value = invariantValue;
+            return;
+        }
+
+        throw new FormatException($"The value '{valueString}' was not in a correct numeric format.");
     }
 
     /// <summary>
@@ -288,7 +296,7 @@ public sealed class GcFloat : GcParameter
         if (IsImplemented == false)
             throw new InvalidOperationException($"{Name} is not implemented!");
 
-        Value = double.Parse(valueString, formatProvider);
+        Value = double.Parse(valueString, NumberStyles.Float, formatProvider);
     }
 
     /// <inheritdoc/>

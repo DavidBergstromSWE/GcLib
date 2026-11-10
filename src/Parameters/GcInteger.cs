@@ -143,16 +143,16 @@ public sealed class GcInteger : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcInteger(string name, string category, long value, long min, long max, long increment = 1, EIncMode incrementMode = EIncMode.fixedIncrement, List<long> listOfValidValue = null, string unit = "", bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
+    public GcInteger(string name, string category, long value, long min, long max, long increment = 1, EIncMode incrementMode = EIncMode.fixedIncrement, IReadOnlyList<long> listOfValidValue = null, string unit = "", bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, IReadOnlyList<string> selectingParameters = null, IReadOnlyList<string> selectedParameters = null) : base(name)
     {
         if (min > max)
-            throw new ArgumentException($"Minimum ({min}) must be smaller or equal to maximum value ({max})!", name);
+            throw new ArgumentException($"Minimum ({min}) must be smaller or equal to maximum value ({max})!", nameof(min));
 
         if (value < min)
-            throw new ArgumentException($"Value ({value}) must be larger or equal to minimum value ({min})!", name);
+            throw new ArgumentException($"Value ({value}) must be larger or equal to minimum value ({min})!", nameof(value));
 
         if (value > max)
-            throw new ArgumentException($"Value ({value}) must be smaller or equal to maximum value ({max})!", name);
+            throw new ArgumentException($"Value ({value}) must be smaller or equal to maximum value ({max})!", nameof(value));
 
         Name = name;
         Category = category;
@@ -161,8 +161,8 @@ public sealed class GcInteger : GcParameter
         IsWritable = isWritable;
         Visibility = visibility;
         IsSelector = isSelector;
-        SelectedParameters = selectedParameters ?? [];
-        SelectingParameters = selectingParameters ?? [];
+        SelectedParameters = new List<string>(selectedParameters ?? []).AsReadOnly();
+        SelectingParameters = new List<string>(selectingParameters ?? []).AsReadOnly();
         Type = GcParameterType.Integer;
         Unit = unit;
 
@@ -173,13 +173,18 @@ public sealed class GcInteger : GcParameter
         IncrementMode = incrementMode;
         if (incrementMode == EIncMode.listIncrement)
         {
+            ArgumentNullException.ThrowIfNull(listOfValidValue);
+
+            if (listOfValidValue.Count == 0)
+                throw new ArgumentException("List of valid values cannot be empty!", nameof(listOfValidValue));
+
             if (listOfValidValue.Min() < min)
                 throw new ArgumentException("List of valid values contains numbers less than minimum!", nameof(listOfValidValue));
 
             if (listOfValidValue.Max() > max)
                 throw new ArgumentException("List of valid values contains numbers larger than maximum!", nameof(listOfValidValue));
 
-            ListOfValidValue = listOfValidValue ?? [];
+            ListOfValidValue = [.. listOfValidValue];
         }
 
 
@@ -268,8 +273,8 @@ public sealed class GcInteger : GcParameter
                            visibility: Visibility,
                            description: Description,
                            isSelector: IsSelector,
-                           selectedParameters: SelectedParameters,
-                           selectingParameters: SelectingParameters);
+                           selectedParameters: [.. SelectedParameters],
+                           selectingParameters: [.. SelectingParameters]);
     }
 
     /// <inheritdoc/>

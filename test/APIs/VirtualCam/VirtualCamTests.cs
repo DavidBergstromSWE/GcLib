@@ -291,7 +291,7 @@ public class VirtualCamTests
     [TestMethod]
     [DataRow("TestString", "GoodbyeUniverse")]
     [DataRow("TestInteger", "66")]
-    [DataRow("TestFloat", "2,7")]
+    [DataRow("TestFloat", "2.7")]
     [DataRow("TestBoolean", "True")]
     [DataRow("TestEnumeration", "Monday")]
     public void SetParameterValue_ValidValue_ValueIsChanged(string parameterName, string expectedValue)

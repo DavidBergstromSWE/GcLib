@@ -182,7 +182,7 @@ public class ReadOnlyParameterCollectionTests
     [TestMethod]
     [DataRow("BooleanParameter", "False")]
     [DataRow("IntegerParameter", "11")]
-    [DataRow("FloatParameter", "1,3")]
+    [DataRow("FloatParameter", "1.3")]
     [DataRow("StringParameter", "Goodbye")]
     [DataRow("EnumerationParameter", "Tuesday")]
     public void SetParameterValue_ParameterExistsAndIsNotCommand_ValueIsUpdated(string parameterName, string expectedValue)

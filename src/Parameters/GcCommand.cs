@@ -47,8 +47,10 @@ public sealed class GcCommand : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcCommand(string name, string category, Action method, bool isReadable = true, bool isWritable = false, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
+    public GcCommand(string name, string category, Action method, bool isReadable = true, bool isWritable = false, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, IReadOnlyList<string> selectingParameters = null, IReadOnlyList<string> selectedParameters = null) : base(name)
     {
+        ArgumentNullException.ThrowIfNull(method);
+
         Name = name;
         Category = category;
         IsWritable = isWritable;
@@ -56,8 +58,8 @@ public sealed class GcCommand : GcParameter
         Visibility = visibility;
         Description = description;
         IsSelector = isSelector;
-        SelectedParameters = selectedParameters ?? [];
-        SelectingParameters = selectingParameters ?? [];
+        SelectedParameters = new List<string>(selectedParameters ?? []).AsReadOnly();
+        SelectingParameters = new List<string>(selectingParameters ?? []).AsReadOnly();
 
         Type = GcParameterType.Command;
 

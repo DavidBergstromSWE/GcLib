@@ -113,6 +113,45 @@ public class GcEnumEntryTests
     }
 
     [TestMethod]
+    public void Operator_Equals_BothNull_ReturnsTrue()
+    {
+        // Arrange
+        GcEnumEntry left = null;
+        GcEnumEntry right = null;
+
+        // Act
+        bool result = left == right;
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void Operator_Equals_LeftNull_ReturnsFalse()
+    {
+        // Arrange
+        GcEnumEntry left = null;
+        var right = new GcEnumEntry("TestEnum0", 0);
+
+        // Act
+        bool result = left == right;
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void GetHashCode_EqualByIdentityFields_IsEqual()
+    {
+        // Arrange
+        var left = new GcEnumEntry("TestEnum0", 0, numericValue: 1.5);
+        var right = new GcEnumEntry("TestEnum0", 0, numericValue: 9.5);
+
+        // Act/Assert
+        Assert.AreEqual(left.GetHashCode(), right.GetHashCode());
+    }
+
+    [TestMethod]
     public void Equals_OnlyReturnsTrueIfStringAndValueAreSame()
     {
         Assert.IsTrue(Equals(new GcEnumEntry("TestEnum0", 0), new GcEnumEntry("TestEnum0", 0)));

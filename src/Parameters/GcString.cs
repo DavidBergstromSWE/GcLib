@@ -26,6 +26,7 @@ public sealed class GcString : GcParameter
     /// Value of parameter.
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     [Browsable(false)]
     public string Value
@@ -38,8 +39,10 @@ public sealed class GcString : GcParameter
                 if (IsImplemented == false)
                     throw new InvalidOperationException($"{Name} is not implemented!");
 
+                ArgumentNullException.ThrowIfNull(value);
+
                 if (value.Length > MaxLength)
-                    throw new ArgumentOutOfRangeException(Name, value.Length, $"String is too long! Length must be <= {MaxLength}.");
+                    throw new ArgumentOutOfRangeException(paramName: nameof(value), actualValue: value.Length, message: $"String is too long! Length must be <= {MaxLength}.");
 
                 _value = value;
                 OnPropertyChanged();
@@ -72,10 +75,10 @@ public sealed class GcString : GcParameter
     /// <param name="selectingParameters">Parameters selecting this parameter.</param>
     /// <param name="selectedParameters">Parameters selected by this parameter.</param>
     /// <exception cref="ArgumentException"></exception>
-    public GcString(string name, string category, string value, long maxLength, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, List<string> selectingParameters = null, List<string> selectedParameters = null) : base(name)
+    public GcString(string name, string category, string value, long maxLength, bool isReadable = true, bool isWritable = true, GcVisibility visibility = GcVisibility.Beginner, string description = "", bool isSelector = false, IReadOnlyList<string> selectingParameters = null, IReadOnlyList<string> selectedParameters = null) : base(name)
     {
-        if (maxLength < 0)
-            throw new ArgumentException($"Maximum string length ({maxLength}) must be larger than zero!", name);
+        if (maxLength <= 0)
+            throw new ArgumentException($"Maximum string length ({maxLength}) must be larger than zero!", nameof(maxLength));
 
         Name = name;
         Category = category;
@@ -84,8 +87,8 @@ public sealed class GcString : GcParameter
         IsWritable = isWritable;
         Visibility = visibility;
         IsSelector = isSelector;
-        SelectedParameters = selectedParameters ?? [];
-        SelectingParameters = selectingParameters ?? [];
+        SelectedParameters = new List<string>(selectedParameters ?? []).AsReadOnly();
+        SelectingParameters = new List<string>(selectingParameters ?? []).AsReadOnly();
         Type = GcParameterType.String;
 
         MaxLength = maxLength;
@@ -126,13 +129,11 @@ public sealed class GcString : GcParameter
     }
 
     /// <inheritdoc/>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="InvalidOperationException">Thrown when the parameter is not implemented.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when the input string is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the input string exceeds the maximum length.</exception>
     public override void FromString(string valueString)
     {
-        if (IsImplemented == false)
-            throw new InvalidOperationException($"{Name} is not implemented!");
-
         Value = valueString;
     }
 
