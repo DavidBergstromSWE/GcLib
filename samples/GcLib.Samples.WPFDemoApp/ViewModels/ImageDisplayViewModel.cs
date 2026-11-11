@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -53,9 +54,9 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     private bool _cachedLimitFPS;
 
     /// <summary>
-    /// Circular buffer of timestamps used for frame rate calculations.
+    /// Circular buffer of monotonic timestamps for displayed frames.
     /// </summary>
-    private readonly CircularBuffer<ulong> _timeStamps = new(10, true);
+    private readonly CircularBuffer<long> _timeStamps = new(10, true);
 
     #endregion
 
@@ -205,14 +206,11 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     {
         _dispatcherService.Invoke(() =>
         {
-            if (LimitFPS)
-            {
-                if (_frameStabilizer.IsTimeToDisplay(TargetFPS))
-                    UpdateImages();
-            }
-            else UpdateImages();
+            if (LimitFPS && !_frameStabilizer.IsTimeToDisplay(TargetFPS))
+                return;
 
-            _timeStamps.Put((ulong)DateTime.Now.Ticks);
+            UpdateImages();
+            _timeStamps.Put(Stopwatch.GetTimestamp());
             CurrentFPS = CalcFPS();
         });
     }
@@ -233,8 +231,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
         if (message.PropertyName == nameof(AcquisitionViewModel.IsBusy))
         {
             // Reset timestamp buffer at acquisition stop.
-            if (message.NewValue == false)
-                _frameStabilizer.Reset();
+            _frameStabilizer.Reset();
         }
 
         if (message.PropertyName == nameof(PlayBackViewModel.IsLoaded))
@@ -282,14 +279,19 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
     }
 
     /// <summary>
-    /// Calculates effective frame rate (Hz) from received timestamps.
+    /// Calculates effective frame rate (Hz) from displayed-frame timestamps.
     /// </summary>
     /// <returns>Estimated number of frames per second.</returns>
     private double CalcFPS()
     {
-        if (_timeStamps.Size > 1)
-            return TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1);
-        else return 0.0;
+        if (_timeStamps.Size < 2)
+            return 0.0;
+
+        long elapsedTicks = _timeStamps.Max() - _timeStamps.Min();
+        if (elapsedTicks <= 0)
+            return 0.0;
+
+        return (_timeStamps.Size - 1) * (double)Stopwatch.Frequency / elapsedTicks;
     }
 
     #endregion
