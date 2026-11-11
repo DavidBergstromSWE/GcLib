@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Timers;
@@ -46,6 +47,21 @@ public sealed partial class VirtualCam
         /// </summary>
         private List<string> _framePaths;
 
+        /// <summary>
+        /// Handles frame-source and transform-to-buffer pipeline logic.
+        /// </summary>
+        private readonly FramePipeline _framePipeline;
+
+        /// <summary>
+        /// Handles updates of derived parameter values and constraints.
+        /// </summary>
+        private readonly DerivedParameterUpdater _derivedParameterUpdater;
+
+        /// <summary>
+        /// Synchronization object for acquisition start/stop/frame callback.
+        /// </summary>
+        private readonly object _acquisitionSync = new();
+
         #endregion
 
         #region Constructors
@@ -63,14 +79,18 @@ public sealed partial class VirtualCam
             _time0 = DateTime.Now;
             _cameraClock.Start();
 
+            _framePipeline = new FramePipeline(this);
+            _derivedParameterUpdater = new DerivedParameterUpdater(this);
+
             // Reset frame counters.
             _frameCounter = 0;
 
-            // Initialize GenApi parameters/features.
-            InitializeParameters();
-
             // Warm-up image test pattern generator.
+            // Accessing these properties initializes required GenApi parameters lazily.
             _ = TestPatternGenerator.CreateImage((uint)Width.Value, (uint)Height.Value, (PixelFormat)PixelFormat.IntValue, (TestPattern)TestPattern.IntValue);
+
+            // Ensure all derived parameter values are deterministic after lazy initialization.
+            _derivedParameterUpdater.Update();
 
             // Subscribe to device events.
             _virtualCam.ParameterInvalidate += OnParameterChanged;
@@ -122,46 +142,42 @@ public sealed partial class VirtualCam
         /// <param name="eventArgs">Event arguments containing name of parameter that was changed.</param>
         public void OnParameterChanged(object sender, ParameterInvalidateEventArgs eventArgs)
         {
-            string parameterName = eventArgs.ParameterName;
+            _derivedParameterUpdater.Update(eventArgs.ParameterName);
+        }
 
-            // Update parameter dependencies.
+        #endregion
 
-            if (parameterName == nameof(Width))
+        #region Private methods
+
+        /// <summary>
+        /// Retrieves category of specified property.
+        /// </summary>
+        /// <param name="propertyName">Name of property.</param>
+        /// <returns>Category name.</returns>
+        private string GetCategory(string propertyName)
+        {
+            return ((CategoryAttribute)TypeDescriptor.GetProperties(this)[propertyName].Attributes[typeof(CategoryAttribute)]).Category;
+        }
+
+        /// <summary>
+        /// Returns a complete list of all parameter names.
+        /// </summary>
+        /// <returns>List of parameter names.</returns>
+        private List<string> GetParameterNames()
+        {
+            List<string> parameters = [];
+
+            // Get properties (using Reflection).
+            PropertyInfo[] propertyInfos = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            // Add GcParameter type properties to parameterList.
+            foreach (PropertyInfo propertyInfo in propertyInfos)
             {
-                OffsetX.ImposeMax(WidthMax - Width);
-                PayloadSize.Value = _width.Value * _height.Value * GenICamHelper.GetBitsPerPixel((PixelFormat)PixelFormat.IntValue) / 8;
+                if (propertyInfo.PropertyType.BaseType == typeof(GcParameter))
+                    parameters.Add(propertyInfo.Name);
             }
 
-            if (parameterName == nameof(Height))
-            {
-                OffsetY.ImposeMax(HeightMax - Height);
-                PayloadSize.Value = _width.Value * _height.Value * GenICamHelper.GetBitsPerPixel((PixelFormat)PixelFormat.IntValue) / 8;
-            }
-
-            if (parameterName == nameof(PixelFormat))
-            {
-                PixelSize.IntValue = (int)GenICamHelper.GetPixelSize((PixelFormat)PixelFormat.IntValue);
-                PayloadSize.Value = _width.Value * _height.Value * GenICamHelper.GetBitsPerPixel((PixelFormat)PixelFormat.IntValue) / 8;
-            }
-
-            if (parameterName == nameof(DeviceTemperatureSelector))
-            {
-                // Change temperature according to selected sensor.
-                switch (DeviceTemperatureSelector.StringValue)
-                {
-                    case "Sensor":
-                        DeviceTemperature.Value = 34.1;
-                        break;
-
-                    case "Mainboard":
-                        DeviceTemperature.Value = 23.3;
-                        break;
-
-                    case "DeviceSpecific":
-                        DeviceTemperature.Value = 20.0;
-                        break;
-                }
-            }
+            return parameters;
         }
 
         #endregion

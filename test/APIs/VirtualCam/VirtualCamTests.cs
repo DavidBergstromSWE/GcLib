@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,45 @@ public class VirtualCamTests
 
         // Assert
         Assert.HasCount(2, devices);
+    }
+
+    [TestMethod]
+    public void EnumerateDevices_NumberOfAvailableDevicesIsUpdated_CountMatches()
+    {
+        // Arrange
+        var original = VirtualCam.NumberOfAvailableDevices;
+        VirtualCam.NumberOfAvailableDevices = 3;
+
+        try
+        {
+            // Act
+            var devices = VirtualCam.EnumerateDevices();
+
+            // Assert
+            Assert.HasCount(3, devices);
+            Assert.AreEqual("VirtualCam3", devices[2].UniqueID);
+        }
+        finally
+        {
+            VirtualCam.NumberOfAvailableDevices = original;
+        }
+    }
+
+    [TestMethod]
+    public void CreateDevice_UsesDeviceInfoUniqueId()
+    {
+        // Arrange
+        var info = new GcDeviceInfo("Vendor", "Model", "SN", "MyUniqueId", VirtualCam.DeviceClassInfo, userDefinedName: "UserName");
+
+        // Act
+        var device = VirtualCam.CreateDevice(info);
+
+        // Assert
+        Assert.AreEqual("MyUniqueId", device.DeviceInfo.UniqueID);
+        Assert.AreEqual("MyUniqueId", device.DeviceInfo.UserDefinedName);
+
+        // Cleanup
+        device.Close();
     }
 
     [TestMethod]
@@ -89,6 +129,24 @@ public class VirtualCamTests
 
         // Cleanup
         _device.AcquisitionStarted -= eventHandler;
+    }
+
+    [TestMethod]
+    public void StartAcquisition_AlreadyAcquiring_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.StartAcquisition();
+
+        try
+        {
+            // Act/Assert
+            Assert.Throws<InvalidOperationException>(() => _device.StartAcquisition());
+        }
+        finally
+        {
+            _device.StopAcquisition();
+        }
     }
 
     [TestMethod]
@@ -161,20 +219,6 @@ public class VirtualCamTests
 
         // Cleanup
         _device.AcquisitionStopped -= eventHandler;
-    }
-
-    [TestMethod]
-    public void StopAcquisition_IsRunning_IsNotRunning()
-    {
-        // Arrange
-        _device = new VirtualCam();
-        _device.StartAcquisition();
-
-        // Act
-        _device.StopAcquisition();
-
-        // Assert
-        Assert.IsFalse(_device.IsAcquiring);
     }
 
     [TestMethod]
@@ -499,6 +543,36 @@ public class VirtualCamTests
     }
 
     [TestMethod]
+    public async Task StartAcquisition_StopBeforeFailureDelay_FailureEventIsNotRaised()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("AcquisitionFailure", "True");
+        _device.Parameters.SetParameterValue("AcquisitionFailureEvent", "ConnectionLost");
+        _device.Parameters.SetParameterValue("AcquisitionTimeToFailure", "250");
+
+        var disconnected = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void eventHandler(object s, EventArgs e) => disconnected.TrySetResult(true);
+        _device.ConnectionLost += eventHandler;
+
+        try
+        {
+            // Act
+            _device.StartAcquisition();
+            _device.StopAcquisition();
+            await Task.Delay(400, CancellationToken.None);
+
+            // Assert
+            Assert.IsFalse(disconnected.Task.IsCompleted, "Failure event should not be emitted after acquisition has stopped.");
+        }
+        finally
+        {
+            _device.ConnectionLost -= eventHandler;
+            _device.StopAcquisition();
+        }
+    }
+
+    [TestMethod]
     public async Task StartAcquisition_Binning2x2_BufferDimensionsAreReduced()
     {
         // Arrange
@@ -564,6 +638,235 @@ public class VirtualCamTests
 
         Assert.AreEqual(baseline.ImageData[lastRowStart], flipped.ImageData[0]);
         Assert.AreEqual(baseline.ImageData[0], flipped.ImageData[lastRowStart]);
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_OffsetX_ChangesHorizontalRoiContent()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.Mono8.ToString());
+        _device.Parameters.SetParameterValue("Width", "80");
+        _device.Parameters.SetParameterValue("Height", "60");
+        _device.Parameters.SetParameterValue("OffsetY", "0");
+        _device.Parameters.SetParameterValue("TestPattern", TestPattern.GrayHorizontalRamp.ToString());
+
+        _device.Parameters.SetParameterValue("OffsetX", "0");
+        var baseline = await AcquireSingleBufferAsync(_device);
+
+        // Act
+        _device.Parameters.SetParameterValue("OffsetX", "80");
+        var shifted = await AcquireSingleBufferAsync(_device);
+
+        // Assert
+        Assert.AreEqual(baseline.Width, shifted.Width);
+        Assert.AreEqual(baseline.Height, shifted.Height);
+        Assert.IsTrue(shifted.ImageData[0] > baseline.ImageData[0]);
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_OffsetY_ChangesVerticalRoiContent()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.Mono8.ToString());
+        _device.Parameters.SetParameterValue("Width", "80");
+        _device.Parameters.SetParameterValue("Height", "60");
+        _device.Parameters.SetParameterValue("OffsetX", "0");
+        _device.Parameters.SetParameterValue("TestPattern", TestPattern.GrayVerticalRamp.ToString());
+
+        _device.Parameters.SetParameterValue("OffsetY", "0");
+        var baseline = await AcquireSingleBufferAsync(_device);
+
+        // Act
+        _device.Parameters.SetParameterValue("OffsetY", "60");
+        var shifted = await AcquireSingleBufferAsync(_device);
+
+        // Assert
+        Assert.AreEqual(baseline.Width, shifted.Width);
+        Assert.AreEqual(baseline.Height, shifted.Height);
+        Assert.IsTrue(shifted.ImageData[0] > baseline.ImageData[0]);
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_ImageDirectory_OffsetIgnored_BinningApplied()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+
+        var imageData = TestPatternGenerator.CreateImage(320, 240, PixelFormat.Mono8, TestPattern.GrayHorizontalRamp);
+        var imagePath = Path.Combine(tempDir, "frame.bmp");
+        using (var sourceMat = new Emgu.CV.Mat(240,
+                                                320,
+                                                EmguHelper.GetDepthType(PixelFormat.Mono8),
+                                                (int)GenICamHelper.GetNumChannels(PixelFormat.Mono8)))
+        {
+            sourceMat.SetTo(imageData);
+            sourceMat.Save(imagePath);
+        }
+
+        _device.Parameters.SetParameterValue("TestPattern", TestPattern.ImageDirectory.ToString());
+        _device.Parameters.SetParameterValue("ImageDirectory", tempDir);
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.Mono8.ToString());
+        _device.Parameters.SetParameterValue("Width", "80");
+        _device.Parameters.SetParameterValue("Height", "60");
+        _device.Parameters.SetParameterValue("OffsetX", "80");
+        _device.Parameters.SetParameterValue("OffsetY", "60");
+        _device.Parameters.SetParameterValue("BinningHorizontal", "2");
+        _device.Parameters.SetParameterValue("BinningVertical", "2");
+
+        try
+        {
+            // Act
+            var buffer = await AcquireSingleBufferAsync(_device);
+
+            // Assert
+            Assert.AreEqual<uint>(160, buffer.Width);
+            Assert.AreEqual<uint>(120, buffer.Height);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void SetBinning_ValidatePayloadSize()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.Mono8.ToString());
+        _device.Parameters.SetParameterValue("Width", "320");
+        _device.Parameters.SetParameterValue("Height", "240");
+
+        // Act
+        _device.Parameters.SetParameterValue("BinningHorizontal", "2");
+        _device.Parameters.SetParameterValue("BinningVertical", "2");
+
+        // Assert
+        Assert.AreEqual<uint>(19200u, _device.PayloadSize);
+    }
+
+    [TestMethod]
+    public void SetBinning_UpdatesGeometryAndKeepsSensorDimensions()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("Width", "320");
+        _device.Parameters.SetParameterValue("Height", "240");
+        _device.Parameters.SetParameterValue("OffsetX", "160");
+        _device.Parameters.SetParameterValue("OffsetY", "120");
+
+        // Act
+        _device.Parameters.SetParameterValue("BinningHorizontal", "2");
+        _device.Parameters.SetParameterValue("BinningVertical", "2");
+
+        // Assert
+        Assert.AreEqual("640", _device.Parameters.GetParameterValue("SensorWidth"));
+        Assert.AreEqual("480", _device.Parameters.GetParameterValue("SensorHeight"));
+        Assert.AreEqual("320", _device.Parameters.GetParameterValue("WidthMax"));
+        Assert.AreEqual("240", _device.Parameters.GetParameterValue("HeightMax"));
+        Assert.AreEqual("160", _device.Parameters.GetParameterValue("Width"));
+        Assert.AreEqual("120", _device.Parameters.GetParameterValue("Height"));
+        Assert.AreEqual("80", _device.Parameters.GetParameterValue("OffsetX"));
+        Assert.AreEqual("60", _device.Parameters.GetParameterValue("OffsetY"));
+    }
+
+    [TestMethod]
+    public void SetBinningAndPixelFormat_ValidatePayloadSizeTracksBitDepth()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("Width", "320");
+        _device.Parameters.SetParameterValue("Height", "240");
+        _device.Parameters.SetParameterValue("BinningHorizontal", "2");
+        _device.Parameters.SetParameterValue("BinningVertical", "2");
+
+        // Act
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.Mono8.ToString());
+        var payloadMono8 = _device.PayloadSize;
+
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.Mono16.ToString());
+        var payloadMono16 = _device.PayloadSize;
+
+        // Assert
+        Assert.AreEqual<uint>(19200u, payloadMono8);
+        Assert.AreEqual<uint>(38400u, payloadMono16);
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_TransformsEnabled_RgbPixelFormatIsPreserved()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        _device.Parameters.SetParameterValue("PixelFormat", PixelFormat.RGB8.ToString());
+        _device.Parameters.SetParameterValue("Width", "80");
+        _device.Parameters.SetParameterValue("Height", "60");
+        _device.Parameters.SetParameterValue("ReverseX", "True");
+
+        // Act
+        var buffer = await AcquireSingleBufferAsync(_device);
+
+        // Assert
+        Assert.AreEqual(PixelFormat.RGB8, buffer.PixelFormat);
+    }
+
+    [TestMethod]
+    public async Task StartAcquisition_ImageDirectoryInvalidImage_RaisesAcquisitionAbortedAndStops()
+    {
+        // Arrange
+        _device = new VirtualCam();
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var invalidPngPath = Path.Combine(tempDir, "invalid.png");
+        File.WriteAllText(invalidPngPath, "not-a-valid-image");
+
+        _device.Parameters.SetParameterValue("TestPattern", TestPattern.ImageDirectory.ToString());
+        _device.Parameters.SetParameterValue("ImageDirectory", tempDir);
+        _device.Parameters.SetParameterValue("AcquisitionFrameRate", "60");
+
+        var aborted = new TaskCompletionSource<AcquisitionAbortedEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void eventHandler(object s, AcquisitionAbortedEventArgs e) => aborted.TrySetResult(e);
+        _device.AcquisitionAborted += eventHandler;
+
+        try
+        {
+            // Act
+            _device.StartAcquisition();
+            var completedTask = await Task.WhenAny(aborted.Task, Task.Delay(3000, CancellationToken.None));
+
+            // Assert
+            Assert.AreSame(aborted.Task, completedTask, "Timed out waiting for AcquisitionAborted event.");
+            Assert.IsNotNull(aborted.Task.Result);
+            Assert.IsFalse(_device.IsAcquiring);
+        }
+        finally
+        {
+            _device.AcquisitionAborted -= eventHandler;
+            _device.StopAcquisition();
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void StartStopAcquisition_RapidSequence_DoesNotLeaveAcquiringState()
+    {
+        // Arrange
+        _device = new VirtualCam();
+
+        // Act
+        for (int i = 0; i < 25; i++)
+        {
+            _device.StartAcquisition();
+            _device.StopAcquisition();
+        }
+
+        // Assert
+        Assert.IsFalse(_device.IsAcquiring);
     }
 
     // Testing updates of parameter dependencies...

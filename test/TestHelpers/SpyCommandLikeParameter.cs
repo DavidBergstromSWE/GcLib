@@ -33,7 +33,7 @@ internal sealed class SpyCommandLikeParameter : GcParameter
         SelectedParameters = [];
         SelectingParameters = [];
     }
-        
+
     /// <summary>
     /// Increments the <c>FromStringCallCount</c> each time it is called.
     /// </summary>

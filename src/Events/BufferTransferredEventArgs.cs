@@ -14,5 +14,5 @@ public sealed class BufferTransferredEventArgs(GcBuffer buffer) : EventArgs
     /// <summary>
     /// Image buffer transferred.
     /// </summary>
-    public GcBuffer Buffer { get; } = buffer;
+    public GcBuffer Buffer { get; } = buffer ?? throw new ArgumentNullException(nameof(buffer));
 }

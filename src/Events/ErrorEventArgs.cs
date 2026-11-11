@@ -15,7 +15,7 @@ public class ErrorEventArgs(string errorMessage, Exception exception = null) : E
     /// <summary>
     /// Description about error.
     /// </summary>
-    public string ErrorMessage { get; } = errorMessage;
+    public string ErrorMessage { get; } = errorMessage ?? throw new ArgumentNullException(nameof(errorMessage));
 
     /// <summary>
     /// Exception that was thrown when the error occurred.

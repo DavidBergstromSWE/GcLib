@@ -16,7 +16,7 @@ public sealed class NewBufferEventArgs(string streamID, DateTime receptionTime, 
     /// <summary>
     /// Unique ID of the datastream that produced the buffer.
     /// </summary>
-    public string StreamID { get; } = streamID;
+    public string StreamID { get; } = streamID ?? throw new ArgumentNullException(nameof(streamID));
 
     /// <summary>
     /// Reception time of new buffer at host (PC).
@@ -26,5 +26,5 @@ public sealed class NewBufferEventArgs(string streamID, DateTime receptionTime, 
     /// <summary>
     /// Buffer data and metadata.
     /// </summary>
-    public GcBuffer Buffer { get; } = buffer;
+    public GcBuffer Buffer { get; } = buffer ?? throw new ArgumentNullException(nameof(buffer));
 }

@@ -116,7 +116,7 @@ public class CameraStreamHandler
                 pendingFrame.Dispose();
         }
     }
-    
+
     /// <summary>
     /// Processes a single video frame.
     /// </summary>
