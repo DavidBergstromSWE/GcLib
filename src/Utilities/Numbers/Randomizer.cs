@@ -191,6 +191,10 @@ public class Randomizer
         return Math.Clamp(value, Min, Max);
     }
 
+    /// <summary>
+    /// Generates a random 64-bit unsigned integer.
+    /// </summary>
+    /// <returns>A randomly generated 64-bit unsigned integer.</returns>
     private ulong NextUInt64()
     {
         Span<byte> bytes = stackalloc byte[sizeof(ulong)];
@@ -198,6 +202,11 @@ public class Randomizer
         return BitConverter.ToUInt64(bytes);
     }
 
+    /// <summary>
+    /// Returns a uniformly distributed unsigned 64-bit integer within the specified range.
+    /// </summary>
+    /// <param name="exclusiveUpperBound">The exclusive upper bound of the range. Must be greater than zero.</param>
+    /// <returns>A value greater than or equal to zero and less than <paramref name="exclusiveUpperBound"/>.</returns>
     private ulong NextUInt64(ulong exclusiveUpperBound)
     {
         ulong threshold = unchecked(0UL - exclusiveUpperBound) % exclusiveUpperBound;
