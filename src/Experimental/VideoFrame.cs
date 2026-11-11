@@ -128,7 +128,7 @@ public class VideoFrame
     #region Public methods
 
     /// <summary>
-    /// Copies the data from native memory into the rented buffer.
+    /// Copies data from native memory into the rented buffer.
     /// </summary>
     /// <remarks>This method can be called to copy raw data from device memory.</remarks>
     /// <param name="nativePtr">A pointer to the source memory, which must contain at least as many bytes as the data.</param>
@@ -140,6 +140,18 @@ public class VideoFrame
         byte[] rentedBuffer = _rentedBuffer;
         fixed (byte* destPtr = rentedBuffer)
             Buffer.MemoryCopy((void*)nativePtr, destPtr, rentedBuffer.Length, ImageData.Length);
+    }
+
+    /// <summary>
+    /// Copies data from the source span into the rented buffer.
+    /// </summary>
+    /// <param name="source">The bytes to copy.</param>
+    /// <exception cref="ArgumentException">The source contains more bytes than the allocated buffer can hold.</exception>
+    public void CopyFromManagedMemory(ReadOnlySpan<byte> source)
+    {
+        if (source.Length > ImageData.Length)
+            throw new ArgumentException("Source span is larger than the allocated buffer.", nameof(source));
+        source.CopyTo(_rentedBuffer.AsSpan(0, source.Length));
     }
 
     /// <summary>
