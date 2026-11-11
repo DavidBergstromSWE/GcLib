@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cyotek.Collections.Generic;
+using GcLib.Utilities;
 using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -279,9 +280,9 @@ public class VideoWriter : IDisposable
         // If fps is not specified, calculate it as an average from incoming buffer timestamps.
         if (FPS == 0.0)
         {
-            if (_timeStamps.Size > 1)
-                FPS = TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1);
-            else FPS = 30; // special case
+            double elapsedTicks = (double)_timeStamps.Max() - _timeStamps.Min();
+            double measuredFPS = FrameRateCalculator.Calculate(elapsedTicks, _timeStamps.Size - 1, TimeSpan.TicksPerSecond);
+            FPS = measuredFPS > 0.0 ? measuredFPS : 30.0; // Use the default when timestamps cannot determine a rate.
         }
 
         // Initialize new video writer (if not done already), using selected codec, fps and buffer properties.

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Cyotek.Collections.Generic;
+using GcLib.Utilities;
 
 namespace GcLib.Utilities.Threading;
 
@@ -146,7 +147,7 @@ public sealed class FPSStabilizer
         if (elapsed <= 0)
             return double.PositiveInfinity;
 
-        return intervals * (double)Stopwatch.Frequency / elapsed; // Convert to frames per second
+        return FrameRateCalculator.Calculate(elapsed, intervals, Stopwatch.Frequency);
     }
 
     /// <summary>

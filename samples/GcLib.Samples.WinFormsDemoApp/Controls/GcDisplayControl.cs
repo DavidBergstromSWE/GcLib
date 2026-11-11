@@ -8,6 +8,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.UI;
 using GcLib;
+using GcLib.Utilities;
 using GcLib.Utilities.Imaging;
 
 namespace WinFormsDemoApp.Controls;
@@ -259,7 +260,11 @@ public partial class GcDisplayControl : ImageBox
     private static double CalcFPS(ulong[] timeStamps)
     {
         ulong[] array = [.. timeStamps.Where(x => x > 0)];
-        return (double)TimeSpan.TicksPerSecond / (array.Max() - array.Min()) * (array.Length - 1);
+        if (array.Length < 2)
+            return 0.0;
+
+        double elapsedTicks = (double)array.Max() - array.Min();
+        return FrameRateCalculator.Calculate(elapsedTicks, array.Length - 1, TimeSpan.TicksPerSecond);
     }
 
     #endregion

@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using Cyotek.Collections.Generic;
 using GcLib;
+using GcLib.Utilities;
 using GcLib.Utilities.Threading;
 using WPFDemoApp.Models;
 using WPFDemoApp.Utilities.Messages;
@@ -288,10 +289,7 @@ internal sealed partial class ImageDisplayViewModel : ObservableRecipient
             return 0.0;
 
         long elapsedTicks = _timeStamps.Max() - _timeStamps.Min();
-        if (elapsedTicks <= 0)
-            return 0.0;
-
-        return (_timeStamps.Size - 1) * (double)Stopwatch.Frequency / elapsedTicks;
+        return FrameRateCalculator.Calculate(elapsedTicks, _timeStamps.Size - 1, Stopwatch.Frequency);
     }
 
     #endregion

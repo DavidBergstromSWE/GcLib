@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using GcLib.Utilities;
 using GcLib.Utilities.Imaging;
 
 namespace GcLib.Utilities.FileIO;
@@ -469,8 +470,8 @@ public sealed class GcBufferReader : IDisposable
     /// <returns>Estimated frame rate (or 0 if sequence only contains one image or the last timestamp is not greater than the first).</returns>
     private static double CalculateFrameRate(List<ulong> timeStamps)
     {
-        var timeSpan = TimeSpan.FromTicks((long)timeStamps[^1] - (long)timeStamps[0]);
-        return timeSpan.TotalSeconds > 0 ? (timeStamps.Count - 1) / timeSpan.TotalSeconds : 0;
+        double elapsedTicks = (double)timeStamps[^1] - timeStamps[0];
+        return FrameRateCalculator.Calculate(elapsedTicks, timeStamps.Count - 1, TimeSpan.TicksPerSecond);
     }
 
     /// <summary>

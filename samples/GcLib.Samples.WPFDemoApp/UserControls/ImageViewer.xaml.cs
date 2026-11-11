@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
 using Cyotek.Collections.Generic;
 using GcLib;
+using GcLib.Utilities;
 using Microsoft.Win32;
 
 namespace WPFDemoApp.UserControls;
@@ -963,9 +964,8 @@ public partial class ImageViewer : UserControl, INotifyPropertyChanged
     /// <returns>Estimated number of frames per second.</returns>
     private double CalcFPS()
     {
-        if (_timeStamps.Size > 1)
-            return TimeSpan.TicksPerSecond / (_timeStamps.Max() - (double)_timeStamps.Min()) * (_timeStamps.Size - 1);
-        else return 0.0;
+        double elapsedTicks = (double)_timeStamps.Max() - _timeStamps.Min();
+        return FrameRateCalculator.Calculate(elapsedTicks, _timeStamps.Size - 1, TimeSpan.TicksPerSecond);
     }
 
     #endregion

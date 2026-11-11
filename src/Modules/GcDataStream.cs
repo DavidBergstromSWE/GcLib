@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Cyotek.Collections.Generic;
+using GcLib.Utilities;
 using GcLib.Utilities.Numbers;
 
 namespace GcLib;
@@ -411,7 +412,7 @@ public sealed class GcDataStream(IBufferProducer bufferProducer, string dataStre
         if (timeStamp > _lastTimeStamp)
         {
             ulong deltaTicks = timeStamp - _lastTimeStamp;
-            FrameRate = (double)TimeSpan.TicksPerSecond / deltaTicks;
+            FrameRate = FrameRateCalculator.Calculate(deltaTicks, 1, TimeSpan.TicksPerSecond);
             FrameRateAverage += (FrameRate - FrameRateAverage) / (DeliveredFrameCount + LostFrameCount); // running average since acquisition start
         }
 
