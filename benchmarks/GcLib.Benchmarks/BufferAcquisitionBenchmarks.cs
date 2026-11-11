@@ -27,7 +27,7 @@ public class BufferAcquisitionBenchmarks
     private const int QueueCapacity = 4;
 
     /// <summary>
-    /// Pointer to the source.
+    /// Pointer to the unmanaged source buffer containing the image data.
     /// </summary>
     private IntPtr _source;
 
