@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcLib.Samples.WinFormsDemoA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GcLib.Samples.WPFDemoApp", "samples\GcLib.Samples.WPFDemoApp\GcLib.Samples.WPFDemoApp.csproj", "{7BCB6494-CD0B-4934-81B1-CDBC6AC9D406}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GcLib.Benchmarks", "benchmarks\GcLib.Benchmarks\GcLib.Benchmarks.csproj", "{7F0B35BC-0B52-E9DB-E7F2-F995EE234530}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{7BCB6494-CD0B-4934-81B1-CDBC6AC9D406}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BCB6494-CD0B-4934-81B1-CDBC6AC9D406}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BCB6494-CD0B-4934-81B1-CDBC6AC9D406}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F0B35BC-0B52-E9DB-E7F2-F995EE234530}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F0B35BC-0B52-E9DB-E7F2-F995EE234530}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F0B35BC-0B52-E9DB-E7F2-F995EE234530}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F0B35BC-0B52-E9DB-E7F2-F995EE234530}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

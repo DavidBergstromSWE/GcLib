@@ -168,7 +168,7 @@ internal partial class AcquisitionModel : ObservableObject
         RecordingFolderPath = _settingsService.Current.RecordingFolderPath ?? Path.GetFullPath(@"C:\testdata\");
 #else
         BinaryFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"ImageViewer\Recordings\recording.bin");
-        VideoFolderPath = _settingsService.Current.VideoFolderPath ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"ImageViewer\Recordings\");
+        RecordingFolderPath = _settingsService.Current.RecordingFolderPath ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"ImageViewer\Recordings\");
 #endif
 
         // Initialize recording settings.
