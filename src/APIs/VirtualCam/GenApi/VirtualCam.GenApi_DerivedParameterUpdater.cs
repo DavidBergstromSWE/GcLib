@@ -31,8 +31,7 @@ public sealed partial class VirtualCam
                     return;
                 }
 
-                if (changedParameterName == nameof(Width)
-                    || changedParameterName == nameof(Height))
+                if (changedParameterName == nameof(Width) || changedParameterName == nameof(Height))
                 {
                     UpdateImageGeometryConstraints();
                     UpdatePayloadSize();

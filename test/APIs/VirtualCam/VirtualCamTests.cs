@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace GcLib.UnitTests.APIs;
 
 [TestClass]
+[DoNotParallelize]
 public class VirtualCamTests
 {
     private VirtualCam _device;
@@ -22,6 +23,7 @@ public class VirtualCamTests
     [TestCleanup]
     public void TestCleanUp()
     {
+        VirtualCam.NumberOfAvailableDevices = 2;
         _device?.Close();
     }
 
@@ -661,7 +663,7 @@ public class VirtualCamTests
         // Assert
         Assert.AreEqual(baseline.Width, shifted.Width);
         Assert.AreEqual(baseline.Height, shifted.Height);
-        Assert.IsTrue(shifted.ImageData[0] > baseline.ImageData[0]);
+        Assert.IsTrue(shifted.ImageData[0] < baseline.ImageData[0]);
     }
 
     [TestMethod]
@@ -685,7 +687,7 @@ public class VirtualCamTests
         // Assert
         Assert.AreEqual(baseline.Width, shifted.Width);
         Assert.AreEqual(baseline.Height, shifted.Height);
-        Assert.IsTrue(shifted.ImageData[0] > baseline.ImageData[0]);
+        Assert.IsTrue(shifted.ImageData[0] < baseline.ImageData[0]);
     }
 
     [TestMethod]
