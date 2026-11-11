@@ -120,7 +120,7 @@ public class BufferAcquisitionBenchmarks
     {
         return RunChainAsync(create: _createGcBuffer, consume: static buffer => Sample(buffer.ImageData, buffer.FrameID), release: null);
     }
-    
+
     /// <summary>
     /// Benchmarks processing a chain of multiple <see cref="VideoFrame"/> instances.
     /// </summary>

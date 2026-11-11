@@ -682,7 +682,7 @@ public class GcDataStreamTests
         foreach (var (OnNewBuffer, OnFailedBuffer) in _registeredSinks.Values)
             OnNewBuffer(_mockDevice.Object, eventArgs);
     }
-    
+
     /// <summary>
     /// Raises the failed-buffer event for each registered sink.
     /// </summary>

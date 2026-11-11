@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Cyotek.Collections.Generic;
-using GcLib.Utilities;
 
 namespace GcLib.Utilities.Threading;
 

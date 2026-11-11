@@ -1,5 +1,3 @@
-using System;
-
 namespace GcLib.Utilities;
 
 /// <summary>

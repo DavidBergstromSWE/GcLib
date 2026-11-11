@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using GcLib.Utilities;
 using GcLib.Utilities.Imaging;
 
 namespace GcLib.Utilities.FileIO;
