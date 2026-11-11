@@ -126,7 +126,7 @@ public class GcBooleanTests
     }
 
     [TestMethod]
-    public void FromString_StringIsNotBoolean_ThrowsFormatException()
+    public void FromString_StringIsNotBoolean_ThrowsException()
     {
         // Arrange
         var gcBoolean = GetBoolean("TestBoolean");
@@ -135,6 +135,7 @@ public class GcBooleanTests
         Assert.Throws<FormatException>(() => gcBoolean.FromString("NotBoolean"));
         Assert.Throws<FormatException>(() => gcBoolean.FromString("42"));
         Assert.Throws<FormatException>(() => gcBoolean.FromString("3.14"));
+        Assert.Throws<ArgumentNullException>(() => gcBoolean.FromString(null));
     }
 
     [TestMethod]

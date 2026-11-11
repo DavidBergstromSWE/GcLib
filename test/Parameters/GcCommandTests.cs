@@ -166,7 +166,7 @@ public class GcCommandTests
                                       visibility: GcVisibility.Beginner,
                                       description: "This is a unit test parameter.");
 
-        // Act
+        // Act/Assert
         gcCommand.FromString("HelloWorld");
     }
 

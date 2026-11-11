@@ -30,16 +30,6 @@ public class GcDataStreamTests
     /// </summary>
     private GcBuffer _testBuffer;
 
-    /// <summary>
-    /// Creates stream-transfer event arguments from a <see cref="GcBuffer"/>.
-    /// </summary>
-    private static NewBufferEventArgs CreateNewBufferEventArgs(GcBuffer buffer, string streamID)
-    {
-        return new NewBufferEventArgs(streamID,
-                                      DateTime.Now,
-                                      buffer);
-    }
-
     #endregion
 
     #region TestConfiguration
@@ -660,6 +650,21 @@ public class GcDataStreamTests
 
     #endregion
 
+    #region Private Methods
+
+    /// <summary>
+    /// Creates stream-transfer event arguments from a <see cref="GcBuffer"/>.
+    /// </summary>
+    private static NewBufferEventArgs CreateNewBufferEventArgs(GcBuffer buffer, string streamID)
+    {
+        return new NewBufferEventArgs(streamID,
+                                      DateTime.Now,
+                                      buffer);
+    }
+
+    /// <summary>
+    /// Raises an event indicating that a new buffer is available.
+    /// </summary>
     private void RaiseNewBuffer()
     {
         if (_dataStream == null)
@@ -668,18 +673,29 @@ public class GcDataStreamTests
         RaiseNewBuffer(CreateNewBufferEventArgs(_testBuffer, _dataStream.StreamID));
     }
 
+    /// <summary>
+    /// Raises the new-buffer event for each registered sink.
+    /// </summary>
+    /// <param name="eventArgs">The event data supplied to each registered sink.</param>
     private void RaiseNewBuffer(NewBufferEventArgs eventArgs)
     {
         foreach (var (OnNewBuffer, OnFailedBuffer) in _registeredSinks.Values)
             OnNewBuffer(_mockDevice.Object, eventArgs);
     }
-
+    
+    /// <summary>
+    /// Raises the failed-buffer event for each registered sink.
+    /// </summary>
     private void RaiseFailedBuffer()
     {
         foreach (var (OnNewBuffer, OnFailedBuffer) in _registeredSinks.Values)
             OnFailedBuffer(_mockDevice.Object, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Represents a registration that invokes its disposal action at most once.
+    /// </summary>
+    /// <param name="disposeAction">The action to invoke when the registration is disposed.</param>
     private sealed class SinkRegistration(Action disposeAction) : IDisposable
     {
         private Action _disposeAction = disposeAction;
@@ -689,4 +705,6 @@ public class GcDataStreamTests
             Interlocked.Exchange(ref _disposeAction, null)?.Invoke();
         }
     }
+
+    #endregion
 }

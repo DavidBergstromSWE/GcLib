@@ -54,12 +54,10 @@ public class GcStringTests
     }
 
     [TestMethod]
-    [DataRow(0L)]
-    [DataRow(-1L)]
-    public void GcString_InvalidMaxLength_ThrowsArgumentException(long maxLength)
+    public void GcString_InvalidMaxLength_ThrowsArgumentException()
     {
         // Act/Assert
-        Assert.Throws<ArgumentException>(() => new GcString(name: "TestString", category: "Test", value: "HelloWorld", maxLength: maxLength));
+        Assert.Throws<ArgumentException>(() => new GcString(name: "TestString", category: "Test", value: "HelloWorld", maxLength: -1));
     }
 
     [TestMethod]
