@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Threading;
 using GcLib.Utilities.Imaging;
 
 namespace GcLib;
@@ -7,9 +8,7 @@ namespace GcLib;
 /// <summary>
 /// Represents a video frame, including its image data and metadata.
 /// </summary>
-/// <remarks>The image data is stored in a pooled buffer. Dispose the frame when it is no longer needed to return
-/// the buffer to its pool.</remarks>
-public class VideoFrame : IDisposable
+public class VideoFrame
 {
     #region Private fields
 
@@ -24,10 +23,14 @@ public class VideoFrame : IDisposable
     private byte[] _rentedBuffer;
 
     /// <summary>
-    /// Indicates whether the object has been disposed.
+    /// Synchronizes access to lifecycle operations.
     /// </summary>
-    private bool _isDisposed;
-    private readonly object _lifecycleLock = new();
+    private readonly Lock _lifecycleLock = new();
+
+    /// <summary>
+    /// The number of active references.
+    /// </summary>
+    private int _referenceCount;
 
     #endregion
 
@@ -86,11 +89,14 @@ public class VideoFrame : IDisposable
     /// <param name="frameID">The identifier of the frame.</param>
     /// <param name="timestamp">The frame timestamp.</param>
     /// <param name="pool">The byte array pool used to rent storage for the image data.</param>
-    public VideoFrame(uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timestamp, ArrayPool<byte> pool)
+    /// <param name="initialConsumers">The initial number of consumers for the reference count.</param>
+    public VideoFrame(uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timestamp, ArrayPool<byte> pool, int initialConsumers = 1)
     {
         ArgumentNullException.ThrowIfNull(pool);
         ArgumentOutOfRangeException.ThrowIfZero(width);
         ArgumentOutOfRangeException.ThrowIfZero(height);
+
+        _referenceCount = initialConsumers;
 
         ulong requiredBytes;
         try
@@ -101,9 +107,6 @@ public class VideoFrame : IDisposable
         {
             throw new ArgumentOutOfRangeException(nameof(width), "Frame dimensions and pixel format require an unsupported buffer size.");
         }
-
-        if (requiredBytes > int.MaxValue)
-            throw new ArgumentOutOfRangeException(nameof(width), "Frame dimensions and pixel format require a buffer larger than the maximum supported array size.");
 
         _pool = pool;
         Width = width;
@@ -134,35 +137,27 @@ public class VideoFrame : IDisposable
         if (nativePtr == IntPtr.Zero)
             throw new ArgumentNullException(nameof(nativePtr));
 
-        lock (_lifecycleLock)
-        {
-            ObjectDisposedException.ThrowIf(_isDisposed, this);
-
-            byte[] rentedBuffer = _rentedBuffer;
-            fixed (byte* destPtr = rentedBuffer)
-                Buffer.MemoryCopy((void*)nativePtr, destPtr, rentedBuffer.Length, ImageData.Length);
-        }
+        byte[] rentedBuffer = _rentedBuffer;
+        fixed (byte* destPtr = rentedBuffer)
+            Buffer.MemoryCopy((void*)nativePtr, destPtr, rentedBuffer.Length, ImageData.Length);
     }
 
     /// <summary>
-    /// Returns the rented buffer to its pool.
+    /// Atomically decrements the reference count and returns the rented buffer to the pool when the count reaches zero.
     /// </summary>
-    /// <remarks>Subsequent calls have no effect.</remarks>
-    public void Dispose()
+    /// <remarks>Thread-safe reference release operation. When the final reference is released, the buffer is
+    /// returned to the pool and the internal buffer reference is cleared.</remarks>
+    public void Release()
     {
-        lock (_lifecycleLock)
-        {
-            if (_isDisposed == false)
-            {
-                _isDisposed = true;
-                byte[] rentedBuffer = _rentedBuffer;
-                _rentedBuffer = null!;
-                ImageData = Memory<byte>.Empty;
-                _pool.Return(rentedBuffer, clearArray: false);
-            }
-        }
+        // Decrement the reference count atomically and check if it has reached zero.
+        int remaining = Interlocked.Decrement(ref _referenceCount);
 
-        GC.SuppressFinalize(this);
+        // If the reference count has reached zero, return the rented buffer to the pool and clear the reference.
+        if (remaining == 0)
+        {
+            _pool.Return(_rentedBuffer, clearArray: false);
+            _rentedBuffer = null!;
+        }
     }
 
     #endregion

@@ -1,168 +1,118 @@
-﻿using System;
+﻿namespace GcLib;
+
+using System;
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace GcLib;
-
-/// <summary>
-/// Processes camera frames asynchronously using pooled buffers.
-/// </summary>
-public class CameraStreamHandler
+public class MultiConsumerCameraHandler
 {
     /// <summary>
-    /// The collection of video frames awaiting processing.
+    /// Thread-safe queue of video frames pending GUI processing.
     /// </summary>
-    private readonly BlockingCollection<VideoFrame> _frameQueue = new(boundedCapacity: 100); // Alternatively, use Channel<VideoFrame> for more advanced scenarios.
-    private readonly object _lifecycleLock = new();
-    private Task _consumerTask;
-    private bool _isStopped;
+    /// <remarks>Supports producer-consumer coordination and blocks when taking items until frames are
+    /// available or adding is completed.</remarks>
+    private readonly BlockingCollection<VideoFrame> _guiQueue = [];
 
     /// <summary>
-    /// The pool of byte arrays used to minimize allocations.
+    /// Thread-safe queue of video frames pending AI processing.
+    /// </summary>
+    /// <remarks>Supports concurrent producers and consumers for frame processing workflows.</remarks>
+    private readonly BlockingCollection<VideoFrame> _aiQueue = [];
+
+    /// <summary>
+    /// Provides access to the shared pool of byte arrays for buffer reuse.
     /// </summary>
     private readonly ArrayPool<byte> _bufferPool = ArrayPool<byte>.Shared;
 
     /// <summary>
-    /// Starts the background loop that processes images.
+    /// Signals cancellation for operations managed by the containing type.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown if processing has already started or the handler has stopped.</exception>
-    public void StartProcessingLoop()
-    {
-        lock (_lifecycleLock)
-        {
-            if (_isStopped || _consumerTask != null)
-                throw new InvalidOperationException("The processing loop has already started or the handler has stopped.");
+    /// <remarks>Dispose this instance when the containing type is disposed to release unmanaged
+    /// resources.</remarks>
+    private readonly CancellationTokenSource _cts = new();
 
-            _consumerTask = Task.Run(ConsumerLoop);
-        }
+    /// <summary>
+    /// Starts the GUI and AI consumer loops on separate background tasks.
+    /// </summary>
+    /// <remarks>Returns immediately after scheduling both loops with the shared cancellation token.</remarks>
+    public void Start()
+    {
+        Task.Run(() => GuiConsumerLoop(_cts.Token));
+        Task.Run(() => AiConsumerLoop(_cts.Token));
     }
 
     /// <summary>
-    /// Copies a received camera frame into a pooled buffer and attempts to enqueue it for processing.
+    /// Creates a video frame from unmanaged image data and dispatches it to the GUI and AI processing queues.
     /// </summary>
-    /// <remarks>If the queue is full, the frame is discarded and disposed. Exceptions are caught and written
-    /// to the console.</remarks>
-    /// <param name="rawImagePointer">Pointer to the native memory containing the frame data.</param>
-    /// <param name="width">Frame width in pixels.</param>
-    /// <param name="height">Frame height in pixels.</param>
-    /// <param name="pixelFormat">Pixel format of the frame.</param>
+    /// <remarks>Initializes the frame for two consumers. If either queue cannot accept the frame, that
+    /// consumer's reference is released immediately so the frame can be returned to the pool when no longer in
+    /// use.</remarks>
+    /// <param name="rawImagePointer">Pointer to unmanaged memory that contains the source pixel buffer for the frame.</param>
+    /// <param name="width">Frame width, in pixels.</param>
+    /// <param name="height">Frame height, in pixels.</param>
+    /// <param name="pixelFormat">Pixel format of the source frame data.</param>
     /// <param name="frameID">Identifier of the frame.</param>
-    /// <param name="timestamp">Timestamp of the frame.</param>
-    public void OnFrameReceived(IntPtr rawImagePointer, uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timestamp)
+    /// <param name="timeStamp">Timestamp associated with the frame.</param>
+    public void OnFrameReceived(IntPtr rawImagePointer, uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timeStamp)
     {
-        lock (_lifecycleLock)
+        const int numberOfConsumers = 2; // GUI & AI
+
+        // Create frame and copy raw source data
+        var frame = new VideoFrame(width, height, pixelFormat, frameID, timeStamp, _bufferPool, numberOfConsumers);
+        frame.CopyFromNativeMemory(rawImagePointer);
+
+        // Send 
+        if (!_guiQueue.TryAdd(frame))
         {
-            if (_consumerTask == null || _isStopped)
-            {
-                Console.WriteLine("Warning: Frame ignored because processing is not running.");
-                return;
-            }
+            // GUI hann inte med. Minska räknaren direkt eftersom denna konsument hoppar över bildrutan.
+            frame.Release();
         }
 
-        VideoFrame frame = null;
-        try
+        // 3. Skicka till AI-kön (AI kanske har en striktare kö där vi inte vill droppa frames)
+        if (!_aiQueue.TryAdd(frame))
         {
-            // Create a VideoFrame (which internally rents memory from the pool)
-            frame = new VideoFrame(width, height, pixelFormat, frameID, timestamp, _bufferPool);
-
-            // Copy the data directly from the camera's native memory to our pooled buffer.
-            frame.CopyFromNativeMemory(rawImagePointer);
-
-            // Send it to the queue without blocking the camera thread.
-            if (!_frameQueue.TryAdd(frame))
-            {
-                frame.Dispose();
-                frame = null;
-                Console.WriteLine("Warning: Frame dropped! The consumer is not keeping up.");
-            }
-            else
-            {
-                frame = null;
-            }
-        }
-        catch (Exception ex)
-        {
-            frame?.Dispose();
-            Console.WriteLine($"Error in camera callback: {ex.Message}");
+            frame.Release();
         }
     }
 
-    /// <summary>
-    /// Processes video frames from the queue at its own pace.
-    /// </summary>
-    private void ConsumerLoop()
+    // KONSUMENT 1: GUI-Tråden (Här vill vi ofta droppa frames om det laggar)
+    private void GuiConsumerLoop(CancellationToken token)
     {
-        try
+        foreach (var frame in _guiQueue.GetConsumingEnumerable(token))
         {
-            foreach (var frame in _frameQueue.GetConsumingEnumerable())
+            try
             {
-                using (frame)
-                    ProcessFrame(frame.ImageData.Span, (int)frame.Width, (int)frame.Height);
+                // Uppdatera GUI (t.ex. rita ut frame.Data på skärmen)
+                RenderInGui(frame.ImageData.Span);
+            }
+            finally
+            {
+                // VIKTIGT: Berätta att GUI är klar. Om AI också är klar, returneras minnet till poolen här.
+                frame.Release();
             }
         }
-        finally
+    }
+
+    // KONSUMENT 2: AI/Analys-Tråden
+    private void AiConsumerLoop(CancellationToken token)
+    {
+        foreach (var frame in _aiQueue.GetConsumingEnumerable(token))
         {
-            lock (_lifecycleLock)
+            try
             {
-                if (_isStopped == false)
-                {
-                    _isStopped = true;
-                    _frameQueue.CompleteAdding();
-                }
+                // Kör tung analys (t.ex. objektdetektering)
+                RunAiInference(frame.ImageData.Span);
             }
-
-            while (_frameQueue.TryTake(out var pendingFrame))
-                pendingFrame.Dispose();
-        }
-    }
-
-    /// <summary>
-    /// Processes a single video frame.
-    /// </summary>
-    /// <param name="frameData">The frame data as a read-only span of bytes.</param>
-    /// <param name="width">The width of the frame in pixels.</param>
-    /// <param name="height">The height of the frame in pixels.</param>
-    private void ProcessFrame(ReadOnlySpan<byte> frameData, int width, int height)
-    {
-        // Example of super-fast processing with Span without allocations
-        // e.g., check the value of the first pixel:
-        byte firstPixel = frameData[0];
-    }
-
-    /// <summary>
-    /// Completes the frame queue and waits for all accepted frames to be processed.
-    /// </summary>
-    public void Stop()
-    {
-        StopAsync().GetAwaiter().GetResult();
-    }
-
-    /// <summary>
-    /// Completes the frame queue and asynchronously waits for all accepted frames to be processed.
-    /// </summary>
-    public Task StopAsync()
-    {
-        Task consumerTask;
-        bool drainQueue;
-        lock (_lifecycleLock)
-        {
-            if (_isStopped == false)
+            finally
             {
-                _isStopped = true;
-                _frameQueue.CompleteAdding();
+                // VIKTIGT: Berätta att AI är klar.
+                frame.Release();
             }
-
-            consumerTask = _consumerTask;
-            drainQueue = consumerTask == null;
         }
-
-        if (drainQueue)
-        {
-            while (_frameQueue.TryTake(out var pendingFrame))
-                pendingFrame.Dispose();
-        }
-
-        return consumerTask ?? Task.CompletedTask;
     }
+
+    private void RenderInGui(ReadOnlySpan<byte> data) { /* ... */ }
+    private void RunAiInference(ReadOnlySpan<byte> data) { /* ... */ }
 }
