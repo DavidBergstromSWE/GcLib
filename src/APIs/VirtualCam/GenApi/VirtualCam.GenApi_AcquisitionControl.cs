@@ -283,13 +283,15 @@ public sealed partial class VirtualCam
                 if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
                     GcLibrary.Logger.LogError(ex, "Acquisition callback failed in Device {ModelName} (ID: {ID})", _virtualCam.DeviceInfo.ModelName, _virtualCam.DeviceInfo.UniqueID);
 
+                bool wasAcquiring;
                 lock (_acquisitionSync)
-                {
-                    if (_virtualCam.IsAcquiring)
-                        _virtualCam.OnAcquisitionAborted(new AcquisitionAbortedEventArgs("Acquisition failed in VirtualCam timer callback.", ex));
-                }
+                    wasAcquiring = _virtualCam.IsAcquiring;
 
-                AcquisitionStop.Execute();
+                if (wasAcquiring)
+                {
+                    AcquisitionStop.Execute();
+                    _virtualCam.OnAcquisitionAborted(new AcquisitionAbortedEventArgs("Acquisition failed in VirtualCam timer callback.", ex));
+                }
             }
         }
 
