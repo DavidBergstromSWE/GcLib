@@ -13,15 +13,26 @@ public static class NumericHelper
     /// <summary>
     /// Determines whether type is numeric.
     /// </summary>
-    /// <param name="type">System.Type.</param>
+    /// <param name="type">The type to check.</param>
     /// <returns>True if numeric, false otherwise.</returns>
     public static bool IsNumericType(Type type)
     {
-        return Type.GetTypeCode(type) switch
+        if (type is null)
+            return false;
+
+        if (Type.GetTypeCode(type) is TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.Decimal or TypeCode.Double or TypeCode.Single or TypeCode.Char)
+            return true;
+
+        // Check if the type implements INumber<T> interface for any T
+        foreach (Type implementedInterface in type.GetInterfaces())
         {
-            TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.Decimal or TypeCode.Double or TypeCode.Single or TypeCode.Char => true,
-            _ => false,
-        };
+            if (implementedInterface.IsGenericType &&
+                implementedInterface.GetGenericTypeDefinition() == typeof(INumber<>) &&
+                implementedInterface.GenericTypeArguments[0] == type)
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -55,7 +66,7 @@ public static class NumericHelper
             TypeCode.Double => Convert.ChangeType(double.MinValue, type),
             TypeCode.Decimal => Convert.ChangeType(decimal.MinValue, type),
             TypeCode.Char => Convert.ChangeType(char.MinValue, type),
-            _ => throw new InvalidOperationException("Type not supported."),
+            _ => GetNumericBound(type, "MinValue"),
         };
     }
 
@@ -90,7 +101,7 @@ public static class NumericHelper
             TypeCode.Double => Convert.ChangeType(double.MaxValue, type),
             TypeCode.Decimal => Convert.ChangeType(decimal.MaxValue, type),
             TypeCode.Char => Convert.ChangeType(char.MaxValue, type),
-            _ => throw new InvalidOperationException("Type not supported."),
+            _ => GetNumericBound(type, "MaxValue"),
         };
     }
 
@@ -143,16 +154,23 @@ public static class NumericHelper
     /// <exception cref="InvalidCastException"></exception>
     public static void DoubleToSpan(ref Span<byte> bytes, double value)
     {
-        // Infer integral type from number of bytes.
-        if (bytes.Length == 1)      // byte
-            bytes[0] = (byte)value;
-        else if (bytes.Length == 2) // ushort
-            bytes = BitConverter.GetBytes((ushort)value);
-        else if (bytes.Length == 4) // uint
-            bytes = BitConverter.GetBytes((uint)value);
-        else if (bytes.Length == 8) // ulong
-            bytes = BitConverter.GetBytes((ulong)value);
-        else throw new InvalidCastException($"Could not find a suitable integral numeric type of size {bytes.Length} bytes! Please check memory allocation.");
+        switch (bytes.Length)
+        {
+            case 1:
+                bytes[0] = (byte)value;
+                break;
+            case 2:
+                BitConverter.TryWriteBytes(bytes, (ushort)value);
+                break;
+            case 4:
+                BitConverter.TryWriteBytes(bytes, (uint)value);
+                break;
+            case 8:
+                BitConverter.TryWriteBytes(bytes, (ulong)value);
+                break;
+            default:
+                throw new InvalidCastException($"Could not find a suitable integral numeric type of size {bytes.Length} bytes! Please check memory allocation.");
+        }
     }
 
     /// <summary>
@@ -161,44 +179,34 @@ public static class NumericHelper
     /// Note: The integer type is inferred from the number of bytes allocated in the referenced byte-span. If it cannot be inferred an <see cref="InvalidCastException"/> will be thrown.
     /// </para>
     /// </summary>
-    /// <param name="bytes">Reference to a pre-allocated byte-span of the same size as the numeric integral type being the target of the conversion multiplied by the number of values to be converted.</param>
+    /// <param name="bytes">Pre-allocated byte-span sized for all values at the target integral type's width.</param>
     /// <param name="values">Values to be converted.</param>
-    /// <exception cref="InvalidCastException"></exception>
+    /// <exception cref="ArgumentNullException"><paramref name="values"/> is null.</exception>
+    /// <exception cref="InvalidCastException">The span length does not match a supported integral width for all values.</exception>
     public static void DoubleToSpan(ref Span<byte> bytes, double[] values)
     {
-        if (bytes.Length == values.Length)
+        ArgumentNullException.ThrowIfNull(values);
+
+        if (values.Length == 0)
         {
-            for (int i = 0; i < values.Length; i++)
-                bytes[i] = (byte)values[i];
+            if (bytes.IsEmpty)
+                return;
+
+            throw new InvalidCastException($"Could not find a suitable integral numeric type of size {bytes.Length} bytes! Please check memory allocation.");
         }
-        else if (bytes.Length == values.Length * 2)
+
+        if (bytes.Length % values.Length != 0)
+            throw new InvalidCastException($"Could not find a suitable integral numeric type of size {bytes.Length} bytes! Please check memory allocation.");
+
+        int bytesPerValue = bytes.Length / values.Length;
+        if (bytesPerValue is not (1 or 2 or 4 or 8))
+            throw new InvalidCastException($"Could not find a suitable integral numeric type of size {bytes.Length} bytes! Please check memory allocation.");
+
+        for (int i = 0; i < values.Length; i++)
         {
-            for (int i = 0; i < values.Length; i++)
-            {
-                Span<byte> u = BitConverter.GetBytes((ushort)values[i]);
-                for (int j = 0; j < u.Length; j++)
-                    bytes[i * 2 + j] = u[j];
-            }
+            Span<byte> destination = bytes.Slice(i * bytesPerValue, bytesPerValue);
+            DoubleToSpan(ref destination, values[i]);
         }
-        else if (bytes.Length == values.Length * 4)
-        {
-            for (int i = 0; i < values.Length; i++)
-            {
-                Span<byte> u = BitConverter.GetBytes((uint)values[i]);
-                for (int j = 0; j < u.Length; j++)
-                    bytes[i * 4 + j] = u[j];
-            }
-        }
-        else if (bytes.Length == values.Length * 8)
-        {
-            for (int i = 0; i < values.Length; i++)
-            {
-                Span<byte> u = BitConverter.GetBytes((ulong)values[i]);
-                for (int j = 0; j < u.Length; j++)
-                    bytes[i * 8 + j] = u[j];
-            }
-        }
-        else throw new InvalidCastException($"Could not find a suitable integral numeric type of size {bytes.Length} bytes! Please check memory allocation.");
     }
 
     /// <summary>
@@ -221,5 +229,30 @@ public static class NumericHelper
             8 => BitConverter.ToUInt64(bytes),  // 64-bit (warning: may loose precision!)
             _ => throw new InvalidCastException("Byte-span can only be of lengths 1, 2, 4 or 8!")
         };
+    }
+
+    /// <summary>
+    /// Gets a numeric bound from a public static field or property.
+    /// </summary>
+    /// <param name="type">The numeric type to search.</param>
+    /// <param name="boundName">The name of the public static field or property containing the bound.</param>
+    /// <returns>The value of the specified bound.</returns>
+    /// <exception cref="InvalidOperationException">The type is not numeric or does not define the specified public static field or property.</exception>
+    private static object GetNumericBound(Type type, string boundName)
+    {
+        if (IsNumericType(type))
+        {
+            // Try to get the public static field or property with the specified name.
+            var field = type.GetField(boundName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (field is not null)
+                return field.GetValue(null);
+
+            // If the field is not found, try to get the public static property with the specified name.
+            var property = type.GetProperty(boundName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (property is not null)
+                return property.GetValue(null);
+        }
+
+        throw new InvalidOperationException("Type not supported.");
     }
 }
