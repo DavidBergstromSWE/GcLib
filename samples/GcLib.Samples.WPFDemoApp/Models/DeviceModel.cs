@@ -101,6 +101,8 @@ internal sealed partial class DeviceModel : ObservableObject, IXmlSerializable
     {
         IsConnecting = true;
 
+        _ = WeakReferenceMessenger.Default.Send(new StatusBarLogMessage($"Connecting to {deviceInfo.ModelName} (ID: {deviceInfo.UniqueID})..."));
+
         Log.Debug("Attempting to connect device {Device} (ID: {ID})", deviceInfo.ModelName, deviceInfo.UniqueID);
 
         try
