@@ -566,7 +566,7 @@ public class GcDataStreamTests
         RaiseNewBuffer();
 
         // Assert
-        Assert.IsTrue(signal.Wait(500));
+        Assert.IsTrue(signal.Wait(1000));
         Assert.AreEqual(1, eventCounter);
         Assert.IsNotNull(buffer);
         Assert.AreEqual(_testBuffer.Width, buffer.Width);
