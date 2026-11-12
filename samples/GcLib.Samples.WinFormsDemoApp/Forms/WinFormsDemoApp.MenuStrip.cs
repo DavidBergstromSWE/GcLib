@@ -46,10 +46,6 @@ public partial class WinFormsDemoApp : Form
                 {
                     _ = MessageBox.Show(this, "Error reading configuration file: " + ex.Message, "FileIO Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-                finally
-                {
-                    configurationManager.Dispose();
-                }
 
                 // Update UI state.
                 SetUIState(UIState.ReadyState);
@@ -99,10 +95,6 @@ public partial class WinFormsDemoApp : Form
                 catch (Exception ex)
                 {
                     _ = MessageBox.Show(this, "Error writing configuration file: " + ex.Message, "FileIO Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    configurationManager.Dispose(); // is this enough?
                 }
 
                 // Update UI state.

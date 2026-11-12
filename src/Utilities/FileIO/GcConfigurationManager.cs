@@ -9,7 +9,7 @@ namespace GcLib.Utilities.FileIO;
 /// <summary>
 /// Manages loading and saving of configuration xml files, containing lists of simple camera parameter name/value string pairs (properties).
 /// </summary>
-public sealed class GcConfigurationManager : IDisposable
+public sealed class GcConfigurationManager
 {
     #region Fields
 
@@ -17,8 +17,6 @@ public sealed class GcConfigurationManager : IDisposable
     /// List of properties, containing simple parameter name/value string pairs. Null until properties have been loaded or stored.
     /// </summary>
     private List<KeyValuePair<string, string>> _propertyList;
-
-    private bool _disposed;
 
     #endregion
 
@@ -62,7 +60,6 @@ public sealed class GcConfigurationManager : IDisposable
     /// <exception cref="XmlException">The file contains malformed xml.</exception>
     public void Load(string filePath)
     {
-        ThrowIfDisposed();
         ArgumentException.ThrowIfNullOrEmpty(filePath);
 
         var propertyList = new List<KeyValuePair<string, string>>();
@@ -117,7 +114,6 @@ public sealed class GcConfigurationManager : IDisposable
     /// <exception cref="InvalidOperationException">No properties have been loaded or stored.</exception>
     public void Save(string filePath)
     {
-        ThrowIfDisposed();
         ArgumentException.ThrowIfNullOrEmpty(filePath);
         if (_propertyList is null)
             throw new InvalidOperationException("There are no properties to save. Call Store or Load first!");
@@ -167,7 +163,6 @@ public sealed class GcConfigurationManager : IDisposable
     /// <exception cref="InvalidOperationException">No properties have been loaded or stored, or the device is not the one the configuration was created for.</exception>
     public IReadOnlyList<string> Restore(GcDevice camera)
     {
-        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(camera);
         if (_propertyList is null)
             throw new InvalidOperationException("There are no properties to restore. Call Load or Store first!");
@@ -212,7 +207,6 @@ public sealed class GcConfigurationManager : IDisposable
     /// <param name="parameterList">Camera parameter list.</param>
     public void Store(IReadOnlyList<GcParameter> parameterList)
     {
-        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(parameterList);
 
         var propertyList = new List<KeyValuePair<string, string>>();
@@ -242,22 +236,6 @@ public sealed class GcConfigurationManager : IDisposable
         }
 
         _propertyList = propertyList;
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        _disposed = true;
-        _propertyList = null;
-    }
-
-    #endregion
-
-    #region Private methods
-
-    private void ThrowIfDisposed()
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     #endregion

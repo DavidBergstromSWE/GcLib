@@ -34,7 +34,6 @@ public class GcConfigurationManagerTests
     [TestCleanup]
     public void TestCleanup()
     {
-        _manager?.Dispose();
         _device?.Close();
         _otherDevice?.Close();
 
@@ -326,7 +325,7 @@ public class GcConfigurationManagerTests
         _manager.Store([]);
         _manager.Save(_path);
 
-        using var other = new GcConfigurationManager(_device);
+        var other = new GcConfigurationManager(_device);
 
         // Act
         var task = Task.Run(() => other.Load(_path), TestContext.CancellationToken);
@@ -455,7 +454,7 @@ public class GcConfigurationManagerTests
         _device.Parameters.SetParameterValue("TestBoolean", "False");
         _device.Parameters.SetParameterValue("TestEnumeration", "Tuesday");
 
-        using var loader = new GcConfigurationManager(_device);
+        var loader = new GcConfigurationManager(_device);
         loader.Load(_path);
 
         // Act
@@ -530,38 +529,6 @@ public class GcConfigurationManagerTests
 
         // Assert
         Assert.IsEmpty(failed);
-    }
-
-    #endregion
-
-    #region Dispose
-
-    [TestMethod]
-    public void Dispose_ClearsProperties()
-    {
-        _manager.Store(_device.Parameters.ToList(GcVisibility.Guru));
-
-        _manager.Dispose();
-
-        Assert.AreEqual(0u, _manager.PropertyCount);
-    }
-
-    [TestMethod]
-    public void Dispose_CalledTwice_DoesNotThrow()
-    {
-        _manager.Dispose();
-        _manager.Dispose();
-    }
-
-    [TestMethod]
-    public void AfterDispose_OperationsThrowObjectDisposed()
-    {
-        _manager.Dispose();
-
-        _ = Assert.Throws<ObjectDisposedException>(() => _manager.Load(_path));
-        _ = Assert.Throws<ObjectDisposedException>(() => _manager.Save(_path));
-        _ = Assert.Throws<ObjectDisposedException>(() => _manager.Store([]));
-        _ = Assert.Throws<ObjectDisposedException>(() => _manager.Restore(_device));
     }
 
     #endregion
