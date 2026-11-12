@@ -19,6 +19,26 @@ public sealed partial class PylonCam
     /// </summary>
     private bool _threadIsRunning;
 
+    /// <summary>
+    /// Default camera timestamp tick frequency (ticks per second), used when the camera does not report one (timestamps in nanoseconds).
+    /// </summary>
+    private const double DefaultTickFrequency = 1e9;
+
+    /// <summary>
+    /// Camera timestamp of the first image in the current acquisition (in camera ticks), or -1 if no image has been received yet.
+    /// </summary>
+    private long _cameraTime0 = -1;
+
+    /// <summary>
+    /// PC time when the first image in the current acquisition was received (in PC ticks, where a single tick represents one hundred nanoseconds).
+    /// </summary>
+    private long _pcTime0;
+
+    /// <summary>
+    /// Camera timestamp tick frequency (ticks per second).
+    /// </summary>
+    private double _tickFrequency = DefaultTickFrequency;
+
     #endregion
 
     #region Properties
@@ -46,6 +66,10 @@ public sealed partial class PylonCam
     {
         if (IsAcquiring)
             throw new InvalidOperationException($"Unable to start acquisition as Device {DeviceInfo.ModelName} is already acquiring!");
+
+        // Reset timestamp synchronization (camera time is synchronized to PC time when the first image is received).
+        _cameraTime0 = -1;
+        _tickFrequency = GetTickFrequency();
 
         // Start acquisition on the device.
         _camera.StreamGrabber.Start(strategy: GrabStrategy.OneByOne, grabLoopType: GrabLoop.ProvidedByUser);
@@ -143,7 +167,7 @@ public sealed partial class PylonCam
     /// <param name="grabResult">Grab result.</param>
     /// <returns>Event data containing stream information and acquired buffer.</returns>
     /// <exception cref="NotSupportedException">Thrown when the payload type or pixel type is not supported.</exception>
-    private static NewBufferEventArgs ToNewBufferEventArgs(IGrabResult grabResult)
+    private NewBufferEventArgs ToNewBufferEventArgs(IGrabResult grabResult)
     {
         // Check if the payload type is an image.
         if (grabResult.PayloadTypeValue != PayloadType.Image)
@@ -158,9 +182,8 @@ public sealed partial class PylonCam
         var ownedPixelData = new byte[pixelData.Length];
         Buffer.BlockCopy(pixelData, 0, ownedPixelData, 0, pixelData.Length);
 
-        // Use the timestamp from the grab result if available, otherwise use the current PC time.
-        // ToDo: Convert timestamp from camera specific ticks to PC ticks
-        var timeStamp = grabResult.Timestamp == 0 ? (ulong)DateTime.Now.Ticks : (ulong)grabResult.Timestamp;
+        // Convert camera timestamp (in camera specific ticks) to PC ticks.
+        var timeStamp = ToPcTicks(grabResult.Timestamp);
 
         var buffer = new GcBuffer(ownedPixelData,
                                   (uint)grabResult.Width,
@@ -172,6 +195,53 @@ public sealed partial class PylonCam
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,
                                       buffer);
+    }
+
+    /// <summary>
+    /// Retrieves the tick frequency of the camera timestamp counter.
+    /// </summary>
+    /// <returns>Ticks per second (nanosecond resolution is assumed if the camera does not report a frequency).</returns>
+    private double GetTickFrequency()
+    {
+        try
+        {
+            // Reported by GigE Vision cameras. Other transport layers (e.g., USB3 Vision) use nanosecond ticks.
+            if (_camera.Parameters.Contains(PLCamera.GevTimestampTickFrequency) && _camera.Parameters[PLCamera.GevTimestampTickFrequency].IsReadable)
+            {
+                long frequency = _camera.Parameters[PLCamera.GevTimestampTickFrequency].GetValue();
+                if (frequency > 0)
+                    return frequency;
+            }
+        }
+        catch (Exception ex)
+        {
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                GcLibrary.Logger.LogWarning(ex, "Unable to read timestamp tick frequency in Device: {modelName} (ID: {uniqueID}), assuming nanosecond ticks", DeviceInfo.ModelName, DeviceInfo.UniqueID);
+        }
+
+        return DefaultTickFrequency;
+    }
+
+    /// <summary>
+    /// Converts a camera timestamp to PC ticks, by synchronizing camera time with PC time when the first image in the acquisition is received.
+    /// </summary>
+    /// <param name="cameraTicks">Timestamp in camera specific ticks (0 if not available).</param>
+    /// <returns>Timestamp in PC ticks (where a single tick represents one hundred nanoseconds).</returns>
+    private ulong ToPcTicks(long cameraTicks)
+    {
+        // Use the current PC time if the camera does not provide a timestamp.
+        if (cameraTicks <= 0)
+            return (ulong)DateTime.Now.Ticks;
+
+        // Synchronize camera time with PC time at first image.
+        if (_cameraTime0 < 0)
+        {
+            _cameraTime0 = cameraTicks;
+            _pcTime0 = DateTime.Now.Ticks;
+        }
+
+        long elapsedPcTicks = (long)Math.Round((cameraTicks - _cameraTime0) / _tickFrequency * TimeSpan.TicksPerSecond);
+        return (ulong)Math.Max(_pcTime0 + elapsedPcTicks, 0);
     }
 
     #endregion

@@ -68,7 +68,7 @@ public static partial class GcBufferExtensions
     public static Mat ToMat(this GcBuffer buffer, bool withConversion = false)
     {
         if (withConversion)
-            ToMat(buffer);
+            return ToMat(buffer);
 
         // Create a new Mat with the same dimensions, depth, and number of channels as the buffer.
         var mat = new Mat(rows: (int)buffer.Height, cols: (int)buffer.Width, EmguHelper.GetDepthType(buffer.PixelFormat), (int)buffer.NumChannels);

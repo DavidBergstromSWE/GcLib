@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using GcLib.Utilities.FileIO;
 using GcLib.Utilities.Imaging;
@@ -310,11 +311,36 @@ public class VideoWriterTests
         Assert.AreEqual(0, _writer.BuffersQueued);
     }
 
+    [TestMethod]
+    public void Dispose_IsWritingOnThreadWithSynchronizationContext_DoesNotDeadlock()
+    {
+        // Arrange (a context that never runs posted continuations, similar to a blocked UI thread).
+        _writer.Start();
+        var thread = new Thread(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(new NeverPumpedSynchronizationContext());
+            _writer.Dispose();
+        })
+        { IsBackground = true };
+
+        // Act
+        thread.Start();
+
+        // Assert
+        Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(5)), "Dispose did not complete (deadlock).");
+        Assert.IsTrue(_writer.IsDisposed);
+    }
+
     #endregion
 
     #endregion
 
     #region Private methods
+
+    private sealed class NeverPumpedSynchronizationContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object state) { }
+    }
 
     private static GcBuffer GetBuffer(int n = 42, uint width = 320, uint height = 240, PixelFormat pixelFormat = PixelFormat.Mono8)
     {

@@ -80,14 +80,64 @@ public class VideoWriter : IDisposable
     private Thread _recordingThread;
 
     /// <summary>
-    /// Stopping condition for recording thread.
+    /// Writer state (one of <see cref="StateIdle"/>, <see cref="StateStarting"/>, <see cref="StateRunning"/> or <see cref="StateStopping"/>). Transitions out of idle and running are made using <see cref="Interlocked"/> operations.
     /// </summary>
-    private bool _recordingThreadStoppingCondition;
+    private int _state = StateIdle;
 
     /// <summary>
-    /// True if object has been disposed.
+    /// Indicates that the state is idle.
     /// </summary>
-    private bool _disposed;
+    private const int StateIdle = 0;
+
+    /// <summary>
+    /// Indicates that the state is running.
+    /// </summary>
+    private const int StateRunning = 1;
+
+    /// <summary>
+    /// Indicates that the writer is stopping.
+    /// </summary>
+    private const int StateStopping = 2;
+
+    /// <summary>
+    /// Indicates that the state is starting.
+    /// </summary>
+    private const int StateStarting = 3;
+
+    /// <summary>
+    /// Synchronizes access to the timestamp buffer, which is written by the producer and read by the writing thread.
+    /// </summary>
+    private readonly Lock _timeStampsLock = new();
+
+    /// <summary>
+    /// Serializes the transition to the stopping state, so that concurrent callers share the same stop operation.
+    /// </summary>
+    private readonly Lock _stopLock = new();
+
+    /// <summary>
+    /// The stop operation currently in progress.
+    /// </summary>
+    private Task _stopTask;
+
+    /// <summary>
+    /// Frame rate specified at construction (0 if it should be measured).
+    /// </summary>
+    private readonly double _configuredFps;
+
+    /// <summary>
+    /// True when the frame rate is known (specified or measured from a full timestamp buffer), allowing the recording thread to start writing.
+    /// </summary>
+    private volatile bool _readyToWrite;
+
+    /// <summary>
+    /// Non-zero if writing has been aborted by an error (used with <see cref="Interlocked"/> so that the error is only reported once).
+    /// </summary>
+    private int _aborted;
+
+    /// <summary>
+    /// Non-zero if object has been disposed (used with <see cref="Interlocked"/>).
+    /// </summary>
+    private int _disposed;
 
     /// <summary>
     /// Waithandle used for blocking recording thread while waiting for buffers to be queued.
@@ -111,12 +161,12 @@ public class VideoWriter : IDisposable
     /// <summary>
     /// Flag indicating whether writing is currently active.
     /// </summary>
-    public bool IsWriting { get; private set; } = false;
+    public bool IsWriting => Volatile.Read(ref _state) != StateIdle;
 
     /// <summary>
     /// True if writer has been disposed (and is unuseable). Instantiate new object to write new data.
     /// </summary>
-    public bool IsDisposed => _disposed;
+    public bool IsDisposed => Volatile.Read(ref _disposed) != 0;
 
     /// <summary>
     /// A relative or absolute path to the file.
@@ -129,7 +179,7 @@ public class VideoWriter : IDisposable
     public double FPS { get; private set; }
 
     /// <summary>
-    /// Video codec to use im compression.
+    /// Video codec to use in compression.
     /// </summary>
     public CODEC Codec { get; }
 
@@ -144,12 +194,18 @@ public class VideoWriter : IDisposable
     /// <param name="fps">Frame rate in frames per second. If not specified, it will be calculated from input buffer timestamps.</param>
     /// <param name="codec">Video codec to use in video compression.</param>
     /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public VideoWriter(string filePath, double fps = 0.0, CODEC codec = CODEC.MJPEG)
     {
-        if ((Path.GetExtension(filePath) == ".mp4" || Path.GetExtension(filePath) == ".avi") == false)
+        string extension = Path.GetExtension(filePath);
+        if ((string.Equals(extension, ".mp4", StringComparison.OrdinalIgnoreCase) || string.Equals(extension, ".avi", StringComparison.OrdinalIgnoreCase)) == false)
             throw new ArgumentException("Input file must have mp4 or avi extension!");
 
+        if (fps < 0.0)
+            throw new ArgumentOutOfRangeException(nameof(fps), "Frame rate cannot be negative!");
+
         FilePath = filePath;
+        _configuredFps = fps;
         FPS = fps;
         Codec = codec;
     }
@@ -165,37 +221,79 @@ public class VideoWriter : IDisposable
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        if (IsWriting)
+        // Atomically claim the writer (buffers are not accepted until it has been reset below).
+        if (Interlocked.CompareExchange(ref _state, StateStarting, StateIdle) != StateIdle)
             throw new InvalidOperationException("Writer is already in use!");
 
-        // Start recording thread.
-        _recordingThread = new Thread(ThreadProc);
-        _recordingThread.Start();
+        // Reset state from any previous run.
+        _bufferQueue.Clear();
+        lock (_timeStampsLock)
+            _timeStamps.Clear();
+        FPS = _configuredFps;
+        FramesWritten = 0;
+        _readyToWrite = _configuredFps > 0.0;
+        Volatile.Write(ref _aborted, 0);
 
-        IsWriting = true;
+        // Start accepting buffers.
+        Volatile.Write(ref _state, StateRunning);
+
+        // Start recording thread (as background thread, so that it never keeps the process alive).
+        _recordingThread = new Thread(ThreadProc) { IsBackground = true };
+        try
+        {
+            _recordingThread.Start();
+        }
+        catch
+        {
+            Volatile.Write(ref _state, StateIdle); // Reset state to idle, so that writer can be restarted.
+            throw;
+        }
     }
 
     /// <summary>
-    /// Stop writing video frames.
+    /// Stop writing video frames, writing all remaining queued buffers to file. Concurrent calls share the same stop operation. Does nothing if the writer is not writing.
     /// </summary>
-    public async Task StopAsync()
+    public Task StopAsync()
     {
-        if (IsWriting == false)
-            return;
+        lock (_stopLock)
+        {
+            // Only one caller can stop a running writer.
+            if (Interlocked.CompareExchange(ref _state, StateStopping, StateRunning) == StateRunning)
+                _stopTask = StopCoreAsync();
+            else if (Volatile.Read(ref _state) != StateStopping)
+                return Task.CompletedTask;
 
-        // Stop recording thread.
-        _recordingThreadStoppingCondition = true;
+            return _stopTask;
+        }
+    }
 
+    private async Task StopCoreAsync()
+    {
         // Stop thread immediately (without waiting for next buffer).
         _ = _waitHandle.Set();
 
-        // Wait for thread to terminate.
-        _recordingThread?.Join();
+        try
+        {
+            // Wait for thread to terminate and write remaining buffers to file (off the caller's thread).
+            // Do not capture the caller's context, as Dispose blocks on this task and would otherwise deadlock on e.g. a UI thread.
+            await Task.Run(() =>
+            {
+                _recordingThread?.Join();
+                WriteRemainingBuffers();
+            }).ConfigureAwait(false);
+        }
+        finally
+        {
+            // Close the video file, so that it is finalized and released.
+            _videoWriter?.Dispose();
+            _videoWriter = null;
 
-        // Write remaining buffers to file.
-        await WriteRemainingBuffersAsync();
+            // Reset timestamps, so that writer can be restarted.
+            lock (_timeStampsLock)
+                _timeStamps.Clear();
 
-        IsWriting = false;
+            Volatile.Write(ref _state, StateIdle); // Reset state to idle, so that writer can be restarted.
+        }
     }
 
     #endregion
@@ -207,11 +305,14 @@ public class VideoWriter : IDisposable
     /// </summary>
     private void ThreadProc()
     {
-        while (_recordingThreadStoppingCondition == false)
+        while (Volatile.Read(ref _state) == StateRunning)
         {
-            // Block thread until buffer has been queued.  
-            if (_bufferQueue.IsEmpty)
+            // Block thread until the frame rate is known and a buffer has been queued.
+            if (_readyToWrite == false || _bufferQueue.IsEmpty)
+            {
                 _ = _waitHandle.WaitOne();
+                continue;
+            }
 
             // Retrieve buffer from queue.
             if (_bufferQueue.TryDequeue(out GcBuffer buffer))
@@ -222,16 +323,7 @@ public class VideoWriter : IDisposable
                 }
                 catch (Exception ex)
                 {
-                    // Log error.
-                    if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
-                        GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
-
-                    // Clear buffer.
-                    _bufferQueue.Clear();
-
-                    // Raise event.
-                    OnWritingAborted(ex.Message, ex);
-
+                    HandleWriteError(ex);
                     break;
                 }
             }
@@ -241,9 +333,15 @@ public class VideoWriter : IDisposable
     /// <summary>
     /// Write remaining buffers in queue to file.
     /// </summary>
-    /// <returns>Awaitable task.</returns>
-    private async Task WriteRemainingBuffersAsync()
+    private void WriteRemainingBuffers()
     {
+        // Nothing more is written once writing has been aborted.
+        if (Volatile.Read(ref _aborted) != 0)
+        {
+            _bufferQueue.Clear();
+            return;
+        }
+
         while (_bufferQueue.TryDequeue(out var buffer))
         {
             try
@@ -252,19 +350,30 @@ public class VideoWriter : IDisposable
             }
             catch (Exception ex)
             {
-                // Log error.
-                if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
-                    GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
-
-                // Clear buffer.
-                _bufferQueue.Clear();
-
-                // Raise event.
-                OnWritingAborted(ex.Message, ex);
-
+                HandleWriteError(ex);
                 break;
             }
         }
+    }
+
+    /// <summary>
+    /// Aborts writing after an error (clearing the queue) and reports it once.
+    /// </summary>
+    private void HandleWriteError(Exception ex)
+    {
+        // Stop accepting buffers before clearing the queue, so that nothing is queued behind the clear.
+        bool alreadyReported = Interlocked.Exchange(ref _aborted, 1) != 0;
+        _bufferQueue.Clear();
+
+        if (alreadyReported)
+            return;
+
+        // Log error.
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+            GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
+
+        // Raise event.
+        OnWritingAborted(ex.Message, ex);
     }
 
     /// <summary>
@@ -279,13 +388,31 @@ public class VideoWriter : IDisposable
         // If fps is not specified, calculate it as an average from incoming buffer timestamps.
         if (FPS == 0.0)
         {
-            double elapsedTicks = (double)_timeStamps.Max() - _timeStamps.Min();
-            double measuredFPS = FrameRateCalculator.Calculate(elapsedTicks, _timeStamps.Size - 1, TimeSpan.TicksPerSecond);
+            double elapsedTicks = 0.0;
+            int intervals = 0;
+            lock (_timeStampsLock)
+            {
+                if (_timeStamps.Size > 0)
+                {
+                    elapsedTicks = (double)_timeStamps.Max() - _timeStamps.Min();
+                    intervals = _timeStamps.Size - 1;
+                }
+            }
+
+            double measuredFPS = FrameRateCalculator.Calculate(elapsedTicks, intervals, TimeSpan.TicksPerSecond);
             FPS = measuredFPS > 0.0 ? measuredFPS : 30.0; // Use the default when timestamps cannot determine a rate.
         }
 
         // Initialize new video writer (if not done already), using selected codec, fps and buffer properties.
         _videoWriter ??= new(fileName: FilePath, apiPreference: 0, compressionCode: (int)Codec, fps: FPS, size: new Size((int)buffer.Width, (int)buffer.Height), isColor: GenICamHelper.GetNumChannels(buffer.PixelFormat) > 1);
+
+        // Emgu does not throw if the file or codec cannot be opened (frames would be silently discarded).
+        if (_videoWriter.IsOpened == false)
+        {
+            _videoWriter.Dispose();
+            _videoWriter = null;
+            throw new IOException($"Unable to open {FilePath} for writing using codec {Codec}!");
+        }
 
         // Write buffer (converted to Mat).
         using var mat = buffer.ToMat();
@@ -300,25 +427,36 @@ public class VideoWriter : IDisposable
 
     /// <summary>
     /// Event-handling method to BufferTransferred events, queuing transferred buffer for writing.
+    /// </summary>
+    /// <param name="sender">Event sender.</param>
+    /// <param name="e">Event arguments, containing the transferred buffer.</param>
     public void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
-        if (IsWriting == false)
+        // Ignore buffers when not writing, while stopping (they would never be written) or after writing has been aborted.
+        if (Volatile.Read(ref _state) != StateRunning || Volatile.Read(ref _aborted) != 0)
             return;
+
+        // Add buffer timestamp to circular buffer (before queueing, so that timestamps are available when the buffer is written).
+        lock (_timeStampsLock)
+        {
+            if (_timeStamps.IsFull == false)
+                _timeStamps.Put(e.Buffer.TimeStamp);
+
+            // Frame rate can now be measured.
+            if (_timeStamps.IsFull)
+                _readyToWrite = true;
+        }
 
         // Queue transferred buffer.
         _bufferQueue.Enqueue(e.Buffer);
 
-        if (_timeStamps.IsFull == false)
-            _timeStamps.Put(e.Buffer.TimeStamp); // Add buffer timestamp to circular buffer.
-        else
-        {
-            // Proceed with recording thread.
+        // Proceed with recording thread.
+        if (_readyToWrite)
             _ = _waitHandle.Set();
-        }
     }
 
     /// <summary>
-    /// Event announcing that an <see cref="IOException"/> was thrown while writing, with the exception in the event arguments.
+    /// Event announcing that writing was aborted by an error (e.g., an <see cref="IOException"/> or an unsupported pixel format), with the exception in the event arguments. Raised once per recording, on the writing thread. Writing must still be stopped by calling <see cref="StopAsync"/>.
     /// </summary>
     public event EventHandler<WritingAbortedEventArgs> WritingAborted;
 
@@ -328,7 +466,16 @@ public class VideoWriter : IDisposable
     /// <param name="ex">Exception that was thrown.</param>
     private void OnWritingAborted(string message, Exception ex)
     {
-        WritingAborted?.Invoke(this, new WritingAbortedEventArgs(message, ex));
+        // Subscriber exceptions must not escape onto the recording thread.
+        try
+        {
+            WritingAborted?.Invoke(this, new WritingAbortedEventArgs(message, ex));
+        }
+        catch (Exception handlerException)
+        {
+            if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                GcLibrary.Logger.LogError(handlerException, "WritingAborted event handler threw an exception");
+        }
     }
 
     #endregion
@@ -338,7 +485,6 @@ public class VideoWriter : IDisposable
     public void Dispose()
     {
         Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -348,39 +494,32 @@ public class VideoWriter : IDisposable
     /// <c>false</c> to release only unmanaged resources, called from the finalizer only.</param>
     private void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (disposing == false)
+            return;
+
+        // Only the first call disposes.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
+
+        try
         {
-            // Stop recording thread.
-            if (IsWriting)
-                StopAsync().Wait();
-
-            if (disposing)
-            {
-                // Free managed resources.
-
-                // Flush queues.
-                _bufferQueue.Clear();
+            // Stop recording thread (waits for a stop already in progress).
+            StopAsync().Wait();
+        }
+        finally
+        {
+            // Flush queues.
+            _bufferQueue.Clear();
+            lock (_timeStampsLock)
                 _timeStamps.Clear();
-            }
-
-            // Free unmanaged resources.
 
             // Dispose writer.
             _videoWriter?.Dispose();
+            _videoWriter = null;
 
             // Dispose WaitHandle.
-            _waitHandle?.Dispose();
-
-            _disposed = true;
+            _waitHandle.Dispose();
         }
-    }
-
-    /// <summary>
-    /// Finalizer.
-    /// </summary>
-    ~VideoWriter()
-    {
-        Dispose(false);
     }
 
     #endregion
