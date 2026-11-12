@@ -456,26 +456,38 @@ public class VideoWriter : IDisposable
     }
 
     /// <summary>
-    /// Event announcing that writing was aborted by an error (e.g., an <see cref="IOException"/> or an unsupported pixel format), with the exception in the event arguments. Raised once per recording, on the writing thread. Writing must still be stopped by calling <see cref="StopAsync"/>.
+    /// Event announcing that writing was aborted by an error (e.g., an <see cref="IOException"/> or an unsupported pixel format), with the exception in the event arguments. Raised once per recording. Writing must still be stopped by calling <see cref="StopAsync"/>.
     /// </summary>
+    /// <remarks>The event is raised on a thread-pool thread (not the recording thread), so handlers can safely stop or dispose the writer, and may run after the writer has been stopped.</remarks>
     public event EventHandler<WritingAbortedEventArgs> WritingAborted;
 
     /// <summary>
-    /// Event-invoking method, announcing that an <see cref="IOException"/> was thrown while writing, with the exception in the event arguments.
+    /// Event-invoking method, announcing that an exception was thrown while writing, with the exception in the event arguments.
     /// </summary>
+    /// <param name="message">Error message.</param>
     /// <param name="ex">Exception that was thrown.</param>
     private void OnWritingAborted(string message, Exception ex)
     {
-        // Subscriber exceptions must not escape onto the recording thread.
-        try
+        var handler = WritingAborted; // Copy to a temporary variable to be thread-safe.
+        if (handler == null)
+            return;
+
+        var eventArgs = new WritingAbortedEventArgs(message, ex);
+
+        // Raised on a thread-pool thread: a handler that stops or disposes the writer would otherwise block the recording thread on itself (deadlock).
+        _ = ThreadPool.QueueUserWorkItem(_ =>
         {
-            WritingAborted?.Invoke(this, new WritingAbortedEventArgs(message, ex));
-        }
-        catch (Exception handlerException)
-        {
-            if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
-                GcLibrary.Logger.LogError(handlerException, "WritingAborted event handler threw an exception");
-        }
+            // Subscriber exceptions must not escape onto the thread pool (crashing the process).
+            try
+            {
+                handler.Invoke(this, eventArgs);
+            }
+            catch (Exception handlerException)
+            {
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                    GcLibrary.Logger.LogError(handlerException, "WritingAborted event handler threw an exception");
+            }
+        });
     }
 
     #endregion

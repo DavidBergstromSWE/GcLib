@@ -262,8 +262,8 @@ public class VideoWriterTests
         // Arrange
         var writer = new VideoWriter(_path, 30);
         BufferTransferred += writer.OnBufferTransferred;
-        bool eventIsRaised = false;
-        writer.WritingAborted += (s, e) => { eventIsRaised = true; };
+        var aborted = new TaskCompletionSource<WritingAbortedEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
+        writer.WritingAborted += (s, e) => aborted.TrySetResult(e);
         writer.Start();
         int numBuffers = 30;
         for (int i = 0; i < numBuffers; i++)
@@ -272,10 +272,74 @@ public class VideoWriterTests
         // Act
         await writer.StopAsync();
 
-        // Assert
-        Assert.IsTrue(eventIsRaised);
+        // Assert (the event is raised asynchronously on a thread-pool thread).
+        _ = await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10));
         Assert.AreEqual(0, writer.FramesWritten);
         Assert.IsFalse(File.Exists(_path));
+
+        BufferTransferred -= writer.OnBufferTransferred;
+        writer.Dispose();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task WritingAborted_HandlerStopsWriter_DoesNotDeadlock(bool stopOnAnotherThread)
+    {
+        // Arrange
+        var writer = new VideoWriter(_path, 30);
+        BufferTransferred += writer.OnBufferTransferred;
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        writer.WritingAborted += (s, e) =>
+        {
+            try
+            {
+                if (stopOnAnotherThread)
+                    Task.Run(() => writer.StopAsync()).WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+                else
+                    writer.StopAsync().Wait(TimeSpan.FromSeconds(5));
+
+                completed.TrySetResult();
+            }
+            catch (Exception ex)
+            {
+                completed.TrySetException(ex);
+            }
+        };
+        writer.Start();
+
+        // Act (an unsupported pixel format aborts writing on the recording thread).
+        BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(0, 640, 320, PixelFormat.Mono10)));
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // Assert
+        Assert.IsFalse(writer.IsWriting);
+
+        BufferTransferred -= writer.OnBufferTransferred;
+        writer.Dispose();
+    }
+
+    [TestMethod]
+    public async Task WritingAborted_HandlerThrows_DoesNotCrash()
+    {
+        // Arrange
+        var writer = new VideoWriter(_path, 30);
+        BufferTransferred += writer.OnBufferTransferred;
+        var raised = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        writer.WritingAborted += (s, e) =>
+        {
+            raised.TrySetResult();
+            throw new InvalidOperationException("Handler failure.");
+        };
+        writer.Start();
+
+        // Act
+        BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(0, 640, 320, PixelFormat.Mono10)));
+        await raised.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await writer.StopAsync();
+
+        // Assert
+        Assert.IsFalse(writer.IsWriting);
 
         BufferTransferred -= writer.OnBufferTransferred;
         writer.Dispose();

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using GcLib.Utilities.Imaging;
+using Microsoft.Extensions.Logging;
 
 namespace GcLib.Utilities.FileIO;
 
@@ -103,6 +104,16 @@ public sealed class GcBufferReader : IDisposable
     public ulong FrameCount { get; private set; }
 
     /// <summary>
+    /// Number of bytes at the end of the file that do not make up a complete frame (non-zero if the recording was interrupted while writing). These bytes are ignored.
+    /// </summary>
+    public ulong TruncatedBytes { get; private set; }
+
+    /// <summary>
+    /// True if the file ends with an incomplete frame, which is ignored (only the <see cref="FrameCount"/> complete frames are accessible).
+    /// </summary>
+    public bool IsTruncated => TruncatedBytes > 0;
+
+    /// <summary>
     /// Calculated frame rate (in Hz) of image sequence in file.
     /// </summary>
     public double FrameRate { get; private set; }
@@ -143,18 +154,21 @@ public sealed class GcBufferReader : IDisposable
             if (_fileHeaderSize > _fileStream.Length)
                 throw new IOException("Could not read file header!");
             byte[] fileHeader = new byte[_fileHeaderSize];
-            _ = _fileStream.Read(fileHeader, 0, fileHeader.Length);
+            _fileStream.ReadExactly(fileHeader);
 
             // Read image header of first frame.
             if (_imageHeaderSize > _fileStream.Length - _fileStream.Position)
                 throw new IOException("Could not read image header!");
             byte[] imageHeader = new byte[_imageHeaderSize];
-            _ = _fileStream.Read(imageHeader, 0, imageHeader.Length);
+            _fileStream.ReadExactly(imageHeader);
 
-            // Retrieve expected buffer and image sizes.
+            // Retrieve expected buffer and image sizes (using the same calculation as the writer).
             try
             {
-                _imageBufferSize = GetWidth(imageHeader) * GetHeight(imageHeader) * GenICamHelper.GetBitsPerPixel(GetPixelFormat(imageHeader)) / 8;
+                long imageBufferSize = GcBufferWriter.GetImageDataSize(GetWidth(imageHeader), GetHeight(imageHeader), GetPixelFormat(imageHeader));
+                if (imageBufferSize > int.MaxValue - _imageHeaderSize)
+                    throw new IOException("File corrupt?");
+                _imageBufferSize = (uint)imageBufferSize;
             }
             catch (Exception)
             {
@@ -163,9 +177,16 @@ public sealed class GcBufferReader : IDisposable
 
             _imageSize = _imageBufferSize + _imageHeaderSize;
 
-            if ((_fileStream.Length - _fileHeaderSize) % _imageSize != 0)
-                throw new IOException("File corrupt?");
-            else FrameCount = (ulong)((_fileStream.Length - _fileHeaderSize) / _imageSize);
+            // A recording that was interrupted (e.g., by a crash or a full disk) can end with a partial frame. Only complete frames are accessible.
+            long dataSize = _fileStream.Length - _fileHeaderSize;
+            if (dataSize < _imageSize)
+                throw new IOException("File does not contain a complete frame!");
+
+            FrameCount = (ulong)(dataSize / _imageSize);
+            TruncatedBytes = (ulong)(dataSize % _imageSize);
+
+            if (TruncatedBytes > 0 && GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                GcLibrary.Logger.LogWarning("{filePath} ends with an incomplete frame ({bytes} bytes), which is ignored. {frameCount} complete frame(s) can be read.", filePath, TruncatedBytes, FrameCount);
 
             _frameIDList = [];
             _timeStampList = [];
@@ -184,44 +205,18 @@ public sealed class GcBufferReader : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Releases unmanaged and (optionally) managed resources.
-    /// </summary>
-    /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
-    /// <c>false</c> to release only unmanaged resources, called from the finalizer only.</param>
-    private void Dispose(bool disposing)
-    {
         if (_disposed)
             return;
 
-        if (disposing)
-        {
-            // Dispose managed state (managed objects).                
-            _frameIDList.Clear();
-            _timeStampList.Clear();
+        _frameIDList.Clear();
+        _timeStampList.Clear();
 
-            IsOpen = false;
-        }
-
-        // Free unmanaged resources (unmanaged objects) (and set large fields to null).
+        IsOpen = false;
 
         // Close and dispose filestream.
-        _fileStream?.Close();
-        _fileStream?.Dispose();
+        _fileStream.Dispose();
 
         _disposed = true;
-    }
-
-    /// <summary>
-    /// Finalizer.
-    /// </summary>
-    ~GcBufferReader()
-    {
-        Dispose(false);
     }
 
     #endregion
@@ -234,17 +229,20 @@ public sealed class GcBufferReader : IDisposable
     /// <param name="progress">Provides an optional progress report of the task.</param>
     /// <param name="token">Provides an optional way of canceling the task.</param>
     /// <returns></returns>
+    /// <exception cref="ObjectDisposedException"></exception>
     /// <exception cref="IOException"></exception>
     /// <exception cref="OperationCanceledException"></exception>
     public async Task OpenAsync(IProgress<double> progress = null, CancellationToken token = default)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        // Reader is not usable until opening has completed (also when reopening).
+        IsOpen = false;
+
         // Initialize lists of image FrameID and Timestamp.
         await ReadAllBuffersAsync(progress, token);
 
-        // Validate frame count.
-        if (FrameCount == 0)
-            throw new IOException("File does not contain any frames!");
-
+        // Validate frame count (the constructor guarantees at least one complete frame).
         if (FrameCount != (ulong)_frameIDList.Count)
             throw new IOException("File corrupt?");
 
@@ -308,7 +306,7 @@ public sealed class GcBufferReader : IDisposable
 
         // Read image buffer data.
         byte[] imageData = new byte[_imageSize];
-        _ = _fileStream.Read(imageData, 0, imageData.Length);
+        _fileStream.ReadExactly(imageData);
 
         // Convert to GcBuffer.
         buffer = ToGcBuffer(imageData);
@@ -339,7 +337,7 @@ public sealed class GcBufferReader : IDisposable
 
         // Read next image buffer data.
         byte[] imageData = new byte[_imageSize];
-        _ = _fileStream.Read(imageData, 0, imageData.Length);
+        _fileStream.ReadExactly(imageData);
 
         // Convert to GcBuffer.
         buffer = ToGcBuffer(imageData);
@@ -421,6 +419,10 @@ public sealed class GcBufferReader : IDisposable
     /// <exception cref="OperationCanceledException"></exception>
     private async Task ReadAllBuffersAsync(IProgress<double> progress, CancellationToken token = default)
     {
+        // Start from scratch, so that reopening (or retrying after a cancellation) does not duplicate entries.
+        _frameIDList.Clear();
+        _timeStampList.Clear();
+
         // Set position of filestream after fileheader.
         _fileStream.Seek(_fileHeaderSize, SeekOrigin.Begin);
 
@@ -431,9 +433,13 @@ public sealed class GcBufferReader : IDisposable
         // Initialize buffer counter.
         int bufferCounter = 0;
 
-        // Step through filestream until end-of-file.
-        while (await _fileStream.ReadAsync(imagesBytes, CancellationToken.None) == (int)_imageSize)
+        // Step through filestream until end-of-file (ReadAtLeastAsync fills the buffer unless end-of-file is reached).
+        while (true)
         {
+            token.ThrowIfCancellationRequested();
+
+            if (await _fileStream.ReadAtLeastAsync(imagesBytes, imagesBytes.Length, throwOnEndOfStream: false, token) != imagesBytes.Length)
+                break;
             // Simulates a slow reading (comment out in production code!).
             //Thread.Sleep(30);
 
@@ -454,12 +460,8 @@ public sealed class GcBufferReader : IDisposable
             }
         }
 
-        // Throw exception if EOF is not reached.
-        if (_fileStream.Position != _fileStream.Length)
-        {
-            throw new IOException("File is corrupt?");
-        }
-        else progress?.Report(1.0);
+        // A partial trailing frame (an interrupted recording) is ignored (see TruncatedBytes).
+        progress?.Report(1.0);
     }
 
     /// <summary>

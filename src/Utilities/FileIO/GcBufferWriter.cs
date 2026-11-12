@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 
 namespace GcLib.Utilities.FileIO;
@@ -35,10 +37,48 @@ public sealed class GcBufferWriter : IDisposable
     /// </summary>
     private volatile bool _recordingThreadStoppingCondition;
 
+    private const int StateIdle = 0;
+    private const int StateStarting = 1;
+    private const int StateRunning = 2;
+    private const int StateStopping = 3;
+
     /// <summary>
-    /// True if object has been disposed.
+    /// Writer state (idle, starting, running or stopping), changed atomically.
     /// </summary>
-    private bool _disposed;
+    private int _state = StateIdle;
+
+    /// <summary>
+    /// Non-zero if writing was aborted by an error (buffers are then no longer accepted).
+    /// </summary>
+    private int _aborted;
+
+    /// <summary>
+    /// Serializes claiming of the stop operation.
+    /// </summary>
+    private readonly Lock _stopLock = new();
+
+    /// <summary>
+    /// Stop operation in progress (shared by concurrent callers of <see cref="StopAsync"/>).
+    /// </summary>
+    private Task _stopTask;
+
+    /// <summary>
+    /// Non-zero if object has been disposed.
+    /// </summary>
+    private int _disposed;
+
+    private long _fileSize;
+    private int _buffersWritten;
+
+    /// <summary>
+    /// Reusable image header (only used by one thread at a time, as the recording thread is joined before remaining buffers are written).
+    /// </summary>
+    private readonly byte[] _imageHeader = new byte[ImageHeaderSize];
+
+    /// <summary>
+    /// Width, height and pixel format of the first buffer written. The reader requires all frames in a file to have the same size.
+    /// </summary>
+    private (uint Width, uint Height, PixelFormat PixelFormat)? _frameFormat;
 
     /// <summary>
     /// Waithandle used for blocking recording thread while waiting for buffers to be queued.
@@ -77,7 +117,7 @@ public sealed class GcBufferWriter : IDisposable
     /// <summary>
     /// Total size of file (in bytes).
     /// </summary>
-    public long FileSize { get; private set; }
+    public long FileSize => Interlocked.Read(ref _fileSize);
 
     /// <summary>
     /// A relative or absolute path to the file.
@@ -92,12 +132,12 @@ public sealed class GcBufferWriter : IDisposable
     /// <summary>
     /// Number of buffers written to file.
     /// </summary>
-    public int BuffersWritten { get; private set; } = 0;
+    public int BuffersWritten => Volatile.Read(ref _buffersWritten);
 
     /// <summary>
-    /// Flag indicating whether writing is currently active.
+    /// Flag indicating whether writing is currently active (from <see cref="Start"/> until <see cref="StopAsync"/> has completed, also after writing was aborted by an error).
     /// </summary>
-    public bool IsWriting { get; private set; } = false;
+    public bool IsWriting => Volatile.Read(ref _state) != StateIdle;
 
     /// <summary>
     /// Flag indicating priority of recording thread (default is <see cref="ThreadPriority.BelowNormal"/>).
@@ -107,7 +147,7 @@ public sealed class GcBufferWriter : IDisposable
     /// <summary>
     /// True if writer has been disposed (and is unuseable). Instantiate new object to write new data.
     /// </summary>
-    public bool IsDisposed => _disposed;
+    public bool IsDisposed => Volatile.Read(ref _disposed) != 0;
 
     #endregion
 
@@ -145,51 +185,21 @@ public sealed class GcBufferWriter : IDisposable
     /// </summary>
     public void Dispose()
     {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
+        // Only the first call disposes.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
 
-    /// <summary>
-    /// Releases unmanaged and (optionally) managed resources.
-    /// </summary>
-    /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources;
-    /// <c>false</c> to release only unmanaged resources, called from the finalizer only.</param>
-    private void Dispose(bool disposing)
-    {
-        if (!_disposed)
+        try
         {
-            if (disposing)
-            {
-                // Stop recording thread.
-                _recordingThreadStoppingCondition = true;
-                _ = _waitHandle.Set();
-
-                // Event handlers can dispose the writer on the recording thread itself.
-                if (_recordingThread != null && _recordingThread != Thread.CurrentThread)
-                    _recordingThread.Join(); // Wait for thread to terminate.
-
-                IsWriting = false;
-                _bufferQueue.Clear();
-            }
-
-            // Free unmanaged resources (unmanaged objects) (and set large fields to null).
-
-            // Dispose WaitHandle.
-            _waitHandle?.Dispose();
-
-            // Dispose filestream.
-            _fileStream?.Dispose();
-
-            _disposed = true;
+            // Stop recording thread, discarding queued buffers (waits for a stop already in progress).
+            StopAsync(discardRemaining: true).Wait();
         }
-    }
-
-    /// <summary>
-    /// Finalizer.
-    /// </summary>
-    ~GcBufferWriter()
-    {
-        Dispose(false);
+        finally
+        {
+            _bufferQueue.Clear();
+            _waitHandle.Dispose();
+            _fileStream.Dispose();
+        }
     }
 
     #endregion
@@ -201,32 +211,56 @@ public sealed class GcBufferWriter : IDisposable
     /// </summary>
     public void OnBufferTransferred(object sender, BufferTransferredEventArgs e)
     {
+        // Ignore buffers unless writing is active (so that the queue cannot grow unbounded when idle, stopping or after an error).
+        if (Volatile.Read(ref _state) != StateRunning || Volatile.Read(ref _aborted) != 0)
+            return;
+
         // Queue transferred buffer.
         _bufferQueue.Enqueue(e.Buffer);
 
         // Proceed with thread.
-        _ = _waitHandle.Set();
+        try
+        {
+            _ = _waitHandle.Set();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Writer was disposed concurrently.
+        }
     }
 
     /// <summary>
-    /// Event announcing that an <see cref="IOException"/> was thrown while writing, with the exception in the event arguments.
+    /// Event announcing that writing was aborted by an error (e.g., an <see cref="IOException"/>), with the exception in the event arguments. Raised once per recording.
     /// </summary>
-    /// <remarks>Failures on the recording thread are reported asynchronously on a thread-pool thread so handlers can stop or dispose the writer.</remarks>
+    /// <remarks>The event is raised on a thread-pool thread, so handlers can safely stop or dispose the writer. Writing must still be stopped by calling <see cref="StopAsync"/>.</remarks>
     public event EventHandler<WritingAbortedEventArgs> WritingAborted;
 
     /// <summary>
-    /// Event-invoking method, announcing that an <see cref="IOException"/> was thrown while writing, with the exception in the event arguments.
+    /// Event-invoking method, announcing that an exception was thrown while writing, with the exception in the event arguments.
     /// </summary>
+    /// <param name="message">Error message.</param>
     /// <param name="ex">Exception that was thrown.</param>
-    private void OnWritingAborted(string message, IOException ex)
+    private void OnWritingAborted(string message, Exception ex)
     {
         var handler = WritingAborted; // Copy to a temporary variable to be thread-safe.
+        if (handler == null)
+            return;
+
         var eventArgs = new WritingAbortedEventArgs(message, ex);
 
-        // If recording thread raised the event, invoking handler directly would cause a deadlock.
-        if (Thread.CurrentThread == _recordingThread)
-            ThreadPool.QueueUserWorkItem(_ => handler?.Invoke(this, eventArgs)); // Queue invocation on a thread-pool thread.
-        else handler?.Invoke(this, eventArgs);
+        // Always raised on a thread-pool thread: handlers may stop or dispose the writer, which would deadlock if invoked on the recording thread or inside the stop operation.
+        _ = ThreadPool.QueueUserWorkItem(_ =>
+        {
+            try
+            {
+                handler.Invoke(this, eventArgs);
+            }
+            catch (Exception handlerException)
+            {
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+                    GcLibrary.Logger.LogError(handlerException, "WritingAborted event handler threw an exception");
+            }
+        });
     }
 
     #endregion
@@ -242,67 +276,114 @@ public sealed class GcBufferWriter : IDisposable
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        if (IsWriting)
+        // Atomically claim the writer (buffers are not accepted until it has been reset below).
+        if (Interlocked.CompareExchange(ref _state, StateStarting, StateIdle) != StateIdle)
             throw new InvalidOperationException("Writer is already in use!");
 
-        IsWriting = true;
+        // Reset state from any previous run.
+        _bufferQueue.Clear();
+        _ = _waitHandle.Reset();
+        _recordingThreadStoppingCondition = false;
+        Volatile.Write(ref _aborted, 0);
 
         try
         {
             // Write file header.
-            FileSize += WriteToFileStream(GetFileHeader());
+            _ = Interlocked.Add(ref _fileSize, WriteToFileStream(GetFileHeader()));
         }
-        catch (IOException ex)
+        catch (Exception ex)
         {
             if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
                 GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
+
+            Volatile.Write(ref _state, StateIdle); // Reset state to idle, so that writer can be restarted.
 
             // Raise event.
             OnWritingAborted(ex.Message, ex);
             return;
         }
 
-        // Start recording thread.
-        _recordingThread = new Thread(ThreadProc);
-        _recordingThread.Start();
+        // Start recording thread (as background thread, so that it never keeps the process alive).
+        _recordingThread = new Thread(ThreadProc) { IsBackground = true, Priority = ThreadPriority };
+
+        // Start accepting buffers.
+        Volatile.Write(ref _state, StateRunning);
+
+        try
+        {
+            _recordingThread.Start();
+        }
+        catch
+        {
+            Volatile.Write(ref _state, StateIdle); // Reset state to idle, so that writer can be restarted.
+            throw;
+        }
     }
 
     /// <summary>
-    /// Stops writing buffers to file (asynchronously).
+    /// Stops writing buffers to file (asynchronously). Concurrent calls share the same stop operation. Does nothing if the writer is not writing.
     /// </summary>
     /// <param name="discardRemaining">(Optional) If true, remaining buffers in recording queue are discarded.</param>
     /// <returns>(awaitable) Task.</returns>
-    public async Task StopAsync(bool discardRemaining = false)
+    public Task StopAsync(bool discardRemaining = false)
     {
-        if (IsWriting == false)
-            return;
+        lock (_stopLock)
+        {
+            // Only one caller can stop a running writer.
+            if (Interlocked.CompareExchange(ref _state, StateStopping, StateRunning) == StateRunning)
+                _stopTask = StopCoreAsync(discardRemaining);
+            else if (Volatile.Read(ref _state) != StateStopping)
+                return Task.CompletedTask;
 
+            return _stopTask;
+        }
+    }
+
+    #endregion
+
+    #region Private methods
+
+    private async Task StopCoreAsync(bool discardRemaining)
+    {
         // Stop recording thread.
         _recordingThreadStoppingCondition = true;
 
         // Stop thread immediately (without waiting for next buffer).
         _ = _waitHandle.Set();
 
-        // Wait for thread to terminate.
-        _recordingThread?.Join();
+        try
+        {
+            // Wait for thread to terminate and write remaining buffers to file (off the caller's thread).
+            // Do not capture the caller's context, as Dispose blocks on this task and would otherwise deadlock on e.g. a UI thread.
+            await Task.Run(() =>
+            {
+                _recordingThread?.Join();
 
-        if (discardRemaining == false)
-        {
-            // Write remaining buffers to file.
-            await WriteRemainingBuffersAsync();
+                if (discardRemaining || Volatile.Read(ref _aborted) != 0)
+                    _bufferQueue.Clear();
+                else
+                    WriteRemainingBuffers();
+
+                // Flush to file, so that I/O errors are reported as aborted writing (rather than when disposing).
+                if (Volatile.Read(ref _aborted) == 0)
+                {
+                    try
+                    {
+                        _fileStream.Flush();
+                    }
+                    catch (Exception ex)
+                    {
+                        HandleWriteError(ex);
+                    }
+                }
+            }).ConfigureAwait(false);
         }
-        else
+        finally
         {
-            // Discard remaining buffers.
             _bufferQueue.Clear();
+            Volatile.Write(ref _state, StateIdle); // Reset state to idle, so that writer can be restarted.
         }
-
-        IsWriting = false;
     }
-
-    #endregion
-
-    #region Private methods
 
     /// <summary>
     /// Continuously waits for buffers to be queued and writes queued buffers to file.
@@ -320,24 +401,13 @@ public sealed class GcBufferWriter : IDisposable
             {
                 try
                 {
-                    FileSize += WriteToFileStream(GetImageData(buffer));
-                    //throw new IOException("Disk is full!");
+                    WriteBuffer(buffer);
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    // Log error.
-                    if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
-                        GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
-
-                    // Clear buffer.
-                    _bufferQueue.Clear();
-
-                    // Raise event.
-                    OnWritingAborted(ex.Message, ex);
+                    HandleWriteError(ex);
                     break;
                 }
-
-                BuffersWritten++;
             }
         }
     }
@@ -345,38 +415,91 @@ public sealed class GcBufferWriter : IDisposable
     /// <summary>
     /// Write remaining buffers in queue to file.
     /// </summary>
-    /// <returns>Awaitable task.</returns>
-    private async Task WriteRemainingBuffersAsync()
+    private void WriteRemainingBuffers()
     {
-        if (_bufferQueue.IsEmpty == false)
+        if (_bufferQueue.IsEmpty)
+            return;
+
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+            GcLibrary.Logger.LogDebug("{bufferCount} buffers remaining. Finishing up...", _bufferQueue.Count);
+
+        while (Volatile.Read(ref _aborted) == 0 && _bufferQueue.TryDequeue(out GcBuffer buffer))
         {
-            if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
-                GcLibrary.Logger.LogDebug("{bufferCount} buffers remaining. Finishing up...", _bufferQueue.Count);
-            while (_bufferQueue.TryDequeue(out GcBuffer buffer))
+            try
             {
-                try
-                {
-                    FileSize += await WriteToFileStreamAsync(GetImageData(buffer));
-                }
-                catch (IOException ex)
-                {
-                    // Log error.
-                    if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
-                        GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
-
-                    // Clear buffer.
-                    _bufferQueue.Clear();
-
-                    // Raise event.
-                    OnWritingAborted(ex.Message, ex);
-                    break;
-                }
-
-                BuffersWritten++;
+                WriteBuffer(buffer);
             }
-            if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
-                GcLibrary.Logger.LogDebug("Writing complete. {bufferCount} buffers remaining.", _bufferQueue.Count);
+            catch (Exception ex)
+            {
+                HandleWriteError(ex);
+                break;
+            }
         }
+
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Debug))
+            GcLibrary.Logger.LogDebug("Writing complete. {bufferCount} buffers remaining.", _bufferQueue.Count);
+    }
+
+    /// <summary>
+    /// Aborts writing after an error (clearing the queue) and reports it once.
+    /// </summary>
+    private void HandleWriteError(Exception ex)
+    {
+        // Stop accepting buffers before clearing the queue, so that nothing is queued behind the clear.
+        bool alreadyReported = Interlocked.Exchange(ref _aborted, 1) != 0;
+        _bufferQueue.Clear();
+
+        if (alreadyReported)
+            return;
+
+        // Log error.
+        if (GcLibrary.Logger.IsEnabled(LogLevel.Error))
+            GcLibrary.Logger.LogError(ex, "Failed to write data to {filePath}", FilePath);
+
+        // Raise event.
+        OnWritingAborted(ex.Message, ex);
+    }
+
+    /// <summary>
+    /// Returns the size (in bytes) of the image data of a buffer with specified size and pixel format (rounded up to whole bytes for packed formats).
+    /// </summary>
+    internal static long GetImageDataSize(uint width, uint height, PixelFormat pixelFormat)
+    {
+        return (((long)width * height * GenICamHelper.GetBitsPerPixel(pixelFormat)) + 7) / 8;
+    }
+
+    /// <summary>
+    /// Writes buffer (image header and image data) to file.
+    /// </summary>
+    /// <exception cref="IOException"></exception>
+    /// <exception cref="InvalidOperationException">Buffer differs in size or pixel format from the first buffer written.</exception>
+    private void WriteBuffer(GcBuffer buffer)
+    {
+        // The reader derives the frame size from the first frame, so all frames must have the same size.
+        var format = (buffer.Width, buffer.Height, buffer.PixelFormat);
+        _frameFormat ??= format;
+        if (_frameFormat.Value != format)
+            throw new InvalidOperationException($"Buffer ({buffer.Width}x{buffer.Height}, {buffer.PixelFormat}) differs from the first buffer written ({_frameFormat.Value.Width}x{_frameFormat.Value.Height}, {_frameFormat.Value.PixelFormat})! All images in a file must have the same size and pixel format.");
+
+        // Write exactly the image data size the reader expects (the buffer's array may be larger).
+        long imageDataSize = GetImageDataSize(buffer.Width, buffer.Height, buffer.PixelFormat);
+        if (imageDataSize > int.MaxValue)
+            throw new InvalidOperationException($"Image data of {imageDataSize} bytes is too large to write!");
+
+        // Image header.
+        Span<byte> header = _imageHeader;
+        BinaryPrimitives.WriteInt64LittleEndian(header[0..], buffer.FrameID); // frame ID
+        BinaryPrimitives.WriteUInt64LittleEndian(header[8..], buffer.TimeStamp); // timestamp
+        BinaryPrimitives.WriteUInt32LittleEndian(header[16..], buffer.Width); // width
+        BinaryPrimitives.WriteUInt32LittleEndian(header[20..], buffer.Height); // height
+        BinaryPrimitives.WriteInt32LittleEndian(header[24..], (int)buffer.PixelFormat); // pixel format
+        BinaryPrimitives.WriteUInt32LittleEndian(header[28..], buffer.PixelDynamicRangeMax); // dynamic range
+
+        _fileStream.Write(_imageHeader, 0, _imageHeader.Length);
+        _fileStream.Write(buffer.ImageData, 0, (int)imageDataSize);
+
+        _ = Interlocked.Add(ref _fileSize, _imageHeader.Length + imageDataSize);
+        _ = Interlocked.Increment(ref _buffersWritten);
     }
 
     /// <summary>
@@ -394,30 +517,6 @@ public sealed class GcBufferWriter : IDisposable
     }
 
     /// <summary>
-    /// Get image and chunk data from buffer.
-    /// </summary>
-    /// <param name="buffer">Buffer, containing image and chunk data.</param>
-    /// <returns>Byte array containing image header and image itself.</returns>
-    private static byte[] GetImageData(GcBuffer buffer)
-    {
-        // Allocate space for header and image.
-        byte[] imageData = new byte[ImageHeaderSize + buffer.ImageData.Length];
-
-        // Copy image header data.
-        Buffer.BlockCopy(BitConverter.GetBytes(buffer.FrameID), 0, imageData, 0, 8); // frame ID
-        Buffer.BlockCopy(BitConverter.GetBytes(buffer.TimeStamp), 0, imageData, 8, 8); // timestamp
-        Buffer.BlockCopy(BitConverter.GetBytes(buffer.Width), 0, imageData, 16, 4); // width
-        Buffer.BlockCopy(BitConverter.GetBytes(buffer.Height), 0, imageData, 20, 4); // height
-        Buffer.BlockCopy(BitConverter.GetBytes((int)buffer.PixelFormat), 0, imageData, 24, 4); // pixel format         
-        Buffer.BlockCopy(BitConverter.GetBytes(buffer.PixelDynamicRangeMax), 0, imageData, 28, 4); // dynamic range        
-
-        // Copy image data.
-        Buffer.BlockCopy(buffer.ImageData, 0, imageData, (int)ImageHeaderSize, buffer.ImageData.Length);
-
-        return imageData;
-    }
-
-    /// <summary>
     /// Writes data to file.
     /// </summary>
     /// <param name="byteArray">Data to write.</param>
@@ -428,22 +527,6 @@ public sealed class GcBufferWriter : IDisposable
         if (byteArray != null)
         {
             _fileStream.Write(buffer: byteArray, offset: 0, count: byteArray.Length);
-            return byteArray.Length;
-        }
-        else return 0;
-    }
-
-    /// <summary>
-    /// Writes data to file (asynchronously).
-    /// </summary>
-    /// <param name="byteArray">Data to write.</param>
-    /// <returns>Number of bytes written.</returns>
-    /// <exception cref="IOException"></exception>
-    private async Task<int> WriteToFileStreamAsync(byte[] byteArray)
-    {
-        if (byteArray != null)
-        {
-            await _fileStream.WriteAsync(buffer: byteArray);
             return byteArray.Length;
         }
         else return 0;
