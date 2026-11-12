@@ -125,6 +125,8 @@ public sealed partial class SpinCam
         byte[] ownedData = new byte[sourceData.Length];
         Buffer.BlockCopy(sourceData, 0, ownedData, 0, sourceData.Length);
 
+        // ToDo: Handle PaddingX and PaddingY for row padding (requires GcBuffer to support non-tightly packed image data).
+
         var buffer = new GcBuffer(ownedData,
                                   image.Width,
                                   image.Height,

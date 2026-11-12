@@ -180,6 +180,8 @@ public sealed partial class IdsCam
         byte[] imageData = new byte[payloadSize];
         Marshal.Copy(sourcePtr, imageData, 0, payloadSize);
 
+        // ToDo: Handle PaddingX (buffer.XPadding()) and PaddingY (buffer.YPadding()) for row padding (requires GcBuffer to support non-tightly packed image data).
+
         var gcBuffer = new GcBuffer(imageData,
                                     buffer.Width(),
                                     buffer.Height(),

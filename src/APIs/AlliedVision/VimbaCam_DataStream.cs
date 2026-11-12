@@ -93,10 +93,13 @@ public sealed partial class VimbaCam
 
             const string streamID = "";
             int payloadSize = (int)frame.BufferSize;
-            ulong timeStamp = (ulong)DateTime.Now.Ticks;
+            ulong timeStamp = (ulong)DateTime.Now.Ticks; // ToDo: Convert camera timestamp to PC ticks (requires camera-specific timestamp conversion).
 
             byte[] imageData = new byte[payloadSize];
             Marshal.Copy(frame.ImageData, imageData, 0, payloadSize);
+
+            // ToDo: Handle PaddingX and PaddingY for row padding (requires GcBuffer to support non-tightly packed image data).
+            // Only necessary for 3rd-party cameras (Allied Vision use tightly packed image data). Use LinePitch feature or compare BufferSize with Width * Height * BytesPerPixel to determine if padding is present.
 
             var buffer = new GcBuffer(imageData,
                                       frame.Width,

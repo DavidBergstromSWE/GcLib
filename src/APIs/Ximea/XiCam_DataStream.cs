@@ -286,6 +286,8 @@ public sealed partial class XiCam
             Buffer.BlockCopy(buffer, 0, ownedData, 0, buffer.Length);
         }
 
+        // ToDo: Handle PaddingX (GetPaddingX()) and PaddingY for row padding (requires GcBuffer to support non-tightly packed image data).
+
         var gcBuffer = new GcBuffer(ownedData,
                                     (uint)width,
                                     (uint)height,

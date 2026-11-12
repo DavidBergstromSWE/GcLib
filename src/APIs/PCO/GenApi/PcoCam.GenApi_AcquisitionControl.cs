@@ -336,6 +336,8 @@ public partial class PcoCam
             byte[] imageData = new byte[payloadSize];
             Marshal.Copy(sourcePointer, imageData, 0, payloadSize);
 
+            // Row padding is not used by PCO SDK, so we can assume that image data is tightly packed in memory (no padding).
+
             var buffer = new GcBuffer(imageData,
                                       (uint)Width.Value,
                                       (uint)Height.Value,

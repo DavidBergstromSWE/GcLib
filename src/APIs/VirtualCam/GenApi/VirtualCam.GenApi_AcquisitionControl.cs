@@ -255,11 +255,13 @@ public sealed partial class VirtualCam
                         }
                         else
                         {
+                            // Images read from directory are assumed to be tightly packed in memory (no row padding). Is this assumption valid for all image formats? If not, we need to check for row padding and handle it accordingly.
                             buffer = _framePipeline.CreateBufferFromDirectoryFrame(frameId, binningHorizontal, binningVertical, reverseX, reverseY);
                         }
                     }
                     else
                     {
+                        // TestPatternGenerator packs data tightly in memory, so we can assume that image data is tightly packed (no row padding).
                         buffer = _framePipeline.CreateBufferFromGeneratedFrame(frameId, offsetX, offsetY, width, height, widthMax, heightMax, reverseX, reverseY);
                     }
 

@@ -1,6 +1,8 @@
 using System;
 using Emgu.CV;
+using Emgu.CV.Structure;
 using GcLib.Utilities.Imaging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GcLib;
 
@@ -36,6 +38,11 @@ public sealed partial class VirtualCam
 
                 ApplyBinning(mat, binningHorizontal, binningVertical);
                 ApplyFlip(mat, reverseX, reverseY);
+
+                // You can check at runtime whether a Mat has row padding by inspecting mat.IsContinuous.
+                // If mat.IsContinuous is true, there is zero row padding.
+                // If false, the exact byte distance between rows is stored in mat.Step(in bytes), whereas the active pixel data per row is mat.Cols * mat.ElementSize.
+
                 return new GcBuffer(mat, detectedPixelFormat, frameId, (ulong)_owner.TimeStamp.Value);
             }
 

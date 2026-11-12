@@ -178,12 +178,15 @@ public sealed partial class PylonCam
         if (pixelFormat == PixelFormat.InvalidPixelFormat)
             throw new NotSupportedException($"Pixel type {grabResult.PixelTypeValue} is not supported!");
 
+        // Copy pixel data to a new array to ensure that the buffer is owned by the GcBuffer instance and not tied to the lifetime of the grab result.
         var pixelData = (byte[])grabResult.PixelData;
         var ownedPixelData = new byte[pixelData.Length];
         Buffer.BlockCopy(pixelData, 0, ownedPixelData, 0, pixelData.Length);
 
         // Convert camera timestamp (in camera specific ticks) to PC ticks.
         var timeStamp = ToPcTicks(grabResult.Timestamp);
+
+        // ToDo: Handle PaddingX and PaddingY for row padding (requires GcBuffer to support non-tightly packed image data).
 
         var buffer = new GcBuffer(ownedPixelData,
                                   (uint)grabResult.Width,

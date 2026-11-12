@@ -109,6 +109,10 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     /// <exception cref="ArgumentException">Thrown when the provided byte array is too small to fit the specified dimensions and pixel format.</exception>
     public GcBuffer(byte[] imageData, uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timeStamp)
     {
+        // ToDo: Add support for row padding and stride, to allow for image data that is not tightly packed in memory.
+        // GenICam defines PaddingX and PaddingY for this purpose, but they are not always available in the camera API.
+        // For now, we assume that the image data is tightly packed (e.g. no padding).
+
         // Validate array size.
         long requiredBits = (long)width * height * GenICamHelper.GetBitsPerPixel(pixelFormat); // Total bits required for the specified image dimensions and pixel format.
         long requiredBytes = (requiredBits + 7) / 8; // Round up to whole bytes (needed for packed formats).
