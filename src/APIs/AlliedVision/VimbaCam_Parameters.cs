@@ -99,7 +99,7 @@ public sealed partial class VimbaCam
                 ((IIntFeature)feature).Value = long.Parse(parameterValue, CultureInfo.CurrentCulture);
                 break;
             case IFeature.TypeValue.Float:
-                ((IFloatFeature)feature).Value = double.Parse(parameterValue, CultureInfo.CurrentCulture);
+                ((IFloatFeature)feature).Value = double.Parse(parameterValue, CultureInfo.InvariantCulture);
                 break;
             case IFeature.TypeValue.Enum:
                 ((IEnumFeature)feature).Value = parameterValue;

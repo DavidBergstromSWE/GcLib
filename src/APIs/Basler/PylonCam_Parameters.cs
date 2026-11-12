@@ -122,7 +122,7 @@ public sealed partial class PylonCam
                     integerParameter.SetValue(int.Parse(parameterValue), IntegerValueCorrection.Nearest);
                     break;
                 case IFloatParameter floatParameter:
-                    floatParameter.SetValue(double.Parse(parameterValue, CultureInfo.CurrentCulture), FloatValueCorrection.ClipToRange); // Use current culture for float parsing
+                    floatParameter.SetValue(double.Parse(parameterValue, CultureInfo.InvariantCulture), FloatValueCorrection.ClipToRange);
                     break;
                 case IStringParameter stringParameter:
                     stringParameter.SetValue(parameterValue);

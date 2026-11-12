@@ -343,7 +343,7 @@ public sealed partial class XiCam
                     break;
 
                 case GcParameterType.Float:
-                    _xiCam.SetParam(xiApiParameter, Convert.ToSingle(parameterValue));
+                    _xiCam.SetParam(xiApiParameter, Convert.ToSingle(parameterValue, CultureInfo.InvariantCulture));
                     break;
 
                 case GcParameterType.String:

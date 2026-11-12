@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 
 namespace GcLib;
@@ -40,7 +41,7 @@ public sealed partial class PcoCam
                     break;
 
                 case GcFloat gcFloat:
-                    propertyInfo.PropertyType.GetProperty(nameof(GcFloat.Value)).SetValue(parameter, Convert.ToDouble(parameterValue), null);
+                    propertyInfo.PropertyType.GetProperty(nameof(GcFloat.Value)).SetValue(parameter, Convert.ToDouble(parameterValue, CultureInfo.InvariantCulture), null);
                     break;
 
                 case GcBoolean gcBoolean:

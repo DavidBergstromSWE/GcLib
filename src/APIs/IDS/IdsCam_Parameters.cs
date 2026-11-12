@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using IDSImaging.Peak.API.Core;
 using IDSImaging.Peak.API.Core.Nodes;
@@ -307,7 +308,7 @@ public sealed partial class IdsCam
             case GcParameterType.Float:
                 var floatNode = _nodeMap.FindNode<FloatNode>(parameterName);
                 if (floatNode.IsWriteable())
-                    floatNode.SetValue(float.Parse(parameterValue));
+                    floatNode.SetValue(float.Parse(parameterValue, CultureInfo.InvariantCulture));
                 break;
             case GcParameterType.Integer:
                 var integerNode = _nodeMap.FindNode<IntegerNode>(parameterName);
