@@ -283,7 +283,7 @@ public class GcProcessingThreadTests
         _mockStream.Raise(s => s.NewBuffer += null, EventArgs.Empty);
 
         // Assert
-        Assert.IsTrue(handlerWasCalled.Wait(1000));
+        Assert.IsTrue(handlerWasCalled.Wait(1000, TestContext.CancellationToken));
         Assert.IsTrue(_processingThread.IsRunning);
 
         _processingThread.Stop(true);
@@ -321,4 +321,6 @@ public class GcProcessingThreadTests
         // Assert
         Assert.AreEqual(0, _processingThread.QueuedCount);
     }
+
+    public TestContext TestContext { get; set; }
 }

@@ -321,7 +321,7 @@ public class GcBufferWriterTests
             try
             {
                 if (stopOnAnotherThread)
-                    Task.Run(() => _writer.StopAsync()).WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+                    Task.Run(() => _writer.StopAsync(), TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken).GetAwaiter().GetResult();
                 else
                     _writer.StopAsync().GetAwaiter().GetResult();
 
@@ -336,7 +336,7 @@ public class GcBufferWriterTests
         _writer.Start();
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer()));
 
-        var eventArgs = await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var eventArgs = await completed.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         Assert.AreSame(failingStream.Failure, eventArgs.Exception);
         Assert.IsFalse(_writer.IsWriting);
@@ -387,7 +387,7 @@ public class GcBufferWriterTests
             BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
 
         // Act
-        await Task.WhenAll(Task.Run(() => _writer.StopAsync()), Task.Run(() => _writer.StopAsync()), _writer.StopAsync());
+        await Task.WhenAll(Task.Run(() => _writer.StopAsync(), TestContext.CancellationToken), Task.Run(() => _writer.StopAsync(), TestContext.CancellationToken), _writer.StopAsync());
 
         // Assert
         Assert.IsFalse(_writer.IsWriting);
@@ -408,7 +408,7 @@ public class GcBufferWriterTests
 
         // Act
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer()));
-        var eventArgs = await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var eventArgs = await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer()));
         await _writer.StopAsync();
 
@@ -439,7 +439,7 @@ public class GcBufferWriterTests
         // Assert
         Assert.AreEqual(2 * ((long)GcBufferWriter.ImageHeaderSize + 9), new FileInfo(_path).Length);
         using var reader = new GcBufferReader(_path);
-        await reader.OpenAsync();
+        await reader.OpenAsync(token: TestContext.CancellationToken);
         Assert.AreEqual<ulong>(2, reader.FrameCount);
     }
 
@@ -458,7 +458,7 @@ public class GcBufferWriterTests
 
         // Assert
         using var reader = new GcBufferReader(_path);
-        await reader.OpenAsync();
+        await reader.OpenAsync(token: TestContext.CancellationToken);
         Assert.AreEqual<ulong>(2, reader.FrameCount);
         Assert.IsTrue(reader.ReadImage(out GcBuffer buffer, 1));
         Assert.AreEqual(2, buffer.FrameID);
@@ -476,7 +476,7 @@ public class GcBufferWriterTests
         // Act
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(0)));
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(new GcBuffer(new byte[16], 4, 4, PixelFormat.Mono8, 1, 100)));
-        var eventArgs = await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var eventArgs = await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         await _writer.StopAsync();
 
         // Assert
@@ -496,10 +496,8 @@ public class GcBufferWriterTests
         string path = Path.Combine(directory, "nested", "output.bin");
         try
         {
-            using (var writer = new GcBufferWriter(path))
-            {
-                Assert.IsTrue(File.Exists(path));
-            }
+            using var writer = new GcBufferWriter(path);
+            Assert.IsTrue(File.Exists(path));
         }
         finally
         {
@@ -514,7 +512,7 @@ public class GcBufferWriterTests
         string path = Path.Combine(Path.GetTempPath(), $"GcBufferWriter_{Guid.NewGuid():N}.bin");
         try
         {
-            await File.WriteAllBytesAsync(path, new byte[1000]);
+            await File.WriteAllBytesAsync(path, new byte[1000], TestContext.CancellationToken);
 
             using (var writer = new GcBufferWriter(path))
             {
@@ -561,14 +559,14 @@ public class GcBufferWriterTests
 
         // Assert
         byte[] file = File.ReadAllBytes(_path);
-        Assert.AreEqual((int)GcBufferWriter.ImageHeaderSize + data.Length, file.Length);
+        Assert.HasCount((int)GcBufferWriter.ImageHeaderSize + data.Length, file);
         Assert.AreEqual(123456789012L, BitConverter.ToInt64(file, 0));
         Assert.AreEqual(987654321098UL, BitConverter.ToUInt64(file, 8));
         Assert.AreEqual(3u, BitConverter.ToUInt32(file, 16));
         Assert.AreEqual(3u, BitConverter.ToUInt32(file, 20));
         Assert.AreEqual((int)PixelFormat.Mono8, BitConverter.ToInt32(file, 24));
         Assert.AreEqual(buffer.PixelDynamicRangeMax, BitConverter.ToUInt32(file, 28));
-        CollectionAssert.AreEqual(data, file[(int)GcBufferWriter.ImageHeaderSize..]);
+        Assert.AreSequenceEqual(data, file[(int)GcBufferWriter.ImageHeaderSize..]);
     }
 
     [TestMethod]
@@ -587,7 +585,7 @@ public class GcBufferWriterTests
         // Assert
         byte[] file = File.ReadAllBytes(_path);
         int frameSize = (int)GcBufferWriter.ImageHeaderSize + 9;
-        Assert.AreEqual(numBuffers * frameSize, file.Length);
+        Assert.HasCount(numBuffers * frameSize, file);
         for (int i = 0; i < numBuffers; i++)
             Assert.AreEqual((long)i, BitConverter.ToInt64(file, i * frameSize));
     }
@@ -634,9 +632,9 @@ public class GcBufferWriterTests
         // Act
         for (int i = 0; i < 10; i++)
             BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(i)));
-        await first.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await first.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         await _writer.StopAsync();
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.CancellationToken);
 
         // Assert
         Assert.AreEqual(1, raised);
@@ -652,7 +650,7 @@ public class GcBufferWriterTests
         _writer.WritingAborted += (_, _) => aborted.TrySetResult();
         _writer.Start();
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer()));
-        await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         // Act
         for (int i = 0; i < 10; i++)
@@ -677,7 +675,7 @@ public class GcBufferWriterTests
         await _writer.StopAsync();
 
         // Assert
-        var eventArgs = await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        var eventArgs = await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         Assert.AreSame(stream.Failure, eventArgs.Exception);
         Assert.IsFalse(_writer.IsWriting);
     }
@@ -697,7 +695,7 @@ public class GcBufferWriterTests
 
         // Act
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer()));
-        await raised.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await raised.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         await _writer.StopAsync();
 
         // Assert
@@ -713,7 +711,7 @@ public class GcBufferWriterTests
         _writer.WritingAborted += (_, _) => aborted.TrySetResult();
         _writer.Start();
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(0)));
-        await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         await _writer.StopAsync();
 
         _ = ReplaceStream(() => new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true));
@@ -789,7 +787,7 @@ public class GcBufferWriterTests
 
         // Act
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer()));
-        await disposed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await disposed.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         // Assert
         Assert.IsTrue(_writer.IsDisposed);
@@ -927,6 +925,8 @@ public class GcBufferWriterTests
 
         return new GcBuffer(imageData: data, width: 3, height: 3, pixelFormat: PixelFormat.Mono8, frameID: n, timeStamp: (ulong)DateTime.Now.Ticks);
     }
+
+    public TestContext TestContext { get; set; }
 
     #endregion
 }

@@ -264,7 +264,7 @@ public class RandomizerTests
             long signedValue = randomizer.Next(signedMin, signedMax);
             ulong unsignedValue = randomizer.Next(0UL, unsignedMax);
             Assert.IsTrue(signedValue >= signedMin && signedValue <= signedMax);
-            Assert.IsTrue(unsignedValue <= unsignedMax);
+            Assert.IsLessThanOrEqualTo(unsignedMax, unsignedValue);
         }
     }
 
@@ -389,15 +389,15 @@ public class RandomizerTests
         string[] items = ["first", "second", "third"];
         bool[] seen = new bool[items.Length];
 
-        Assert.AreEqual("only", randomizer.NextItem(new[] { "only" }));
+        Assert.AreEqual("only", randomizer.NextItem(["only"]));
         for (int i = 0; i < 100; i++)
         {
             int index = Array.IndexOf(items, randomizer.NextItem(items));
-            Assert.IsTrue(index >= 0);
+            Assert.IsGreaterThanOrEqualTo(0, index);
             seen[index] = true;
         }
 
-        CollectionAssert.AreEqual(new[] { true, true, true }, seen);
+        Assert.AreSequenceEqual([true, true, true], seen);
     }
 
     private static void AssertBothBoundsOccur<T>(T min, T max) where T : INumber<T>

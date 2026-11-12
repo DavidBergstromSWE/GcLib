@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Xml;
 using GcLib.Utilities.Collections;
 
@@ -14,23 +14,20 @@ public sealed class GcConfigurationManager : IDisposable
     #region Fields
 
     /// <summary>
-    /// Camera device.
-    /// </summary>
-    private GcDevice _camera;
-
-    /// <summary>
-    /// List of properties, containing simple parameter name/value string pairs.
+    /// List of properties, containing simple parameter name/value string pairs. Null until properties have been loaded or stored.
     /// </summary>
     private List<KeyValuePair<string, string>> _propertyList;
+
+    private bool _disposed;
 
     #endregion
 
     #region Properties
 
     /// <summary>
-    /// Number of parameter name/value string pairs (properties).
+    /// Number of parameter name/value string pairs (properties). Zero if no properties have been loaded or stored.
     /// </summary>
-    public uint PropertyCount => (uint)_propertyList.Count;
+    public uint PropertyCount => (uint)(_propertyList?.Count ?? 0);
 
     /// <summary>
     /// Name of device.
@@ -45,10 +42,11 @@ public sealed class GcConfigurationManager : IDisposable
     /// Creates a new manager for loading and saving camera configuration xml files.
     /// </summary>
     /// <param name="camera">Camera device.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="camera"/> is null.</exception>
     public GcConfigurationManager(GcDevice camera)
     {
-        _camera = camera;
-        DeviceName = _camera.DeviceInfo.UniqueID;
+        ArgumentNullException.ThrowIfNull(camera);
+        DeviceName = camera.DeviceInfo.UniqueID;
     }
 
     #endregion
@@ -59,33 +57,54 @@ public sealed class GcConfigurationManager : IDisposable
     /// Imports a list of properties from an xml configuration file.
     /// </summary>
     /// <param name="filePath">Filepath to configuration xml file.</param>
+    /// <exception cref="InvalidDataException">The file is not a valid configuration file.</exception>
+    /// <exception cref="InvalidOperationException">The file was created for another device.</exception>
+    /// <exception cref="XmlException">The file contains malformed xml.</exception>
     public void Load(string filePath)
     {
+        ThrowIfDisposed();
+        ArgumentException.ThrowIfNullOrEmpty(filePath);
+
         var propertyList = new List<KeyValuePair<string, string>>();
 
-        using var reader = XmlReader.Create(filePath);
+        var settings = new XmlReaderSettings
+        {
+            IgnoreComments = true,
+            IgnoreProcessingInstructions = true,
+            IgnoreWhitespace = true,
+        };
 
-        //reader.ReadStartElement("GcLib:ParameterList");
-        reader.ReadToFollowing("ParameterList");
+        using var reader = XmlReader.Create(filePath, settings);
+
+        if (!reader.ReadToFollowing("ParameterList"))
+        {
+            throw new InvalidDataException($"File {filePath} is not a configuration file (missing ParameterList element)!");
+        }
+
         if (reader.GetAttribute("Device") != DeviceName)
         {
             throw new InvalidOperationException($"File {filePath} is incompatible with device {DeviceName}!");
         }
 
-        _ = reader.Read();
-        while (reader.NodeType != XmlNodeType.EndElement)
+        // An empty list is written as a self-closing element, with nothing to read.
+        if (!reader.IsEmptyElement)
         {
-            if (reader.NodeType == XmlNodeType.Whitespace)
+            int rootDepth = reader.Depth;
+            while (reader.Read() && !(reader.NodeType == XmlNodeType.EndElement && reader.Depth == rootDepth))
             {
-                _ = reader.Read();
-                continue;
+                if (reader.NodeType != XmlNodeType.Element || reader.Name != "Parameter")
+                    continue;
+
+                string key = reader.GetAttribute("Name");
+                string value = reader.GetAttribute("Value");
+
+                if (string.IsNullOrEmpty(key) || value is null)
+                {
+                    throw new InvalidDataException($"File {filePath} contains a parameter without Name or Value attribute (line {(reader as IXmlLineInfo)?.LineNumber})!");
+                }
+
+                propertyList.Add(new KeyValuePair<string, string>(key, value));
             }
-            string key = reader.GetAttribute("Name");
-            string value = reader.GetAttribute("Value");
-
-            propertyList.Add(new KeyValuePair<string, string>(key, value));
-
-            _ = reader.Read();
         }
 
         _propertyList = propertyList;
@@ -95,66 +114,96 @@ public sealed class GcConfigurationManager : IDisposable
     /// Exports a list of properties to an xml configuration file.
     /// </summary>
     /// <param name="filePath">Filepath to configuration xml file.</param>
+    /// <exception cref="InvalidOperationException">No properties have been loaded or stored.</exception>
     public void Save(string filePath)
     {
+        ThrowIfDisposed();
+        ArgumentException.ThrowIfNullOrEmpty(filePath);
+        if (_propertyList is null)
+            throw new InvalidOperationException("There are no properties to save. Call Store or Load first!");
+
         var settings = new XmlWriterSettings
         {
             Indent = true,
             NewLineOnAttributes = true,
         };
 
-        using var writer = XmlWriter.Create(filePath, settings);
-
-        writer.WriteStartDocument();
-        writer.WriteStartElement("ParameterList"); // root element
-        writer.WriteAttributeString("Device", DeviceName);
-
-        foreach (KeyValuePair<string, string> property in _propertyList)
+        // Written to a temporary file first, so that a failure never leaves a partial configuration file behind.
+        string tempPath = filePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
         {
-            writer.WriteStartElement("Parameter");
-            writer.WriteAttributeString("Name", property.Key);
-            writer.WriteAttributeString("Value", property.Value);
-            writer.WriteEndElement();
-        }
+            using (var writer = XmlWriter.Create(tempPath, settings))
+            {
+                writer.WriteStartDocument();
+                writer.WriteStartElement("ParameterList"); // root element
+                writer.WriteAttributeString("Device", DeviceName);
 
-        // root
-        writer.WriteEndElement();
+                foreach (KeyValuePair<string, string> property in _propertyList)
+                {
+                    writer.WriteStartElement("Parameter");
+                    writer.WriteAttributeString("Name", property.Key);
+                    writer.WriteAttributeString("Value", property.Value);
+                    writer.WriteEndElement();
+                }
+
+                writer.WriteEndElement(); // root
+                writer.WriteEndDocument();
+            }
+
+            File.Move(tempPath, filePath, overwrite: true);
+        }
+        catch
+        {
+            try { File.Delete(tempPath); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            throw;
+        }
     }
 
     /// <summary>
-    /// Restores a configuration to a device.
+    /// Restores a configuration to a device. Parameters that are not implemented by the device, not writable or already have the stored value are left untouched.
     /// </summary>
     /// <param name="camera">Camera device.</param>
-    public void Restore(GcDevice camera)
+    /// <returns>Names of parameters that could not be restored (empty if all succeeded).</returns>
+    /// <exception cref="InvalidOperationException">No properties have been loaded or stored, or the device is not the one the configuration was created for.</exception>
+    public IReadOnlyList<string> Restore(GcDevice camera)
     {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(camera);
+        if (_propertyList is null)
+            throw new InvalidOperationException("There are no properties to restore. Call Load or Store first!");
+        if (camera.DeviceInfo.UniqueID != DeviceName)
+            throw new InvalidOperationException($"Configuration is incompatible with device {camera.DeviceInfo.UniqueID}!");
+
         IReadOnlyParameterCollection parameterCollection = camera.Parameters;
+        var failedParameters = new List<string>();
 
         foreach (KeyValuePair<string, string> property in _propertyList)
         {
             string parameterName = property.Key;
             string parameterValue = property.Value;
 
-            if (parameterCollection.IsImplemented(parameterName))
-            {
-                GcParameter gcParameter = camera.Parameters.GetParameter(parameterName);
+            if (!parameterCollection.IsImplemented(parameterName))
+                continue;
 
-                // Only change if needed.
-                if (camera.Parameters.GetParameterValue(parameterName) == parameterValue)
+            try
+            {
+                GcParameter gcParameter = parameterCollection.GetParameter(parameterName);
+                if (!gcParameter.IsImplemented || !gcParameter.IsWritable)
                     continue;
 
-                if (gcParameter.IsImplemented && gcParameter.IsWritable)
-                {
-                    try
-                    {
-                        camera.Parameters.SetParameterValue(parameterName, parameterValue);
-                    }
-                    catch (Exception)
-                    {
-                        // skip
-                    }
-                }
+                // Only change if needed.
+                if (gcParameter.IsReadable && parameterCollection.GetParameterValue(parameterName) == parameterValue)
+                    continue;
+
+                parameterCollection.SetParameterValue(parameterName, parameterValue);
+            }
+            catch (Exception)
+            {
+                failedParameters.Add(parameterName);
             }
         }
+
+        return failedParameters;
     }
 
     /// <summary>
@@ -163,11 +212,14 @@ public sealed class GcConfigurationManager : IDisposable
     /// <param name="parameterList">Camera parameter list.</param>
     public void Store(IReadOnlyList<GcParameter> parameterList)
     {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(parameterList);
+
         var propertyList = new List<KeyValuePair<string, string>>();
 
         foreach (GcParameter gcParameter in parameterList)
         {
-            if (gcParameter is GcCommand || gcParameter.Visibility == GcVisibility.Invisible)
+            if (gcParameter is GcCommand || gcParameter.Visibility == GcVisibility.Invisible || !gcParameter.IsImplemented)
                 continue;
 
             string parameterName = gcParameter.Name;
@@ -180,12 +232,9 @@ public sealed class GcConfigurationManager : IDisposable
             {
                 foreach (string parameter in selectedParameters)
                 {
-                    if (propertyList.Where(keyValuePair => keyValuePair.Key == parameter).ToList().Count > 0)
-                    {
-                        int pos = propertyList.FindIndex(p => p.Key == parameter); // position of parameter being selected
-                        if (pos < destinationIndex)
-                            destinationIndex = pos;
-                    }
+                    int pos = propertyList.FindIndex(p => p.Key == parameter); // position of parameter being selected
+                    if (pos >= 0 && pos < destinationIndex)
+                        destinationIndex = pos;
                 }
             }
 
@@ -198,8 +247,17 @@ public sealed class GcConfigurationManager : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        _propertyList?.Clear();
-        _camera = null;
+        _disposed = true;
+        _propertyList = null;
+    }
+
+    #endregion
+
+    #region Private methods
+
+    private void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     #endregion

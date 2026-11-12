@@ -663,7 +663,7 @@ public class VirtualCamTests
         // Assert
         Assert.AreEqual(baseline.Width, shifted.Width);
         Assert.AreEqual(baseline.Height, shifted.Height);
-        Assert.IsTrue(shifted.ImageData[0] < baseline.ImageData[0]);
+        Assert.IsLessThan(baseline.ImageData[0], shifted.ImageData[0]);
     }
 
     [TestMethod]
@@ -687,7 +687,7 @@ public class VirtualCamTests
         // Assert
         Assert.AreEqual(baseline.Width, shifted.Width);
         Assert.AreEqual(baseline.Height, shifted.Height);
-        Assert.IsTrue(shifted.ImageData[0] < baseline.ImageData[0]);
+        Assert.IsLessThan(baseline.ImageData[0], shifted.ImageData[0]);
     }
 
     [TestMethod]

@@ -273,7 +273,7 @@ public class VideoWriterTests
         await writer.StopAsync();
 
         // Assert (the event is raised asynchronously on a thread-pool thread).
-        _ = await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        _ = await aborted.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         Assert.AreEqual(0, writer.FramesWritten);
         Assert.IsFalse(File.Exists(_path));
 
@@ -295,9 +295,9 @@ public class VideoWriterTests
             try
             {
                 if (stopOnAnotherThread)
-                    Task.Run(() => writer.StopAsync()).WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+                    Task.Run(() => writer.StopAsync(), TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken).GetAwaiter().GetResult();
                 else
-                    writer.StopAsync().Wait(TimeSpan.FromSeconds(5));
+                    writer.StopAsync().Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
                 completed.TrySetResult();
             }
@@ -310,7 +310,7 @@ public class VideoWriterTests
 
         // Act (an unsupported pixel format aborts writing on the recording thread).
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(0, 640, 320, PixelFormat.Mono10)));
-        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         // Assert
         Assert.IsFalse(writer.IsWriting);
@@ -335,7 +335,7 @@ public class VideoWriterTests
 
         // Act
         BufferTransferred.Invoke(this, new BufferTransferredEventArgs(GetBuffer(0, 640, 320, PixelFormat.Mono10)));
-        await raised.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await raised.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         await writer.StopAsync();
 
         // Assert
@@ -416,6 +416,8 @@ public class VideoWriterTests
 
         return new GcBuffer(imageData: data, width: width, height: height, pixelFormat: pixelFormat, frameID: n, timeStamp: (ulong)DateTime.Now.Ticks);
     }
+
+    public TestContext TestContext { get; set; }
 
     #endregion
 }

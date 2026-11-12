@@ -72,7 +72,7 @@ public class NumericHelperTests
     {
         byte[] actual = NumericHelper.ToBytes(Array.Empty<int>());
 
-        Assert.AreEqual(0, actual.Length);
+        Assert.IsEmpty(actual);
     }
 
     [TestMethod]
@@ -101,7 +101,7 @@ public class NumericHelperTests
     [TestMethod]
     public void DoubleToSpan_Scalar_WritesAllSupportedWidthsIntoProvidedBuffer()
     {
-        Assert.AreSequenceEqual(new byte[] { byte.MaxValue }, ConvertToBytes(byte.MaxValue, sizeof(byte)));
+        Assert.AreSequenceEqual([byte.MaxValue], ConvertToBytes(byte.MaxValue, sizeof(byte)));
         Assert.AreSequenceEqual(BitConverter.GetBytes((ushort)0x1234), ConvertToBytes(0x1234, sizeof(ushort)));
         Assert.AreSequenceEqual(BitConverter.GetBytes((uint)0x12345678), ConvertToBytes(0x12345678, sizeof(uint)));
         Assert.AreSequenceEqual(BitConverter.GetBytes(0x123456789ABCD0UL), ConvertToBytes(0x123456789ABCD0UL, sizeof(ulong)));
@@ -176,6 +176,6 @@ public class NumericHelperTests
     private static void DoubleToSpanWithWrongBufferLength()
     {
         Span<byte> bytes = stackalloc byte[3];
-        NumericHelper.DoubleToSpan(ref bytes, new double[] { 1, 2 });
+        NumericHelper.DoubleToSpan(ref bytes, [1, 2]);
     }
 }

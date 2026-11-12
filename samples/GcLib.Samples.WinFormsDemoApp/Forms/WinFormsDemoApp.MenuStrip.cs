@@ -36,7 +36,11 @@ public partial class WinFormsDemoApp : Form
                 try
                 {
                     configurationManager.Load(filePath);
-                    configurationManager.Restore(_camera);
+                    var failedParameters = configurationManager.Restore(_camera);
+                    if (failedParameters.Count > 0)
+                    {
+                        _ = MessageBox.Show(this, "The following parameters could not be restored: " + string.Join(", ", failedParameters), "Configuration", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
                 }
                 catch (Exception ex)
                 {

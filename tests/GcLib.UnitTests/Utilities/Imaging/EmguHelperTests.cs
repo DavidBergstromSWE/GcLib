@@ -339,7 +339,7 @@ public class EmguHelperTests
         using (var secondRow = roi.Row(1))
             secondRow.SetTo(new MCvScalar(4, 5, 6));
 
-        Assert.IsTrue(roi.Step > roi.Cols * roi.NumberOfChannels);
+        Assert.IsGreaterThan(roi.Cols * roi.NumberOfChannels, roi.Step);
         Assert.AreSequenceEqual(new byte[] { 0x06, 0x54, 0x03, 0x21 }, EmguHelper.Pack(roi, 4, ByteExtensions.Endianness.BigEndian));
         Assert.AreSequenceEqual(new byte[] { 0x21, 0x03, 0x54, 0x06 }, EmguHelper.Pack(roi, 4));
         Assert.AreSequenceEqual([1, 2, 3], source.GetPixel(0, 1));

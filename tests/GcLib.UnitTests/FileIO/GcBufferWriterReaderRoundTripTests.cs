@@ -14,7 +14,7 @@ namespace GcLib.UnitTests.Utilities;
 /// </summary>
 [TestClass]
 [DoNotParallelize]
-public class GcBufferRoundTripTests
+public class GcBufferWriterReaderRoundTripTests
 {
     #region Fields
 
@@ -130,7 +130,7 @@ public class GcBufferRoundTripTests
         while (reader.ReadImage(out GcBuffer buffer))
             frameIds.Add(buffer.FrameID);
 
-        CollectionAssert.AreEquivalent(Enumerable.Range(0, numProducers * buffersPerProducer).Select(i => (long)i).ToList(), frameIds);
+        Assert.AreSequenceEqual(Enumerable.Range(0, numProducers * buffersPerProducer).Select(i => (long)i).ToList(), frameIds, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -163,7 +163,7 @@ public class GcBufferRoundTripTests
     public async Task WriteAndRead_SequentialAndIndexedReads_ReturnSameBuffers()
     {
         // Arrange
-        await WriteAsync(Enumerable.Range(0, 8).Select(i => CreateBuffer(i, 5, 3, PixelFormat.Mono16)).ToList());
+        await WriteAsync([.. Enumerable.Range(0, 8).Select(i => CreateBuffer(i, 5, 3, PixelFormat.Mono16))]);
         using var reader = new GcBufferReader(_path);
         await reader.OpenAsync(token: TestContext.CancellationToken);
 
@@ -197,7 +197,7 @@ public class GcBufferRoundTripTests
 
     #region Private methods
 
-    private async Task WriteAsync(IReadOnlyList<GcBuffer> buffers)
+    private async Task WriteAsync(List<GcBuffer> buffers)
     {
         using var writer = new GcBufferWriter(_path);
         writer.Start();

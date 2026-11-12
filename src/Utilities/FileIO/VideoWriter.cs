@@ -497,6 +497,8 @@ public class VideoWriter : IDisposable
     public void Dispose()
     {
         Dispose(disposing: true);
+
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>

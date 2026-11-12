@@ -566,7 +566,7 @@ public class GcDataStreamTests
         RaiseNewBuffer();
 
         // Assert
-        Assert.IsTrue(signal.Wait(1000));
+        Assert.IsTrue(signal.Wait(1000, TestContext.CancellationToken));
         Assert.AreEqual(1, eventCounter);
         Assert.IsNotNull(buffer);
         Assert.AreEqual(_testBuffer.Width, buffer.Width);
@@ -705,6 +705,8 @@ public class GcDataStreamTests
             Interlocked.Exchange(ref _disposeAction, null)?.Invoke();
         }
     }
+
+    public TestContext TestContext { get; set; }
 
     #endregion
 }

@@ -534,7 +534,7 @@ public class GcBufferReaderTests
         // Assert
         Assert.AreNotSame(first.ImageData, second.ImageData);
         Assert.AreEqual(first.FrameID, second.FrameID);
-        CollectionAssert.AreEqual(first.ImageData, second.ImageData);
+        Assert.AreSequenceEqual(first.ImageData, second.ImageData);
     }
 
     #endregion

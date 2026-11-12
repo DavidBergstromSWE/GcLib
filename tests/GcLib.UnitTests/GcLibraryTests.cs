@@ -126,7 +126,7 @@ public class GcLibraryTests
         GcLibrary.Unregister<VirtualCam>();
 
         // Assert
-        Assert.AreEqual(1, snapshot.Count);
+        Assert.HasCount(1, snapshot);
         Assert.IsFalse(GcLibrary.IsRegistered<VirtualCam>());
         Assert.IsEmpty(GcLibrary.GetRegisteredDeviceClasses());
     }
@@ -155,7 +155,7 @@ public class GcLibraryTests
                     exceptions.Enqueue(ex);
                 }
             }
-        });
+        }, TestContext.CancellationToken);
 
         var writer = Task.Run(() =>
         {
@@ -177,7 +177,7 @@ public class GcLibraryTests
                 {
                 }
             }
-        });
+        }, TestContext.CancellationToken);
 
         Task.WaitAll(reader, writer);
 
@@ -647,6 +647,8 @@ public class GcLibraryTests
         // Act & Assert
         Assert.Throws<KeyNotFoundException>(() => GcLibrary.GetDeviceEnumerator(typeof(VirtualCam)));
     }
+
+    public TestContext TestContext { get; set; }
 
     #endregion
 }
