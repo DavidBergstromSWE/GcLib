@@ -381,8 +381,8 @@ public class EmguHelperTests
         var unsupportedEndianness = (ByteExtensions.Endianness)123;
 
         // Act
-        Action packAction = () => EmguHelper.Pack(mat, 10, unsupportedEndianness);
-        Action unpackAction = () => EmguHelper.Unpack([1, 0], 1, 1, 10, 1, unsupportedEndianness);
+        void packAction() => EmguHelper.Pack(mat, 10, unsupportedEndianness);
+        void unpackAction() => EmguHelper.Unpack([1, 0], 1, 1, 10, 1, unsupportedEndianness);
 
         // Assert
         Assert.Throws<ArgumentOutOfRangeException>(packAction);

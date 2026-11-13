@@ -231,7 +231,7 @@ public class ByteExtensionsTests
         var invalidEndianness = (ByteExtensions.Endianness)123;
 
         // Act
-        Action action = () => ByteExtensions.SetBitRange(target, 0, 16, value, invalidEndianness);
+        void action() => ByteExtensions.SetBitRange(target, 0, 16, value, invalidEndianness);
 
         // Assert
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(action);
@@ -246,7 +246,7 @@ public class ByteExtensionsTests
         var invalidEndianness = (ByteExtensions.Endianness)123;
 
         // Act
-        Action action = () => ByteExtensions.GetBitRange(source, 0, 16, destination, invalidEndianness);
+        void action() => ByteExtensions.GetBitRange(source, 0, 16, destination, invalidEndianness);
 
         // Assert
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(action);

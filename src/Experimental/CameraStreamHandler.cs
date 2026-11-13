@@ -6,6 +6,11 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Coordinates GUI and AI processing of video frames through separate consumer queues.
+/// </summary>
+/// <remarks>Frames are shared between the consumers, and their pooled buffers are released when both consumers
+/// finish or decline them.</remarks>
 public class MultiConsumerCameraHandler
 {
     /// <summary>
@@ -113,6 +118,6 @@ public class MultiConsumerCameraHandler
         }
     }
 
-    private void RenderInGui(ReadOnlySpan<byte> data) { /* ... */ }
-    private void RunAiInference(ReadOnlySpan<byte> data) { /* ... */ }
+    private static void RenderInGui(ReadOnlySpan<byte> _) { /* ... */ }
+    private static void RunAiInference(ReadOnlySpan<byte> _) { /* ... */ }
 }

@@ -131,7 +131,7 @@ public partial class GcDeviceParameterCollectionTests
         Assert.IsNotNull(failedParametersProperty);
 
         var snapshot = (IReadOnlyCollection<string>)failedParametersProperty.GetValue(collection);
-        Assert.AreSequenceEqual(new List<string> { "A" }, new List<string>(snapshot));
+        Assert.AreSequenceEqual(new List<string> { "A" }, [.. snapshot]);
     }
 
     [TestMethod]

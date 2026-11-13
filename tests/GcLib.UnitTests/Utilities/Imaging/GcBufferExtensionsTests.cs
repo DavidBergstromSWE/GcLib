@@ -162,7 +162,7 @@ public class GcBufferExtensionsTests
         var invalidEndianness = (ByteExtensions.Endianness)123;
 
         // Act
-        Action action = () => packedBuffer.Unpack(invalidEndianness);
+        void action() => packedBuffer.Unpack(invalidEndianness);
 
         // Assert
         Assert.Throws<ArgumentOutOfRangeException>(action);
@@ -294,7 +294,7 @@ public class GcBufferExtensionsTests
         var invalidEndianness = (ByteExtensions.Endianness)123;
 
         // Act
-        Action action = () => unpackedBuffer.Pack(invalidEndianness);
+        void action() => unpackedBuffer.Pack(invalidEndianness);
 
         // Assert
         Assert.Throws<ArgumentOutOfRangeException>(action);
@@ -689,7 +689,7 @@ public class GcBufferExtensionsTests
         var unsupportedColorOrder = (ColorOrder)123;
 
         // Act
-        Action action = () => bayerBuffer.DeBayer(unsupportedColorOrder);
+        void action() => bayerBuffer.DeBayer(unsupportedColorOrder);
 
         // Assert
         Assert.Throws<NotSupportedException>(action);

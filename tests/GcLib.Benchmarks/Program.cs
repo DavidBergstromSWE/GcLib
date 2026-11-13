@@ -11,4 +11,4 @@ var config = new BenchmarkDotNet.Configs.ManualConfig()
     .AddColumnProvider(BenchmarkDotNet.Columns.DefaultColumnProviders.Instance)
     .AddExporter(BenchmarkDotNet.Exporters.HtmlExporter.Default);
 
-var summary = BenchmarkRunner.Run<BufferAcquisitionBenchmarks>(config);
+BenchmarkRunner.Run<BufferAcquisitionBenchmarks>(config);

@@ -93,8 +93,6 @@ public static partial class ColorConverter
         // HSL components.
         double h = 0;
         double s = 0;
-        double l = 0;
-
         double r = rgb.R / 255.0;
         double g = rgb.G / 255.0;
         double b = rgb.B / 255.0;
@@ -107,8 +105,7 @@ public static partial class ColorConverter
         v = Math.Max(v, b);
         m = Math.Min(r, g);
         m = Math.Min(m, b);
-        l = (m + v) / 2.0;
-
+        double l = (m + v) / 2.0;
         if (l <= 0.0)
             return new HSL(h, s, l);
 

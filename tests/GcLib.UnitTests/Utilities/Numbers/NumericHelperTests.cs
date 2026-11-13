@@ -94,8 +94,8 @@ public class NumericHelperTests
     {
         Assert.AreEqual(Half.MinValue, NumericHelper.GetMinValue<Half>());
         Assert.AreEqual(Half.MaxValue, NumericHelper.GetMaxValue<Half>());
-        Assert.AreEqual(Half.MinValue, NumericHelper.GetMinValue(typeof(Half)));
-        Assert.AreEqual(Half.MaxValue, NumericHelper.GetMaxValue(typeof(Half)));
+        Assert.AreEqual(Half.MinValue, NumericHelper.GetMinValue<Half>());
+        Assert.AreEqual(Half.MaxValue, NumericHelper.GetMaxValue<Half>());
     }
 
     [TestMethod]

@@ -74,7 +74,7 @@ public class XiCamTests
 
         var selected = (List<string>)method.Invoke(null, [document.DocumentElement]);
 
-        CollectionAssert.AreEqual(expected, selected);
+        Assert.AreSequenceEqual(expected, selected);
     }
 
     [TestMethod]
@@ -112,7 +112,7 @@ public class XiCamTests
         Assert.AreEqual(42L, result.Buffer.FrameID);
         Assert.AreEqual(115000000UL, result.Buffer.TimeStamp);
         Assert.AreEqual(1U, result.Buffer.PaddingX);
-        CollectionAssert.AreEqual(source, result.Buffer.ImageData);
+        Assert.AreSequenceEqual(source, result.Buffer.ImageData);
         if (policy == XiCam.BUFFERPOLICY.SAFE)
             Assert.AreSame(source, result.Buffer.ImageData);
         else
@@ -162,7 +162,7 @@ public class XiCamTests
 
         var exception = Assert.Throws<InvalidOperationException>(() => device.StartAcquisition());
 
-        StringAssert.Contains(exception.Message, "Test camera");
+        Assert.Contains("Test camera", exception.Message);
         Assert.IsTrue(device.IsAcquiring);
         Assert.AreEqual(0, startedCount);
     }
@@ -172,13 +172,13 @@ public class XiCamTests
     {
         var device = (XiCam)RuntimeHelpers.GetUninitializedObject(typeof(XiCam));
         using var releaseWorker = new ManualResetEventSlim();
-        var worker = new Thread(() => releaseWorker.Wait());
+        var worker = new Thread(() => releaseWorker.Wait(TestContext.CancellationToken));
         SetField(device, "_imageAcquisitionThread", worker);
         worker.Start();
         try
         {
             var exception = Assert.Throws<InvalidOperationException>(() => device.StartAcquisition());
-            StringAssert.Contains(exception.Message, "previous acquisition thread");
+            Assert.Contains("previous acquisition thread", exception.Message);
         }
         finally
         {
@@ -220,4 +220,6 @@ public class XiCamTests
         Assert.IsNotNull(field);
         field.SetValue(device, value);
     }
+
+    public TestContext TestContext { get; set; }
 }
