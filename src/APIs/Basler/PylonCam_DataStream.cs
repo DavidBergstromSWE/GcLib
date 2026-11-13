@@ -186,14 +186,14 @@ public sealed partial class PylonCam
         // Convert camera timestamp (in camera specific ticks) to PC ticks.
         var timeStamp = ToPcTicks(grabResult.Timestamp);
 
-        // ToDo: Handle PaddingX and PaddingY for row padding (requires GcBuffer to support non-tightly packed image data).
-
         var buffer = new GcBuffer(ownedPixelData,
                                   (uint)grabResult.Width,
                                   (uint)grabResult.Height,
                                   pixelFormat,
                                   grabResult.ImageNumber,
-                                  timeStamp);
+                                  timeStamp,
+                                  (uint)grabResult.PaddingX,
+                                  (uint)grabResult.PaddingY);
 
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,

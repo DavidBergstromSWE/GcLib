@@ -241,14 +241,14 @@ public sealed partial class PvCam
         byte[] imageData = new byte[payloadSize];
         Marshal.Copy(sourcePointer, imageData, 0, payloadSize);
 
-        // ToDo: Handle PaddingX and PaddingY for row padding (requires GcBuffer to support non-tightly packed image data).
-
         var gcBuffer = new GcBuffer(imageData,
                                     buffer.Image.Width,
                                     buffer.Image.Height,
                                     (PixelFormat)(int)buffer.Image.PixelType,
                                     (long)buffer.BlockID,
-                                    timeStamp);
+                                    timeStamp,
+                                    buffer.Image.PaddingX,
+                                    buffer.Image.PaddingY);
 
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,

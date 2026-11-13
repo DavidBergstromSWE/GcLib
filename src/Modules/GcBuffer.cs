@@ -90,6 +90,18 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     /// </summary>
     public uint PixelDynamicRangeMax => GenICamHelper.GetPixelDynamicRangeMax(PixelFormat);
 
+    /// <summary>
+    /// Horizontal/row padding added to the end of each image row (in bytes).
+    /// </summary>
+    /// <remarks>Note: Currently, this property is always 0, as row padding is not yet supported.</remarks>
+    public uint PaddingX { get; }
+
+    /// <summary>
+    /// Vertical/frame padding (in bytes) added to the end of the image frame.
+    /// </summary>
+    /// <remarks>Note: Currently, this property is always 0, as frame padding is not yet supported.</remarks>
+    public uint PaddingY { get; }
+
     #endregion
 
     #region Constructors
@@ -107,17 +119,17 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     /// <param name="frameID">Frame ID.</param>
     /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
     /// <exception cref="ArgumentException">Thrown when the provided byte array is too small to fit the specified dimensions and pixel format.</exception>
-    public GcBuffer(byte[] imageData, uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timeStamp)
+    public GcBuffer(byte[] imageData, uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timeStamp, uint paddingX = 0, uint paddingY = 0)
     {
-        // ToDo: Add support for row padding and stride, to allow for image data that is not tightly packed in memory.
+        // ToDo: Add support for row padding (stride) and frame padding, to allow for image data that is not tightly packed in memory.
         // GenICam defines PaddingX and PaddingY for this purpose, but they are not always available in the camera API.
         // For now, we assume that the image data is tightly packed (e.g. no padding).
 
         // Validate array size.
         long requiredBits = (long)width * height * GenICamHelper.GetBitsPerPixel(pixelFormat); // Total bits required for the specified image dimensions and pixel format.
-        long requiredBytes = (requiredBits + 7) / 8; // Round up to whole bytes (needed for packed formats).
+        long requiredBytes = (requiredBits + 7) / 8 + paddingX * height; // Round up to whole bytes (needed for packed formats) and add row padding.
         if (imageData.LongLength < requiredBytes)
-            throw new ArgumentException($"Allocated image data ({imageData.LongLength} bytes) is too small to fit specified {nameof(width)} ({width}), {nameof(height)} ({height}) and {nameof(pixelFormat)} ({pixelFormat}), which requires {requiredBytes} bytes!");
+            throw new ArgumentException($"Allocated image data ({imageData.LongLength} bytes) is too small to fit the specified dimensions and pixel format, which requires {requiredBytes} bytes!");
 
         ImageData = imageData;
         Width = width;
@@ -125,6 +137,13 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
         PixelFormat = pixelFormat;
         FrameID = frameID;
         TimeStamp = timeStamp;
+        PaddingX = paddingX;
+        PaddingY = paddingY;
+
+        // Calculate stride (in bytes) for the image, including any row padding.
+        // Stride is the number of bytes from the start of one row to the start of the next row in memory.
+        // This is needed for exporting the image to other formats (e.g., OpenCV Mat or bitmap) that require a stride value.
+        //var stride = (int)(Width * (GenICamHelper.GetBitsPerPixel(PixelFormat) / 8) + PaddingX);
     }
 
     /// <summary>
@@ -263,6 +282,8 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
         PixelFormat = buffer.PixelFormat;
         FrameID = buffer.FrameID;
         TimeStamp = buffer.TimeStamp;
+        PaddingX = buffer.PaddingX;
+        PaddingY = buffer.PaddingY;
     }
 
     #endregion
@@ -472,6 +493,15 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     public Size GetSize()
     {
         return new Size((int)Width, (int)Height);
+    }
+
+    /// <summary>
+    /// Gets the row stride in bytes, including horizontal padding.
+    /// </summary>
+    /// <returns>The number of bytes in a row.</returns>
+    public int GetStride()
+    {
+        return (int)(Width * GenICamHelper.GetBitsPerPixel(PixelFormat) / 8 + PaddingX);
     }
 
     #endregion

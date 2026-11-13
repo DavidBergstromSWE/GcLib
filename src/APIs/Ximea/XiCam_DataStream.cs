@@ -106,7 +106,7 @@ public sealed partial class XiCam
 
     #endregion
 
-    #region Methods
+    #region Public methods
 
     /// <summary>
     /// Starts acquisition on the device.
@@ -177,6 +177,10 @@ public sealed partial class XiCam
             OnAcquisitionStopped();
         }
     }
+
+    #endregion
+
+    #region Private methods
 
     /// <summary>
     /// Image acquisition thread, based on using SAFE buffer policy version of GetImage from xiApi.NET. The user will get a copy of the image data in a user allocated buffer.
@@ -293,7 +297,8 @@ public sealed partial class XiCam
                                     (uint)height,
                                     pixelFormat,
                                     frameNumber,
-                                    timeStamp);
+                                    timeStamp,
+                                    (uint)imgParams.GetPaddingX());
 
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,

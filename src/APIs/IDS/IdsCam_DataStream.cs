@@ -187,7 +187,9 @@ public sealed partial class IdsCam
                                     buffer.Height(),
                                     (PixelFormat)buffer.PixelFormat(),
                                     (long)buffer.FrameID(),
-                                    _pcTime0 + (ulong)Math.Round(buffer.Timestamp_ns() / 100d));
+                                    _pcTime0 + (ulong)Math.Round(buffer.Timestamp_ns() / 100d),
+                                    buffer.XPadding(),
+                                    buffer.YPadding());
 
         return new NewBufferEventArgs(string.Empty,
                                       DateTime.Now,

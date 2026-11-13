@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using GcLib.Utilities.Imaging;
 using Microsoft.Extensions.Logging;
 using VmbNET;
 
@@ -99,14 +100,21 @@ public sealed partial class VimbaCam
             Marshal.Copy(frame.ImageData, imageData, 0, payloadSize);
 
             // ToDo: Handle PaddingX and PaddingY for row padding (requires GcBuffer to support non-tightly packed image data).
-            // Only necessary for 3rd-party cameras (Allied Vision use tightly packed image data). Use LinePitch feature or compare BufferSize with Width * Height * BytesPerPixel to determine if padding is present.
+            // Only necessary for 3rd-party cameras (Allied Vision use tightly packed image data).
+            // Use LinePitch feature or compare BufferSize with Width * Height * BytesPerPixel to determine if padding is present.
+
+            // Calculate padding.
+            var paddingX = payloadSize - (frame.Width * frame.Height * (GenICamHelper.GetBitsPerPixel(pixelFormat) / 8));
+            var paddingY = 0; // ToDo: Calculate paddingY if necessary.
 
             var buffer = new GcBuffer(imageData,
                                       frame.Width,
                                       frame.Height,
                                       pixelFormat,
                                       (long)frame.Id,
-                                      timeStamp);
+                                      timeStamp,
+                                      (uint)paddingX,
+                                      (uint)paddingY);
 
             OnNewBuffer(new NewBufferEventArgs(streamID,
                                                DateTime.Now,
