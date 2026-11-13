@@ -97,16 +97,8 @@ public sealed partial class XiCam
                         accessMode = parameterNode.SelectSingleNode("*[name()='ImposedAccessMode']").FirstChild.Value;
 
                     // Get parameter dependencies.
-                    bool isSelector = false;
-                    List<string> selectedParameters = null;
-                    XmlNodeList selectedParameterNodes = parameterNode.SelectNodes("*[name()='pSelected']");
-                    if (selectedParameterNodes.Count > 1)
-                    {
-                        isSelector = true;
-                        selectedParameters = [];
-                        foreach (XmlNode node in selectedParameterNodes)
-                            selectedParameters.Add(node.FirstChild.Value);
-                    }
+                    List<string> selectedParameters = GetSelectedParameters(parameterNode);
+                    bool isSelector = selectedParameters.Count > 0;
 
                     // Get xiApi.NET-specific parameter name.
                     string xiApiParameter = parameterNode.SelectSingleNode("*[name()='Xiapi_Par']").FirstChild.Value;
@@ -312,6 +304,18 @@ public sealed partial class XiCam
         return new GcDeviceParameterCollection(this, parameterList, failedParameterList);
     }
 
+    private static List<string> GetSelectedParameters(XmlNode parameterNode)
+    {
+        var selectedParameters = new List<string>();
+        foreach (XmlNode node in parameterNode.SelectNodes("*[name()='pSelected']"))
+        {
+            // Skip empty nodes (e.g. <pSelected />).
+            if (node.FirstChild?.Value is { Length: > 0 } value)
+                selectedParameters.Add(value);
+        }
+        return selectedParameters;
+    }
+
     /// <inheritdoc/>
     protected override string GetParameterValue(string parameterName)
     {
@@ -324,7 +328,7 @@ public sealed partial class XiCam
         return parameter.Type switch
         {
             GcParameterType.Integer => _xiCam.GetParamInt(xiApiParameter).ToString(),
-            GcParameterType.Float => _xiCam.GetParamFloat(xiApiParameter).ToString(),
+            GcParameterType.Float => _xiCam.GetParamFloat(xiApiParameter).ToString(CultureInfo.InvariantCulture),
             GcParameterType.String => _xiCam.GetParamString(xiApiParameter).ToString(),
             GcParameterType.Boolean => (_xiCam.GetParamInt(xiApiParameter) == 1).ToString(),
             GcParameterType.Enumeration => (parameter as GcEnumeration).GetEntry(Convert.ToInt32(_xiCam.GetParamString(xiApiParameter))).ValueString,

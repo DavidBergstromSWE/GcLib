@@ -50,7 +50,7 @@ public sealed partial class XiCam
     /// <summary>
     /// Image acquisition thread stopping condition.
     /// </summary>
-    private bool _threadIsRunning;
+    private volatile bool _threadIsRunning;
 
     /// <summary>
     /// Timeout (in milliseconds) used for GetImage in acquisition thread.
@@ -117,11 +117,17 @@ public sealed partial class XiCam
     {
         if (IsAcquiring)
             throw new InvalidOperationException($"Unable to start acquisition as Device {DeviceInfo.ModelName} is already acquiring!");
+        if (_imageAcquisitionThread?.IsAlive == true)
+            throw new InvalidOperationException("The previous acquisition thread has not stopped yet.");
 
         // Check if pixel format selected is currently supported.
-        PixelFormat pixelFormat = GetPixelFormat(_xiCam.GetParamInt(PRM.IMAGE_DATA_FORMAT));
+        int imageFormat = _xiCam.GetParamInt(PRM.IMAGE_DATA_FORMAT);
+        int colorFilter = imageFormat == IMG_FORMAT.RAW8 || imageFormat == IMG_FORMAT.RAW16
+            ? _xiCam.GetParamInt(PRM.COLOR_FILTER_ARRAY)
+            : IMG_COLOR_FILTER_ARRAY.NONE;
+        PixelFormat pixelFormat = GetPixelFormat(imageFormat, colorFilter);
         if (pixelFormat == PixelFormat.InvalidPixelFormat)
-            throw new FormatException($"Pixel format {FindConstantName(typeof(IMG_FORMAT), _xiCam.GetParamInt(PRM.IMAGE_DATA_FORMAT))} is not recognized or supported!");
+            throw new FormatException($"Pixel format {FindConstantName(typeof(IMG_FORMAT), imageFormat)} with color filter {colorFilter} is not recognized or supported!");
 
         // Check exposure time and frame rate and set appropriate timeout.
         _timeout = Convert.ToInt32(((float)_xiCam.GetParamInt(PRM.EXPOSURE) / 1000) + (1 / _xiCam.GetParamFloat(PRM.FRAMERATE) * 1000));
@@ -135,18 +141,32 @@ public sealed partial class XiCam
 
         _xiCam.SetParam(PRM.RECENT_FRAME, 0); // Retrieve next available frame (0), instead of the most recent one (1).
 
-        // Start image acquisition thread depending on buffer policy.
         _imageAcquisitionThread = BufferPolicy == BUFFERPOLICY.SAFE
             ? new Thread(ImageAcquisitionThreadSAFE)
             : new Thread(ImageAcquisitionThreadUNSAFE);
         _imageAcquisitionThread.Name = BufferPolicy == BUFFERPOLICY.SAFE ? "ImageAcquisitionThreadSAFE" : "ImageAcquisitionThreadUNSAFE";
-        _threadIsRunning = true;
-        _imageAcquisitionThread.Start();
 
-        // Start acquisition on the device.
         _xiCam.StartAcquisition();
-
+        _threadIsRunning = true;
         IsAcquiring = true;
+        try
+        {
+            _imageAcquisitionThread.Start();
+        }
+        catch (Exception startException)
+        {
+            _threadIsRunning = false;
+            IsAcquiring = false;
+            try
+            {
+                _xiCam.StopAcquisition();
+            }
+            catch (Exception stopException)
+            {
+                throw new AggregateException("Starting the acquisition thread and stopping the camera both failed.", startException, stopException);
+            }
+            throw;
+        }
 
         OnAcquisitionStarted();
     }
@@ -202,11 +222,15 @@ public sealed partial class XiCam
             {
                 var imageData = new byte[payloadSize];
                 _xiCam.GetImage(img_arr: imageData, timeout: _timeout); // GetImage copies data to user allocated buffer.
+                if (!_threadIsRunning)
+                    break;
                 OnNewBuffer(ToNewBufferEventArgs(imageData, _xiCam.GetLastImageParams()));
                 nBufferErrors = 0;
             }
             catch (xiExc ex)
             {
+                if (!_threadIsRunning)
+                    break;
                 if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
                     GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
@@ -217,9 +241,16 @@ public sealed partial class XiCam
                 // Abort thread if consecutive errors exceed limit.
                 if (nBufferErrors > bufferErrorLimit)
                 {
+                    StopAcquisition();
                     OnAcquisitionAborted(new AcquisitionAbortedEventArgs($"Acquisition timed out in Device: {DeviceInfo.ModelName} (ID: {DeviceInfo.UniqueID})!", ex));
                     break;
                 }
+            }
+            catch (FormatException ex)
+            {
+                StopAcquisition();
+                OnAcquisitionAborted(new AcquisitionAbortedEventArgs($"Unsupported image format in Device: {DeviceInfo.ModelName} (ID: {DeviceInfo.UniqueID})!", ex));
+                break;
             }
         }
 
@@ -243,10 +274,15 @@ public sealed partial class XiCam
             try
             {
                 _xiCam.GetImage(img_arr: out byte[] sourceBuffer, timeout: _timeout); // GetImage returns a pointer to an internal buffer.
+                if (!_threadIsRunning)
+                    break;
                 OnNewBuffer(ToNewBufferEventArgs(sourceBuffer, _xiCam.GetLastImageParams()));
+                nBufferErrors = 0;
             }
             catch (xiExc ex)
             {
+                if (!_threadIsRunning)
+                    break;
                 if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
                     GcLibrary.Logger.LogWarning(ex, "Unsuccessful buffer transfer in Device: {modelName} (ID: {uniqueID})", DeviceInfo.ModelName, DeviceInfo.UniqueID);
 
@@ -257,9 +293,16 @@ public sealed partial class XiCam
                 // Abort thread if consecutive errors exceed limit.
                 if (nBufferErrors > bufferErrorLimit)
                 {
+                    StopAcquisition();
                     OnAcquisitionAborted(new AcquisitionAbortedEventArgs($"Acquisition timed out in Device: {DeviceInfo.ModelName} (ID: {DeviceInfo.UniqueID})!", ex));
                     break;
                 }
+            }
+            catch (FormatException ex)
+            {
+                StopAcquisition();
+                OnAcquisitionAborted(new AcquisitionAbortedEventArgs($"Unsupported image format in Device: {DeviceInfo.ModelName} (ID: {DeviceInfo.UniqueID})!", ex));
+                break;
             }
         }
 
@@ -277,7 +320,9 @@ public sealed partial class XiCam
     {
         int width = imgParams.GetWidth();
         int height = imgParams.GetHeight();
-        PixelFormat pixelFormat = GetPixelFormat(imgParams.GetDataFormat());
+        PixelFormat pixelFormat = GetPixelFormat(imgParams.GetDataFormat(), (int)imgParams.GetLastImageStruct().color_filter_array);
+        if (pixelFormat == PixelFormat.InvalidPixelFormat)
+            throw new FormatException("The acquired image format or color filter is not supported.");
         long frameNumber = imgParams.GetFrameNum();
         ulong timeStamp = _pcTime0 + (ulong)Math.Round((imgParams.GetTimestamp() * TimeSpan.TicksPerSecond) - ((double)_acquisitionStartTime / 100));
 
@@ -309,8 +354,9 @@ public sealed partial class XiCam
     /// Get translated PFNC pixel format from xiAp.NET image format.
     /// </summary>
     /// <param name="imageFormat">Image format as defined by the xiApi.NET.</param>
+    /// <param name="colorFilter">Color filter array for RAW data.</param>
     /// <returns>Pixel format according to GenICam PFNC.</returns>
-    private static PixelFormat GetPixelFormat(int imageFormat)
+    private static PixelFormat GetPixelFormat(int imageFormat, int colorFilter)
     {
         return imageFormat switch
         {
@@ -322,8 +368,22 @@ public sealed partial class XiCam
             IMG_FORMAT.RGB64 => PixelFormat.BGRa16, // 16 bits per channel in BGRA byte order
             IMG_FORMAT.RGBPLANAR => PixelFormat.RGB8_Planar,
             IMG_FORMAT.RGB16_PLANAR => PixelFormat.RGB16_Planar,
-            IMG_FORMAT.RAW8 => PixelFormat.BayerBG8,
-            IMG_FORMAT.RAW16 => PixelFormat.BayerBG16,
+            IMG_FORMAT.RAW8 => colorFilter switch
+            {
+                IMG_COLOR_FILTER_ARRAY.BAYER_RGGB => PixelFormat.BayerRG8,
+                IMG_COLOR_FILTER_ARRAY.BAYER_BGGR => PixelFormat.BayerBG8,
+                IMG_COLOR_FILTER_ARRAY.BAYER_GRBG => PixelFormat.BayerGR8,
+                IMG_COLOR_FILTER_ARRAY.BAYER_GBRG => PixelFormat.BayerGB8,
+                _ => PixelFormat.InvalidPixelFormat,
+            },
+            IMG_FORMAT.RAW16 => colorFilter switch
+            {
+                IMG_COLOR_FILTER_ARRAY.BAYER_RGGB => PixelFormat.BayerRG16,
+                IMG_COLOR_FILTER_ARRAY.BAYER_BGGR => PixelFormat.BayerBG16,
+                IMG_COLOR_FILTER_ARRAY.BAYER_GRBG => PixelFormat.BayerGR16,
+                IMG_COLOR_FILTER_ARRAY.BAYER_GBRG => PixelFormat.BayerGB16,
+                _ => PixelFormat.InvalidPixelFormat,
+            },
             _ => PixelFormat.InvalidPixelFormat,
         };
     }

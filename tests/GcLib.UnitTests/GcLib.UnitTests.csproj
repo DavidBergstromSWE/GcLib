@@ -20,6 +20,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\GcLib.csproj" />
+    <Reference Include="xiApi.NETX64">
+      <HintPath>..\..\src\APIs\Ximea\lib\xiApi.NETX64.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

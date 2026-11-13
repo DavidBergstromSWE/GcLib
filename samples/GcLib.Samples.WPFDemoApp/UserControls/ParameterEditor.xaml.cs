@@ -397,15 +397,22 @@ public partial class ParameterEditor : UserControl, INotifyPropertyChanged, IDis
 
     public void Dispose()
     {
-        // Let last parameter update complete.
-        _updateParameterTask?.Wait();
+        // Let last parameter update complete (canceled or faulted updates are expected here).
+        try
+        {
+            _updateParameterTask?.Wait();
+        }
+        catch (AggregateException)
+        {
+        }
 
         // Cancel all other ongoing tasks.
         _cts.Cancel();
+        _cts.Dispose();
 
-        // Dispose resources (needed?).
-        _cts?.Dispose();
-        _updateParameterTask?.Dispose();
+        // The control may be loaded and used again after being unloaded, so reset state instead of leaving disposed objects behind.
+        _updateParameterTask = null;
+        _cts = new CancellationTokenSource();
 
         GC.SuppressFinalize(this);
     }

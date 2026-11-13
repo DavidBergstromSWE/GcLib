@@ -56,47 +56,70 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
             _xiCam.OpenDeviceBy(OPEN_BY.OPEN_BY_SN, deviceID);
         }
 
-        // Update device info.
-        _xiCam.GetParam(PRM.DEVICE_NAME, out string deviceName);
-        _xiCam.GetParam(PRM.DEVICE_SN, out string serialNumber);
-        _xiCam.GetParam(PRM.DEVICE_ID, out string ID);
-
-        DeviceInfo = new GcDeviceInfo(vendorName: "Ximea",
-                                      modelName: deviceName,
-                                      serialNumber: serialNumber,
-                                      uniqueID: ID.Replace("\0", string.Empty), // remove null characters
-                                      deviceClass: DeviceClassInfo,
-                                      isAccessible: false,
-                                      isOpen: true);
-
-        // Set default buffer policy and input buffer pool capacity.
-        BufferPolicy = BUFFERPOLICY.SAFE;
-        BufferCapacity = 4;
-
-        // Initialize some suitable camera settings. (remove?)
         try
         {
-            _xiCam.SetParam(PRM.GAIN, 0);
-            _xiCam.SetParam(PRM.EXPOSURE, 10000);
-            _xiCam.SetParam(PRM.ACQ_TIMING_MODE, ACQ_TIMING_MODE.FRAME_RATE_LIMIT);
-            _xiCam.SetParam(PRM.FRAMERATE, 30);
-        }
-        catch (xiExc)
-        {
-            //
-        }
+            // Update device info.
+            _xiCam.GetParam(PRM.DEVICE_NAME, out string deviceName);
+            _xiCam.GetParam(PRM.DEVICE_SN, out string serialNumber);
+            _xiCam.GetParam(PRM.DEVICE_ID, out string ID);
 
-        // Retrieve collection of camera parameters.
-        Parameters = ImportParameters();
+            DeviceInfo = new GcDeviceInfo(vendorName: "Ximea",
+                                          modelName: deviceName,
+                                          serialNumber: serialNumber,
+                                          uniqueID: ID.Replace("\0", string.Empty),
+                                          deviceClass: DeviceClassInfo,
+                                          isAccessible: false,
+                                          isOpen: true);
 
-        // Start periodic checking of device connection validity.
-        _checkConnectionTimer = new Timer()
+            BufferPolicy = BUFFERPOLICY.SAFE;
+            BufferCapacity = 4;
+
+            try
+            {
+                _xiCam.SetParam(PRM.GAIN, 0);
+                _xiCam.SetParam(PRM.EXPOSURE, 10000);
+                _xiCam.SetParam(PRM.ACQ_TIMING_MODE, ACQ_TIMING_MODE.FRAME_RATE_LIMIT);
+                _xiCam.SetParam(PRM.FRAMERATE, 30);
+            }
+            catch (xiExc ex)
+            {
+                if (GcLibrary.Logger.IsEnabled(LogLevel.Warning))
+                    GcLibrary.Logger.LogWarning(ex, "Could not set all default camera settings for {ID}", ID);
+            }
+
+            Parameters = ImportParameters();
+
+            _checkConnectionTimer = new Timer()
+            {
+                Interval = 3000,
+                AutoReset = true
+            };
+            _checkConnectionTimer.Elapsed += CheckConnection;
+            _checkConnectionTimer.Start();
+        }
+        catch (Exception initializationException)
         {
-            Interval = 3000, // milliseconds
-            AutoReset = true
-        };
-        _checkConnectionTimer.Elapsed += CheckConnection;
-        _checkConnectionTimer.Start();
+            var failures = new List<Exception> { initializationException };
+            try
+            {
+                _checkConnectionTimer?.Dispose();
+            }
+            catch (Exception timerException)
+            {
+                failures.Add(timerException);
+            }
+            try
+            {
+                _xiCam.CloseDevice();
+            }
+            catch (Exception closeException)
+            {
+                failures.Add(closeException);
+            }
+            if (failures.Count > 1)
+                throw new AggregateException("Camera initialization and cleanup failed.", failures);
+            throw;
+        }
     }
 
     #endregion
@@ -106,6 +129,8 @@ public sealed partial class XiCam : GcDevice<XiCam>, IDeviceFactory<XiCam>
     /// <inheritdoc/>
     protected override void OnDeviceClosed()
     {
+        StopAcquisition();
+
         // Stop connection checking timer and dispose of it.
         _checkConnectionTimer.Stop();
         try
