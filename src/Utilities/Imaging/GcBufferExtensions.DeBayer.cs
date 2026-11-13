@@ -60,6 +60,7 @@ public static partial class GcBufferExtensions
         if (colorOrder is not (ColorOrder.RGB or ColorOrder.BGR))
             throw new NotSupportedException("Only RGB and BGR color orders are supported.");
 
+        bayerBuffer = bayerBuffer.Unpack();
         var bitsPerChannel = GenICamHelper.GetBitsPerPixelPerChannel(bayerBuffer.PixelFormat);
         int bytesPerSample = (int)((bitsPerChannel + 7) / 8);
 
@@ -70,7 +71,7 @@ public static partial class GcBufferExtensions
         if (pixelColorFilter is PixelColorFilter.None)
             throw new NotSupportedException($"Bayer pattern '{pixelColorFilter}' is not supported for deBayering.");
 
-        DemosaicToColor(rawData: bayerBuffer.ImageData,
+        DemosaicToColor(rawData: bayerBuffer.GetTightImageData(),
                         colorData: bytes,
                         width: (int)bayerBuffer.Width,
                         height: (int)bayerBuffer.Height,

@@ -12,6 +12,7 @@ namespace GcLib.Utilities.FileIO;
 /// <summary>
 /// Writer of image buffers to file.
 /// </summary>
+/// <remarks>Row and frame padding are removed when writing; the recording stores compact image data and does not preserve padding metadata.</remarks>
 public sealed class GcBufferWriter : IDisposable
 {
     #region Fields
@@ -496,7 +497,8 @@ public sealed class GcBufferWriter : IDisposable
         BinaryPrimitives.WriteUInt32LittleEndian(header[28..], buffer.PixelDynamicRangeMax); // dynamic range
 
         _fileStream.Write(_imageHeader, 0, _imageHeader.Length);
-        _fileStream.Write(buffer.ImageData, 0, (int)imageDataSize);
+        byte[] imageData = buffer.GetTightImageData();
+        _fileStream.Write(imageData, 0, (int)imageDataSize);
 
         _ = Interlocked.Add(ref _fileSize, _imageHeader.Length + imageDataSize);
         _ = Interlocked.Increment(ref _buffersWritten);

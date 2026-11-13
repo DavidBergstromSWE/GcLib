@@ -24,19 +24,20 @@ public static partial class GcBufferExtensions
         var mat = new Mat(rows: (int)buffer.Height, cols: (int)buffer.Width, EmguHelper.GetDepthType(buffer.PixelFormat), (int)buffer.NumChannels);
 
         // Copy image data to Mat based on depth type.
+        byte[] imageData = GetMatImageData(buffer);
         switch (mat.Depth)
         {
             case Emgu.CV.CvEnum.DepthType.Cv8U:
-                mat.SetTo(buffer.ImageData);
+                mat.SetTo(imageData);
                 break;
             case Emgu.CV.CvEnum.DepthType.Cv16U:
-                mat.SetTo(NumericHelper.ToArray<ushort>(buffer.ImageData));
+                mat.SetTo(NumericHelper.ToArray<ushort>(imageData));
                 break;
             case Emgu.CV.CvEnum.DepthType.Cv32U:
-                mat.SetTo(NumericHelper.ToArray<uint>(buffer.ImageData));
+                mat.SetTo(NumericHelper.ToArray<uint>(imageData));
                 break;
             case Emgu.CV.CvEnum.DepthType.Cv64U:
-                mat.SetTo(NumericHelper.ToArray<ulong>(buffer.ImageData));
+                mat.SetTo(NumericHelper.ToArray<ulong>(imageData));
                 break;
             case Emgu.CV.CvEnum.DepthType.Cv32F:
             case Emgu.CV.CvEnum.DepthType.Cv64F:
@@ -72,7 +73,25 @@ public static partial class GcBufferExtensions
 
         // Create a new Mat with the same dimensions, depth, and number of channels as the buffer.
         var mat = new Mat(rows: (int)buffer.Height, cols: (int)buffer.Width, EmguHelper.GetDepthType(buffer.PixelFormat), (int)buffer.NumChannels);
-        mat.SetTo(buffer.ImageData);
+        mat.SetTo(GetMatImageData(buffer));
         return mat;
+    }
+
+    private static byte[] GetMatImageData(GcBuffer buffer)
+    {
+        byte[] source = buffer.GetTightImageData();
+        if (!GenICamHelper.IsPlanar(buffer.PixelFormat))
+            return source;
+
+        int bytesPerChannel = checked((int)GenICamHelper.GetBitsPerPixelPerChannel(buffer.PixelFormat) / 8);
+        int channels = checked((int)buffer.NumChannels);
+        int pixels = checked((int)((long)buffer.Width * buffer.Height));
+        int planeSize = checked(pixels * bytesPerChannel);
+        var interleaved = new byte[source.Length];
+        for (int pixel = 0; pixel < pixels; pixel++)
+            for (int channel = 0; channel < channels; channel++)
+                source.AsSpan(channel * planeSize + pixel * bytesPerChannel, bytesPerChannel)
+                      .CopyTo(interleaved.AsSpan((pixel * channels + channel) * bytesPerChannel, bytesPerChannel));
+        return interleaved;
     }
 }

@@ -63,7 +63,9 @@ public static partial class GcBufferExtensions
         var pixelStride = sourceChannels * bytesPerChannel; // Total bytes per pixel.
         var pixelCount = (int)(buffer.Width * buffer.Height); // Total number of pixels in the image.
         var planar = GenICamHelper.IsPlanar(buffer.PixelFormat);
-        var planeSize = planar ? pixelCount * bytesPerChannel : 0; // Size of each channel plane in bytes for planar formats.
+        var rowStride = buffer.GetStride();
+        var planeSize = planar ? checked((int)buffer.Height * rowStride) : 0;
+        var width = (int)buffer.Width;
         var maxValue = buffer.PixelDynamicRangeMax;
         var histogramRange = maxValue + 1UL;
         var directBinLookup = histogramBins == (int)histogramRange;
@@ -111,7 +113,7 @@ public static partial class GcBufferExtensions
                 {
                     for (int pixel = 0; pixel < pixelCount; pixel += sampleStride)
                     {
-                        var samplePointer = basePointer + pixel * bytesPerChannel;
+                        var samplePointer = basePointer + (pixel / width) * rowStride + (pixel % width) * bytesPerChannel;
                         var value = ReadValue(samplePointer, bytesPerChannel);
                         var bin = GetBin(value, maxValue, histogramBins, histogramRange, directBinLookup);
                         histogram0[bin]++;
@@ -126,7 +128,7 @@ public static partial class GcBufferExtensions
 
                     for (int pixel = 0; pixel < pixelCount; pixel += sampleStride)
                     {
-                        var channelOffset = pixel * bytesPerChannel;
+                        var channelOffset = (pixel / width) * rowStride + (pixel % width) * bytesPerChannel;
 
                         if (alphaPlane != null && ReadValue(alphaPlane + channelOffset, bytesPerChannel) == 0)
                             continue;
@@ -140,7 +142,7 @@ public static partial class GcBufferExtensions
                 {
                     for (int pixel = 0; pixel < pixelCount; pixel += sampleStride)
                     {
-                        var pixelPointer = basePointer + pixel * pixelStride;
+                        var pixelPointer = basePointer + (pixel / width) * rowStride + (pixel % width) * pixelStride;
 
                         if (sourceAlphaIndex >= 0 && ReadValue(pixelPointer + sourceAlphaIndex * bytesPerChannel, bytesPerChannel) == 0)
                             continue;

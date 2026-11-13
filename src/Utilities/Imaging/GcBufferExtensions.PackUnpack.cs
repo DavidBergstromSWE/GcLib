@@ -107,6 +107,7 @@ public static partial class GcBufferExtensions
     /// <param name="endianness">
     /// Byte-order interpretation used during bit extraction. <see cref="ByteExtensions.Endianness.LittleEndian"/>
     /// uses forward byte indexing; <see cref="ByteExtensions.Endianness.BigEndian"/> reverses byte indices across the packed span.
+    /// With row padding, big-endian traversal visits rows in reverse order and reverses the pixel bytes within each row, excluding padding.
     /// </param>
     /// <returns>A new <see cref="GcBuffer"/> containing unpacked image data (or the original buffer if it is not packed).</returns>
     /// <exception cref="ArgumentException">The pixel format of <paramref name="packedBuffer"/> is not supported for unpacking.</exception>
@@ -142,18 +143,46 @@ public static partial class GcBufferExtensions
         // Bit count per pixel per channel for packed pixel format.
         int packedBitsPerPixel = (int)GenICamHelper.GetBitsPerPixelPerChannel(packedBuffer.PixelFormat);
 
-        // Extract each packed pixel directly into the unpacked image data.
-        for (int pixel = 0; pixel < numberOfPixels; pixel++)
+        // Big-endian traversal reverses the entire packed span; padding must be skipped before reversing each row.
+        if (packedBuffer.PaddingX != 0 && endianness == ByteExtensions.Endianness.BigEndian)
         {
-            ByteExtensions.GetBitRange(source: packedBuffer.ImageData.AsSpan(), // Source span to read the packed pixel data
-                                       start: pixel * packedBitsPerPixel,       // Starting bit index for the current pixel
-                                       length: packedBitsPerPixel,              // Number of bits to extract for the current pixel
-                                       destination: unpackedImageData.AsSpan(pixel * unpackedBytesPerPixel, unpackedBytesPerPixel), // Destination span for the unpacked pixel data
-                                       endianness: endianness);
+            int samplesPerRow = checked((int)((long)packedBuffer.Width * packedBuffer.NumChannels));
+            int rowBytes = checked((int)(((long)samplesPerRow * packedBitsPerPixel + 7) / 8));
+            int stride = packedBuffer.GetStride();
+            for (int row = 0; row < packedBuffer.Height; row++)
+            {
+                int sourceOffset = checked((int)((packedBuffer.Height - 1L - row) * stride));
+                ReadOnlySpan<byte> sourceRow = packedBuffer.ImageData.AsSpan(sourceOffset, rowBytes);
+                for (int sample = 0; sample < samplesPerRow; sample++)
+                {
+                    int destinationOffset = checked((row * samplesPerRow + sample) * unpackedBytesPerPixel);
+                    ReadPackedSample(sourceRow, (long)sample * packedBitsPerPixel, packedBitsPerPixel,
+                                     unpackedImageData.AsSpan(destinationOffset, unpackedBytesPerPixel), endianness);
+                }
+            }
+        }
+        else
+        {
+            byte[] sourceData = packedBuffer.GetTightImageData();
+            for (int pixel = 0; pixel < numberOfPixels; pixel++)
+            {
+                ReadPackedSample(sourceData, (long)pixel * packedBitsPerPixel, packedBitsPerPixel,
+                                 unpackedImageData.AsSpan(checked(pixel * unpackedBytesPerPixel), unpackedBytesPerPixel), endianness);
+            }
         }
 
         // Return new buffer instance with unpacked image data.
         return new GcBuffer(unpackedImageData, packedBuffer.Width, packedBuffer.Height, unpackedPixelFormat, packedBuffer.FrameID, packedBuffer.TimeStamp);
+    }
+
+    private static void ReadPackedSample(ReadOnlySpan<byte> source, long bitOffset, int bitCount, Span<byte> destination, ByteExtensions.Endianness endianness)
+    {
+        int startBit = (int)(bitOffset % 8);
+        int byteCount = (startBit + bitCount + 7) / 8;
+        int byteOffset = checked((int)(bitOffset / 8));
+        if (endianness == ByteExtensions.Endianness.BigEndian)
+            byteOffset = source.Length - byteOffset - byteCount;
+        source.Slice(byteOffset, byteCount).GetBitRange(startBit, bitCount, destination, endianness);
     }
 
     /// <summary>
@@ -207,12 +236,13 @@ public static partial class GcBufferExtensions
         int unpackedBytesPerPixel = (int)GenICamHelper.GetBitsPerPixelPerChannel(unpackedBuffer.PixelFormat) / ByteExtensions.BitsPerByte;
 
         // Extract each unpacked pixel directly into the packed image data.
+        byte[] sourceData = unpackedBuffer.GetTightImageData();
         for (int pixel = 0; pixel < numberOfPixels; pixel++)
         {
             ByteExtensions.SetBitRange(target: packedImageData.AsSpan(),       // Target span to write the packed pixel data
                                        start: pixel * packedBitsPerPixel,      // Starting bit index for the current pixel
                                        length: packedBitsPerPixel,             // Number of bits to set for the current pixel
-                                       value: unpackedBuffer.ImageData.AsSpan().Slice(pixel * unpackedBytesPerPixel, unpackedBytesPerPixel), // Source span for the unpacked pixel data
+                                       value: sourceData.AsSpan().Slice(pixel * unpackedBytesPerPixel, unpackedBytesPerPixel), // Source span for the unpacked pixel data
                                        endianness: endianness);
         }
 

@@ -93,13 +93,12 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     /// <summary>
     /// Horizontal/row padding added to the end of each image row (in bytes).
     /// </summary>
-    /// <remarks>Note: Currently, this property is always 0, as row padding is not yet supported.</remarks>
+    /// <remarks>For planar formats this padding follows each row of each channel plane.</remarks>
     public uint PaddingX { get; }
 
     /// <summary>
     /// Vertical/frame padding (in bytes) added to the end of the image frame.
     /// </summary>
-    /// <remarks>Note: Currently, this property is always 0, as frame padding is not yet supported.</remarks>
     public uint PaddingY { get; }
 
     #endregion
@@ -118,18 +117,26 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     /// <param name="pixelFormat">Pixel format (GenICam PFNC).</param>
     /// <param name="frameID">Frame ID.</param>
     /// <param name="timeStamp">Image timestamp in <see cref="DateTime"/> ticks.</param>
+    /// <param name="paddingX">Bytes of padding after each row.</param>
+    /// <param name="paddingY">Bytes of padding after the frame.</param>
+    /// <remarks>Packed images without row padding retain the legacy continuous bit layout. With row padding, each row starts on a byte boundary.</remarks>
     /// <exception cref="ArgumentException">Thrown when the provided byte array is too small to fit the specified dimensions and pixel format.</exception>
     public GcBuffer(byte[] imageData, uint width, uint height, PixelFormat pixelFormat, long frameID, ulong timeStamp, uint paddingX = 0, uint paddingY = 0)
     {
-        // ToDo: Add support for row padding (stride) and frame padding, to allow for image data that is not tightly packed in memory.
-        // GenICam defines PaddingX and PaddingY for this purpose, but they are not always available in the camera API.
-        // For now, we assume that the image data is tightly packed (e.g. no padding).
-
-        // Validate array size.
-        long requiredBits = (long)width * height * GenICamHelper.GetBitsPerPixel(pixelFormat); // Total bits required for the specified image dimensions and pixel format.
-        long requiredBytes = (requiredBits + 7) / 8 + paddingX * height; // Round up to whole bytes (needed for packed formats) and add row padding.
+        ArgumentNullException.ThrowIfNull(imageData);
+        long requiredBytes;
+        checked
+        {
+            long bitsPerPixel = GenICamHelper.GetBitsPerPixel(pixelFormat);
+            if (paddingX == 0)
+                requiredBytes = ((long)width * height * bitsPerPixel + 7) / 8 + paddingY;
+            else if (GenICamHelper.IsPlanar(pixelFormat))
+                requiredBytes = (((long)width * GenICamHelper.GetBitsPerPixelPerChannel(pixelFormat) + 7) / 8 + paddingX) * height * GenICamHelper.GetNumChannels(pixelFormat) + paddingY; // For planar formats, each channel plane has its own row padding, and the total size is the sum of all channel planes plus any frame padding.
+            else
+                requiredBytes = ((width * bitsPerPixel + 7) / 8 + paddingX) * height + paddingY; // For non-planar formats, each row has its own row padding, and the total size is the sum of all rows plus any frame padding.
+        }
         if (imageData.LongLength < requiredBytes)
-            throw new ArgumentException($"Allocated image data ({imageData.LongLength} bytes) is too small to fit the specified dimensions and pixel format, which requires {requiredBytes} bytes!");
+            throw new ArgumentException($"Allocated image data ({imageData.LongLength} bytes) is too small to fit the specified dimensions and pixel format, which requires {requiredBytes} bytes!", nameof(imageData));
 
         ImageData = imageData;
         Width = width;
@@ -139,11 +146,6 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
         TimeStamp = timeStamp;
         PaddingX = paddingX;
         PaddingY = paddingY;
-
-        // Calculate stride (in bytes) for the image, including any row padding.
-        // Stride is the number of bytes from the start of one row to the start of the next row in memory.
-        // This is needed for exporting the image to other formats (e.g., OpenCV Mat or bitmap) that require a stride value.
-        //var stride = (int)(Width * (GenICamHelper.GetBitsPerPixel(PixelFormat) / 8) + PaddingX);
     }
 
     /// <summary>
@@ -181,8 +183,24 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
         // Allocate new memory for image data when no reusable output buffer is provided.
         ImageData = outputBuffer != null && outputBuffer.Length >= requiredBytes ? outputBuffer : new byte[requiredBytes];
 
-        // Copy image data.
-        imageMat.CopyTo(ImageData);
+        // Mat channels are interleaved, including when a planar output format is requested.
+        if (GenICamHelper.IsPlanar(pixelFormat))
+        {
+            var interleaved = new byte[requiredBytes];
+            imageMat.CopyTo(interleaved);
+            int channels = imageMat.NumberOfChannels;
+            int bytesPerChannel = imageMat.ElementSize / channels;
+            int pixels = imageMat.Total.ToInt32();
+            int planeSize = pixels * bytesPerChannel;
+            for (int pixel = 0; pixel < pixels; pixel++)
+                for (int channel = 0; channel < channels; channel++)
+                    interleaved.AsSpan((pixel * channels + channel) * bytesPerChannel, bytesPerChannel)
+                               .CopyTo(ImageData.AsSpan(channel * planeSize + pixel * bytesPerChannel, bytesPerChannel));
+        }
+        else
+        {
+            imageMat.CopyTo(ImageData);
+        }
 
         Width = (uint)imageMat.Width;
         Height = (uint)imageMat.Height;
@@ -314,25 +332,20 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
         {
             int bitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
             Span<byte> bits = stackalloc byte[(bitCount + 7) / ByteExtensions.BitsPerByte];
-            ReadOnlySpan<byte> source = ImageData;
 
             // Packed format: extract each channel separately using bit offsets
             for (int i = 0; i < values.Length; i++)
             {
                 long bitOffset = GetPixelBitOffset(row, col, (uint)i);
-                source.GetBitRange(start: (int)bitOffset, length: bitCount, destination: bits, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+                GetBitSpan(ImageData, bitOffset, bitCount).GetBitRange((int)(bitOffset % 8), bitCount, bits);
                 values[i] = NumericHelper.SpanToDouble(bits);
             }
         }
         else
         {
-            // Byte-aligned format: use fast path
-            var bytes = new ReadOnlySpan<byte>(array: ImageData,
-                                               start: (int)((row * Width + col) * GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * GenICamHelper.GetNumChannels(PixelFormat)),
-                                               length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * (int)GenICamHelper.GetNumChannels(PixelFormat));
-
-            for (int i = 0; i < GenICamHelper.GetNumChannels(PixelFormat); i++)
-                values[i] = NumericHelper.SpanToDouble(bytes.Slice(start: i * (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8));
+            int bytesPerChannel = (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8;
+            for (int i = 0; i < values.Length; i++)
+                values[i] = NumericHelper.SpanToDouble(ImageData.AsSpan(checked((int)(GetPixelBitOffset(row, col, (uint)i) / 8)), bytesPerChannel));
         }
 
         return values;
@@ -366,20 +379,15 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
             long bitOffset = GetPixelBitOffset(row, col, channel);
             int bitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
             Span<byte> bits = stackalloc byte[(bitCount + 7) / ByteExtensions.BitsPerByte];
-            ReadOnlySpan<byte> source = ImageData;
-            source.GetBitRange(start: (int)bitOffset, length: bitCount, destination: bits, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+            GetBitSpan(ImageData, bitOffset, bitCount).GetBitRange((int)(bitOffset % 8), bitCount, bits);
 
             // Convert extracted bits to double
             return NumericHelper.SpanToDouble(bits);
         }
         else
         {
-            // Byte-aligned format: use fast path
-            var bytes = new ReadOnlySpan<byte>(array: ImageData,
-                                               start: (int)((row * Width + col) * GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * GenICamHelper.GetNumChannels(PixelFormat) + GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * channel),
-                                               length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8);
-
-            return NumericHelper.SpanToDouble(bytes);
+            int bytesPerChannel = (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8;
+            return NumericHelper.SpanToDouble(ImageData.AsSpan(checked((int)(GetPixelBitOffset(row, col, channel) / 8)), bytesPerChannel));
         }
     }
 
@@ -423,18 +431,19 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
             {
                 NumericHelper.DoubleToSpan(ref bytes, pixelValues[i]);
                 long bitOffset = GetPixelBitOffset(row, col, (uint)i);
-                ImageData.AsSpan().SetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+                int bitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
+                GetBitSpan(ImageData, bitOffset, bitCount).SetBitRange((int)(bitOffset % 8), bitCount, bytes);
             }
         }
         else
         {
-            // Byte-aligned format: use fast path
-            Span<byte> bytes = stackalloc byte[(int)(GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8 * GenICamHelper.GetNumChannels(PixelFormat))];
-            NumericHelper.DoubleToSpan(ref bytes, pixelValues);
-
-            long offset = ((long)row * Width + col) * (GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8) * GenICamHelper.GetNumChannels(PixelFormat);
-            for (int i = 0; i < bytes.Length; i++)
-                ImageData[offset + i] = bytes[i];
+            int bytesPerChannel = (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8;
+            Span<byte> bytes = stackalloc byte[bytesPerChannel];
+            for (int i = 0; i < pixelValues.Length; i++)
+            {
+                NumericHelper.DoubleToSpan(ref bytes, pixelValues[i]);
+                bytes.CopyTo(ImageData.AsSpan(checked((int)(GetPixelBitOffset(row, col, (uint)i) / 8)), bytesPerChannel));
+            }
         }
     }
 
@@ -475,14 +484,13 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
         {
             // Packed format: use bit-level insertion
             long bitOffset = GetPixelBitOffset(row, col, channel);
-            ImageData.AsSpan().SetBitRange(start: (int)bitOffset, length: (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat), value: bytes, endianness: ByteExtensions.Endianness.LittleEndian, bitNumbering: ByteExtensions.BitNumbering.Lsb0);
+            int bitCount = (int)GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
+            GetBitSpan(ImageData, bitOffset, bitCount).SetBitRange((int)(bitOffset % 8), bitCount, bytes);
         }
         else
         {
-            // Byte-aligned format: use fast path
-            long offset = ((long)row * Width + col) * (GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8) * GenICamHelper.GetNumChannels(PixelFormat) + (long)channel * (GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) / 8);
-            for (int i = 0; i < bytes.Length; i++)
-                ImageData[offset + i] = bytes[i];
+            int offset = checked((int)(GetPixelBitOffset(row, col, channel) / 8));
+            bytes.CopyTo(ImageData.AsSpan(offset, bytes.Length));
         }
     }
 
@@ -498,10 +506,14 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     /// <summary>
     /// Gets the row stride in bytes, including horizontal padding.
     /// </summary>
-    /// <returns>The number of bytes in a row.</returns>
+    /// <returns>The number of bytes in a row (per plane for planar formats).</returns>
+    /// <exception cref="InvalidOperationException">A continuously packed row is not byte-aligned.</exception>
     public int GetStride()
     {
-        return (int)(Width * GenICamHelper.GetBitsPerPixel(PixelFormat) / 8 + PaddingX);
+        long rowBits = (long)Width * (GenICamHelper.IsPlanar(PixelFormat) ? GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) : GenICamHelper.GetBitsPerPixel(PixelFormat));
+        if (PaddingX == 0 && rowBits % 8 != 0)
+            throw new InvalidOperationException("Continuously packed rows do not have a byte-aligned stride.");
+        return checked((int)((rowBits + 7) / 8 + PaddingX));
     }
 
     #endregion
@@ -511,7 +523,7 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     /// <summary>
     /// Determines whether this buffer has metadata equality with another buffer.
     /// </summary>
-    /// <remarks>Metadata equality compares only width, height, pixel format, frame ID and timestamp. Image payload (<see cref="ImageData"/>) is intentionally excluded.</remarks>
+    /// <remarks>Metadata equality compares width, height, pixel format, frame ID, timestamp and padding. Image payload (<see cref="ImageData"/>) is intentionally excluded.</remarks>
     /// <param name="other">Other buffer to compare with.</param>
     /// <returns><see langword="true"/> if metadata are equal; otherwise <see langword="false"/>.</returns>
     public bool Equals(GcBuffer other)
@@ -523,7 +535,9 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
             && other.Height == Height
             && other.PixelFormat == PixelFormat
             && other.FrameID == FrameID
-            && other.TimeStamp == TimeStamp;
+            && other.TimeStamp == TimeStamp
+            && other.PaddingX == PaddingX
+            && other.PaddingY == PaddingY;
     }
 
     /// <summary>
@@ -549,7 +563,9 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
             Height,
             PixelFormat,
             FrameID,
-            TimeStamp);
+            TimeStamp,
+            PaddingX,
+            PaddingY);
     }
 
     #endregion
@@ -569,13 +585,75 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     /// <returns>Bit offset from the start of ImageData array.</returns>
     private long GetPixelBitOffset(uint row, uint col, uint channel = 0)
     {
-        // Bit offset to the start of the pixel
-        long pixelBitOffset = ((long)row * Width + col) * GenICamHelper.GetBitsPerPixel(PixelFormat);
+        long channelBits = GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
+        if (GenICamHelper.IsPlanar(PixelFormat))
+        {
+            long rowBits = PaddingX == 0 ? Width * channelBits : (long)GetStride() * 8;
+            return ((long)channel * Height + row) * rowBits + col * channelBits;
+        }
 
-        // Add channel offset
-        long channelBitOffset = channel * GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat);
+        long pixelBits = GenICamHelper.GetBitsPerPixel(PixelFormat);
+        long rowOffset = PaddingX == 0 ? (long)row * Width * pixelBits : (long)row * GetStride() * 8;
+        return rowOffset + col * pixelBits + channel * channelBits;
+    }
 
-        return pixelBitOffset + channelBitOffset;
+    private static Span<byte> GetBitSpan(byte[] data, long bitOffset, int bitCount)
+    {
+        int byteOffset = checked((int)(bitOffset / 8));
+        int byteCount = (int)((bitOffset % 8 + bitCount + 7) / 8);
+        return data.AsSpan(byteOffset, byteCount);
+    }
+
+    /// <summary>
+    /// Gets the image data without row padding.
+    /// </summary>
+    /// <returns>A byte array containing the tightly packed image data.</returns>
+    internal byte[] GetTightImageData()
+    {
+        // Calculate the expected length of the tightly packed image data based on width, height, and bits per pixel.
+        int length = checked((int)(((long)Width * Height * GenICamHelper.GetBitsPerPixel(PixelFormat) + 7) / 8));
+        if (PaddingX == 0 && ImageData.Length == length)
+            return ImageData; // Already tightly packed, no need to copy.
+
+        // Create a new byte array to hold the tightly packed image data.
+        var result = new byte[length];
+
+        // If there is no row padding, we can directly copy the image data to the result array.
+        if (PaddingX == 0)
+        {
+            Buffer.BlockCopy(ImageData, 0, result, 0, length);
+            return result;
+        }
+
+        // Handle the case where there is row padding. We need to copy each row of the image data to the result array, skipping the padding bytes.
+        bool planar = GenICamHelper.IsPlanar(PixelFormat);
+        int bits = checked((int)(planar ? GenICamHelper.GetBitsPerPixelPerChannel(PixelFormat) : GenICamHelper.GetBitsPerPixel(PixelFormat)));
+        int planes = planar ? checked((int)NumChannels) : 1;
+        long rowBits = Width * bits;
+
+        // If the row is byte-aligned, we can use Buffer.BlockCopy for efficiency. Otherwise, we need to copy bit by bit.
+        if (rowBits % 8 == 0)
+        {
+            int rowBytes = checked((int)(rowBits / 8));
+            int stride = GetStride();
+            for (int plane = 0; plane < planes; plane++)
+                for (uint row = 0; row < Height; row++)
+                    Buffer.BlockCopy(ImageData, checked((int)(((long)plane * Height + row) * stride)), result, checked((int)(((long)plane * Height + row) * rowBytes)), rowBytes);
+        }
+        else // Bit-level copy for non-byte-aligned rows
+        {
+            Span<byte> sample = stackalloc byte[(bits + 7) / 8];
+            for (int plane = 0; plane < planes; plane++)
+                for (uint row = 0; row < Height; row++)
+                    for (uint col = 0; col < Width; col++)
+                    {
+                        long sourceBit = GetPixelBitOffset(row, col, (uint)plane);
+                        long targetBit = (((long)plane * Height + row) * Width + col) * bits;
+                        GetBitSpan(ImageData, sourceBit, bits).GetBitRange((int)(sourceBit % 8), bits, sample);
+                        GetBitSpan(result, targetBit, bits).SetBitRange((int)(targetBit % 8), bits, sample);
+                    }
+        }
+        return result;
     }
 
     #endregion
@@ -628,6 +706,9 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     [Obsolete("Older inefficient version of GetPixel method")]
     public double[] GetPixelUsingBlockCopy(uint row, uint col)
     {
+        if (PaddingX != 0)
+            return GetPixel(row, col);
+
         // Check boundaries.
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, Height, nameof(row));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
@@ -664,6 +745,9 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     [Obsolete("Older inefficient version of GetPixel method")]
     public double? GetPixelUsingBlockCopy(uint row, uint col, uint channel)
     {
+        if (PaddingX != 0)
+            return GetPixel(row, col, channel);
+
         // Check boundaries.
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, Height, nameof(row));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
@@ -694,6 +778,12 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     [Obsolete("Older inefficient version of SetPixel method")]
     public void SetPixelUsingBlockCopy(uint row, uint col, double[] pixelValues)
     {
+        if (PaddingX != 0)
+        {
+            SetPixel(row, col, pixelValues);
+            return;
+        }
+
         // Check that pixel coordinate falls within image boundaries.
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, Height, nameof(row));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));
@@ -732,6 +822,12 @@ public sealed class GcBuffer : IEquatable<GcBuffer>
     [Obsolete("Older inefficient version of SetPixel method")]
     public void SetPixelUsingBlockCopy(uint row, uint col, uint channel, double pixelValue)
     {
+        if (PaddingX != 0)
+        {
+            SetPixel(row, col, channel, pixelValue);
+            return;
+        }
+
         // Check that pixel coordinate falls within image boundaries.
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, Height, nameof(row));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(col, Width, nameof(col));

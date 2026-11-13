@@ -82,6 +82,60 @@ public class GcBufferWriterReaderRoundTripTests
     }
 
     [TestMethod]
+    public async Task WriteAndRead_PaddedBuffers_StoresCompactPixels()
+    {
+        var mono = new GcBuffer([1, 2, 90, 3, 4, 91, 92], 2, 2, PixelFormat.Mono8, 1, 100, 1, 1);
+        var mono2 = new GcBuffer([5, 6, 93, 7, 8, 94, 95], 2, 2, PixelFormat.Mono8, 2, 200, 1, 1);
+        await WriteAsync([mono, mono2]);
+        using var reader = new GcBufferReader(_path);
+        await reader.OpenAsync(token: TestContext.CancellationToken);
+        Assert.AreEqual(2ul, reader.FrameCount);
+        Assert.IsTrue(reader.ReadImage(out var first));
+        Assert.IsTrue(reader.ReadImage(out var second));
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3, 4 }, first.ImageData);
+        Assert.AreSequenceEqual(new byte[] { 5, 6, 7, 8 }, second.ImageData);
+        Assert.AreEqual(0u, first.PaddingX);
+        Assert.AreEqual(0u, first.PaddingY);
+    }
+
+    [TestMethod]
+    public async Task WriteAndRead_PackedPaddedRows_StoresContinuousBits()
+    {
+        var buffer = new GcBuffer([1, 0, 90, 2, 0, 91, 92], 1, 2, PixelFormat.Mono10p, 1, 100, 1, 1);
+        await WriteAsync([buffer]);
+        using var reader = new GcBufferReader(_path);
+        await reader.OpenAsync(token: TestContext.CancellationToken);
+        Assert.IsTrue(reader.ReadImage(out var actual));
+        Assert.AreSequenceEqual(new byte[] { 1, 8, 0 }, actual.ImageData);
+        Assert.AreEqual(2d, actual.GetPixel(1, 0, 0));
+    }
+
+    [TestMethod]
+    public async Task WriteAndRead_PackedRowsBeyondIntBitOffset_StoresCorrectPixels()
+    {
+        const int stride = 134217730;
+        byte[] data = new byte[stride * 3];
+        data[0] = 0x55;
+        data[1] = 0x01;
+        data[stride] = 0xAA;
+        data[stride + 1] = 0x02;
+        data[stride * 2] = 0xFF;
+        data[stride * 2 + 1] = 0x03;
+        var buffer = new GcBuffer(data, 1, 3, PixelFormat.Mono10p, 1, 100, stride - 2, 0);
+
+        Assert.AreEqual(1023d, buffer.GetPixel(2, 0, 0));
+        buffer.SetPixel(2, 0, 0, 3);
+        Assert.AreSequenceEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02, 0x03, 0x00 }, buffer.Unpack().ImageData);
+        await WriteAsync([buffer]);
+        using var reader = new GcBufferReader(_path);
+        await reader.OpenAsync(token: TestContext.CancellationToken);
+        Assert.IsTrue(reader.ReadImage(out var actual));
+        Assert.AreEqual(341d, actual.GetPixel(0, 0, 0));
+        Assert.AreEqual(682d, actual.GetPixel(1, 0, 0));
+        Assert.AreEqual(3d, actual.GetPixel(2, 0, 0));
+    }
+
+    [TestMethod]
     public async Task WriteAndRead_ManyBuffers_OrderIsPreserved()
     {
         // Arrange

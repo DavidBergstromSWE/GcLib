@@ -142,6 +142,46 @@ public class GcBufferExtensionsTests
     }
 
     [TestMethod]
+    public void Unpack_BigEndianPaddedPackedRows_MatchesCompactBuffer()
+    {
+        var compact = new GcBuffer([0x0A, 0xA9, 0x55], 1, 2, PixelFormat.Mono10p, 42, 123);
+        var padded = new GcBuffer([0x02, 0xAA, 0xEF, 0x01, 0x55, 0xFE, 0xDD], 1, 2, PixelFormat.Mono10p, 42, 123, 1, 1);
+
+        var unpacked = padded.Unpack(ByteExtensions.Endianness.BigEndian);
+
+        Assert.AreSequenceEqual(new byte[] { 0x55, 0x01, 0xAA, 0x02 }, unpacked.ImageData);
+        Assert.AreSequenceEqual(compact.Unpack(ByteExtensions.Endianness.BigEndian).ImageData, unpacked.ImageData);
+        Assert.AreEqual(0u, unpacked.PaddingX);
+        Assert.AreEqual(0u, unpacked.PaddingY);
+    }
+
+    [TestMethod]
+    public void Unpack_BigEndianPaddedColorRows_PreservesChannelsAndPadding()
+    {
+        byte[] source = [0x00, 0x60, 0x14, 0x04, 0xAA, 0x00, 0x30, 0x08, 0x01, 0xBB, 0xCC];
+        var padded = new GcBuffer(source, 1, 2, PixelFormat.RGB10p, 42, 123, 1, 1);
+
+        var unpacked = padded.Unpack(ByteExtensions.Endianness.BigEndian);
+
+        Assert.AreSequenceEqual(new byte[] { 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0 }, unpacked.ImageData);
+        Assert.AreEqual(42L, unpacked.FrameID);
+        Assert.AreEqual(123UL, unpacked.TimeStamp);
+        Assert.AreSequenceEqual(new byte[] { 0x00, 0x60, 0x14, 0x04, 0xAA, 0x00, 0x30, 0x08, 0x01, 0xBB, 0xCC }, source);
+    }
+
+    [TestMethod]
+    public void Unpack_BigEndianPaddedAlignedRows_MatchesCompactBuffer()
+    {
+        var compact = new GcBuffer([0x00, 0xC0, 0x20, 0x04, 0x01, 0x00, 0xC0, 0x20, 0x04, 0x02], 4, 2, PixelFormat.Mono10p, 42, 123);
+        var padded = new GcBuffer([0x00, 0xC0, 0x20, 0x04, 0x01, 0xEF, 0x00, 0xC0, 0x20, 0x04, 0x02, 0xFE, 0xDD], 4, 2, PixelFormat.Mono10p, 42, 123, 1, 1);
+
+        var unpacked = padded.Unpack(ByteExtensions.Endianness.BigEndian);
+
+        Assert.AreSequenceEqual(compact.Unpack(ByteExtensions.Endianness.BigEndian).ImageData, unpacked.ImageData);
+        Assert.AreSequenceEqual(new byte[] { 2, 0, 1, 0, 2, 0, 3, 0, 1, 0, 1, 0, 2, 0, 3, 0 }, unpacked.ImageData);
+    }
+
+    [TestMethod]
     public void UnpackBuffer_NonPackedBuffer_ReturnsSameInstance()
     {
         // Arrange

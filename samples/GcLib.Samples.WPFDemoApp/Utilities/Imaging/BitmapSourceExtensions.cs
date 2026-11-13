@@ -20,7 +20,8 @@ internal static class BitmapSourceExtensions
     public static BitmapSource ToBitmapSource(this GcBuffer buffer)
     {
         var pixelFormat = GetMediaPixelFormat(buffer.PixelFormat);
-        var stride = CalculateStride((int)buffer.Width, pixelFormat);
+        //var stride = CalculateStride((int)buffer.Width, pixelFormat);
+        var stride = buffer.GetStride();
 
         return BitmapSource.Create(pixelWidth: (int)buffer.Width,
                                    pixelHeight: (int)buffer.Height,
