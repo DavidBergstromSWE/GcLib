@@ -12,7 +12,9 @@ public sealed partial class PylonCam
     /// <inheritdoc/>
     protected override GcBoolean GetBoolean(string parameterName)
     {
-        var p = _camera.Parameters[(BooleanName)parameterName];
+        if (!Parameters.IsImplemented(parameterName) || _camera.Parameters[(BooleanName)parameterName] is not IBooleanParameter p)
+            return null; // Return null if the feature is not found or not a boolean feature.
+
         if (p.IsReadable == false)
             return Parameters[parameterName] as GcBoolean; // Return cached value if parameter is not readable.
         return ToGcBoolean(p);
@@ -21,13 +23,17 @@ public sealed partial class PylonCam
     /// <inheritdoc/>
     protected override GcCommand GetCommand(string parameterName)
     {
-        return ToGcCommand(_camera.Parameters[(CommandName)parameterName]);
+        if (!Parameters.IsImplemented(parameterName) || _camera.Parameters[(CommandName)parameterName] is not ICommandParameter p)
+            return null; // Return null if the feature is not found or not a command feature.
+        return ToGcCommand(p);
     }
 
     /// <inheritdoc/>
     protected override GcEnumeration GetEnumeration(string parameterName)
     {
-        var p = _camera.Parameters[(EnumName)parameterName];
+        if (!Parameters.IsImplemented(parameterName) ||_camera.Parameters[(EnumName)parameterName] is not IEnumParameter p)
+            return null; // Return null if the feature is not found or not an enumeration feature.
+
         if (p.IsReadable == false)
             return Parameters[parameterName] as GcEnumeration; // Return cached value if parameter is not readable.
         return ToGcEnumeration(p);
@@ -36,7 +42,9 @@ public sealed partial class PylonCam
     /// <inheritdoc/>
     protected override GcFloat GetFloat(string parameterName)
     {
-        var p = _camera.Parameters[(FloatName)parameterName];
+        if (!Parameters.IsImplemented(parameterName) || _camera.Parameters[(FloatName)parameterName] is not IFloatParameter p)
+            return null; // Return null if the feature is not found or not a float feature.
+
         if (p.IsReadable == false)
             return Parameters[parameterName] as GcFloat; // Return cached value if parameter is not readable.
         return ToGcFloat(p);
@@ -45,7 +53,9 @@ public sealed partial class PylonCam
     /// <inheritdoc/>
     protected override GcInteger GetInteger(string parameterName)
     {
-        var p = _camera.Parameters[(IntegerName)parameterName];
+        if (!Parameters.IsImplemented(parameterName) || _camera.Parameters[(IntegerName)parameterName] is not IIntegerParameter p)
+            return null; // Return null if the parameter is not implemented or not an integer parameter.
+
         if (p.IsReadable == false)
             return Parameters[parameterName] as GcInteger; // Return cached value if parameter is not readable.
         return ToGcInteger(p);
@@ -54,7 +64,9 @@ public sealed partial class PylonCam
     /// <inheritdoc/>
     protected override GcString GetString(string parameterName)
     {
-        var p = _camera.Parameters[(StringName)parameterName];
+        if (!Parameters.IsImplemented(parameterName) || _camera.Parameters[(StringName)parameterName] is not IStringParameter p)
+            return null; // Return null if the feature is not found.
+
         if (p.IsReadable == false)
             return Parameters[parameterName] as GcString; // Return cached value if parameter is not readable.
         return ToGcString(p);

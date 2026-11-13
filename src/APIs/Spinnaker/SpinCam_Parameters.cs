@@ -10,6 +10,9 @@ public sealed partial class SpinCam
     /// <inheritdoc/>
     protected override GcBoolean GetBoolean(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Return null if the feature is not found.
+
         var param = _nodeMap.GetNode<BoolNode>(parameterName);
         return new GcBoolean(name: param.Name,
                              category: param.NameSpace.ToString(),
@@ -23,6 +26,9 @@ public sealed partial class SpinCam
     /// <inheritdoc/>
     protected override GcCommand GetCommand(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         var param = _nodeMap.GetNode<Command>(parameterName);
         return new GcCommand(name: param.Name,
                              category: param.NameSpace.ToString(),
@@ -36,6 +42,9 @@ public sealed partial class SpinCam
     /// <inheritdoc/>
     protected override GcEnumeration GetEnumeration(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         var param = _nodeMap.GetNode<Enumeration>(parameterName);
         return new GcEnumeration(name: param.Name,
                                  category: param.NameSpace.ToString(),
@@ -50,6 +59,9 @@ public sealed partial class SpinCam
     /// <inheritdoc/>
     protected override GcFloat GetFloat(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         var param = _nodeMap.GetNode<Float>(parameterName);
         return new GcFloat(name: param.Name,
                            category: param.NameSpace.ToString(),
@@ -66,6 +78,9 @@ public sealed partial class SpinCam
     /// <inheritdoc/>
     protected override GcInteger GetInteger(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         var param = _nodeMap.GetNode<Integer>(parameterName);
         return new GcInteger(name: param.Name,
                              category: param.NameSpace.ToString(),
@@ -82,6 +97,9 @@ public sealed partial class SpinCam
     /// <inheritdoc/>
     protected override GcString GetString(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         var param = _nodeMap.GetNode<StringNode>(parameterName);
         return new GcString(name: param.Name,
                             category: param.NameSpace.ToString(),
@@ -96,6 +114,9 @@ public sealed partial class SpinCam
     /// <inheritdoc/>
     protected override string GetParameterValue(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         switch (Parameters[parameterName].Type)
         {
             case GcParameterType.Integer:
@@ -122,6 +143,9 @@ public sealed partial class SpinCam
     /// <inheritdoc/>
     protected override void ExecuteParameterCommand(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return;
+
         if (Parameters[parameterName].Type == GcParameterType.Command)
         {
             var commandParam = _nodeMap.GetNode<Command>(parameterName);
@@ -132,6 +156,9 @@ public sealed partial class SpinCam
     /// <inheritdoc/>
     protected override void SetParameterValue(string parameterName, string parameterValue)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return;
+
         switch (Parameters[parameterName].Type)
         {
             case GcParameterType.Integer:

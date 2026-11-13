@@ -315,6 +315,9 @@ public sealed partial class XiCam
     /// <inheritdoc/>
     protected override string GetParameterValue(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Do nothing if the feature is not found.
+
         GcParameter parameter = Parameters[parameterName];
         string xiApiParameter = _xiApiParameterList[parameterName];
 
@@ -332,6 +335,9 @@ public sealed partial class XiCam
     /// <inheritdoc/>
     protected override void SetParameterValue(string parameterName, string parameterValue)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return; // Do nothing if the feature is not found.
+
         string xiApiParameter = _xiApiParameterList[parameterName];
 
         try
@@ -369,12 +375,18 @@ public sealed partial class XiCam
     /// <inheritdoc/>
     protected override void ExecuteParameterCommand(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return; // Do nothing if the feature is not found.
+
         (Parameters[parameterName] as GcCommand)?.Execute();
     }
 
     /// <inheritdoc/>
     protected override GcBoolean GetBoolean(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Return null if the feature is not found.
+
         if (Parameters[parameterName] is GcBoolean gcBoolean)
         {
             // Retrieve current value from camera using API.
@@ -392,6 +404,9 @@ public sealed partial class XiCam
     /// <inheritdoc/>
     protected override GcCommand GetCommand(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         if (Parameters[parameterName] is GcCommand gcCommand)
             return gcCommand;
         else return new GcCommand(parameterName);
@@ -400,6 +415,9 @@ public sealed partial class XiCam
     /// <inheritdoc/>
     protected override GcEnumeration GetEnumeration(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         if (Parameters[parameterName] is GcEnumeration gcEnumeration)
         {
             // Retrieve current value from camera using API.
@@ -416,6 +434,9 @@ public sealed partial class XiCam
     /// <inheritdoc/>
     protected override GcFloat GetFloat(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         if (Parameters[parameterName] is GcFloat gcFloat)
         {
             // Retrieve current value from camera using API.
@@ -432,6 +453,9 @@ public sealed partial class XiCam
     /// <inheritdoc/>
     protected override GcInteger GetInteger(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         if (Parameters[parameterName] is GcInteger gcInteger)
         {
             // Retrieve current value from camera using API.
@@ -448,6 +472,9 @@ public sealed partial class XiCam
     /// <inheritdoc/>
     protected override GcString GetString(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null;
+
         if (Parameters[parameterName] is GcString gcString)
         {
             // Retrieve current value from camera using API.

@@ -101,20 +101,14 @@ public sealed partial class VimbaCam
 
             // ToDo: Handle PaddingX and PaddingY for row padding (requires GcBuffer to support non-tightly packed image data).
             // Only necessary for 3rd-party cameras (Allied Vision use tightly packed image data).
-            // Use LinePitch feature or compare BufferSize with Width * Height * BytesPerPixel to determine if padding is present.
-
-            // Calculate padding.
-            var paddingX = payloadSize - (frame.Width * frame.Height * (GenICamHelper.GetBitsPerPixel(pixelFormat) / 8));
-            var paddingY = 0; // ToDo: Calculate paddingY if necessary.
+            // Use LinePitch feature to determine if padding is present.
 
             var buffer = new GcBuffer(imageData,
                                       frame.Width,
                                       frame.Height,
                                       pixelFormat,
                                       (long)frame.Id,
-                                      timeStamp,
-                                      (uint)paddingX,
-                                      (uint)paddingY);
+                                      timeStamp);
 
             OnNewBuffer(new NewBufferEventArgs(streamID,
                                                DateTime.Now,

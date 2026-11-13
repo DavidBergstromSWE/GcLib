@@ -151,6 +151,9 @@ public sealed partial class IdsCam
     /// <inheritdoc/>
     protected override GcBoolean GetBoolean(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Return null if the feature is not found.
+
         if (Parameters[parameterName] is GcBoolean gcBoolean)
         {
             var node = _nodeMap.FindNode<BooleanNode>(parameterName);
@@ -169,6 +172,9 @@ public sealed partial class IdsCam
     /// <inheritdoc/>
     protected override GcCommand GetCommand(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Return null if the feature is not found.
+
         if (Parameters[parameterName] is GcCommand gcCommand)
         {
             var node = _nodeMap.FindNode<CommandNode>(parameterName);
@@ -185,6 +191,9 @@ public sealed partial class IdsCam
     /// <inheritdoc/>
     protected override GcEnumeration GetEnumeration(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Return null if the feature is not found.
+
         if (Parameters[parameterName] is GcEnumeration gcEnum)
         {
             var node = _nodeMap.FindNode<EnumerationNode>(parameterName);
@@ -204,6 +213,9 @@ public sealed partial class IdsCam
     /// <inheritdoc/>
     protected override GcFloat GetFloat(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Return null if the feature is not found.
+
         if (Parameters[parameterName] is GcFloat gcFloat)
         {
             var node = _nodeMap.FindNode<FloatNode>(parameterName);
@@ -227,6 +239,9 @@ public sealed partial class IdsCam
     /// <inheritdoc/>
     protected override GcInteger GetInteger(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Return null if the feature is not found.
+
         if (Parameters[parameterName] is GcInteger gcInteger)
         {
             var node = _nodeMap.FindNode<IntegerNode>(parameterName);
@@ -249,6 +264,9 @@ public sealed partial class IdsCam
     /// <inheritdoc/>
     protected override GcString GetString(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Return null if the feature is not found.
+
         if (Parameters[parameterName] is GcString gcString)
         {
             var node = _nodeMap.FindNode<StringNode>(parameterName);
@@ -268,6 +286,9 @@ public sealed partial class IdsCam
     /// <inheritdoc/>
     protected override string GetParameterValue(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return null; // Return null if the feature is not found.
+
         switch (Parameters[parameterName].Type)
         {
             case GcParameterType.Boolean:
@@ -286,13 +307,16 @@ public sealed partial class IdsCam
                 var stringNode = _nodeMap.FindNode<StringNode>(parameterName);
                 return stringNode.IsReadable() ? stringNode.Value() : null;
             default:
-                return string.Empty;
+                return null; // Return null for unsupported parameter types.
         }
     }
 
     /// <inheritdoc/>
     protected override void SetParameterValue(string parameterName, string parameterValue)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return; // Do nothing if the feature is not found.
+
         switch (Parameters[parameterName].Type)
         {
             case GcParameterType.Boolean:
@@ -328,6 +352,9 @@ public sealed partial class IdsCam
     /// <inheritdoc/>
     protected override void ExecuteParameterCommand(string parameterName)
     {
+        if (Parameters.IsImplemented(parameterName) == false)
+            return; // Do nothing if the feature is not found.
+
         if (Parameters[parameterName].Type == GcParameterType.Command)
         {
             var commandParam = _nodeMap.FindNode<CommandNode>(parameterName);

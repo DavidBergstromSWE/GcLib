@@ -13,7 +13,7 @@ public sealed partial class VimbaCam
     /// <inheritdoc/>
     protected override GcBoolean GetBoolean(string parameterName)
     {
-        if (_camera.Features[parameterName] is not IBoolFeature feature)
+        if (!Parameters.IsImplemented(parameterName) || GetFeature(parameterName) is not IBoolFeature feature)
             return null; // Return null if the feature is not found or not a boolean feature.
         return feature.IsReadable() ? ToGcBoolean(feature) : Parameters[parameterName] as GcBoolean;
     }
@@ -21,7 +21,7 @@ public sealed partial class VimbaCam
     /// <inheritdoc/>
     protected override GcCommand GetCommand(string parameterName)
     {
-        if (_camera.Features[parameterName] is not ICommandFeature feature)
+        if (!Parameters.IsImplemented(parameterName) || GetFeature(parameterName) is not ICommandFeature feature)
             return null; // Return null if the feature is not found or not a command feature.
         return ToGcCommand(feature);
     }
@@ -29,7 +29,7 @@ public sealed partial class VimbaCam
     /// <inheritdoc/>
     protected override GcEnumeration GetEnumeration(string parameterName)
     {
-        if (_camera.Features[parameterName] is not IEnumFeature feature)
+        if (!Parameters.IsImplemented(parameterName) || GetFeature(parameterName) is not IEnumFeature feature)
             return null; // Return null if the feature is not found or not an enumeration feature.
         return feature.IsReadable() ? ToGcEnumeration(feature) : Parameters[parameterName] as GcEnumeration;
     }
@@ -37,7 +37,7 @@ public sealed partial class VimbaCam
     /// <inheritdoc/>
     protected override GcFloat GetFloat(string parameterName)
     {
-        if (_camera.Features[parameterName] is not IFloatFeature feature)
+        if (!Parameters.IsImplemented(parameterName) || GetFeature(parameterName) is not IFloatFeature feature)
             return null; // Return null if the feature is not found or not a float feature.
         return feature.IsReadable() ? ToGcFloat(feature) : Parameters[parameterName] as GcFloat;
     }
@@ -45,7 +45,7 @@ public sealed partial class VimbaCam
     /// <inheritdoc/>
     protected override GcInteger GetInteger(string parameterName)
     {
-        if (_camera.Features[parameterName] is not IIntFeature feature)
+        if (!Parameters.IsImplemented(parameterName) || GetFeature(parameterName) is not IIntFeature feature)
             return null; // Return null if the feature is not found or not an integer feature.
         return feature.IsReadable() ? ToGcInteger(feature) : Parameters[parameterName] as GcInteger;
     }
@@ -53,7 +53,7 @@ public sealed partial class VimbaCam
     /// <inheritdoc/>
     protected override GcString GetString(string parameterName)
     {
-        if (_camera.Features[parameterName] is not IStringFeature feature)
+        if (!Parameters.IsImplemented(parameterName) || GetFeature(parameterName)  is not IStringFeature feature)
             return null; // Return null if the feature is not found or not a string feature.
         return feature.IsReadable() ? ToGcString(feature) : Parameters[parameterName] as GcString;
     }
@@ -174,7 +174,7 @@ public sealed partial class VimbaCam
             IFeature feature = _camera.Features[parameterName];
             return feature;
         }
-        catch (KeyNotFoundException)
+        catch
         {
             return null;
         }
